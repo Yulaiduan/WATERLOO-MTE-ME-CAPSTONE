@@ -1,0 +1,11 @@
+# Local operating-system and editor files
+.DS_Store
+.localized
+Thumbs.db
+*.swp
+*.swo
+
+# Never commit machine-local credentials or configuration
+.env
+.env.*
+!.env.example
