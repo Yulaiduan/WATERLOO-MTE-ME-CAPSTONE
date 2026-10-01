@@ -1,0 +1,23 @@
+# Temporary shared review pool: all accounts verified to have write access.
+# Replace with confirmed subsystem assignments from database/md_research/team.md.
+# Last matching rule wins. GitHub needs only one listed owner to approve.
+* @Yulaiduan @Code-Andy @Jiaan124
+/assets/ @Yulaiduan @Code-Andy @Jiaan124
+/simulation/ @Yulaiduan @Code-Andy @Jiaan124
+/simulation/run.py @Yulaiduan
+/simulation/experiments/verify_backend.py @Yulaiduan
+/simulation/requirements.txt @Yulaiduan
+/firmware/ @Yulaiduan @Code-Andy @Jiaan124
+/training/ @Yulaiduan @Code-Andy @Jiaan124
+/deploy/ @Yulaiduan @Code-Andy @Jiaan124
+/shared/ @Yulaiduan @Code-Andy @Jiaan124
+/database/ @Yulaiduan @Code-Andy @Jiaan124
+/agent_skills/ @Yulaiduan
+/.github/ @Yulaiduan
+/.githooks/ @Yulaiduan
+/tools/ @Yulaiduan
+/CLAUDE.md @Yulaiduan
+/AGENTS.md @Yulaiduan
+/ENTRY_TEMPLATE.md @Yulaiduan @Code-Andy @Jiaan124
+/database/md_research/entry-protocol.md @Yulaiduan
+/database/md_research/team.md @Yulaiduan

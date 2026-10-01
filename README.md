@@ -8,12 +8,21 @@ The team's [GitHub repository](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPS
 
 Use **one repository with separate components**. One commit can capture compatible code, interfaces, robot assets, and documentation, while each component keeps its own dependencies and run instructions. Documentation contributors do not need a firmware compiler or GPU environment.
 
-**Implementation status:** this change establishes folders and contribution conventions, not working firmware, training pipelines or GPU launch scripts. Existing local MuJoCo work will be imported separately after review. The hardware toolchain, GPU provider, training backend and on-robot policy runtime remain open.
+**Agent entry point:** every agent follows [AGENTS.md](AGENTS.md), reads the [knowledge database](database/README.md) and [shared procedures](agent_skills/README.md), and appends the [contribution log](ENTRY_TEMPLATE.md). Personal branches and checks are independent of agent vendor or tool. `CLAUDE.md` is only a compatibility pointer.
+
+**Implementation status:** the entry protocol, local hooks, structural checks and CPU physics validator are implemented. Physics remains blocked until a reviewed canonical robot and mass/joint baseline are supplied. GitHub required architecture/physics checks and reviews are installed with this protocol; [live rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules) show current enforcement. Existing local MuJoCo work will be imported separately after review; firmware, training, GPU deployment and hardware runtime choices remain open.
 
 ```text
 WATERLOO-MTE-ME-CAPSTONE/
 ├── README.md                 Project overview and repository architecture
 ├── CONTRIBUTING.md           Branches, reviews and Markdown conventions
+├── AGENTS.md                 Shared entry instructions for every agent
+├── CLAUDE.md                 Compatibility pointer to AGENTS.md
+├── ENTRY_TEMPLATE.md         Template and append-only contribution summaries
+├── database/                 Compact agent knowledge: research, LaTeX, prototypes
+├── agent_skills/             Shared physics, ingestion and Git procedures
+├── tools/                    Entry validator, hook runner and regression tests
+├── .githooks/                Local staged-commit and exact-push checks
 ├── docs/                     Team Markdown: design, meetings, decisions, evidence
 ├── firmware/                 Embedded control, sensors, drivers, hardware tests
 ├── simulation/               Local MuJoCo environments, viewers and experiments
@@ -21,7 +30,7 @@ WATERLOO-MTE-ME-CAPSTONE/
 ├── deploy/                   GPU images, job submission and artifact transfer
 ├── shared/                   Versioned contracts and portable shared utilities
 ├── assets/                   Canonical robot models, meshes and parameters
-└── .github/                  PR template; future automated checks
+└── .github/                  CODEOWNERS, PR template and automated checks
 ```
 
 | Area | Owns | Shared connections |
@@ -62,7 +71,7 @@ Each component owns its dependency manifest, lockfile where supported, tests and
 
 ### Multiple contributors: Markdown and code
 
-Use short-lived branches from `main` and small pull requests. Organize by **topic or subsystem**, not a permanent folder or branch per person. Suggested branch names: `docs/<topic>`, `firmware/<topic>`, `sim/<topic>`, `train/<topic>` and `infra/<topic>`.
+Each member has a personal `members/<name>/work` branch, listed in [the team registry](database/md_research/team.md). Use `members/<name>/<topic>` for parallel tasks and small pull requests into reviewed `main`. Organize files by topic or subsystem. Integrate `main` regularly to keep assets and interfaces consistent.
 
 | Contribution | Destination |
 | --- | --- |
@@ -81,7 +90,7 @@ Commit Markdown, source, small configs, schemas and manageable text robot models
 
 Planned checks are scoped by changed paths: Markdown links for docs, embedded build/tests for firmware, headless smoke tests for simulation, CPU smoke tests for training, and image/config checks for deployment. Changes to `shared/` or `assets/` also exercise affected consumers. Full GPU jobs require explicit launch and runtime/cost limits, rather than running on every pull request.
 
-**Not configured yet:** automated workflows, required reviews/checks, branch protection, CODEOWNERS, GPU runners and artifact storage. Add checks as working components arrive, then protect `main` using actual check names and a team-agreed review policy. Assign reviewers by affected subsystem; the registered roles below do not establish software ownership.
+**Shared contribution gate:** PRs into `main` require `Entry architecture`, `Headless physics` and code-owner review. The first protocol-only installation explicitly defers robot validation; later changed contributions cannot use that exception. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
 
 ### Bring existing work into this layout
 

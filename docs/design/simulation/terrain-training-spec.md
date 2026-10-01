@@ -127,7 +127,7 @@ Use one canonical terrain definition across local evaluation and remote training
 | Repository area | Responsibility |
 | --- | --- |
 | `shared/interfaces/` | Terrain schema/version, units, unresolved-value rules, compatibility checks |
-| `assets/terrains/` | Small approved preset definitions and retained terrain assets, with provenance |
+| `simulation/config/presets/` | Small approved terrain/geometry presets with provenance; robot definitions remain in `assets/` |
 | `simulation/` | Generators, MuJoCo adapters and realized-geometry checks |
 | `training/configs/` | Curriculum, sampling distributions, payload/speed sweeps and split manifests |
 | `deploy/` | Launch the pinned code/config on the chosen GPU backend; no duplicate terrain implementation |
