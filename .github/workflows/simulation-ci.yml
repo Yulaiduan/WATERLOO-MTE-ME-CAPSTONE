@@ -1,0 +1,51 @@
+name: Simulation CI
+
+on:
+  pull_request:
+  push:
+    branches-ignore: ['main']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: simulation-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  entry:
+    name: Entry architecture
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Check source branch and contribution
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: python tools/check_entry.py --base origin/main --branch "$SOURCE_BRANCH" --require-passed
+      - name: Test validation gates
+        run: python -m unittest discover -s tools/tests -v
+
+  physics:
+    name: Headless physics
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+          cache-dependency-path: simulation/requirements.txt
+      - run: python -m pip install -r simulation/requirements.txt
+      - run: python -m unittest discover -s tools/tests -v
+      - run: python tools/physics_gate.py --base origin/main

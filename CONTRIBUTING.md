@@ -4,13 +4,13 @@ Use the [repository architecture](README.md#repository-architecture) to choose a
 
 ## Team workflow
 
-1. Start from up-to-date `main` in your own checkout and create a short-lived topic branch. Preserve uncommitted work when updating.
+1. Start from up-to-date `main` in your own checkout. Use your personal `members/<name>/work` branch or a topic branch with a different final segment, as listed in [the team registry](database/md_research/team.md). Preserve uncommitted work when updating.
 2. Coordinate ownership in an issue or team discussion. Use separate Markdown files for independent topics; agree who edits heavily shared sections.
-3. Make a focused change, update relative links and instructions, and run relevant checks.
+3. Follow the tool-neutral [agent protocol](AGENTS.md), append the four-section [contribution log](ENTRY_TEMPLATE.md), and run structure, headless and determinism checks. Install the hooks as described in [Git hygiene](agent_skills/git_hygiene.md).
 4. Push the branch and open a pull request describing the result and validation. Request a teammate familiar with the area; interface changes need review from affected consumers.
 5. Incorporate feedback and merge after review and available checks. Resolve conflicts without dropping someone else's content. Avoid direct pushes to `main`.
 
-This is a contribution convention: branch protection and required reviews are not configured by this change. Use folders in one shared history, not permanent subsystem branches with divergent robot models.
+Local hooks and CI implement the contribution gate. GitHub checks and code-owner review apply to PRs from both member branches and forks; see [the protocol record](database/md_research/entry-protocol.md). Each member has an isolated branch; regularly integrate reviewed `main` so canonical assets and interfaces do not diverge. Failed physics checks block publication, including when no canonical robot exists yet.
 
 ## Markdown
 

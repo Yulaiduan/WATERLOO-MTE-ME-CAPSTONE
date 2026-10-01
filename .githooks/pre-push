@@ -1,0 +1,5 @@
+#!/bin/sh
+# Validate exact outgoing commits, including new branches and multiple refs.
+set -eu
+python_bin="${CAMEL_PYTHON:-python3}"
+exec "$python_bin" tools/pre_push.py "$@"

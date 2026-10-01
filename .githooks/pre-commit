@@ -1,0 +1,5 @@
+#!/bin/sh
+# Validate the staged snapshot using the active project environment.
+set -eu
+python_bin="${CAMEL_PYTHON:-python3}"
+exec "$python_bin" tools/check_entry.py --staged --base "${CAMEL_BASE_REF:-origin/main}"

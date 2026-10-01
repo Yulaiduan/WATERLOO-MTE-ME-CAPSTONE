@@ -20,3 +20,23 @@ __pycache__/
 /training/runs/
 /training/checkpoints/
 /deploy/.scratch/
+
+# Raw generated output in any component (even prototypes)
+results/
+runs/
+logs/
+checkpoints/
+*.log
+MUJOCO_LOG.TXT
+*.npy
+*.npz
+*.pt
+*.pth
+*.ckpt
+*.mp4
+*.mov
+*.aux
+*.out
+*.synctex.gz
+*.pem
+*.key
