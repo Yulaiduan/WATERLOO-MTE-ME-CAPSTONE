@@ -1,5 +1,7 @@
 # Local simulation
 
+Start terrain design from [the Notion-derived terrain and training specification](../docs/design/simulation/terrain-training-spec.md). It preserves source units and missing values, and defines proposed geometry checks and fidelity labels before creating executable presets.
+
 **Status: scaffold in this branch; existing local MuJoCo work has not been imported.** Environments, viewers, controllers, diagnostics and experiments belong here.
 
 Preserve existing local `run.py`, `experiments/` and other working paths during import. Include the actual dependency manifest and verified setup, viewer and headless-check commands. Raw output goes in ignored `results/`; selected small evidence goes into dated documentation benchmarks.

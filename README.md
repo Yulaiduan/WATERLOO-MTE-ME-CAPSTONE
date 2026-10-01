@@ -114,6 +114,8 @@ The team plans to agree on measurable size, mass, speed, payload, and terrain-pe
 
 ## Current documentation
 
+For training inputs, see [terrain specifications and proposed training/evaluation plan](docs/design/simulation/terrain-training-spec.md), based on the team's Notion Specs page. It preserves 11 representative terrain envelopes and separates suggested values from missing parameters and accepted requirements.
+
 Start with the [documentation map](docs/README.md). It separates the [preliminary physical system architecture](docs/architecture.md) from the repository architecture above and the [setup checklist](docs/setup.md). Local MuJoCo work exists separately; hardware and GPU training/deployment choices remain open.
 
 ## Items to confirm

@@ -1,5 +1,7 @@
 # Training and evaluation
 
+Use [the terrain specifications and proposed curriculum](../docs/design/simulation/terrain-training-spec.md) to plan scenario coverage, payload sweeps, held-out evaluation and run manifests. Source envelopes are candidate tests, not accepted performance requirements; unresolved parameters must be defined before running them.
+
 **Status: scaffold; framework and training backend not selected.** Algorithms, rewards, observation/action adapters, configs, evaluation and policy export belong here.
 
 Add `configs/`, `src/`, `tests/` and a dependency manifest with implementation. Provide a verified small local/CPU smoke run before GPU launch. Keep training and evaluation separate; record seeds and evaluation conditions. Generated output belongs in ignored `runs/` and `checkpoints/`.
