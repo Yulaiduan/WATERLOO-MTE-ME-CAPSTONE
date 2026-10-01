@@ -4,7 +4,7 @@ Status: **GitHub workspace connected; engineering toolchains not yet selected**.
 
 ## Repository access and first checkout
 
-The repository is [Yulaiduan/WATERLOO-MTE-ME-CAPSTONE](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE) and is **private**. Ask the owner for access before trying to clone it. Install Git and authenticate to GitHub using your normal credential manager or GitHub CLI. Do not place access tokens in commands, files, or repository URLs.
+The repository is [Yulaiduan/WATERLOO-MTE-ME-CAPSTONE](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE) and is currently **public**. Anyone can read it; ask the owner for collaborator access to push team branches. Install Git and authenticate for writes using your normal credential manager or GitHub CLI. Do not place access tokens in commands, files, or repository URLs.
 
 From a directory where you want a **new** checkout, run:
 
