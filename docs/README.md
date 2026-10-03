@@ -11,6 +11,8 @@ This folder is the home for the CAMEL project's technical and onboarding documen
 | [Knowledge database](../database/README.md) | Compact state, procedures and ownership | Includes rollout blockers and personal branches |
 | [Contributing](../CONTRIBUTING.md) | Team Markdown, branches and reviews | Local hooks, required GitHub checks and code-owner review |
 | [Terrain specifications for training](design/simulation/terrain-training-spec.md) | Notion terrain envelopes, payload targets, curriculum and evaluation | Source synthesis and proposed plan; no accepted requirements or training results |
+| [Requirement parameter research](benchmarks/2026-10-02-requirement-parameter-screen/README.md) | Link length, COM, wheel mass, spring regression, slope and range estimates | Literature and analytical screening; proposed simulation inputs |
+| [Benchmarks](benchmarks/README.md) | Reproducible calculations and compact evidence | Analytical records; hardware and driven-terrain validation pending |
 
 ## Team documentation layout
 

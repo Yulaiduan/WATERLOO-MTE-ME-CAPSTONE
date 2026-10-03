@@ -140,3 +140,61 @@ The installation adds required checks, code-owner review and personal branches w
 Supply the canonical model and confirmed specialist assignments next, and preserve the enforced review process for all later changes.
 
 ---
+
+## Entry: 2026-10-03 — Yulai Duan — requirement parameter research
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Research documentation and reproducible analytical experiments.
+- **Associated Issue/Task:** Owner requested publication of the research on link length, wheel mass, COM, spring preload and requirement-oriented simulation inputs.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `database/README.md`
+- `database/md_research/requirement-parameter-research.md`
+- `docs/README.md`
+- `docs/benchmarks/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/geometry.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/spring_fits.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/spring_curve.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/slopes.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/range_cases.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/summary.json`
+- `simulation/README.md`
+- `simulation/experiments/requirement_parameter_screen.py`
+- **API/Interface Changes:** Adds an independent NumPy analytical experiment invoked with `--output DIR`, writing five CSV files and a summary JSON. No production interfaces, canonical assets, controllers, dependencies or validation rules change.
+
+## 3. Local Validation Checklist
+
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+The analytical experiment runs successfully under Python 3.11.16 and NumPy 2.4.6.
+Its potential-energy derivative check agrees within 1.402e-8 N m, and ideal
+kinematic cancellation and knee/hip power mapping checks pass. The retained
+numerical results reproduce the original study; the changed script docstring is
+reflected in the updated SHA-256 in summary.json. Relative document links and
+table column counts are checked separately from physics.
+
+The entry architecture check passes for 53 files and 14 changed paths; numerical
+result comparison, saved-script hash, relative links, table columns and diff
+whitespace checks also pass.
+
+Both required physics commands were run on 2026-10-03 and exit 1 with
+`FAIL: BLOCKED: no canonical robot in assets/manifest.json. Supply a reviewed model and physical baseline.`
+The repository manifest has no models. These are actual failures, not waived or
+passed tests; earlier local educational-demo checks do not satisfy this gate.
+Publication remains blocked under the current repository procedure pending a
+reviewed canonical baseline or an explicit owner exception for this research contribution.
+
+## 4. Compute Saving Handoff State
+
+The research is packaged on a separate personal topic branch with public citations, explicit assumptions, a reproducible analytical experiment and compact results.
+The independent research checks pass, but both repository physics commands fail because the canonical robot manifest is empty.
+Preserve that failure record and obtain a reviewed robot baseline or an explicit research-publication exception before pushing; no merge or validation-rule change is authorized here.
+
+---

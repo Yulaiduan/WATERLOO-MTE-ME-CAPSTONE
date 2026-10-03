@@ -50,6 +50,10 @@ branch until reviewed and imported; the canonical runner does not alter them.
 
 ## Execution record
 
+The [requirement parameter screen](../docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md)
+is an independent analytical experiment for proposed geometry, springs and energy
+inputs. Its calculation checks do not replace the canonical physics gate.
+
 Keep concise execution evidence in [the contribution log](../ENTRY_TEMPLATE.md).
 Long logs and raw trajectories stay in ignored results. Selected engineering
 results belong in dated `docs/benchmarks/` records with code/config/asset hashes,
