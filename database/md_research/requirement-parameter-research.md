@@ -8,6 +8,12 @@ relates the supplied mass, payload, step, slope and range requirements to equal-
 geometry, COM, wheel mass, hip-drum spring force and electrical energy. It retains
 public sources, explicit assumptions, a reproducible calculation and compact results.
 
+The [relationship charts](../../docs/benchmarks/2026-10-02-requirement-parameter-screen/parameter-relationships.md)
+add chassis mass/placement, operational COM offsets, fixed-rate preload minima,
+spring drum tradeoffs and electrical power budgets. With a 35° test and an
+assumed 10% footprint margin, ±30 mm lateral offset needs a normal COM height
+below about 300 mm; the earlier independent input ranges do not all combine.
+
 - With chassis pitch allowed, 235–250 mm links merit the first detailed study for
   a 150 mm step; the 240 mm example has 184 mm upward travel from a 50° ride pose.
 - Keeping the chassis horizontal at 35° and a 700 mm wheelbase needs about

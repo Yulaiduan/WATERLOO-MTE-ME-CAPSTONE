@@ -20,3 +20,9 @@ until promoted into executable robot components.
   and Matplotlib 3.10.7 in a plotting environment; use
   `--output simulation/results/link-travel-chart`. The figure is retained with the
   requirement parameter record above after numerical and visual checks.
+
+- [Parameter relationship charts](plot_parameter_relationships.py): mass/COM,
+  spring force/preload/drum and range/drive sensitivities with retained CSV
+  checks and numerical provenance. Requires the same plotting environment; use
+  `--output simulation/results/parameter-relationships`. Read the
+  [assumptions and chart explanations](../../docs/benchmarks/2026-10-02-requirement-parameter-screen/parameter-relationships.md).

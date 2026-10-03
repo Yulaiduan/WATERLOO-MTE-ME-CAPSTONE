@@ -309,3 +309,55 @@ A second panel shows how the minimum link changes at 45°, 50° and 55° ride po
 Use the retained vector figure or isolated plotting script for reports, and validate terrain contacts and drive capability before treating this clearance screen as step-climbing performance.
 
 ---
+
+## Entry: 2026-10-03 — Yulai Duan — chassis COM spring and range relationships
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Requirement parameter research, analytical sensitivity plots and simulation input guidance.
+- **Associated Issue/Task:** Owner requested charts relating chassis assembly, COM offsets, spring force and other inputs to the required outputs.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `database/code_prototypes/README.md`
+- `database/code_prototypes/plot_parameter_relationships.py`
+- `database/md_research/requirement-parameter-research.md`
+- `docs/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/parameter-relationships.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/mass-com-relationships.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/mass-com-relationships.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/spring-relationships.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/spring-relationships.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/range-drive-relationships.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/range-drive-relationships.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/parameter-relationships.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/parameter-relationships.json`
+- **API/Interface Changes:** Adds an isolated plot/calculation script requiring `--output DIR` and using the existing documented plotting environment; no production dependency or robot interface changes. Outputs three PNG/SVG figures, curve samples and provenance JSON.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** Under Python 3.11.16, NumPy 2.4.6 and Matplotlib 3.10.7, the calculation reproduces five retained 90% spring fits, all eight slope torque rows and five energy rows to below 1e-10 in column units. A separate contact-force/moment solve verifies the four COM boundaries within 1.2e-16 normal-load fraction; preload minima and torque-sign constraints pass. All three figures were visually inspected; 12 panels / 5,826 retained curve samples, source/script hashes, links, table columns, SVG structure and artifact size limits pass.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is not applicable to these documentation/prototype changes.
+The records distinguish proposed values, analytical sensitivities and untested
+performance. No measured correlation, spring-induced range gain, step completion
+or global hardware optimum is claimed. Sources were rechecked against the two
+primary spring papers; their gains are not transferred to CAMEL.
+
+The entry check passes for 68 files / 42 changed paths with preliminary scope;
+the scoped gate passes all 23 regressions, and diff whitespace checks pass.
+
+## 4. Compute Saving Handoff State
+
+The study now charts chassis mass/placement, COM height/offsets, spring forces, preload objectives, drum sizing, electrical range budgets and slope drive/traction requirements.
+The fixed-rate loaded preload minimum is 320 N if signed residual torque is allowed, or 274 N if the motor must never oppose the spring, explaining the earlier 272 N seed.
+Use the proposed sweeps with actual CAD/terrain-frame COM and component data, then validate dynamic contact and electrical energy before optimizing the full robot.
+
+---

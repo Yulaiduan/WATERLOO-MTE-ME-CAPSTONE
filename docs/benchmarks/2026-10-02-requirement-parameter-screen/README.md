@@ -32,6 +32,11 @@ The mechanism is four coupled one-DOF legs plus two shared side-drive commands. 
 
 ## Proposed simulation inputs
 
+See the [mass, COM, spring and range relationship charts](parameter-relationships.md)
+for how these inputs affect the requirements, including ride-load tradeoffs and
+the COM offset sensitivity. The follow-up expands the fixed-rate preload sweep
+to roughly 190–320 N while retaining 272 N as the earlier loaded starting point.
+
 All numerical inputs in this table are proposed assumptions unless marked as a user requirement. The intervals are not a Cartesian product of guaranteed feasible designs.
 
 | Input | First exploration | Seed |
@@ -266,5 +271,6 @@ Before calling any interval optimal, define whether the slope test needs a horiz
 
 ## Update log
 
+- 2026-10-03: Added three parameter-relationship figures, explicit COM offset constraints, a fixed-rate preload optimization and conditional electrical power budgets in the linked follow-up.
 - 2026-10-03: Added the link-travel chart, ride-angle sensitivity and reproducible figure provenance; checked all nine retained geometry points. No measured step-climb claim added.
 - 2026-10-02: Added source-grounded design trends, original geometry/static spring regression, explicit knee torque mapping, slope and range screens, and a proposed requirement-test matrix. No hardware performance claim or team decision recorded.
