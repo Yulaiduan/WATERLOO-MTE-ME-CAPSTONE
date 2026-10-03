@@ -88,6 +88,27 @@ With provisional 25–75° limits, the **total** usable upright stroke is 1.2949
 
 The 150 mm target plus an **assumed 30 mm travel reserve** requires L ≥234.4 mm at this ride pose. This motivates 235–250 mm as the first region to investigate. The upper endpoint is a compactness/torque preference, not a demonstrated optimum. At a fixed load and angle, torque increases linearly with L. The old 350 mm example demands about 46% more gravity torque than 240 mm links, before its likely increase in link mass.
 
+![Calculated relationship between equal link length and upward wheel travel, with the 150 mm step target, 180 mm assumed travel target, and ride-angle sensitivity](assets/link-length-travel.png)
+
+**Figure: link length versus upward travel.** The dots reproduce all nine rows of
+[geometry.csv](geometry.csv); the solid line is the exact ideal geometric
+relationship, not a regression on measured robot performance. At 50°, every
+10 mm added to each link adds 7.68 mm of upward travel. The 150 mm target alone
+requires 195.3 mm links; adding the assumed 30 mm reserve raises that to 234.4 mm.
+The right panel holds the 75° stop and 180 mm travel target fixed: the minimum is
+200.8 mm at a 45° ride pose, 234.4 mm at 50°, and 285.9 mm at 55°. Thus the green
+235–250 mm study interval depends on the chosen pose and reserve.
+
+Download the [editable vector figure](assets/link-length-travel.svg) or inspect
+the [figure provenance and numerical checks](assets/link-length-travel.json).
+The [plot reproducer](../../../database/code_prototypes/plot_link_travel.py) uses
+Python 3.11.16, NumPy 2.4.6 and Matplotlib 3.10.7; Matplotlib is a separate plotting
+dependency, not a new production simulation dependency. From the repository root:
+
+```sh
+python database/code_prototypes/plot_link_travel.py --output simulation/results/link-travel-chart
+```
+
 This is a clearance screen, not a step-climb proof. A grounded rear axle can push a front wheel into a step; a 1-DOF vertical leg cannot move its wheel forward independently of the chassis. Verify the full approach, lift/contact sequence, three/four-contact support, tire traction, belly collision, motor torque and suspension-induced wheel rotation. A 300 mm wheel has radius equal to the target step; wheel diameter alone does not establish passive traversal. The axle-push-only ideal rigid-wheel relation F/W = sqrt(2rh−h²)/(r−h) for 0<h<r becomes unfavorable near h=r. It excludes wheel torque and active lifting and is not a limit on the complete robot.
 
 ### Slope levelling changes the preferred geometry
@@ -245,4 +266,5 @@ Before calling any interval optimal, define whether the slope test needs a horiz
 
 ## Update log
 
+- 2026-10-03: Added the link-travel chart, ride-angle sensitivity and reproducible figure provenance; checked all nine retained geometry points. No measured step-climb claim added.
 - 2026-10-02: Added source-grounded design trends, original geometry/static spring regression, explicit knee torque mapping, slope and range screens, and a proposed requirement-test matrix. No hardware performance claim or team decision recorded.

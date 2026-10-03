@@ -265,3 +265,47 @@ The parameter study is included with unchanged numerical results and its standal
 Publish this reviewed change through the existing PR checks and code-owner process, then use the same research path for future preliminary contributions without claiming a validated robot.
 
 ---
+
+## Entry: 2026-10-03 — Yulai Duan — link length and upward travel chart
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Requirement parameter research and its retained figures.
+- **Associated Issue/Task:** Owner requested a chart explaining the selected 234.4 mm minimum-link calculation and its relationship to the research data.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `database/code_prototypes/README.md`
+- `database/code_prototypes/plot_link_travel.py`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/link-length-travel.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/link-length-travel.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/link-length-travel.json`
+- **API/Interface Changes:** Adds an isolated plot reproducer with required `--output DIR`, writing PNG, SVG and provenance JSON. Matplotlib 3.10.7 is documented for the plotting environment only; no production dependency, robot model or simulation interface changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** The plot reproducer runs with Python 3.11.16, NumPy 2.4.6 and Matplotlib 3.10.7; all nine retained geometry points agree within 1.43e-14 mm, and assertions verify the 234.394 mm minimum and 184.305 mm seed travel. The rendered figure was visually inspected.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is not applicable to this figure/prototype contribution.
+The chart labels the 30 mm reserve and joint poses as assumptions and the points
+as calculated evidence. It makes no experimental regression, step-climb or
+global optimum claim. Figure provenance retains source/script hashes and units.
+
+Working-tree entry validation passes for 58 files and 32 changed paths, with scope
+preliminary; the scoped gate passes all 23 regressions. Relative links, source and
+script hashes, SVG structure, artifact sizes and diff whitespace checks pass.
+
+## 4. Compute Saving Handoff State
+
+The research record now shows link length against upward wheel travel with the 150 mm requirement, assumed 180 mm travel target and proposed 235–250 mm study interval.
+A second panel shows how the minimum link changes at 45°, 50° and 55° ride poses while keeping the retraction stop at 75°.
+Use the retained vector figure or isolated plotting script for reports, and validate terrain contacts and drive capability before treating this clearance screen as step-climbing performance.
+
+---

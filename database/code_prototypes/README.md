@@ -14,3 +14,9 @@ owning component with tests and remove redundant copies.
 
 These prototypes use the [preliminary research workflow](../../agent_skills/preliminary_research.md)
 until promoted into executable robot components.
+
+- [Link-travel plot](plot_link_travel.py): renders the retained calculated geometry
+  points, step/reserve thresholds and ride-angle sensitivity. Requires NumPy 2.4.6
+  and Matplotlib 3.10.7 in a plotting environment; use
+  `--output simulation/results/link-travel-chart`. The figure is retained with the
+  requirement parameter record above after numerical and visual checks.
