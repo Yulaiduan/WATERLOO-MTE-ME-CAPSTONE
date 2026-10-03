@@ -198,3 +198,70 @@ The independent research checks pass, but both repository physics commands fail 
 Preserve that failure record and obtain a reviewed robot baseline or an explicit research-publication exception before pushing; no merge or validation-rule change is authorized here.
 
 ---
+
+## Entry: 2026-10-03 — Yulai Duan — preliminary research publication policy
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Contribution policy, validation gates and preliminary research.
+- **Associated Issue/Task:** Owner explicitly requested a lasting rule change allowing preliminary research on GitHub before an approved robot model exists, and authorized write access.
+
+This owner-authorized policy supersedes the original all-contributions physics
+requirement in the historical template and entries above. Their recorded failures
+remain unchanged. Physics validation is not applicable to an allowlisted research
+or contribution-policy diff; it remains mandatory for runtime/assets/dependencies,
+unknown paths and mixed changes.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below, including both sides of the prototype move.
+- `.github/pull_request_template.md`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `ENTRY_TEMPLATE.md`
+- `README.md`
+- `agent_skills/README.md`
+- `agent_skills/git_hygiene.md`
+- `agent_skills/physics_validation.md`
+- `agent_skills/preliminary_research.md`
+- `database/code_prototypes/README.md`
+- `database/code_prototypes/requirement_parameter_screen.py`
+- `database/md_research/entry-protocol.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/summary.json`
+- `simulation/README.md`
+- `simulation/experiments/requirement_parameter_screen.py`
+- `tools/README.md`
+- `tools/check_entry.py`
+- `tools/physics_gate.py`
+- `tools/tests/test_gates.py`
+- **API/Interface Changes:** Adds complete-diff validation scope selection and preliminary validation declarations; the existing entry/gate CLI and required CI job names stay compatible. Moves the standalone analytical prototype from simulation/experiments to database/code_prototypes without changing numerical behavior. No robot, controller, production dependency or canonical baseline changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** All 23 gate regression tests pass under Python 3.11.16, NumPy 2.4.6 and MuJoCo 3.14.0; the research calculation reproduces its retained CSV results exactly and the moved script hash is updated.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+The three canonical-physics boxes are not applicable to this research/policy
+contribution and do not claim successful robot validation. Both direct commands
+were already run and failed honestly in the previous entry; the missing canonical
+model is unchanged. New regressions cover research after bootstrap, policy-only
+updates, mixed/runtime/dependency/asset/unknown changes, moves/deletions, mandatory
+evidence, rejection of false physics-pass declarations and validation failures.
+The scoped gate runs these regressions rather than manufacturing a robot result.
+
+Working-tree entry validation passes for 54 files and 28 changed paths with
+scope `preliminary`; the scoped gate passes all 23 tests and reports canonical
+physics NOT APPLICABLE. Relative Markdown links, table columns, retained script
+hash and diff whitespace checks pass.
+
+## 4. Compute Saving Handoff State
+
+Preliminary research and contribution-policy changes now have a scoped publication path with evidence declarations and gate regressions, while executable robot and mixed changes retain canonical physics requirements.
+The parameter study is included with unchanged numerical results and its standalone script moved into the research prototype area.
+Publish this reviewed change through the existing PR checks and code-owner process, then use the same research path for future preliminary contributions without claiming a validated robot.
+
+---

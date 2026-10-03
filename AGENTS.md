@@ -48,12 +48,19 @@ for unknown terrain values, or new root folders without updating the protocol.
 
 - Append a completed entry to `ENTRY_TEMPLATE.md` using its four sections. Keep
   old entries intact. List exact changed paths, API changes, actual validation,
-  and a three-sentence handoff. An unchecked box means blocked, never passed.
+  and a three-sentence handoff. An unchecked physics box means blocked for a
+  physics contribution or explicitly not applicable for preliminary research;
+  it never means passed.
 - Run `python tools/check_entry.py --base origin/main` after fetching the base.
-- Run `python simulation/run.py --headless-check` and
-  `python simulation/experiments/verify_backend.py`. Both must pass for a push.
-  Missing dependencies, missing canonical models, NaNs, warnings or drift are
-  failures. Never bypass a check or replace it with a fabricated PASS.
+- Run `python tools/check_entry.py --base origin/main --require-passed` and
+  `python tools/physics_gate.py --base origin/main` before publication. The gate
+  classifies the complete diff. Preliminary research and contribution-policy
+  changes use the documented scope and evidence in
+  `agent_skills/preliminary_research.md`; they can be published before a canonical
+  robot exists. Runtime/assets/dependencies and mixed changes must pass both
+  `python simulation/run.py --headless-check` and
+  `python simulation/experiments/verify_backend.py`. Missing models, NaNs,
+  warnings or drift remain failures whenever physics applies.
 - Follow `agent_skills/git_hygiene.md`. Never push another member's branch,
   force-push shared history, merge your own unreviewed PR, or change protection
   settings to get around a failure.
@@ -66,7 +73,8 @@ for unknown terrain values, or new root folders without updating the protocol.
   educational fixture as a robot. The initial protocol can be reviewed locally;
   the first protocol-only installation has a one-time bootstrap exception. It
   cannot add robot models or simulation implementations. Once the protocol is on
-  the target branch, all changed contributions require the normal physics checks.
+  the target branch, the normal scoped gate applies: preliminary research does
+  not require a model, while executable robot changes require the physics checks.
 - New branch, detached HEAD, deleted/renamed files or shared-log conflict: use the
   procedures in `agent_skills/git_hygiene.md`; retain all independent entries.
 - GPU unavailable: report unverified acceleration. CPU repeatability cannot

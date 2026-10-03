@@ -1,5 +1,10 @@
 # Physics validation
 
+First classify the contribution with `python tools/physics_gate.py --base origin/main`.
+For eligible [preliminary research](preliminary_research.md), canonical physics is
+not applicable; the gate runs regression checks instead. The instructions below
+apply to executable robot, asset, configuration, dependency and mixed changes.
+
 1. Use the pinned environment from `simulation/requirements.txt`. Do not import
    viewers during headless checks or require a GPU for CPU validation.
 2. Treat `assets/` as locked. Inspect `assets/manifest.json`, provenance, hashes,

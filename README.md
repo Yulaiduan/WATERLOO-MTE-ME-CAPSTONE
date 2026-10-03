@@ -90,7 +90,7 @@ Commit Markdown, source, small configs, schemas and manageable text robot models
 
 Planned checks are scoped by changed paths: Markdown links for docs, embedded build/tests for firmware, headless smoke tests for simulation, CPU smoke tests for training, and image/config checks for deployment. Changes to `shared/` or `assets/` also exercise affected consumers. Full GPU jobs require explicit launch and runtime/cost limits, rather than running on every pull request.
 
-**Shared contribution gate:** PRs into `main` require `Entry architecture`, `Headless physics` and code-owner review. The first protocol-only installation explicitly defers robot validation; later changed contributions cannot use that exception. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
+**Shared contribution gate:** PRs into `main` require `Entry architecture`, `Headless physics` and code-owner review. The validation gate permits [preliminary research](agent_skills/preliminary_research.md) before an approved robot exists, with explicit assumptions and research checks. Executable robot, asset, dependency and mixed changes still require canonical physics validation. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
 
 ### Bring existing work into this layout
 

@@ -2,7 +2,7 @@
   "evidence": "deterministic analytical screening, no driven simulation",
   "python": "3.11.16",
   "numpy": "2.4.6",
-  "script_sha256": "6d60438f034d8f78a2cc5f536966f4e019c8c7fe1b1e89c4e0974618fed7072d",
+  "script_sha256": "5d4c7df3a9495ceaf53e5dccea85c951ae2b6a2016d4f94743e9251125b06321",
   "samples": 1001,
   "angular_range_deg": [
     25,

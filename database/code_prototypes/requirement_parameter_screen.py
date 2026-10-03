@@ -1,6 +1,6 @@
 """Screen assumed CAMEL geometry, static spring fits, slope and range demands.
 
-Run: python simulation/experiments/requirement_parameter_screen.py --output DIR
+Run: python database/code_prototypes/requirement_parameter_screen.py --output DIR
 Inputs: explicit assumptions below; kg, m, radians, N, N m, seconds and watts.
 Dependencies: NumPy, pinned in simulation/requirements.txt; Python standard library.
 Outputs: six compact CSV/JSON evidence files in DIR, plus numerical checks on stdout.

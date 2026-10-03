@@ -227,10 +227,10 @@ First vary equal link length, actual wheel packages, COM placement, drum radius 
 
 ## Reproduction and checks
 
-The reproducer is [requirement_parameter_screen.py](../../../simulation/experiments/requirement_parameter_screen.py). From the Capstone root:
+The reproducer is [requirement_parameter_screen.py](../../../database/code_prototypes/requirement_parameter_screen.py). From the Capstone root:
 
 ```sh
-.venv/bin/python simulation/experiments/requirement_parameter_screen.py --output simulation/results/requirement-parameter-screen
+.venv/bin/python database/code_prototypes/requirement_parameter_screen.py --output simulation/results/requirement-parameter-screen
 ```
 
 Retained outputs: [geometry](geometry.csv), [spring fits](spring_fits.csv), [spring curve](spring_curve.csv), [slope calculations](slopes.csv), [range examples](range_cases.csv), and [runtime, assumptions and script hash](summary.json).

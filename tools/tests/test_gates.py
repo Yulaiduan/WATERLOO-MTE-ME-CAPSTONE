@@ -12,13 +12,17 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from contextlib import redirect_stdout
+from io import StringIO
 from pathlib import Path
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "simulation/experiments"))
 import check_entry as entry
 import verify_backend as physics
+import physics_gate as gate
 
 
 def contribution(paths, checked=False):
@@ -106,6 +110,81 @@ class ContributionTests(unittest.TestCase):
             (root / "README.md").symlink_to("/etc/hosts")
             with self.assertRaises(ValueError):
                 entry.working_files(root)
+
+
+class ValidationScopeTests(unittest.TestCase):
+    def setUp(self):
+        self.previous = {
+            "ENTRY_TEMPLATE.md": b"# Existing log\n",
+            "assets/manifest.json": b'{"schema_version":1,"models":[]}',
+        }
+
+    def research(self, changes=None):
+        files = {"docs/study.md": b"Proposed assumptions, not validated performance."}
+        files.update(changes or {})
+        log = contribution(set(files) | {"ENTRY_TEMPLATE.md"})
+        log = log.replace("## 3. Local Validation Checklist\n",
+            "## 3. Local Validation Checklist\n"
+            "- **Validation Scope:** preliminary\n"
+            "- **Research/Policy Validation:** Analytical checks and reference links pass.\n")
+        return {**self.previous, **files,
+                "ENTRY_TEMPLATE.md": self.previous["ENTRY_TEMPLATE.md"] + log.encode()}
+
+    def test_research_after_bootstrap_does_not_need_canonical_robot(self):
+        current = self.research({"database/code_prototypes/analysis.py": b'"""Analytical research."""'})
+        self.assertFalse(entry.protocol_bootstrap(self.previous, current))
+        self.assertEqual("preliminary", entry.validation_scope(self.previous, current))
+        with patch.object(gate.subprocess, "run") as run, redirect_stdout(StringIO()) as output:
+            gate.run_validation(self.previous, current)
+        self.assertEqual(1, run.call_count)
+        self.assertIn("unittest", run.call_args.args[0])
+        self.assertIn("NOT APPLICABLE", output.getvalue())
+
+    def test_runtime_assets_dependencies_and_unknown_changes_require_physics(self):
+        for path in ("assets/manifest.json", "assets/robot.xml", "simulation/run.py",
+                     "simulation/src/controllers/control.py", "simulation/config/presets/terrain.json",
+                     "simulation/experiments/new.py", "simulation/requirements.txt",
+                     "firmware/main.c", "training/train.py", "shared/interface.json",
+                     "deploy/Dockerfile", "tools/unknown.py", "docs/hidden.py", ".gitignore"):
+            with self.subTest(path=path):
+                current = self.research({path: b"changed"})
+                self.assertEqual("physics", entry.validation_scope(self.previous, current))
+
+    def test_policy_changes_can_be_reviewed_without_robot(self):
+        current = self.research({"tools/physics_gate.py": b"changed",
+                                 "AGENTS.md": b"Updated policy"})
+        self.assertEqual("preliminary", entry.validation_scope(self.previous, current))
+
+    def test_deleting_or_moving_runtime_into_research_still_requires_physics(self):
+        previous = {**self.previous, "simulation/src/controllers/old.py": b"runtime"}
+        current = self.research({"database/code_prototypes/old.py": b"runtime"})
+        self.assertEqual("physics", entry.validation_scope(previous, current))
+
+    def test_research_deletion_and_unchanged_branch(self):
+        previous = {**self.previous, "docs/old.md": b"old"}
+        self.assertEqual("preliminary", entry.validation_scope(previous, self.research()))
+        self.assertEqual("unchanged", entry.validation_scope(previous, previous))
+
+    def test_preliminary_declaration_never_claims_physics_pass(self):
+        log = self.research()["ENTRY_TEMPLATE.md"].decode()
+        self.assertEqual([], entry.preliminary_validation_errors(log))
+        for invalid in (log.replace("**Validation Scope:** preliminary", "**Validation Scope:** physics"),
+                        log.replace("**Research/Policy Validation:**", "**Omitted Evidence:**"),
+                        log.replace("- [ ] Executed", "- [x] Executed")):
+            self.assertTrue(entry.preliminary_validation_errors(invalid))
+
+    def test_mixed_change_runs_real_checks_even_if_log_claims_preliminary(self):
+        current = self.research({"simulation/run.py": b"runtime change"})
+        with patch.object(gate.subprocess, "run") as run:
+            gate.run_validation(self.previous, current)
+        self.assertEqual(["simulation/run.py", "simulation/experiments/verify_backend.py"],
+                         [call.args[0][1] for call in run.call_args_list])
+
+    def test_validation_failures_propagate_for_both_scopes(self):
+        for current in (self.research(), self.research({"assets/robot.xml": b"new"})):
+            with patch.object(gate.subprocess, "run", side_effect=subprocess.CalledProcessError(1, "check")):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    gate.run_validation(self.previous, current)
 
 
 class PhysicsTests(unittest.TestCase):

@@ -2,7 +2,7 @@
 
 Status: shared GitHub protocol; canonical physics baseline pending.
 Live enforcement: [repository rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules).
-Updated: 2026-10-01. Owner request: enforce an orderly contribution format and
+Updated: 2026-10-03. Owner request: enforce an orderly contribution format and
 reduce the effort needed for independent agents to understand one another.
 
 ## Gates
@@ -15,8 +15,9 @@ reduce the effort needed for independent agents to understand one another.
 3. `.githooks/pre-commit` checks the staged snapshot. `.githooks/pre-push` checks
    each exact commit being pushed in a temporary checkout, including physics.
    Each clone must install the hooks; local hooks can be bypassed.
-4. `.github/workflows/simulation-ci.yml` runs architecture and physics checks on
-   pushes and PRs without path filters. No GPU/display is required for CPU checks.
+4. `.github/workflows/simulation-ci.yml` runs architecture and the scoped validation
+   gate on pushes and PRs. The job names remain unchanged. Preliminary research
+   runs gate regressions; executable robot changes require canonical physics.
 5. Required GitHub checks and CODEOWNERS reviews protect `main` after installation.
    CI runs after a push, so it prevents merging failed contributions only when
    those repository rules are active. It cannot prevent every bad branch push.
@@ -36,8 +37,26 @@ with these requirements on `main`:
 The first protocol-only installation is explicitly exempt from robot validation:
 the target branch must not yet contain the contribution log, the canonical asset
 manifest must be empty, and no robot assets/controllers/environments may be added.
-This exception closes after installation; subsequent changed contributions need
-the actual physics checks. An unchanged member-branch creation needs no new run.
+This exception closes after installation. Under the owner's 2026-10-03 policy
+update, subsequent changes use the complete-diff scope described below. An
+unchanged member-branch creation needs no new run.
+
+## Preliminary research before a canonical robot
+
+The owner explicitly requested a lasting path for preliminary research because
+an approved robot model may remain unavailable for an extended period.
+[The research procedure](../../agent_skills/preliminary_research.md) permits
+documentation, compact evidence, isolated analytical prototypes and reviewed
+contribution-policy changes without a canonical robot. Sources, assumptions and
+actual calculation checks remain required; the log marks physics not applicable.
+
+`validation_scope` in `tools/check_entry.py` uses every changed/deleted path, not
+the author's label. Its narrow allowlist excludes assets, runtime/configuration,
+dependencies, firmware, training, deployment and shared interfaces. Unknown or
+mixed changes require full physics. `tools/physics_gate.py` runs gate regressions
+for preliminary contributions; robot changes retain both actual physics checks.
+The same classifier is used for staged/working-tree checks, exact pushed commits
+and CI. Code-owner review, required job names and branch protection are unchanged.
 
 Fork owners control their own settings. PRs from forks must still pass these
 repository checks and review before entering `main`. First-time fork workflow
