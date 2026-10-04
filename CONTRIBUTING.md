@@ -6,11 +6,11 @@ Use the [repository architecture](README.md#repository-architecture) to choose a
 
 1. Start from up-to-date `main` in your own checkout. Use your personal `members/<name>/work` branch or a topic branch with a different final segment, as listed in [the team registry](database/md_research/team.md). Preserve uncommitted work when updating.
 2. Coordinate ownership in an issue or team discussion. Use separate Markdown files for independent topics; agree who edits heavily shared sections.
-3. Follow the tool-neutral [agent protocol](AGENTS.md), append the four-section [contribution log](ENTRY_TEMPLATE.md), and run structure, headless and determinism checks. Install the hooks as described in [Git hygiene](agent_skills/git_hygiene.md).
+3. Follow the tool-neutral [agent protocol](AGENTS.md), append the four-section [contribution log](ENTRY_TEMPLATE.md), and run the checks selected by the scoped gate. Install the hooks as described in [Git hygiene](agent_skills/git_hygiene.md).
 4. Push the branch and open a pull request describing the result and validation. Request a teammate familiar with the area; interface changes need review from affected consumers.
 5. Incorporate feedback and merge after review and available checks. Resolve conflicts without dropping someone else's content. Avoid direct pushes to `main`.
 
-Local hooks and CI implement the contribution gate. GitHub checks and code-owner review apply to PRs from both member branches and forks; see [the protocol record](database/md_research/entry-protocol.md). Each member has an isolated branch; regularly integrate reviewed `main` so canonical assets and interfaces do not diverge. Failed physics checks block publication, including when no canonical robot exists yet.
+Local hooks and CI implement the contribution gate. GitHub checks and code-owner review apply to PRs from both member branches and forks; see [the protocol record](database/md_research/entry-protocol.md). Each member has an isolated branch; regularly integrate reviewed `main` so canonical assets and interfaces do not diverge. [Preliminary research](agent_skills/preliminary_research.md) can be published without a canonical robot after structure, evidence and gate-regression checks. Executable robot, asset, dependency and mixed changes still require passing physics validation; a missing model blocks those contributions.
 
 ## Markdown
 

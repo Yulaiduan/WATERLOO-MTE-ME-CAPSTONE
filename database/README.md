@@ -10,6 +10,7 @@ repository root so this database can stay small.
 | --- | --- |
 | [Protocol](md_research/entry-protocol.md) | Enforcement, migration and open blockers |
 | [Team](md_research/team.md) | Personal branches and review assignments |
+| [Requirement parameter research](md_research/requirement-parameter-research.md) | Geometry, mass/COM, spring and energy findings with linked calculations |
 | [LaTeX](brainstorming_tex/README.md) | Mechanical derivations and assumptions |
 | [Prototypes](code_prototypes/README.md) | Small experimental snippets |
 | [Contribution log](../ENTRY_TEMPLATE.md) | Exact changes and latest handoff |

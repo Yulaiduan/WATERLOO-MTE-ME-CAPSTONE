@@ -1,0 +1,30 @@
+{
+  "evidence": "ideal kinematics with retained calculated points; no experimental regression",
+  "source": "docs/benchmarks/2026-10-02-requirement-parameter-screen/geometry.csv",
+  "source_sha256": "3f5db8386afbdd36f7c7f902a95634c233071b28793141e1bd37d22819be2e3e",
+  "script_sha256": "78ae47f8883586afcafec913231669239dd3085b7b4a1105170f2577b9fecbe7",
+  "python": "3.11.16",
+  "numpy": "2.4.6",
+  "matplotlib": "3.10.7",
+  "angle_convention": "hip angle from chassis downward vertical; relative knee = -2*hip",
+  "ride_deg": 50,
+  "retraction_stop_deg": 75,
+  "step_requirement_mm": 150,
+  "assumed_reserve_mm": 30,
+  "travel_mm_per_link_mm": 0.7679371291680372,
+  "retained_rows_checked": 9,
+  "max_point_error_mm": 1.4210854715202004e-14,
+  "minimum_link_for_150_mm": 195.32849018839084,
+  "minimum_link_for_180_mm": 234.39418822606902,
+  "seed_240_mm_travel_mm": 184.30491100032893,
+  "sensitivity_minimum_link_mm": {
+    "45": 200.76391289707388,
+    "50": 234.39418822606902,
+    "55": 285.9345086163141
+  },
+  "limitations": [
+    "provisional angles and reserve",
+    "no dynamic or contact simulation",
+    "235-250 mm upper endpoint is a compactness preference, not an optimum"
+  ]
+}

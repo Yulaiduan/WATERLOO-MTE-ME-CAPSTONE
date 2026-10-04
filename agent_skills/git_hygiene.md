@@ -18,7 +18,9 @@ clean, force-push, or resolve conflicts by dropping the other side.
 Before each commit append to `ENTRY_TEMPLATE.md`, stage exact intended paths,
 and run `python tools/check_entry.py --staged --base origin/main`. The pre-commit
 hook checks the staged snapshot, so unstaged fixes cannot hide staged failures.
-Before pushing, fetch the base and run the two physics commands. The pre-push
+Before pushing, fetch the base and run `python tools/physics_gate.py --base origin/main`.
+It runs the checks for the complete diff's scope, as described in
+[preliminary research](preliminary_research.md). The pre-push
 hook validates every pushed commit tip in an isolated temporary checkout and
 blocks protected branch updates, deletion, tags and non-personal branch names.
 It ignores unrelated unstaged edits and never changes the working tree.
@@ -30,7 +32,9 @@ do not silently compare against an empty tree. Empty commits need no new entry.
 
 Hooks are installed locally and can be bypassed; required CI and code-owner
 review on `main` provide the shared merge gate. Report failures honestly and keep
-blocked work local. Do not use `--no-verify` to bypass this protocol.
+blocked work local. A missing robot model does not block an eligible preliminary
+contribution; its physics status is explicitly not applicable. Do not use
+`--no-verify` to bypass this protocol.
 
 For a fork, add this repository as `upstream`, fetch its `main`, and use
 `contributors/<github-login>/<topic>` (or your assigned member branch). Set

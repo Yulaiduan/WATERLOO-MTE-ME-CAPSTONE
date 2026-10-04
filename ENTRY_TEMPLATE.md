@@ -140,3 +140,224 @@ The installation adds required checks, code-owner review and personal branches w
 Supply the canonical model and confirmed specialist assignments next, and preserve the enforced review process for all later changes.
 
 ---
+
+## Entry: 2026-10-03 — Yulai Duan — requirement parameter research
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Research documentation and reproducible analytical experiments.
+- **Associated Issue/Task:** Owner requested publication of the research on link length, wheel mass, COM, spring preload and requirement-oriented simulation inputs.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `database/README.md`
+- `database/md_research/requirement-parameter-research.md`
+- `docs/README.md`
+- `docs/benchmarks/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/geometry.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/spring_fits.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/spring_curve.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/slopes.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/range_cases.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/summary.json`
+- `simulation/README.md`
+- `simulation/experiments/requirement_parameter_screen.py`
+- **API/Interface Changes:** Adds an independent NumPy analytical experiment invoked with `--output DIR`, writing five CSV files and a summary JSON. No production interfaces, canonical assets, controllers, dependencies or validation rules change.
+
+## 3. Local Validation Checklist
+
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+The analytical experiment runs successfully under Python 3.11.16 and NumPy 2.4.6.
+Its potential-energy derivative check agrees within 1.402e-8 N m, and ideal
+kinematic cancellation and knee/hip power mapping checks pass. The retained
+numerical results reproduce the original study; the changed script docstring is
+reflected in the updated SHA-256 in summary.json. Relative document links and
+table column counts are checked separately from physics.
+
+The entry architecture check passes for 53 files and 14 changed paths; numerical
+result comparison, saved-script hash, relative links, table columns and diff
+whitespace checks also pass.
+
+Both required physics commands were run on 2026-10-03 and exit 1 with
+`FAIL: BLOCKED: no canonical robot in assets/manifest.json. Supply a reviewed model and physical baseline.`
+The repository manifest has no models. These are actual failures, not waived or
+passed tests; earlier local educational-demo checks do not satisfy this gate.
+Publication remains blocked under the current repository procedure pending a
+reviewed canonical baseline or an explicit owner exception for this research contribution.
+
+## 4. Compute Saving Handoff State
+
+The research is packaged on a separate personal topic branch with public citations, explicit assumptions, a reproducible analytical experiment and compact results.
+The independent research checks pass, but both repository physics commands fail because the canonical robot manifest is empty.
+Preserve that failure record and obtain a reviewed robot baseline or an explicit research-publication exception before pushing; no merge or validation-rule change is authorized here.
+
+---
+
+## Entry: 2026-10-03 — Yulai Duan — preliminary research publication policy
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Contribution policy, validation gates and preliminary research.
+- **Associated Issue/Task:** Owner explicitly requested a lasting rule change allowing preliminary research on GitHub before an approved robot model exists, and authorized write access.
+
+This owner-authorized policy supersedes the original all-contributions physics
+requirement in the historical template and entries above. Their recorded failures
+remain unchanged. Physics validation is not applicable to an allowlisted research
+or contribution-policy diff; it remains mandatory for runtime/assets/dependencies,
+unknown paths and mixed changes.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below, including both sides of the prototype move.
+- `.github/pull_request_template.md`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `ENTRY_TEMPLATE.md`
+- `README.md`
+- `agent_skills/README.md`
+- `agent_skills/git_hygiene.md`
+- `agent_skills/physics_validation.md`
+- `agent_skills/preliminary_research.md`
+- `database/code_prototypes/README.md`
+- `database/code_prototypes/requirement_parameter_screen.py`
+- `database/md_research/entry-protocol.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/summary.json`
+- `simulation/README.md`
+- `simulation/experiments/requirement_parameter_screen.py`
+- `tools/README.md`
+- `tools/check_entry.py`
+- `tools/physics_gate.py`
+- `tools/tests/test_gates.py`
+- **API/Interface Changes:** Adds complete-diff validation scope selection and preliminary validation declarations; the existing entry/gate CLI and required CI job names stay compatible. Moves the standalone analytical prototype from simulation/experiments to database/code_prototypes without changing numerical behavior. No robot, controller, production dependency or canonical baseline changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** All 23 gate regression tests pass under Python 3.11.16, NumPy 2.4.6 and MuJoCo 3.14.0; the research calculation reproduces its retained CSV results exactly and the moved script hash is updated.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+The three canonical-physics boxes are not applicable to this research/policy
+contribution and do not claim successful robot validation. Both direct commands
+were already run and failed honestly in the previous entry; the missing canonical
+model is unchanged. New regressions cover research after bootstrap, policy-only
+updates, mixed/runtime/dependency/asset/unknown changes, moves/deletions, mandatory
+evidence, rejection of false physics-pass declarations and validation failures.
+The scoped gate runs these regressions rather than manufacturing a robot result.
+
+Working-tree entry validation passes for 54 files and 28 changed paths with
+scope `preliminary`; the scoped gate passes all 23 tests and reports canonical
+physics NOT APPLICABLE. Relative Markdown links, table columns, retained script
+hash and diff whitespace checks pass.
+
+## 4. Compute Saving Handoff State
+
+Preliminary research and contribution-policy changes now have a scoped publication path with evidence declarations and gate regressions, while executable robot and mixed changes retain canonical physics requirements.
+The parameter study is included with unchanged numerical results and its standalone script moved into the research prototype area.
+Publish this reviewed change through the existing PR checks and code-owner process, then use the same research path for future preliminary contributions without claiming a validated robot.
+
+---
+
+## Entry: 2026-10-03 — Yulai Duan — link length and upward travel chart
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Requirement parameter research and its retained figures.
+- **Associated Issue/Task:** Owner requested a chart explaining the selected 234.4 mm minimum-link calculation and its relationship to the research data.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `database/code_prototypes/README.md`
+- `database/code_prototypes/plot_link_travel.py`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/link-length-travel.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/link-length-travel.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/link-length-travel.json`
+- **API/Interface Changes:** Adds an isolated plot reproducer with required `--output DIR`, writing PNG, SVG and provenance JSON. Matplotlib 3.10.7 is documented for the plotting environment only; no production dependency, robot model or simulation interface changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** The plot reproducer runs with Python 3.11.16, NumPy 2.4.6 and Matplotlib 3.10.7; all nine retained geometry points agree within 1.43e-14 mm, and assertions verify the 234.394 mm minimum and 184.305 mm seed travel. The rendered figure was visually inspected.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is not applicable to this figure/prototype contribution.
+The chart labels the 30 mm reserve and joint poses as assumptions and the points
+as calculated evidence. It makes no experimental regression, step-climb or
+global optimum claim. Figure provenance retains source/script hashes and units.
+
+Working-tree entry validation passes for 58 files and 32 changed paths, with scope
+preliminary; the scoped gate passes all 23 regressions. Relative links, source and
+script hashes, SVG structure, artifact sizes and diff whitespace checks pass.
+
+## 4. Compute Saving Handoff State
+
+The research record now shows link length against upward wheel travel with the 150 mm requirement, assumed 180 mm travel target and proposed 235–250 mm study interval.
+A second panel shows how the minimum link changes at 45°, 50° and 55° ride poses while keeping the retraction stop at 75°.
+Use the retained vector figure or isolated plotting script for reports, and validate terrain contacts and drive capability before treating this clearance screen as step-climbing performance.
+
+---
+
+## Entry: 2026-10-03 — Yulai Duan — chassis COM spring and range relationships
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Requirement parameter research, analytical sensitivity plots and simulation input guidance.
+- **Associated Issue/Task:** Owner requested charts relating chassis assembly, COM offsets, spring force and other inputs to the required outputs.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `database/code_prototypes/README.md`
+- `database/code_prototypes/plot_parameter_relationships.py`
+- `database/md_research/requirement-parameter-research.md`
+- `docs/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/README.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/parameter-relationships.md`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/mass-com-relationships.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/mass-com-relationships.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/spring-relationships.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/spring-relationships.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/range-drive-relationships.png`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/range-drive-relationships.svg`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/parameter-relationships.csv`
+- `docs/benchmarks/2026-10-02-requirement-parameter-screen/assets/parameter-relationships.json`
+- **API/Interface Changes:** Adds an isolated plot/calculation script requiring `--output DIR` and using the existing documented plotting environment; no production dependency or robot interface changes. Outputs three PNG/SVG figures, curve samples and provenance JSON.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** Under Python 3.11.16, NumPy 2.4.6 and Matplotlib 3.10.7, the calculation reproduces five retained 90% spring fits, all eight slope torque rows and five energy rows to below 1e-10 in column units. A separate contact-force/moment solve verifies the four COM boundaries within 1.2e-16 normal-load fraction; preload minima and torque-sign constraints pass. All three figures were visually inspected; 12 panels / 5,826 retained curve samples, source/script hashes, links, table columns, SVG structure and artifact size limits pass.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is not applicable to these documentation/prototype changes.
+The records distinguish proposed values, analytical sensitivities and untested
+performance. No measured correlation, spring-induced range gain, step completion
+or global hardware optimum is claimed. Sources were rechecked against the two
+primary spring papers; their gains are not transferred to CAMEL.
+
+The entry check passes for 68 files / 42 changed paths with preliminary scope;
+the scoped gate passes all 23 regressions, and diff whitespace checks pass.
+
+## 4. Compute Saving Handoff State
+
+The study now charts chassis mass/placement, COM height/offsets, spring forces, preload objectives, drum sizing, electrical range budgets and slope drive/traction requirements.
+The fixed-rate loaded preload minimum is 320 N if signed residual torque is allowed, or 274 N if the motor must never oppose the spring, explaining the earlier 272 N seed.
+Use the proposed sweeps with actual CAD/terrain-frame COM and component data, then validate dynamic contact and electrical energy before optimizing the full robot.
+
+---

@@ -1,0 +1,37 @@
+{
+  "evidence": "deterministic analytical screening, no driven simulation",
+  "python": "3.11.16",
+  "numpy": "2.4.6",
+  "script_sha256": "5d4c7df3a9495ceaf53e5dccea85c951ae2b6a2016d4f94743e9251125b06321",
+  "samples": 1001,
+  "angular_range_deg": [
+    25,
+    75
+  ],
+  "reference_theta_deg": 50,
+  "sample_weight": "uniform in hip angle; no mission trajectory data",
+  "seed": {
+    "link_m": 0.24,
+    "wheel_radius_m": 0.175,
+    "wheel_mass_kg": 0.9,
+    "each_link_mass_kg": 0.35,
+    "wheelbase_m": 0.7,
+    "track_m": 0.6,
+    "robot_mass_kg": 25,
+    "payload_kg": 7.5,
+    "chassis_assembly_mass_kg": 18.6,
+    "spring_drum_radius_m": 0.05
+  },
+  "potential_energy_derivative_max_error_Nm": 1.4017480509664892e-08,
+  "kinematic_horizontal_error_m": 0.0,
+  "knee_power_identity_error_W": 0.0,
+  "minimum_L_for_180mm_bump_m": 0.234394188226069,
+  "minimum_L_for_level_body_35deg_m": 0.37849714211452695,
+  "limitations": [
+    "uniform links and symmetric static four-wheel support",
+    "no spring friction, hysteresis, cable compliance or tire deformation",
+    "knee torque assumes actuator acts on relative knee coordinate",
+    "no dynamics, controller, impact, strength, skid turning or drive-belt coupling",
+    "flat range equation excludes drag, turning and elevation changes"
+  ]
+}

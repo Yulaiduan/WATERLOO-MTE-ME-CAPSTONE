@@ -32,6 +32,7 @@ REQUIRED = ROOT_FILES - {".gitattributes"} | {
     "database/brainstorming_tex/README.md", "database/code_prototypes/README.md",
     "agent_skills/README.md", "agent_skills/physics_validation.md",
     "agent_skills/notion_ingestion.md", "agent_skills/git_hygiene.md",
+    "agent_skills/preliminary_research.md",
     "tools/README.md", "tools/check_entry.py", "tools/pre_push.py", "tools/physics_gate.py",
 }
 BLOCKED_DIRS = {"results", "runs", "checkpoints", "logs", "__pycache__", ".venv",
@@ -45,6 +46,66 @@ CHECKS = (
     "Executed `python simulation/experiments/verify_backend.py` with zero drift.",
     "Physics limits (mass, joint constraints) verified against canonical `/assets/`.",
 )
+PRELIMINARY_FILES = {
+    "README.md", "CONTRIBUTING.md", "AGENTS.md", "CLAUDE.md", "ENTRY_TEMPLATE.md",
+    "database/README.md", "simulation/README.md", "firmware/README.md",
+    "training/README.md", "deploy/README.md", "shared/README.md",
+    ".github/CODEOWNERS", ".github/pull_request_template.md",
+    ".github/workflows/simulation-ci.yml", ".githooks/pre-commit", ".githooks/pre-push",
+    "tools/README.md", "tools/check_entry.py", "tools/physics_gate.py",
+    "tools/pre_push.py", "tools/tests/test_gates.py",
+}
+RESEARCH_CONTENT_SUFFIXES = {".md", ".tex", ".csv", ".json", ".png", ".jpg",
+                             ".jpeg", ".svg", ".pdf"}
+
+
+def preliminary_path(path):
+    """Allow only research artifacts, isolated prototypes and contribution policy.
+
+    Runtime code/config, dependencies, assets and unknown paths fail closed.
+    Production components must never import database/code_prototypes/.
+    """
+    if path in PRELIMINARY_FILES:
+        return True
+    suffix = PurePosixPath(path).suffix.lower()
+    if path.startswith("docs/"):
+        return suffix in RESEARCH_CONTENT_SUFFIXES
+    if path.startswith(("database/md_research/", "agent_skills/")):
+        return suffix == ".md"
+    if path.startswith("database/brainstorming_tex/"):
+        return suffix in {".md", ".tex"}
+    if path.startswith("database/code_prototypes/"):
+        return suffix in {".md", ".py", ".csv", ".json"}
+    return False
+
+
+def validation_scope(previous, current):
+    """Classify the complete diff, including deletions, without trusting labels."""
+    changed = {p for p in previous.keys() | current.keys()
+               if previous.get(p) != current.get(p)}
+    if not changed:
+        return "unchanged"
+    if protocol_bootstrap(previous, current):
+        return "bootstrap"
+    if all(preliminary_path(path) for path in changed):
+        return "preliminary"
+    return "physics"
+
+
+def preliminary_validation_errors(log):
+    """Require an explicit non-physics declaration and actual validation evidence."""
+    latest = re.split(r"^## Entry: .+$", log, flags=re.MULTILINE)[-1]
+    errors = []
+    if not re.search(r"^- \*\*Validation Scope:\*\* preliminary\s*$", latest, re.MULTILINE):
+        errors.append("Latest entry must declare '**Validation Scope:** preliminary'.")
+    evidence = re.search(r"^- \*\*Research/Policy Validation:\*\* ([^\n]+)", latest, re.MULTILINE)
+    if not evidence or not evidence[1].strip() or evidence[1].lstrip().startswith("["):
+        errors.append("Latest entry must record actual Research/Policy Validation evidence.")
+    # An exemption is not a successful canonical robot run.
+    for check in CHECKS:
+        if re.search(r"^- \[[xX]\] " + re.escape(check) + r"$", latest, re.MULTILINE):
+            errors.append("Preliminary entries must leave canonical physics checks unchecked (not applicable).")
+    return errors
 
 
 def git(*args, root=ROOT):
@@ -204,15 +265,18 @@ def main():
         previous = tree_files(base)
         files = tree_files(git("write-tree").decode().strip()) if args.staged else working_files()
         changed = {p for p in previous.keys() | files.keys() if previous.get(p) != files.get(p)}
+        scope = validation_scope(previous, files)
         errors = structural_errors(files)
         errors += contribution_errors(previous.get("ENTRY_TEMPLATE.md", b"").decode(),
                                       files.get("ENTRY_TEMPLATE.md", b"").decode(), changed,
-                                      args.require_passed and not protocol_bootstrap(previous, files))
+                                      args.require_passed and scope == "physics")
+        if args.require_passed and scope == "preliminary":
+            errors += preliminary_validation_errors(files.get("ENTRY_TEMPLATE.md", b"").decode())
         if errors:
             for error in errors:
                 print(f"FAIL: {error}")
             return 1
-        print(f"PASS: entry architecture ({len(files)} files, {len(changed)} changed paths).")
+        print(f"PASS: entry architecture ({len(files)} files, {len(changed)} changed paths; scope={scope}).")
         return 0
     except (ValueError, UnicodeError, OSError) as exc:
         print(f"FAIL: {exc}")

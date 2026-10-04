@@ -1,0 +1,81 @@
+{
+  "evidence": "derived analytical sensitivity; not measured correlations or trained response models",
+  "python": "3.11.16",
+  "numpy": "2.4.6",
+  "matplotlib": "3.10.7",
+  "script_sha256": "1d820347d12fae41c00a263b08bfe16e7a6b0e9385476460557aaffa881437b1",
+  "source_sha256": {
+    "docs/benchmarks/2026-10-02-requirement-parameter-screen/spring_fits.csv": "6d5488a9f3c464e1d41a444b126d5cdf5cec1071a0792b16b456df6d9ca9ba7a",
+    "docs/benchmarks/2026-10-02-requirement-parameter-screen/slopes.csv": "756a110570dd0463f4735e0c3f29ab2e367b26e56cb7504a56c6110ec98b174c",
+    "docs/benchmarks/2026-10-02-requirement-parameter-screen/range_cases.csv": "b27af3c2c0a30bcd2c31ac0eadcfae4455ae02ac5668efc8fad3f1fbf9571cb1"
+  },
+  "checks": {
+    "spring_fits.csv": {
+      "rows_read": 15,
+      "scalar_comparisons": 10,
+      "max_absolute_error_in_column_units": 0.0
+    },
+    "slopes.csv": {
+      "rows_read": 8,
+      "scalar_comparisons": 8,
+      "max_absolute_error_in_column_units": 0.0
+    },
+    "range_cases.csv": {
+      "rows_read": 5,
+      "scalar_comparisons": 5,
+      "max_absolute_error_in_column_units": 0.0
+    }
+  },
+  "COM_boundary_normal_load_fraction_max_error": 1.1102230246251565e-16,
+  "curve_samples": 5826,
+  "seed": {
+    "link_m": 0.24,
+    "wheel_radius_m": 0.175,
+    "spring_drum_m": 0.05,
+    "chassis_kg": 18.6,
+    "payload_kg": 7.5,
+    "moving_kg": 6.4,
+    "gross_kg": 32.5,
+    "spring_rate_N_per_mm": 7.349289550579255,
+    "preload_N": 271.9903992575148,
+    "loaded_level_COM_mm": 348.11572470740856
+  },
+  "chassis_upper_bound_exclusive_kg": 28.6,
+  "fixed_rate_preload_minima": {
+    "25": {
+      "preload_N": 189.01854603561264,
+      "rms_knee_Nm": 0.5117691864063594,
+      "max_preload_without_opposing_spring_N": 134.16190223294063,
+      "minimum_RMS_preload_if_nonnegative_residual_required_N": 134.16190223294063
+    },
+    "32.5": {
+      "preload_N": 320.02673533335286,
+      "rms_knee_Nm": 0.43325850269681776,
+      "max_preload_without_opposing_spring_N": 273.62841974663326,
+      "minimum_RMS_preload_if_nonnegative_residual_required_N": 273.62841974663326
+    }
+  },
+  "equal_empty_loaded_weight_fixed_rate_preload_N": 254.52264068448275,
+  "lowering_18_6kg_assembly_40mm_lowers_loaded_COM_mm": 22.892307692307696,
+  "35deg_COM_bounds_mm": {
+    "centered_fore_aft": 399.88144188779205,
+    "fore_aft_offset_35mm": 349.896261651818,
+    "centered_lateral": 342.75552161810754,
+    "lateral_offset_30mm": 299.911081415844
+  },
+  "auxiliary_suspension_power_limit_for_15km_W": {
+    "400": 70.42350000000002,
+    "600": 108.82350000000002
+  },
+  "nominal_battery_Wh_per_additional_chassis_kg_at_30pct_payload": 1.3284375000000002,
+  "nominal_battery_Wh_per_extra_10W_at_1mps": 52.08333333333333,
+  "extra_used_Wh_for_0_5kg_per_wheel_over_15km_at_Crr_0_02": 2.1799999999999997,
+  "required_mu_at_35deg_Crr_0_02": 0.7202075382097097,
+  "limitations": [
+    "uniform 1001-angle spring objective; no time trajectory",
+    "10% static stability margin is an assumption",
+    "range excludes turns, aerodynamics, elevation and transient contact losses",
+    "COM in CAD level pose must be transformed for actual slope/levelling posture",
+    "spring fit does not determine damping, wheel-contact dynamics or motor rating"
+  ]
+}
