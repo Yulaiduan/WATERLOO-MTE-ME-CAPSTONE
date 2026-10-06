@@ -16,6 +16,11 @@ This folder is the home for the CAMEL project's technical and onboarding documen
 
 ## Team documentation layout
 
+The [five-bump simulation summary](benchmarks/2026-10-06-five-bumps/README.md)
+compares 6B/8A/8B forward and reverse over five 50 mm bumps at a 5 m/s target.
+It publishes preliminary local results and plots, with unresolved contact/roll
+refinement explicitly recorded; the simulation implementation remains local.
+
 Create folders as content arrives: `design/<subsystem>/` for living explanations, `meetings/YYYY-MM-DD-topic.md` for notes, `decisions/NNNN-short-title.md` for decisions with status, and `benchmarks/YYYY-MM-DD-topic/` for reproducible evidence. Keep figures in the topic's `assets/` folder and add links here when adding pages. Organize by subject, not contributor.
 
 Build/run instructions belong with [firmware](../firmware/README.md), [simulation](../simulation/README.md), [training](../training/README.md) and [deployment](../deploy/README.md). Contracts live in [shared](../shared/README.md), reusable robot models in [assets](../assets/README.md). These are currently guides, not executable implementations.

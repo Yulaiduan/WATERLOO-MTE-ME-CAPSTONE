@@ -1,0 +1,57 @@
+{
+  "fps": 30,
+  "frames": 510,
+  "resolution": [
+    1920,
+    1080
+  ],
+  "duration_s": 17,
+  "motion_playback_speed": 0.5,
+  "validation": [
+    {
+      "case": "6dof-b-bump-forward",
+      "model_sha256": "f6ad223e9ce791553ff61f24a26eeb60c077921a2059141781a460d1e0977c01",
+      "exact_summary_match": true
+    },
+    {
+      "case": "8dof-a-bump-forward",
+      "model_sha256": "ce3e772527a841ee6d900b962addfb8b3fea7fd65e86014ff1372915d0865fb8",
+      "exact_summary_match": true
+    },
+    {
+      "case": "8dof-b-bump-forward",
+      "model_sha256": "94c782535f746e980a44a221c072ced7cc9b00c18efb04b86a099af5a2d248d5",
+      "exact_summary_match": true
+    },
+    {
+      "case": "6dof-b-bump-reverse",
+      "model_sha256": "2178d1caa39191f7eb2f941145ce4d7c8779ef6d28847d9f036c75f0caa6af41",
+      "exact_summary_match": true
+    },
+    {
+      "case": "8dof-a-bump-reverse",
+      "model_sha256": "7f93308945862f45b43bb2d47b8f8b495f2508cbd3a8b1314fcdb219102793c3",
+      "exact_summary_match": true
+    },
+    {
+      "case": "8dof-b-bump-reverse",
+      "model_sha256": "8bae3b2da23820f55d75cb073854a619134a2812a80619740d52db60d2a9b10b",
+      "exact_summary_match": true
+    }
+  ],
+  "mujoco": "3.14.0",
+  "render_script_sha256": "da7f0c65e9e20ad5bbc71019326c0197d6531997fbae9b8de4f1a01682dd34d7",
+  "video": {
+    "file": "CAMEL-five-bump-comparison.mp4",
+    "bytes": 11158527,
+    "sha256": "0a9074ce980e3b14de36aa60db8cf44f1fe3e716ec736acfdf5b8b943fe4c105",
+    "codec": "H.264",
+    "container": "MP4",
+    "decoded_verification_seconds": [
+      1,
+      5,
+      10,
+      16
+    ]
+  }
+}
