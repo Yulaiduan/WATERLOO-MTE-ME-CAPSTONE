@@ -62,8 +62,10 @@ for unknown terrain values, or new root folders without updating the protocol.
   `python simulation/experiments/verify_backend.py`. Missing models, NaNs,
   warnings or drift remain failures whenever physics applies.
 - Follow `agent_skills/git_hygiene.md`. Never push another member's branch,
-  force-push shared history, merge your own unreviewed PR, or change protection
-  settings to get around a failure.
+  force-push shared history or change protection settings to get around a failure.
+  Routine PRs may merge after required checks pass without teammate approval,
+  including the author's own PR when the user authorizes merging. Do not infer
+  merge authorization from a request only to push or open a PR.
 - Changes to `assets/`, interfaces, checks or agent rules require human review.
   Update affected consumers and record migration/compatibility details.
 
@@ -91,8 +93,11 @@ automatically discover `AGENTS.md`, explicitly load it before working.
 
 These rules apply to every contribution, whether from a teammate's local agent,
 another tool or a fork. Submit a PR into `main`; required architecture and physics
-checks plus code-owner review are enforced there. Editing enforcement files needs
-the repository owner's review. Forks inherit these instruction files, but their
+checks are enforced there. Routine contributions do not require teammate approval.
+Canonical assets, shared interfaces, checks and agent rules retain human review;
+editing enforcement files needs the repository owner's review. CODEOWNERS requests
+review on those critical paths, but the live ruleset does not enforce approvals
+by path. Forks inherit these instruction files, but their
 owners control their own settings; this repository's merge rules still apply to
 PRs submitted back here. Local hooks must be installed per clone and are optional
 defence against accidental pushes; GitHub requirements remain in force without them.

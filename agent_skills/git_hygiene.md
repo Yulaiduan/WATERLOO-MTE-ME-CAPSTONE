@@ -30,8 +30,12 @@ conflict retain both appended entries and rerun checks. If the base has moved,
 integrate it and check again. If `origin/main` is missing, fetch it before work;
 do not silently compare against an empty tree. Empty commits need no new entry.
 
-Hooks are installed locally and can be bypassed; required CI and code-owner
-review on `main` provide the shared merge gate. Report failures honestly and keep
+Hooks are installed locally and can be bypassed; required CI on `main` provides
+the shared merge gate. Routine PRs need no teammate approval; agents may merge
+them when authorized by the user after checks pass. Canonical assets, shared
+interfaces, checks and agent rules retain human review, and enforcement changes
+need owner review. CODEOWNERS routes those critical reviews, but GitHub does not
+enforce them by path. Report failures honestly and keep
 blocked work local. A missing robot model does not block an eligible preliminary
 contribution; its physics status is explicitly not applicable. Do not use
 `--no-verify` to bypass this protocol.

@@ -1,6 +1,6 @@
 # Team branches and reviewers
 
-Updated: 2026-10-01. Names and engineering focus come from the registration form
+Updated: 2026-10-06. Names and engineering focus come from the registration form
 already summarized in the project README. The branches below assign an isolated
 workspace to every member; they share reviewed `main` as the integration branch.
 
@@ -22,14 +22,15 @@ its topic children at the same time. The five `/work` branches are published wit
 the protocol. External forks use `contributors/<github-login>/<topic>` and the
 same checks when proposing changes to this repository.
 
-Verified collaborators are `Yulaiduan`, `Code-Andy` and `Jiaan124`. Pending the
-owner's confirmed mapping, CODEOWNERS routes every subsystem to this temporary
-shared review pool. This is not a claim that specialist ownership is settled.
-GitHub accepts approval from any one listed owner; the author cannot supply their
-own required approval. Add the other accounts with write access before assigning
-them as code owners. Change this file and CODEOWNERS together after confirmation.
+Verified collaborators are `Yulaiduan`, `Code-Andy` and `Jiaan124`. Routine paths
+do not automatically request peer review and may merge after CI passes without
+teammate approval. CODEOWNERS keeps the shared pool for canonical assets and
+shared interfaces, and routes checks/enforcement/agent rules to `Yulaiduan`.
+Specialist ownership remains unsettled. Add the other accounts with write access
+before assigning them as code owners; change this file and CODEOWNERS together.
 
 Enforcement files, shared agent instructions and physics gate implementation
-require `Yulaiduan` review. The general review pool covers subsystem contributions.
+require `Yulaiduan` review. Critical-path human review is a team procedure;
+the live GitHub ruleset requires zero approvals and does not enforce it by path.
 The owner cannot self-approve: another contributor must author an enforcement
 change when owner approval is required.

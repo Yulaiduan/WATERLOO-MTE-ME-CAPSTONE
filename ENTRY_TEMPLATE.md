@@ -361,3 +361,53 @@ The fixed-rate loaded preload minimum is 320 N if signed residual torque is allo
 Use the proposed sweeps with actual CAD/terrain-frame COM and component data, then validate dynamic contact and electrical energy before optimizing the full robot.
 
 ---
+
+## Entry: 2026-10-06 — Yulai Duan workspace — streamline routine review policy
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Contribution policy and review routing.
+- **Associated Issue/Task:** Owner asked whether the simulation-results PR waits on Andy/Jiaan and requested a less time-consuming rule.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `.github/CODEOWNERS`
+- `.github/pull_request_template.md`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `ENTRY_TEMPLATE.md`
+- `README.md`
+- `agent_skills/git_hygiene.md`
+- `agent_skills/preliminary_research.md`
+- `database/md_research/entry-protocol.md`
+- `database/md_research/team.md`
+
+- **API/Interface Changes:** No runtime or validator API changes. Remove blanket peer-review routing for routine paths and the shared contribution log; retain critical-path routing. Align routine merge instructions with the live zero-approval GitHub rule, while preserving user authorization for agent merges and human review for assets/interfaces/checks/agent rules, including owner review for enforcement. No ruleset, bypass, status-check or physics-gate changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** GitHub ruleset 24282754 reports zero required approving reviews, code-owner approval false and last-push approval false, with both required checks and strict up-to-date checks retained. PR #4 reports CLEAN and optional automatic requests to Code-Andy/Jiaan124, with no submitted reviews; legacy main branch protection is absent (404). Targeted ownership routing and document-link checks verify routine paths have no automatic owners and critical paths retain routing. Scoped gate regressions and contribution checks are required before push; no simulation or physics claim is made by this policy change.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is NOT APPLICABLE to this contribution-policy diff. Missing
+canonical models still block applicable executable contributions. The original
+one-approval rollout plan is preserved as history, and the current live settings
+are documented explicitly; critical-path review is a team procedure, not a
+path-specific GitHub approval requirement. Owner review of this enforcement
+change remains required before merge.
+
+Entry validation passes for 68 files / 10 changed paths with preliminary scope;
+the scoped gate passes all 23 regressions. Seven routine and ten critical
+ownership fixtures plus policy links pass focused checks.
+
+## 4. Compute Saving Handoff State
+
+PR #4 is mergeable without Andy/Jiaan approval under the already-active zero-approval rule; its requests were notifications, not a merge blocker.
+This policy PR removes automatic review requests for routine work and aligns contribution instructions with CI-only routine merging, while retaining critical-path human review and all validation gates.
+Complete owner review before merging this enforcement change; routine agents still need user authorization to merge and must not infer it from a push-only request.
+
+---

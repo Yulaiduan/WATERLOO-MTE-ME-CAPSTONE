@@ -10,7 +10,7 @@ Use **one repository with separate components**. One commit can capture compatib
 
 **Agent entry point:** every agent follows [AGENTS.md](AGENTS.md), reads the [knowledge database](database/README.md) and [shared procedures](agent_skills/README.md), and appends the [contribution log](ENTRY_TEMPLATE.md). Personal branches and checks are independent of agent vendor or tool. `CLAUDE.md` is only a compatibility pointer.
 
-**Implementation status:** the entry protocol, local hooks, structural checks and CPU physics validator are implemented. Physics remains blocked until a reviewed canonical robot and mass/joint baseline are supplied. GitHub required architecture/physics checks and reviews are installed with this protocol; [live rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules) show current enforcement. Existing local MuJoCo work will be imported separately after review; firmware, training, GPU deployment and hardware runtime choices remain open.
+**Implementation status:** the entry protocol, local hooks, structural checks and CPU physics validator are implemented. Physics remains blocked until a reviewed canonical robot and mass/joint baseline are supplied. GitHub requires architecture/physics checks with zero mandatory approvals; critical changes retain human review as a team procedure. [Live rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules) show current enforcement. Existing local MuJoCo work will be imported separately after review; firmware, training, GPU deployment and hardware runtime choices remain open.
 
 ```text
 WATERLOO-MTE-ME-CAPSTONE/
@@ -90,7 +90,7 @@ Commit Markdown, source, small configs, schemas and manageable text robot models
 
 Planned checks are scoped by changed paths: Markdown links for docs, embedded build/tests for firmware, headless smoke tests for simulation, CPU smoke tests for training, and image/config checks for deployment. Changes to `shared/` or `assets/` also exercise affected consumers. Full GPU jobs require explicit launch and runtime/cost limits, rather than running on every pull request.
 
-**Shared contribution gate:** PRs into `main` require `Entry architecture`, `Headless physics` and code-owner review. The validation gate permits [preliminary research](agent_skills/preliminary_research.md) before an approved robot exists, with explicit assumptions and research checks. Executable robot, asset, dependency and mixed changes still require canonical physics validation. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
+**Shared contribution gate:** PRs into `main` require `Entry architecture` and `Headless physics`; routine work needs no teammate approval. Canonical assets, shared interfaces, checks and agent rules retain human review, with owner review for enforcement changes. This critical-path review is a team procedure, not path-specific GitHub enforcement. The validation gate permits [preliminary research](agent_skills/preliminary_research.md) before an approved robot exists, with explicit assumptions and research checks. Executable robot, asset, dependency and mixed changes still require canonical physics validation. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
 
 ### Bring existing work into this layout
 
