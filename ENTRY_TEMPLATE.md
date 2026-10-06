@@ -361,3 +361,55 @@ The fixed-rate loaded preload minimum is 320 N if signed residual torque is allo
 Use the proposed sweeps with actual CAD/terrain-frame COM and component data, then validate dynamic contact and electrical energy before optimizing the full robot.
 
 ---
+
+## Entry: 2026-10-06 — Yulai Duan workspace — publish preliminary five-bump results
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Results documentation and compact preliminary evidence.
+- **Associated Issue/Task:** User requested a local results summary and an external Git push after the five-bump experiment and video.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `database/README.md`
+- `docs/README.md`
+- `docs/benchmarks/README.md`
+- `docs/benchmarks/2026-10-06-five-bumps/README.md`
+- `docs/benchmarks/2026-10-06-five-bumps/architectures.csv`
+- `docs/benchmarks/2026-10-06-five-bumps/architectures.json`
+- `docs/benchmarks/2026-10-06-five-bumps/evidence-manifest.json`
+- `docs/benchmarks/2026-10-06-five-bumps/video-provenance.json`
+- `docs/benchmarks/2026-10-06-five-bumps/assets/architectures.png`
+- `docs/benchmarks/2026-10-06-five-bumps/assets/response-comparison.png`
+- `docs/benchmarks/2026-10-06-five-bumps/assets/terrain.png`
+- `docs/benchmarks/2026-10-06-five-bumps/assets/terrain-scene.png`
+
+- **API/Interface Changes:** None. Only summary, compact CSV/JSON/PNG evidence and indexes are published. No executable simulation, terrain preset, canonical asset, dependency, gate or interface changes. The local implementation at 0124164 and MP4 remain local; the public checkout cannot independently rerun this experiment.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** Verified retained file hashes, all six CSV/JSON/Markdown result rows, six base cases and 18 refinements, preserved all_passed=false and four converged refinements, the 33-check local regression record, six exact video-replay records, all new/updated relative links, portable metadata and each artifact below 1 MiB. Plots were inspected during the local study/video work; summaries preserve numerical-contact limitations and unpublished implementation provenance. No fresh integration is claimed for this publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is **not applicable to this results-only contribution** under
+the preliminary-research policy. The executable implementation remains blocked
+by the missing canonical robot; the historical study's contact/roll failures are
+retained. Publishing these observations does not certify physical correctness,
+hardware performance, an architecture winner or an optimal drive direction.
+
+`python tools/check_entry.py --base origin/main --require-passed` passes with
+77 files / 13 changed paths and preliminary scope. The scoped physics gate passes
+all 23 regression tests and reports canonical physics NOT APPLICABLE.
+
+## 4. Compute Saving Handoff State
+
+The local summary and this results-only branch document 6B/8A/8B forward/reverse over five 50 mm bumps at a 5 m/s target, with compact provenance and plots.
+Forward 8A is the balanced candidate for further work, but all cases retain unresolved contact/roll acceptance and reverse improvements are sensitive to refinement.
+Resolve contact and measured hardware inputs before selecting an architecture; the implementation and video remain local artifacts while the preliminary summary can be reviewed externally.
+
+---

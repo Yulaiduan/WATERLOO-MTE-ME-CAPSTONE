@@ -1,0 +1,13 @@
+{
+  "publication_scope": "preliminary results only; executable implementation remains local",
+  "local_implementation_commit": "0124164",
+  "files_sha256": {
+    "architectures.csv": "82c3e75f0c24681618550957bbc1315eaeea552938c4012b2da5741af1d01f14",
+    "architectures.json": "d7f48623b3ca67d2a26092ad0a49f133f41da89559306f8554dd554e7b2fdfae",
+    "assets/architectures.png": "ea20112a9649a89f3864d3df796870d223efffef4117fa19d7d933088ee228c8",
+    "assets/response-comparison.png": "d26f13be2bd65758c3523cf42235de75ea63dc601d60b1b1712b880a49bb537a",
+    "assets/terrain-scene.png": "d7c9b40f63603a5062b4ba46eef4b78a8106cc4cc9e6577d17205e9891f4c114",
+    "assets/terrain.png": "b010500f67de5f3d3869f11ef54b353b5a0f902ce89518ff80de859c89e7345e",
+    "video-provenance.json": "3de8361ecef5159044bb176770dbb41caca48bfb94e2c2d2bbc556cbe27717e0"
+  }
+}

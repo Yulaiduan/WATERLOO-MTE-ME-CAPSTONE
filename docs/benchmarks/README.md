@@ -9,3 +9,4 @@ not establish hardware performance or canonical robot validation.
 | Study date | Record | Evidence |
 | --- | --- | --- |
 | 2026-10-02 | [Requirement parameter screen](2026-10-02-requirement-parameter-screen/README.md) | Literature review, analytical geometry, static spring regression, slope and energy calculations; no driven terrain validation |
+| 2026-10-06 | [Five-bump simulation summary](2026-10-06-five-bumps/README.md) | Preliminary local 6B/8A/8B forward/reverse response; compact evidence and plots, unresolved contact/roll, implementation unpublished |
