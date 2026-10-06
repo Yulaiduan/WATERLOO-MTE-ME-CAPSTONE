@@ -2,7 +2,7 @@
 
 Status: shared GitHub protocol; canonical physics baseline pending.
 Live enforcement: [repository rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules).
-Updated: 2026-10-03. Owner request: enforce an orderly contribution format and
+Updated: 2026-10-06. Owner request: enforce an orderly contribution format and
 reduce the effort needed for independent agents to understand one another.
 
 ## Gates
@@ -18,21 +18,31 @@ reduce the effort needed for independent agents to understand one another.
 4. `.github/workflows/simulation-ci.yml` runs architecture and the scoped validation
    gate on pushes and PRs. The job names remain unchanged. Preliminary research
    runs gate regressions; executable robot changes require canonical physics.
-5. Required GitHub checks and CODEOWNERS reviews protect `main` after installation.
+5. Required GitHub checks protect `main`; routine PRs require zero approvals.
+   CODEOWNERS requests human review only on critical paths as a team procedure.
    CI runs after a push, so it prevents merging failed contributions only when
    those repository rules are active. It cannot prevent every bad branch push.
 
 ## GitHub rollout
 
-The owner requested publication and shared enforcement on 2026-10-01. Publish the
-protocol, verify the two CI jobs, and activate the existing `Protection` ruleset
-with these requirements on `main`:
+The owner requested publication and shared enforcement on 2026-10-01. The
+initial documented plan included one approval and code-owner review. On
+2026-10-06, live ruleset 24282754 was verified to already require zero approvals,
+no code-owner approval and no last-push approval; PR #4 was mergeable despite
+automatic requests to Andy/Jiaan. The owner asked to remove unnecessary waiting.
+The current routine policy matches those live settings:
 
-- Require PRs, one approval, code-owner review and resolved conversations.
-- Dismiss stale approvals after changes; require approval of the latest push.
+- Require PRs and resolved conversations; teammate approval is optional for routine work.
+- Dismiss stale reviews after changes; no last-push approval is required.
 - Require `Entry architecture` and `Headless physics`, with the branch up to date.
 - Block branch deletion and force pushes; do not grant routine bypasses.
-- Require review for changes to workflows, hooks, validators and CODEOWNERS.
+- Keep human review for canonical assets, shared interfaces, checks and agent rules;
+  enforcement changes need owner review. This is a team procedure, not path-specific
+  GitHub enforcement. CODEOWNERS requests reviewers only on these critical paths.
+
+An agent may merge a routine PR when the user authorizes merging and all checks
+pass. A request only to push/open a PR does not authorize merging. This review
+policy does not relax physics publication requirements or add bypass actors.
 
 The first protocol-only installation is explicitly exempt from robot validation:
 the target branch must not yet contain the contribution log, the canonical asset
@@ -56,13 +66,14 @@ dependencies, firmware, training, deployment and shared interfaces. Unknown or
 mixed changes require full physics. `tools/physics_gate.py` runs gate regressions
 for preliminary contributions; robot changes retain both actual physics checks.
 The same classifier is used for staged/working-tree checks, exact pushed commits
-and CI. Code-owner review, required job names and branch protection are unchanged.
+and CI. Required job names and branch protection are unchanged; routine review
+is optional under the owner's 2026-10-06 policy above.
 
 Fork owners control their own settings. PRs from forks must still pass these
-repository checks and review before entering `main`. First-time fork workflow
+repository checks and applicable critical-path human review before entering `main`. First-time fork workflow
 runs may need maintainer approval; that is separate from approval to merge.
-Code-owner review protects enforcement changes, including workflow and validator
-edits. No routine ruleset bypass actors are configured.
+Owner review remains a team requirement for enforcement changes, including
+workflow and validator edits. No routine ruleset bypass actors are configured.
 
 Sources: [GitHub code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners),
 [protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).

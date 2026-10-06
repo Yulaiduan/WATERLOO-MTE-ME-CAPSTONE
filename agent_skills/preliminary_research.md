@@ -11,7 +11,8 @@ including deleted paths. The preliminary category permits documentation and
 compact evidence under `docs/`, research notes and equations under `database/`,
 standalone calculations under `database/code_prototypes/`, and an explicit set
 of contribution-policy, gate and regression-test files. Gate/policy changes keep
-their code-owner review requirement. The path allowlist is in `preliminary_path`.
+their owner human-review requirement. Routine research needs no teammate approval
+after checks pass; see CONTRIBUTING.md. The path allowlist is in `preliminary_path`.
 
 Changes to canonical assets, executable robot code, controllers, terrain/config,
 dependencies, firmware, training, shared interfaces, deployment or unknown paths
@@ -41,7 +42,7 @@ prototype into the owning component through a physics-validated contribution.
    regressions for preliminary work and reports canonical physics as
    **NOT APPLICABLE**. The direct robot commands still fail when no model exists.
 5. Commit exact paths and push a personal branch using the normal hooks; open a
-   PR and follow required CI and review. No hook bypass or fabricated check pass
+   PR and follow required CI and applicable critical-path human review. No hook bypass or fabricated check pass
    is part of this workflow.
 
 The existing GitHub job names remain `Entry architecture` and `Headless physics`.

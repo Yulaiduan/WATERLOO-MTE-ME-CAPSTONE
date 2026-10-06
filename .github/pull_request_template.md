@@ -34,4 +34,4 @@ Identify affected interfaces, assets, dependencies, policy compatibility and con
 - [ ] Relevant documentation and index entries are current.
 - [ ] Assumptions, proposals and measured evidence are distinguished.
 - [ ] No secrets, unapproved partner material or raw generated artifacts included.
-- [ ] Review requested from contributors responsible for affected areas.
+- [ ] Applicable critical-path human review completed (routine review is optional).
