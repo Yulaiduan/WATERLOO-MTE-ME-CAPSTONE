@@ -485,3 +485,34 @@ The sharing workflow uses reviewed Markdown summaries, Git publication and selec
 Review the protocol/validator changes with Yulai before merging, then have each member add selected context and import apps only through the applicable validation gates.
 
 ---
+
+## Entry: 2026-10-08 — Andy Zhang — finalize member scaffold formatting
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Member context and experimental app documentation.
+- **Associated Issue/Task:** Final staged whitespace review caught extra blank lines at EOF in generated member pages; remove them before publication.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** `context/users/ali-muizz/README.md`, `users/ali-muizz/README.md`, `users/ali-muizz/experimental-apps/README.md`, `context/users/andy-zhang/README.md`, `users/andy-zhang/README.md`, `users/andy-zhang/experimental-apps/README.md`, `context/users/jonathan-xie/README.md`, `users/jonathan-xie/README.md`, `users/jonathan-xie/experimental-apps/README.md`, `context/users/yulai-duan/README.md`, `users/yulai-duan/README.md`, `users/yulai-duan/experimental-apps/README.md`, `context/users/jiaan-li/README.md`, `users/jiaan-li/README.md`, `users/jiaan-li/experimental-apps/README.md`, `ENTRY_TEMPLATE.md`
+- **API/Interface Changes:** None; trim trailing blank lines only. Preserve prior entries and record the final staged whitespace finding.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** The preceding 27-test gate run and 225-link check remain applicable; final diff/entry/scoped checks run before publication. Initial tracked-file whitespace checking passed, but the subsequent staged check included new files and reported trailing empty lines in these 15 member pages; those lines are removed by this follow-up.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics remains NOT APPLICABLE to the documentation/policy contribution.
+Owner review of the full PR remains required before merge.
+
+## 4. Compute Saving Handoff State
+
+All generated member pages now end with one newline rather than an extra empty line.
+The new shared context and app structure is otherwise unchanged and retains the existing executable physics gate.
+Publish the verified branch and complete Yulai's owner review before merging into main.
+
+---

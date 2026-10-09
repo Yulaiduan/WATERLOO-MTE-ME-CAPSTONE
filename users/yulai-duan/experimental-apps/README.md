@@ -10,4 +10,3 @@ engineering gates and a project-local restart launcher for any localhost server.
 | App | Purpose | Status | Verified startup |
 | --- | --- | --- | --- |
 | None registered | Awaiting a deliberate import or new app | Scaffold only | Not applicable |
-

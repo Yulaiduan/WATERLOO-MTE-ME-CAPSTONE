@@ -20,4 +20,3 @@ active notes here. Use the source tool in the filename and record the Git revisi
 
 The member should add their current work and selected public conversation context.
 Keep app-specific setup and model notes inside the relevant app.
-
