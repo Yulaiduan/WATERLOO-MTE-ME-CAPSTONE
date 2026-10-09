@@ -12,5 +12,7 @@
 /tools/ @Yulaiduan
 /CLAUDE.md @Yulaiduan
 /AGENTS.md @Yulaiduan
+**/AGENTS.md @Yulaiduan
+/context/templates/chatgpt-project-instructions.md @Yulaiduan
 /database/md_research/entry-protocol.md @Yulaiduan
 /database/md_research/team.md @Yulaiduan

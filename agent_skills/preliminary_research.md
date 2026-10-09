@@ -11,7 +11,10 @@ including deleted paths. The preliminary category permits documentation and
 compact evidence under `docs/`, research notes and equations under `database/`,
 standalone calculations under `database/code_prototypes/`, and an explicit set
 of contribution-policy, gate and regression-test files. Gate/policy changes keep
-their owner human-review requirement. Routine research needs no teammate approval
+their owner human-review requirement. Markdown-only context/handoffs under
+`context/` and app documentation/scaffolds under `users/` also qualify. No
+executable app, configuration, dependency file or launcher is exempt there.
+Routine research needs no teammate approval
 after checks pass; see CONTRIBUTING.md. The path allowlist is in `preliminary_path`.
 
 Changes to canonical assets, executable robot code, controllers, terrain/config,

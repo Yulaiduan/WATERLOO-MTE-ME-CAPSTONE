@@ -8,6 +8,8 @@ This folder is the home for the CAMEL project's technical and onboarding documen
 | [Setup](setup.md) | Reproducible workspace and validation environment | Python CPU validator available; canonical model pending |
 | [Repository architecture](../README.md#repository-architecture) | Component boundaries, shared interfaces and GPU workflow | Entry protocol implemented; engineering components still scaffolds |
 | [Agent entry protocol](../AGENTS.md) | Shared instructions for every agent | Tool-neutral entry point |
+| [Shared chat context](../context/README.md) | Bring reviewed ChatGPT/Codex findings between members | Manual summaries and file-based sharing; no automatic chat sync |
+| [Experimental apps](../users/README.md) | Member simulation sandboxes/toolkits and app-local context | Documentation scaffolds; no apps imported |
 | [Knowledge database](../database/README.md) | Compact state, procedures and ownership | Includes rollout blockers and personal branches |
 | [Contributing](../CONTRIBUTING.md) | Team Markdown, branches and reviews | Local hooks, required GitHub checks and code-owner review |
 | [Terrain specifications for training](design/simulation/terrain-training-spec.md) | Notion terrain envelopes, payload targets, curriculum and evaluation | Source synthesis and proposed plan; no accepted requirements or training results |
