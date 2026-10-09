@@ -23,6 +23,7 @@ sys.path.insert(0, str(ROOT / "simulation/experiments"))
 import check_entry as entry
 import verify_backend as physics
 import physics_gate as gate
+import pre_push
 
 
 def contribution(paths, checked=False):
@@ -42,11 +43,12 @@ def contribution(paths, checked=False):
 
 
 class ContributionTests(unittest.TestCase):
-    def test_branch_names_are_member_owned_and_tool_neutral(self):
+    def test_main_and_optional_member_branches_are_tool_neutral(self):
+        self.assertTrue(entry.BRANCH.fullmatch("main"))
         self.assertTrue(entry.BRANCH.fullmatch("members/ali-muizz/work"))
         self.assertTrue(entry.BRANCH.fullmatch("members/andy-zhang/control-loop"))
         self.assertTrue(entry.BRANCH.fullmatch("contributors/external-user/control-loop"))
-        for invalid in ("main", "members/ali-muizz", "members/unknown/task", "members/ali-muizz/../../main"):
+        for invalid in ("main/topic", "members/ali-muizz", "members/unknown/task", "members/ali-muizz/../../main"):
             self.assertFalse(entry.BRANCH.fullmatch(invalid))
 
     def test_bootstrap_closes_after_protocol_is_on_base(self):
@@ -110,6 +112,51 @@ class ContributionTests(unittest.TestCase):
             (root / "README.md").symlink_to("/etc/hosts")
             with self.assertRaises(ValueError):
                 entry.working_files(root)
+
+
+class PrePushTests(unittest.TestCase):
+    def run_push(self, branch="main", remote_sha="b" * 40, local_sha="c" * 40,
+                 ancestor_status=0):
+        update = f"refs/heads/{branch} {local_sha} refs/heads/{branch} {remote_sha}\n"
+        with patch.object(pre_push.sys, "stdin", StringIO(update)), \
+             patch.object(pre_push, "git", return_value=b"a" * 40), \
+             patch.object(pre_push, "tree_files", return_value={}), \
+             patch.object(pre_push.subprocess, "run") as run, \
+             patch.object(pre_push.sys, "stderr", StringIO()) as errors:
+            run.return_value = subprocess.CompletedProcess([], ancestor_status)
+            status = pre_push.main()
+        return status, [call.args[0] for call in run.call_args_list], errors.getvalue()
+
+    def test_main_uses_advertised_remote_tip_instead_of_stale_tracking_ref(self):
+        status, commands, errors = self.run_push()
+        self.assertEqual(0, status, errors)
+        checks = [command for command in commands if command[0] == sys.executable]
+        self.assertEqual(2, len(checks))
+        for command in checks:
+            self.assertEqual("b" * 40, command[command.index("--base") + 1])
+        self.assertIn("main", checks[0])
+        self.assertIn(["git", "update-ref", "refs/remotes/origin/main", "b" * 40], commands)
+
+    def test_optional_new_member_branch_keeps_fetched_main_base(self):
+        status, commands, errors = self.run_push("members/andy-zhang/work", "0" * 40)
+        self.assertEqual(0, status, errors)
+        for command in commands:
+            if command[0] == sys.executable:
+                self.assertEqual("a" * 40, command[command.index("--base") + 1])
+
+    def test_main_creation_and_deletion_are_blocked(self):
+        for remote, local in (("0" * 40, "c" * 40), ("b" * 40, "0" * 40)):
+            with self.subTest(remote=remote, local=local):
+                status, commands, errors = self.run_push(remote_sha=remote, local_sha=local)
+                self.assertEqual(1, status)
+                self.assertEqual([], commands)
+                self.assertIn("PUSH BLOCKED", errors)
+
+    def test_non_fast_forward_main_update_is_blocked_before_validation(self):
+        status, commands, errors = self.run_push(ancestor_status=1)
+        self.assertEqual(1, status)
+        self.assertEqual(1, len(commands))
+        self.assertIn("Non-fast-forward", errors)
 
 
 class ValidationScopeTests(unittest.TestCase):

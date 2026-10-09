@@ -2,7 +2,7 @@
 
 Status: shared GitHub protocol; canonical physics baseline pending.
 Live enforcement: [repository rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules).
-Updated: 2026-10-06. Owner request: enforce an orderly contribution format and
+Updated: 2026-10-08. Owner request: enforce an orderly contribution format and
 reduce the effort needed for independent agents to understand one another.
 
 ## Gates
@@ -18,10 +18,11 @@ reduce the effort needed for independent agents to understand one another.
 4. `.github/workflows/simulation-ci.yml` runs architecture and the scoped validation
    gate on pushes and PRs. The job names remain unchanged. Preliminary research
    runs gate regressions; executable robot changes require canonical physics.
-5. Required GitHub checks protect `main`; routine PRs require zero approvals.
-   CODEOWNERS requests human review only on critical paths as a team procedure.
-   CI runs after a push, so it prevents merging failed contributions only when
-   those repository rules are active. It cannot prevent every bad branch push.
+5. Teammates push directly to `main` after local validation. GitHub blocks force
+   pushes and deletion of `main`; PRs and passing statuses are not required before
+   publication. CI checks the complete push against its previous remote tip and
+   reports failures after publication. Local hooks supply pre-push validation;
+   CODEOWNERS requests critical-path review only when an optional PR is used.
 
 ## GitHub rollout
 
@@ -30,19 +31,26 @@ initial documented plan included one approval and code-owner review. On
 2026-10-06, live ruleset 24282754 was verified to already require zero approvals,
 no code-owner approval and no last-push approval; PR #4 was mergeable despite
 automatic requests to Andy/Jiaan. The owner asked to remove unnecessary waiting.
-The current routine policy matches those live settings:
+That policy retained required PRs and the two required status checks.
 
-- Require PRs and resolved conversations; teammate approval is optional for routine work.
-- Dismiss stale reviews after changes; no last-push approval is required.
-- Require `Entry architecture` and `Headless physics`, with the branch up to date.
-- Block branch deletion and force pushes; do not grant routine bypasses.
-- Keep human review for canonical assets, shared interfaces, checks and agent rules;
-  enforcement changes need owner review. This is a team procedure, not path-specific
-  GitHub enforcement. CODEOWNERS requests reviewers only on these critical paths.
+On 2026-10-08, the owner requested the team's agreed direct-to-main workflow,
+using the supplied team discussion as context. PR #6 had already merged the
+shared context and member app folders. The updated policy is:
 
-An agent may merge a routine PR when the user authorizes merging and all checks
-pass. A request only to push/open a PR does not authorize merging. This review
-policy does not relax physics publication requirements or add bypass actors.
+- Normal team work uses `main`, with validated direct pushes and no required PR.
+- Keep member folders for experiments and shared handoffs; existing engineering
+  components and accepted records stay in place. Personal branches/PRs are optional.
+- Ruleset 24282754 keeps `deletion` and `non_fast_forward` protection on `main`,
+  and removes `pull_request` and `required_status_checks`. No bypass actors are added.
+- Keep `Entry architecture` and `Headless physics` CI; run them on `main` pushes
+  against `github.event.before`, covering multi-commit updates. CI reports failures
+  after publication rather than preventing the direct push. Local checks still apply.
+- Keep human review for canonical assets, shared interfaces, checks and agent rules.
+  Enforcement changes need owner authorization/review; an explicit owner request
+  can authorize the policy change without a separate author or PR.
+
+An agent needs user authorization to merge an optional PR. This policy does not
+relax physics publication requirements or grant new collaborator access.
 
 The first protocol-only installation is explicitly exempt from robot validation:
 the target branch must not yet contain the contribution log, the canonical asset
@@ -66,14 +74,14 @@ dependencies, firmware, training, deployment and shared interfaces. Unknown or
 mixed changes require full physics. `tools/physics_gate.py` runs gate regressions
 for preliminary contributions; robot changes retain both actual physics checks.
 The same classifier is used for staged/working-tree checks, exact pushed commits
-and CI. Required job names and branch protection are unchanged; routine review
-is optional under the owner's 2026-10-06 policy above.
+and CI. Job names and physics classification are unchanged; the owner's
+2026-10-08 direct-push policy above replaces the former PR/status-check barrier.
 
 Fork owners control their own settings. PRs from forks must still pass these
 repository checks and applicable critical-path human review before entering `main`. First-time fork workflow
 runs may need maintainer approval; that is separate from approval to merge.
-Owner review remains a team requirement for enforcement changes, including
-workflow and validator edits. No routine ruleset bypass actors are configured.
+Owner authorization/review remains a team requirement for enforcement changes,
+including workflow and validator edits. No ruleset bypass actors are configured.
 
 Sources: [GitHub code owners](https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners),
 [protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches).
@@ -109,7 +117,7 @@ same environment; it is not a cross-platform floating-point guarantee.
   an unavailable base or detached HEAD blocks local contribution validation.
 - Every changed tracked blob is capped at 1 MiB. Store larger approved assets
   through an agreed external artifact workflow with stable checksums.
-- Personal branches end in `/work`, and topic branches use sibling final names.
+- Optional personal branches end in `/work`, and topic branches use sibling final names.
   A bare member ref would prevent Git from creating branches beneath that prefix.
 - Ignore rules do not remove files already tracked. The gate checks tracked and
   nonignored new files too. It is not a comprehensive secret scanner or a proof
@@ -131,12 +139,13 @@ The structural validator accepts these two roots and requires their entry
 documents. Only `.md` paths there join preliminary scope. Executable apps,
 configs, dependencies and launchers retain physics classification, including
 mixed/deletion changes; no app-only gate is introduced. CODEOWNERS routes nested
-AGENTS.md and the ChatGPT instruction template to the owner. Required CI jobs,
-robot baseline checks, GitHub protection and review rules remain unchanged.
+AGENTS.md and the ChatGPT instruction template to the owner. At introduction,
+CI jobs, robot baseline checks, GitHub protection and review rules were unchanged;
+the later direct-push rollout above supersedes the branch/PR requirement.
 
 This is manual sharing of versioned files, not live chat/account-memory sync.
 See [the workflow](../../context/README.md) and [app scaffolds](../../users/README.md).
-Owner review applies to the validator and instruction changes before merge.
+Owner authorization/review applies to validator and instruction changes before publication.
 
 ## Open engineering inputs
 

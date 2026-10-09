@@ -15,7 +15,7 @@ from pathlib import Path, PurePosixPath
 
 ROOT = Path(__file__).resolve().parents[1]
 MEMBERS = ("ali-muizz", "andy-zhang", "jonathan-xie", "yulai-duan", "jiaan-li")
-BRANCH = re.compile(r"(?:members/(?:" + "|".join(MEMBERS) + r")|contributors/[a-zA-Z0-9][a-zA-Z0-9-]*)/[a-z0-9][a-z0-9-]*\Z")
+BRANCH = re.compile(r"(?:main|(?:members/(?:" + "|".join(MEMBERS) + r")|contributors/[a-zA-Z0-9][a-zA-Z0-9-]*)/[a-z0-9][a-z0-9-]*)\Z")
 ROOT_FILES = {"README.md", "CONTRIBUTING.md", "AGENTS.md", "CLAUDE.md",
               "ENTRY_TEMPLATE.md", ".gitignore", ".gitattributes"}
 ROOT_DIRS = {".github", ".githooks", "assets", "simulation", "database",
@@ -265,7 +265,7 @@ def main():
     try:
         branch = args.branch or git("symbolic-ref", "--quiet", "--short", "HEAD").decode().strip()
         if not BRANCH.fullmatch(branch):
-            raise ValueError(f"Use your members/<member>/<topic> branch; got {branch!r}.")
+            raise ValueError(f"Use main or your members/<member>/<topic> branch; got {branch!r}.")
         base = git("merge-base", args.base, "HEAD").decode().strip()
         previous = tree_files(base)
         files = tree_files(git("write-tree").decode().strip()) if args.staged else working_files()

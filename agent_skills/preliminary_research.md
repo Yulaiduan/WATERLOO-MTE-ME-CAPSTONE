@@ -44,8 +44,10 @@ prototype into the owning component through a physics-validated contribution.
    `python tools/physics_gate.py --base origin/main`. The latter runs gate
    regressions for preliminary work and reports canonical physics as
    **NOT APPLICABLE**. The direct robot commands still fail when no model exists.
-5. Commit exact paths and push a personal branch using the normal hooks; open a
-   PR and follow required CI and applicable critical-path human review. No hook bypass or fabricated check pass
+5. Commit exact paths and push directly to `main` using the normal hooks; no PR
+   is required for teammates with write access. Check post-push CI and complete
+   applicable critical-path human review. Personal branches/PRs are optional;
+   contributors without write access use a fork and PR. No hook bypass or fabricated check pass
    is part of this workflow.
 
 The existing GitHub job names remain `Entry architecture` and `Headless physics`.

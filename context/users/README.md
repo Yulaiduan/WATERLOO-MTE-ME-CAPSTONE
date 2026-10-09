@@ -14,5 +14,5 @@ like the rest of the repository and readable by all teammates.
 Keep a short README per member and dated Markdown handoffs beside it using the
 [template](../templates/chat-handoff.md). Use `chatgpt`, `codex` or the actual source
 tool in filenames. Link active notes from the member page and mark replaced notes
-superseded. The [team registry](../../database/md_research/team.md) owns branch and
-role assignments; folder names do not establish additional permissions.
+superseded. The [team registry](../../database/md_research/team.md) owns role and
+contribution-workflow assignments; folder names do not establish additional permissions.

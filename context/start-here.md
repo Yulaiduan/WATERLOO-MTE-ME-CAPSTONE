@@ -15,7 +15,7 @@ confirmation; chat suggestions do not settle them.
 | Question | Source |
 | --- | --- |
 | Project purpose, proposed architecture, registered roles | [Project README](../README.md) |
-| Current branches, accounts and review responsibilities | [Team registry](../database/md_research/team.md) |
+| Member workspaces, accounts and direct-push workflow | [Team registry](../database/md_research/team.md) |
 | Entry/validation status and blockers | [Protocol record](../database/md_research/entry-protocol.md) and latest [contribution entry](../ENTRY_TEMPLATE.md) |
 | Terrain envelopes and proposed training plan | [Terrain specification](../docs/design/simulation/terrain-training-spec.md) |
 | Geometry, springs, COM and energy screening | [Research summary](../database/md_research/requirement-parameter-research.md) and linked evidence |

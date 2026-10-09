@@ -20,12 +20,20 @@ under [database](../database/README.md) and [agent_skills](../agent_skills/READM
 If an agent tool does not discover this filename automatically, load it explicitly
 in the session. All agent tools use the same protocol and validation commands.
 
-## Personal branches and hooks
+## Main and local hooks
 
-Use the branch assigned in [the team registry](../database/md_research/team.md).
-Fetch `origin/main` before starting work. Create a missing personal branch from
-that ref; use a topic suffix for simultaneous work. Do not switch over uncommitted
-work or write to another member's branch.
+Use `main` for normal team work. In a clean checkout, fetch and fast-forward
+before editing. Preserve uncommitted work before switching or updating:
+
+```sh
+git fetch origin
+git switch main
+git pull --ff-only origin main
+```
+
+Member folders and optional personal branches are listed in
+[the team registry](../database/md_research/team.md). Do not write to another
+member's optional branch.
 
 ```sh
 git config --local core.hooksPath .githooks
@@ -34,8 +42,12 @@ git config --local core.hooksPath .githooks
 This installs the tracked pre-commit and pre-push hooks for the clone. Activate
 the Python environment before Git operations, or set `CAMEL_PYTHON` to its Python
 executable. Read [Git hygiene](../agent_skills/git_hygiene.md) before rebasing or
-resolving conflicts. Hooks can be bypassed, so GitHub required checks and review
-apply to PRs into the shared branch, even when a contributor's local hooks are absent.
+resolving conflicts. After appending the contribution log and passing the
+applicable checks, commit exact intended paths and use `git push origin main`.
+No PR is required for teammates with write access. If the push is rejected because
+`main` moved, integrate the new commits, preserve both contributions and rerun checks.
+Hooks can be bypassed; CI checks every push to `main` after publication, so inspect
+the result and fix failures promptly. GitHub blocks force pushes and deletion of `main`.
 
 ## Python validation
 

@@ -4,10 +4,29 @@
 
 The team's [GitHub repository](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE) is the shared home for documentation and engineering code. It is currently **public**; include only material approved for public sharing.
 
+## Team quickstart: push to main
+
+**Teammates with write access work on `main` and push directly. No branch or PR
+is required.** Pull the latest `main` before editing, coordinate shared files,
+append the contribution log and run the applicable checks before pushing.
+If someone pushes first, integrate their changes, preserve both contributions
+and rerun checks. Optional branches/PRs remain available for work that benefits
+from review; contributors without write access use a fork and PR.
+
+- Personal tools and experiments: `users/<member>/experimental-apps/<app>/`.
+- Shared ChatGPT/Codex handoffs: `context/users/<member>/`.
+- Team engineering code and accepted records: their existing component folders.
+
+The [team registry](database/md_research/team.md) lists member folders.
+[Contribution instructions](CONTRIBUTING.md) explain validation and coordination.
+Local hooks validate before pushing; CI checks every push, including `main`.
+GitHub blocks force pushes and deletion of `main`. CI failures are visible after
+publication, so resolve them promptly; CI is not a required pre-publication gate.
+
 ## Save useful ChatGPT context to this repository
 
 **Recommended workflow: summarize in the original ChatGPT chat, then import
-through Codex and a pull request.** This lets the chat preserve the discussion's
+through Codex and push directly to `main`.** This lets the chat preserve the discussion's
 reasoning while Codex checks the repository's files and contribution rules.
 
 1. In the regular ChatGPT conversation containing the useful work, use the export
@@ -15,10 +34,10 @@ reasoning while Codex checks the repository's files and contribution rules.
 2. Give the exported Markdown to Codex with the import prompt below. Replace
    `<member-slug>` with your name from [the team registry](database/md_research/team.md)
    (for example, `andy-zhang`).
-3. Publish a dated handoff under `context/users/<member-slug>/` through a member
-   branch and PR. App-specific model/setup context belongs with the relevant
+3. Publish a dated handoff under `context/users/<member-slug>/` directly to `main`
+   after validation. App-specific model/setup context belongs with the relevant
    `users/<member-slug>/experimental-apps/<app>/context/`.
-4. Other members pull the merged files and have Codex read them, or attach the
+4. Other members pull the published files and have Codex read them, or attach the
    relevant files to their ChatGPT conversations. Include the summary itself;
    a chat link alone may be inaccessible to another member.
 
@@ -58,7 +77,7 @@ Return the Markdown in one code block, or as a downloadable .md file.
 Import the handoff below into
 Yulaiduan/WATERLOO-MTE-ME-CAPSTONE.
 
-Follow AGENTS.md. Use my member topic branch.
+Follow AGENTS.md. Start from up-to-date main and preserve unrelated work.
 Save the dated handoff under context/users/<member-slug>/ and link it
 from my context README. Add a numeric suffix if that filename already exists.
 
@@ -66,7 +85,8 @@ If it concerns a particular experimental app, place its detailed model/setup
 context with that app and link it from my general handoff.
 
 Preserve existing context, distinguish proposals from accepted requirements,
-append the contribution log, run the required checks, and open a PR into main.
+append the contribution log, run the required checks, and push directly to main.
+Integrate concurrent changes and rerun checks if main has moved. No PR is needed.
 
 [Paste handoff here]
 ```
@@ -77,7 +97,7 @@ You can name `Yulaiduan/WATERLOO-MTE-ME-CAPSTONE` in a prompt, but the name or
 URL alone grants no repository access or write permission. Direct publishing
 depends on connected GitHub tools that support writes, your repository access,
 and the tools available to that chat. If those tools are available, explicitly
-request your member branch and a PR, and verify the required checks run. Otherwise,
+request a validated direct update to main, and verify the applicable checks run. Otherwise,
 export Markdown and use the Codex import workflow above. A summary is shared
 knowledge; it does not automatically synchronize private chats or account memories.
 
@@ -88,9 +108,9 @@ and [projects and chat context](https://learn.chatgpt.com/docs/projects).
 
 Use **one repository with separate components**. One commit can capture compatible code, interfaces, robot assets, and documentation, while each component keeps its own dependencies and run instructions. Documentation contributors do not need a firmware compiler or GPU environment.
 
-**Agent entry point:** every agent follows [AGENTS.md](AGENTS.md), reads the [knowledge database](database/README.md) and [shared procedures](agent_skills/README.md), and appends the [contribution log](ENTRY_TEMPLATE.md). Personal branches and checks are independent of agent vendor or tool. `CLAUDE.md` is only a compatibility pointer.
+**Agent entry point:** every agent follows [AGENTS.md](AGENTS.md), reads the [knowledge database](database/README.md) and [shared procedures](agent_skills/README.md), and appends the [contribution log](ENTRY_TEMPLATE.md). Direct pushes and checks are independent of agent vendor or tool. `CLAUDE.md` is only a compatibility pointer.
 
-**Implementation status:** the entry protocol, local hooks, structural checks and CPU physics validator are implemented. Physics remains blocked until a reviewed canonical robot and mass/joint baseline are supplied. GitHub requires architecture/physics checks with zero mandatory approvals; critical changes retain human review as a team procedure. [Live rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules) show current enforcement. Existing local MuJoCo work will be imported separately after review; firmware, training, GPU deployment and hardware runtime choices remain open.
+**Implementation status:** the entry protocol, local hooks, structural checks and CPU physics validator are implemented. Physics remains blocked until a reviewed canonical robot and mass/joint baseline are supplied. Teammates push directly to `main`; CI runs architecture/physics checks after publication. Critical changes retain human review as a team procedure, which can be completed without a PR. [Live rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules) protect `main` from force pushes and deletion. Existing local MuJoCo work will be imported separately after review; firmware, training, GPU deployment and hardware runtime choices remain open.
 
 ```text
 WATERLOO-MTE-ME-CAPSTONE/
@@ -149,11 +169,11 @@ flowchart LR
 - **Shared interfaces:** specify observation/action ordering and shapes, SI units, coordinate frames, joint names, timestamps, limits, control frequency, command/telemetry schemas and a compatibility version. Python and embedded code can implement the same contract without sharing a runtime.
 - **Policy handoff:** export weights with the code commit, assets revision, interface version, normalization, action scaling, frequency, seed and training config. Validate compatibility and evaluate in simulation before a separately reviewed hardware test.
 
-Each component owns its dependency manifest, lockfile where supported, tests and verified instructions. Package reusable Python code when implemented; avoid absolute developer-specific paths and copied source. A shared interface change must update affected consumers and tests in the same pull request, or include an explicit backwards-compatible migration.
+Each component owns its dependency manifest, lockfile where supported, tests and verified instructions. Package reusable Python code when implemented; avoid absolute developer-specific paths and copied source. A shared interface change must update affected consumers and tests in the same contribution, or include an explicit backwards-compatible migration.
 
 ### Multiple contributors: Markdown and code
 
-Each member has a personal `members/<name>/work` branch, listed in [the team registry](database/md_research/team.md). Use `members/<name>/<topic>` for parallel tasks and small pull requests into reviewed `main`. Organize files by topic or subsystem. Integrate `main` regularly to keep assets and interfaces consistent.
+Use `main` for normal team work and push validated changes directly. Each member has a `users/<member>/` workspace, listed in [the team registry](database/md_research/team.md), plus shared context under `context/users/<member>/`. Organize team code and accepted records by topic or subsystem. Personal/topic branches are optional for concurrent or longer work; integrate current `main` before publication and coordinate changes to shared files.
 
 ### Share chat context and experimental apps
 
@@ -188,7 +208,7 @@ Commit Markdown, source, small configs, schemas and manageable text robot models
 
 Planned checks are scoped by changed paths: Markdown links for docs, embedded build/tests for firmware, headless smoke tests for simulation, CPU smoke tests for training, and image/config checks for deployment. Changes to `shared/` or `assets/` also exercise affected consumers. Full GPU jobs require explicit launch and runtime/cost limits, rather than running on every pull request.
 
-**Shared contribution gate:** PRs into `main` require `Entry architecture` and `Headless physics`; routine work needs no teammate approval. Canonical assets, shared interfaces, checks and agent rules retain human review, with owner review for enforcement changes. This critical-path review is a team procedure, not path-specific GitHub enforcement. The validation gate permits [preliminary research](agent_skills/preliminary_research.md) before an approved robot exists, with explicit assumptions and research checks. Executable robot, asset, dependency and mixed changes still require canonical physics validation. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
+**Shared contribution gate:** run the applicable checks locally before pushing; `Entry architecture` and `Headless physics` also run after every push to `main`. No PR or required GitHub status-check barrier is configured. Routine work needs no teammate approval. Canonical assets, shared interfaces, checks and agent rules retain human review, with owner authorization/review for enforcement changes; an explicit owner request can authorize the policy change without requiring a separate author or PR. This critical-path review is a team procedure, not path-specific GitHub enforcement. The validation gate permits [preliminary research](agent_skills/preliminary_research.md) before an approved robot exists, with explicit assumptions and research checks. Executable robot, asset, dependency and mixed changes still require canonical physics validation. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
 
 ### Bring existing work into this layout
 

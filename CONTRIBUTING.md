@@ -4,13 +4,13 @@ Use the [repository architecture](README.md#repository-architecture) to choose a
 
 ## Team workflow
 
-1. Start from up-to-date `main` in your own checkout. Use your personal `members/<name>/work` branch or a topic branch with a different final segment, as listed in [the team registry](database/md_research/team.md). Preserve uncommitted work when updating.
+1. Start from up-to-date `main` in your own checkout. Normal team work stays on `main`; personal/topic branches are optional. Member workspaces are listed in [the team registry](database/md_research/team.md). Preserve uncommitted work when updating.
 2. Coordinate ownership in an issue or team discussion. Use separate Markdown files for independent topics; agree who edits heavily shared sections.
 3. Follow the tool-neutral [agent protocol](AGENTS.md), append the four-section [contribution log](ENTRY_TEMPLATE.md), and run the checks selected by the scoped gate. Install the hooks as described in [Git hygiene](agent_skills/git_hygiene.md).
-4. Push the branch and open a pull request describing the result and validation. Teammate review is optional for routine contributions. Canonical assets, shared interfaces, checks and agent rules require human review; enforcement files require the repository owner's review.
-5. Routine contributions may merge once required checks pass and conversations are resolved, without waiting for Andy or Jiaan. An agent needs user authorization to merge; pushing or opening a PR alone does not grant it. For critical changes, complete the applicable human review first. Resolve conflicts without dropping someone else's content. Avoid direct pushes to `main`.
+4. Run the applicable checks, then push directly to `main`. No PR or teammate approval is required for routine contributions. Canonical assets, shared interfaces, checks and agent rules retain human review; enforcement changes need owner authorization/review, which can be given by an explicit owner request without a separate author or PR.
+5. If someone pushes first, fetch and integrate their changes, preserve both contributions and rerun checks before retrying. Check the CI results after publication and fix failures promptly. Optional branches/PRs are available when review helps; an agent needs user authorization to merge an optional PR. Contributors without write access use a fork and PR.
 
-Local hooks and CI implement the contribution gate. GitHub requires PRs and status checks with zero mandatory approvals; critical-path human review is a team procedure, not path-specific GitHub enforcement. CODEOWNERS requests reviewers only for critical paths. The rule applies to member branches and forks; see [the protocol record](database/md_research/entry-protocol.md). Each member has an isolated branch; regularly integrate `main` so canonical assets and interfaces do not diverge. [Preliminary research](agent_skills/preliminary_research.md) can be published without a canonical robot after structure, evidence and gate-regression checks. Executable robot, asset, dependency and mixed changes still require passing physics validation; a missing model blocks those contributions.
+Local hooks validate before pushing; CI runs after every branch push, including `main`. GitHub protects `main` against force pushes and deletion. PRs and pre-publication status checks are not required, so CI reports failures after a commit enters `main`; local validation remains part of the team procedure. CODEOWNERS requests reviewers for critical paths in optional PRs. See [the protocol record](database/md_research/entry-protocol.md). [Preliminary research](agent_skills/preliminary_research.md) can be published without a canonical robot after structure, evidence and gate-regression checks. Executable robot, asset, dependency and mixed changes still require passing physics validation; a missing model blocks those contributions.
 
 ## Shared chat context and experimental tools
 
@@ -44,4 +44,4 @@ project-local Windows launcher with verified start/restart at its original URL.
 - Retained runs need the commit, resolved config, seed, dependencies/backend, assets revision and interface version. Keep large raw artifacts outside Git and link selected results from dated benchmarks.
 - Documentation needs a link/path check. Code needs affected-component tests; shared changes need consumer checks. Report unavailable GPU/hardware checks honestly.
 
-Use the [pull-request template](.github/pull_request_template.md) to explain scope, validation, interface impact and remaining work.
+For an optional PR, use the [pull-request template](.github/pull_request_template.md) to explain scope, validation, interface impact and remaining work.

@@ -15,6 +15,13 @@ validates committed tips in temporary clones, then removes those clones. Install
 hooks with `git config --local core.hooksPath .githooks`. Activate the virtual
 environment before committing/pushing, or set `CAMEL_PYTHON` to its interpreter.
 
+The validators accept `main` and optional member/contributor topic branches.
+For direct `main` pushes, the hook compares against Git's advertised remote tip,
+not just the fetched tracking ref. CI runs on every branch push including `main`;
+main's jobs use `github.event.before` to validate the entire pushed diff rather
+than comparing the new tip to itself. GitHub does not require a PR or passing
+statuses before a direct push; local checks remain part of the contribution procedure.
+
 These tools need a local Git checkout and a fetched `origin/main`. Hook paths are
 relative so linked worktrees can each use their version. No hook bypass should be
 used to publish work that fails validation. The push hook requires the applicable

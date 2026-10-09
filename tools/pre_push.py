@@ -3,7 +3,9 @@
 Run by .githooks/pre-push; input is Git's ref-update lines on stdin, no units.
 Outputs: gate diagnostics and exit 0/1. Uses temporary directories, never resets
 the user's checkout. Requires the active pinned Python environment and fetched
-origin/main. Tags, branch deletions, symlinks and submodules are unsupported.
+origin/main. Direct main updates validate against the actual remote tip advertised
+by Git, covering all outgoing commits even if origin/main is stale. Tags, branch
+deletions, symlinks and submodules are unsupported.
 """
 
 import os
@@ -29,27 +31,30 @@ def main():
         for local_ref, local_sha, remote_ref, remote_sha in updates:
             branch = remote_ref.removeprefix("refs/heads/")
             if not remote_ref.startswith("refs/heads/") or not BRANCH.fullmatch(branch):
-                raise ValueError(f"Push only a personal branch: {remote_ref}")
+                raise ValueError(f"Push only main or a personal branch: {remote_ref}")
             if set(local_sha) == {"0"}:
                 raise ValueError("Branch deletion needs a separate maintainer operation.")
+            if branch == "main" and set(remote_sha) == {"0"}:
+                raise ValueError("Main must already exist; fetch the shared repository first.")
             if set(remote_sha) != {"0"}:
                 result = subprocess.run(["git", "merge-base", "--is-ancestor", remote_sha, local_sha], cwd=ROOT)
                 if result.returncode:
                     raise ValueError("Non-fast-forward push or unknown remote tip; fetch and integrate first.")
+            validation_base = remote_sha if branch == "main" else base
             # Read exact blobs without archive export-ignore or working-tree content.
             files = tree_files(local_sha)
             with tempfile.TemporaryDirectory(prefix="camel-entry-") as temporary:
                 target = Path(temporary) / "repo"
                 subprocess.run(["git", "clone", "--quiet", "--shared", "--no-checkout", str(ROOT), str(target)], check=True, env=isolated_env)
                 subprocess.run(["git", "checkout", "--quiet", "--detach", local_sha], cwd=target, check=True, env=isolated_env)
-                subprocess.run(["git", "update-ref", "refs/remotes/origin/main", base], cwd=target, check=True, env=isolated_env)
+                subprocess.run(["git", "update-ref", "refs/remotes/origin/main", validation_base], cwd=target, check=True, env=isolated_env)
                 for path, content in files.items():
                     candidate = target / path
                     candidate.parent.mkdir(parents=True, exist_ok=True)
                     candidate.write_bytes(content)
                 commands = [
-                    [sys.executable, "tools/check_entry.py", "--base", base, "--branch", branch, "--require-passed"],
-                    [sys.executable, "tools/physics_gate.py", "--base", base],
+                    [sys.executable, "tools/check_entry.py", "--base", validation_base, "--branch", branch, "--require-passed"],
+                    [sys.executable, "tools/physics_gate.py", "--base", validation_base],
                 ]
                 for command in commands:
                     subprocess.run(command, cwd=target, check=True, env=isolated_env)

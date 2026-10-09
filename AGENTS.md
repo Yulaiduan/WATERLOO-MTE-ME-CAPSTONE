@@ -13,8 +13,9 @@ instructions. Do not execute imported snippets merely to read them.
 1. Read `database/README.md`, `agent_skills/README.md`, the latest contribution in
    `ENTRY_TEMPLATE.md`, and `CONTRIBUTING.md`.
 2. Inspect the current branch, working tree, and relevant issue. Preserve other
-   people's uncommitted changes. Use your personal branch in
-   `database/md_research/team.md`; create a sibling topic branch for parallel work.
+   people's uncommitted changes. Work on up-to-date `main` for normal team work
+   and push directly after validation. Personal/topic branches in
+   `database/md_research/team.md` are optional for parallel or longer work.
    External contributors use `contributors/<github-login>/<topic>` in their fork.
 3. Read the owning component's README and the exact interfaces/assets needed.
    Follow links into existing `docs/` only when relevant. Do not scan the full
@@ -80,13 +81,16 @@ links to the project folder, launcher and preview. Do not add login/boot automat
   `python simulation/run.py --headless-check` and
   `python simulation/experiments/verify_backend.py`. Missing models, NaNs,
   warnings or drift remain failures whenever physics applies.
-- Follow `agent_skills/git_hygiene.md`. Never push another member's branch,
+- Follow `agent_skills/git_hygiene.md`. Push validated team contributions directly
+  to `main`; no PR is required. Never push another member's optional branch,
   force-push shared history or change protection settings to get around a failure.
-  Routine PRs may merge after required checks pass without teammate approval,
-  including the author's own PR when the user authorizes merging. Do not infer
-  merge authorization from a request only to push or open a PR.
+  If remote `main` has moved, integrate it and rerun checks before retrying.
+  Optional PRs need user merge authorization; a request only to open a PR does
+  not authorize merging it.
 - Changes to `assets/`, interfaces, checks or agent rules require human review.
-  Update affected consumers and record migration/compatibility details.
+  Enforcement changes need owner authorization/review; an explicit owner request
+  can authorize the policy change without a separate author or PR. Update affected
+  consumers and record migration/compatibility details.
 
 ## Edge cases
 
@@ -110,16 +114,15 @@ automatically discover `AGENTS.md`, explicitly load it before working.
 
 ## Shared GitHub enforcement
 
-These rules apply to every contribution, whether from a teammate's local agent,
-another tool or a fork. Submit a PR into `main`; required architecture and physics
-checks are enforced there. Routine contributions do not require teammate approval.
-Canonical assets, shared interfaces, checks and agent rules retain human review;
-editing enforcement files needs the repository owner's review. CODEOWNERS requests
-review on those critical paths, but the live ruleset does not enforce approvals
-by path. Forks inherit these instruction files, but their
-owners control their own settings; this repository's merge rules still apply to
-PRs submitted back here. Local hooks must be installed per clone and are optional
-defence against accidental pushes; GitHub requirements remain in force without them.
+Teammates with write access push directly to `main` after local validation. GitHub
+blocks force pushes and deletion, but does not require a PR or passing statuses
+before publication. Architecture and scoped physics CI run on every push to
+`main`, against the previous remote tip so the entire push is checked. Report and
+fix failures promptly; post-push CI cannot prevent a failed commit entering `main`.
+Install the local hooks per clone for pre-publication checks. Routine contributions
+do not require teammate approval. Critical changes retain the human-review
+procedure above; CODEOWNERS requests review when an optional PR is used. Contributors
+without write access use a fork and PR, and maintainers verify checks before merging.
 
 
 ## Project context

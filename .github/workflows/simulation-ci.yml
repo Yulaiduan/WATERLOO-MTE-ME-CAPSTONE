@@ -3,7 +3,12 @@ name: Simulation CI
 on:
   pull_request:
   push:
-    branches-ignore: ['main']
+    branches: ['**']
+
+env:
+  # main already points at the pushed tip; validate the entire push against its
+  # previous remote tip, not origin/main (which would produce an empty diff).
+  VALIDATION_BASE: ${{ github.event_name == 'push' && github.ref_name == 'main' && github.event.before || 'origin/main' }}
 
 permissions:
   contents: read
@@ -28,7 +33,7 @@ jobs:
       - name: Check source branch and contribution
         env:
           SOURCE_BRANCH: ${{ github.head_ref || github.ref_name }}
-        run: python tools/check_entry.py --base origin/main --branch "$SOURCE_BRANCH" --require-passed
+        run: python tools/check_entry.py --base "$VALIDATION_BASE" --branch "$SOURCE_BRANCH" --require-passed
       - name: Test validation gates
         run: python -m unittest discover -s tools/tests -v
 
@@ -48,4 +53,4 @@ jobs:
           cache-dependency-path: simulation/requirements.txt
       - run: python -m pip install -r simulation/requirements.txt
       - run: python -m unittest discover -s tools/tests -v
-      - run: python tools/physics_gate.py --base origin/main
+      - run: python tools/physics_gate.py --base "$VALIDATION_BASE"

@@ -6,7 +6,7 @@ Add language-neutral definitions under `interfaces/` as agreed: joint identifier
 
 Consumers can generate or implement Python and embedded bindings from the same contract. Document reproducible generation and checks. Shared code must not import simulators, cloud SDKs or board drivers; firmware must not require Python at runtime.
 
-Breaking changes need a version change, affected-consumer updates and validation in one pull request, or a documented backwards-compatible transition. Define policy metadata so exporters and inference consumers agree on normalization, order, scaling and timing.
+Breaking changes need a version change, affected-consumer updates and validation in one contribution, or a documented backwards-compatible transition. Define policy metadata so exporters and inference consumers agree on normalization, order, scaling and timing.
 
 Physical models/parameters belong in [assets](../assets/README.md); component-specific defaults stay with their component.
 

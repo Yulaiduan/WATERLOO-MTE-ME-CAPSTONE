@@ -2,7 +2,7 @@
 
 Updated: 2026-10-08. Status: initial scaffold; member has not supplied a profile.
 
-Registered focus and branch: see the [team registry](../../../database/md_research/team.md).
+Registered focus and contribution workflow: see the [team registry](../../../database/md_research/team.md).
 Apps/toolkits: [experimental apps](../../../users/andy-zhang/experimental-apps/README.md).
 
 ## Current focus and working preferences

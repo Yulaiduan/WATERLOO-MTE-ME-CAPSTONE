@@ -31,7 +31,8 @@ Do not load every teammate's conversation history into every task.
    numeric suffix if that name already exists. Link it from the member's README.
    A chat URL is optional provenance; include enough text to work without access
    to the original chat. Do not commit a whole account export.
-3. Publish through the normal contribution workflow. Another teammate pulls
+3. Run the applicable checks and push directly to `main`; no PR is required for
+   teammates with write access. Another teammate pulls
    `main`, then attaches the relevant files to their ChatGPT conversation.
 4. For repeat work, use a ChatGPT Project with these files as sources and the
    [project instructions](templates/chatgpt-project-instructions.md). Upload or
@@ -44,7 +45,8 @@ feature or assume access to other people's private chats.
 
 ## Share Codex context
 
-Pull the latest repository and work on your personal branch. Root
+Pull the latest repository and work on `main`; validated team changes can be
+pushed directly. Personal branches/PRs are optional. Root
 [AGENTS.md](../AGENTS.md) points agents to this index; explicitly request the
 member and app context needed for the task. If starting at the repo root, read
 the selected app's `AGENTS.md` explicitly too: automatic discovery follows the

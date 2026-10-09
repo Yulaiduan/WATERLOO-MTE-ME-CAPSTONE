@@ -547,3 +547,67 @@ Members can copy a ChatGPT export prompt and a Codex import prompt, with explici
 Use these prompts to publish reviewed handoffs through member branches and PRs; the existing PR still requires owner review of its earlier enforcement changes.
 
 ---
+
+## Entry: 2026-10-08 — Yulai Duan with Codex — direct-to-main team workflow
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Contribution workflow, shared context and member workspace guidance.
+- **Associated Issue/Task:** Owner requested the direct-to-main workflow agreed in the supplied team discussion: shared context and member experiments, without mandatory branches or PRs. PR #6 is already merged and supplies the folders.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions or app imports.
+- `.github/CODEOWNERS`
+- `.github/workflows/simulation-ci.yml`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `ENTRY_TEMPLATE.md`
+- `README.md`
+- `agent_skills/git_hygiene.md`
+- `agent_skills/preliminary_research.md`
+- `context/README.md`
+- `context/start-here.md`
+- `context/users/README.md`
+- `context/users/ali-muizz/README.md`
+- `context/users/andy-zhang/README.md`
+- `context/users/jiaan-li/README.md`
+- `context/users/jonathan-xie/README.md`
+- `context/users/yulai-duan/README.md`
+- `database/README.md`
+- `database/md_research/entry-protocol.md`
+- `database/md_research/team.md`
+- `docs/README.md`
+- `docs/setup.md`
+- `shared/README.md`
+- `tools/README.md`
+- `tools/check_entry.py`
+- `tools/pre_push.py`
+- `tools/tests/test_gates.py`
+- `users/README.md`
+- `users/ali-muizz/README.md`
+- `users/andy-zhang/README.md`
+- `users/jiaan-li/README.md`
+- `users/jonathan-xie/README.md`
+- `users/yulai-duan/README.md`
+- **API/Interface Changes:** Validators accept main alongside optional personal branches. Direct-main pre-push validation uses Git's advertised remote tip, and main CI uses the push event's previous tip so the complete outgoing change is checked. Align README prompts, onboarding and member indexes with direct pushes. Ruleset 24282754 is updated as part of publication to retain deletion/non-fast-forward protection and remove mandatory PR/status-check rules. CI now reports after publication; local validation and critical-path human review remain team procedures. This explicit owner request authorizes the enforcement change. Robot models, dependencies, runtime interfaces and physics classification are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** All 31 gate regressions pass without skips using Python 3.11.16, MuJoCo 3.14.0 and NumPy 2.4.6, including direct-main remote-tip selection, optional branch compatibility and rejected main creation/deletion/non-fast-forward updates. All 231 relative Markdown links resolve and code fences are balanced; git diff --check passes. Working/staged architecture checks and the exact-push scoped gate are required before publication. GitHub CI and live rules are verified after publishing.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this contribution-policy change.
+The regression suite uses temporary fixtures and does not certify a CAMEL robot.
+The existing local Capstone working tree is separate and is not imported.
+
+## 4. Compute Saving Handoff State
+
+Normal team work now uses main and validated direct pushes, with optional branches and PRs when useful.
+The existing users and context folders organize personal experiments and shared findings while the same local checks and physics classification remain applicable.
+Pull the published main, install the tracked hooks per clone, and inspect post-push CI because it cannot block a bad direct update before publication.
+
+---

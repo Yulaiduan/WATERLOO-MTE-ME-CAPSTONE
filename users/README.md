@@ -7,6 +7,10 @@ Use `users/<member>/experimental-apps/<app>/` for developing simulation sandboxe
 calculators, visualizations and other vibe-coded tools. A named owner makes it
 easy to find the work; all teammates may use it. Coordinate changes with its owner.
 
+Teammates work on `main` and push validated changes directly; no branch or PR is
+required. These member folders organize experiments within the same shared
+repository. Follow [CONTRIBUTING.md](../CONTRIBUTING.md) for checks and coordination.
+
 | Member | Apps/toolkits |
 | --- | --- |
 | Ali Muizz | [experimental-apps](ali-muizz/experimental-apps/README.md) |
