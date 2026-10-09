@@ -3,8 +3,9 @@
 Run: python tools/physics_gate.py --base origin/main
 Inputs: Git base and checked-out files; physics uses SI units in the asset manifest.
 Outputs: check diagnostics, exit 0/1. Preliminary research/contribution-policy
-changes run gate regressions and do not claim canonical robot validation.
-Runtime, assets, dependencies and unclassified changes require actual physics.
+changes run gate regressions and do not claim canonical robot validation. Isolated
+member workspace/context changes need only the entry checks, without executing
+apps or gate regressions. Shared runtime, assets and dependencies require physics.
 """
 
 import argparse
@@ -25,6 +26,13 @@ def run_validation(previous, current):
         print("PROTOCOL BOOTSTRAP ONLY: no robot assets or simulation implementation imported.")
         print("Robot physics remains BLOCKED until a canonical baseline is supplied.")
         print("This installation exception closes once the protocol exists on the target branch.")
+        return
+    if scope == "workspace":
+        errors = preliminary_validation_errors(current.get("ENTRY_TEMPLATE.md", b"").decode(), scope)
+        if errors:
+            raise ValueError(" ".join(errors))
+        print("Member workspace/context only: no automatic execution or gate regressions.")
+        print("Canonical robot physics: NOT APPLICABLE; member apps may be shared as untested experiments.")
         return
     if scope == "preliminary":
         errors = preliminary_validation_errors(current.get("ENTRY_TEMPLATE.md", b"").decode())

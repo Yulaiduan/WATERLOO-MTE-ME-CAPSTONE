@@ -30,7 +30,9 @@ same checks when proposing changes to this repository.
 
 Verified collaborators are `Yulaiduan`, `Code-Andy` and `Jiaan124`. Routine paths
 do not automatically request peer review and may be pushed to `main` after local
-checks pass without teammate approval. CI runs after publication. CODEOWNERS keeps the shared pool for canonical assets and
+checks pass without teammate approval. Member experiments/context stay together
+on main without CI; shared engineering/enforcement changes run CI after publication.
+CODEOWNERS keeps the shared pool for canonical assets and
 shared interfaces, and routes checks/enforcement/agent rules to `Yulaiduan`.
 Specialist ownership remains unsettled. Add the other accounts with write access
 before assigning them as code owners; change this file and CODEOWNERS together.

@@ -11,13 +11,17 @@ including deleted paths. The preliminary category permits documentation and
 compact evidence under `docs/`, research notes and equations under `database/`,
 standalone calculations under `database/code_prototypes/`, and an explicit set
 of contribution-policy, gate and regression-test files. Gate/policy changes keep
-their owner human-review requirement. Markdown-only context/handoffs under
-`context/` and app documentation/scaffolds under `users/` also qualify. No
-executable app, configuration, dependency file or launcher is exempt there.
+their owner human-review requirement. Isolated member apps under
+`users/<member>/experimental-apps/<app>/`, including source/configs/dependencies,
+launchers and experimental models, also need no canonical robot. Changes confined
+to these apps and Markdown context/scaffolds use `workspace` scope; they require
+basic structure/log checks without CI, app execution or gate regressions. Record
+tested/untested status. Workspace changes combined with research/policy remain
+preliminary; a mix with shared engineering runtime requires physics.
 Routine research needs no teammate approval
 after checks pass; see CONTRIBUTING.md. The path allowlist is in `preliminary_path`.
 
-Changes to canonical assets, executable robot code, controllers, terrain/config,
+Changes to canonical assets, shared executable robot code, controllers, terrain/config,
 dependencies, firmware, training, shared interfaces, deployment or unknown paths
 require the normal physics checks. A mixed contribution also requires physics.
 Production components must never import `database/code_prototypes/`; promote a
@@ -37,12 +41,15 @@ prototype into the owning component through a physics-validated contribution.
    - **Research/Policy Validation:** Describe the actual commands and results.
    ```
 
-   Leave the three canonical physics boxes unchecked and explicitly explain
+   For workspace-only changes use `workspace` instead of `preliminary` and record
+   the actual basic checks and tested/untested app status; no app run is required
+   merely to share source. Leave the three canonical physics boxes unchecked and explicitly explain
    that they are not applicable to this contribution. Preserve earlier failures
    in the append-only log. The new declaration does not change an earlier result.
 4. Run `python tools/check_entry.py --base origin/main --require-passed` and
    `python tools/physics_gate.py --base origin/main`. The latter runs gate
-   regressions for preliminary work and reports canonical physics as
+   regressions for preliminary work, or only the declaration for workspace-only
+   sharing, and reports canonical physics as
    **NOT APPLICABLE**. The direct robot commands still fail when no model exists.
 5. Commit exact paths and push directly to `main` using the normal hooks; no PR
    is required for teammates with write access. Check post-push CI and complete
@@ -50,6 +57,9 @@ prototype into the owning component through a physics-validated contribution.
    contributors without write access use a fork and PR. No hook bypass or fabricated check pass
    is part of this workflow.
 
-The existing GitHub job names remain `Entry architecture` and `Headless physics`.
+CI skips changes confined to `users/`, `context/`, `docs/`, `database/`, the root
+README, CONTRIBUTING.md and contribution log. Shared engineering/enforcement
+changes still run CI, including mixed pushes. The existing GitHub job names
+remain `Entry architecture` and `Headless physics`.
 For preliminary changes the second name represents the scoped validation gate;
 its diagnostics identify the exemption and do not claim a robot physics pass.

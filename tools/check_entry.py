@@ -16,6 +16,7 @@ from pathlib import Path, PurePosixPath
 ROOT = Path(__file__).resolve().parents[1]
 MEMBERS = ("ali-muizz", "andy-zhang", "jonathan-xie", "yulai-duan", "jiaan-li")
 BRANCH = re.compile(r"(?:main|(?:members/(?:" + "|".join(MEMBERS) + r")|contributors/[a-zA-Z0-9][a-zA-Z0-9-]*)/[a-z0-9][a-z0-9-]*)\Z")
+MEMBER_APP = re.compile(r"users/(?:" + "|".join(MEMBERS) + r")/experimental-apps/[a-z0-9][a-z0-9-]*/.+\Z")
 ROOT_FILES = {"README.md", "CONTRIBUTING.md", "AGENTS.md", "CLAUDE.md",
               "ENTRY_TEMPLATE.md", ".gitignore", ".gitattributes"}
 ROOT_DIRS = {".github", ".githooks", "assets", "simulation", "database",
@@ -61,18 +62,22 @@ RESEARCH_CONTENT_SUFFIXES = {".md", ".tex", ".csv", ".json", ".png", ".jpg",
                              ".jpeg", ".svg", ".pdf"}
 
 
+def workspace_path(path):
+    """Identify isolated member apps and Markdown context; never shared runtime."""
+    return bool(MEMBER_APP.fullmatch(path)) or (
+        path.startswith(("users/", "context/")) and PurePosixPath(path).suffix.lower() == ".md")
+
+
 def preliminary_path(path):
     """Allow only research artifacts, isolated prototypes and contribution policy.
 
-    Runtime code/config, dependencies, assets and unknown paths fail closed.
+    Shared runtime/config, dependencies, assets and unknown paths fail closed.
+    Member apps stay isolated and may include their own experimental models.
     Production components must never import database/code_prototypes/.
     """
-    if path in PRELIMINARY_FILES:
+    if path in PRELIMINARY_FILES or workspace_path(path):
         return True
     suffix = PurePosixPath(path).suffix.lower()
-    if path.startswith(("context/", "users/")):
-        # Only Markdown context/scaffolding is exempt; app code and configs are not.
-        return suffix == ".md"
     if path.startswith("docs/"):
         return suffix in RESEARCH_CONTENT_SUFFIXES
     if path.startswith(("database/md_research/", "agent_skills/")):
@@ -92,24 +97,26 @@ def validation_scope(previous, current):
         return "unchanged"
     if protocol_bootstrap(previous, current):
         return "bootstrap"
+    if all(path == "ENTRY_TEMPLATE.md" or workspace_path(path) for path in changed):
+        return "workspace"
     if all(preliminary_path(path) for path in changed):
         return "preliminary"
     return "physics"
 
 
-def preliminary_validation_errors(log):
+def preliminary_validation_errors(log, scope="preliminary"):
     """Require an explicit non-physics declaration and actual validation evidence."""
     latest = re.split(r"^## Entry: .+$", log, flags=re.MULTILINE)[-1]
     errors = []
-    if not re.search(r"^- \*\*Validation Scope:\*\* preliminary\s*$", latest, re.MULTILINE):
-        errors.append("Latest entry must declare '**Validation Scope:** preliminary'.")
+    if not re.search(r"^- \*\*Validation Scope:\*\* " + re.escape(scope) + r"\s*$", latest, re.MULTILINE):
+        errors.append(f"Latest entry must declare '**Validation Scope:** {scope}'.")
     evidence = re.search(r"^- \*\*Research/Policy Validation:\*\* ([^\n]+)", latest, re.MULTILINE)
     if not evidence or not evidence[1].strip() or evidence[1].lstrip().startswith("["):
         errors.append("Latest entry must record actual Research/Policy Validation evidence.")
     # An exemption is not a successful canonical robot run.
     for check in CHECKS:
         if re.search(r"^- \[[xX]\] " + re.escape(check) + r"$", latest, re.MULTILINE):
-            errors.append("Preliminary entries must leave canonical physics checks unchecked (not applicable).")
+            errors.append("Non-physics entries must leave canonical physics checks unchecked (not applicable).")
     return errors
 
 
@@ -184,7 +191,8 @@ def structural_errors(files):
             errors.append(f"Generated output or local/private file: {path}")
         if len(content) > 1024 * 1024:
             errors.append(f"File exceeds 1 MiB: {path}")
-        if Path(path).suffix.lower() in {".xml", ".urdf", ".stl", ".obj", ".mjb"} and parts[0] != "assets":
+        if (Path(path).suffix.lower() in {".xml", ".urdf", ".stl", ".obj", ".mjb"}
+                and parts[0] != "assets" and not MEMBER_APP.fullmatch(path)):
             errors.append(f"Model/mesh must be canonical under assets/: {path}")
         if path.endswith(".py"):
             try:
@@ -275,8 +283,8 @@ def main():
         errors += contribution_errors(previous.get("ENTRY_TEMPLATE.md", b"").decode(),
                                       files.get("ENTRY_TEMPLATE.md", b"").decode(), changed,
                                       args.require_passed and scope == "physics")
-        if args.require_passed and scope == "preliminary":
-            errors += preliminary_validation_errors(files.get("ENTRY_TEMPLATE.md", b"").decode())
+        if args.require_passed and scope in {"preliminary", "workspace"}:
+            errors += preliminary_validation_errors(files.get("ENTRY_TEMPLATE.md", b"").decode(), scope)
         if errors:
             for error in errors:
                 print(f"FAIL: {error}")

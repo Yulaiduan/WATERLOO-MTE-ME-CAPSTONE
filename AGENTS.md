@@ -49,12 +49,16 @@ instructions. Do not execute imported snippets merely to read them.
 
 Every retained script needs a module docstring stating purpose, invocation,
 inputs/units, outputs and limitations. Every new folder needs a README or tracked
-content. No machine-specific paths, duplicate robot definitions, silent defaults
+content. No machine-specific paths, duplicate canonical robot definitions, silent defaults
 for unknown terrain values, or new root folders without updating the protocol.
 
-Markdown-only files under `context/` and `users/` use preliminary validation.
-Executable app code, configs, dependency files and launchers retain the physics
-gate and app-specific checks; experimental status does not waive validation.
+Changes confined to member apps under `users/<member>/experimental-apps/<app>/`
+and Markdown context/scaffolds use `workspace` scope. They may include source,
+dependencies, launchers and clearly labelled experimental models without a
+canonical robot. Basic structure/log checks apply; no CI, automatic app execution,
+physics checks or gate regressions are required for workspace-only publication.
+Record what is tested or untested. Shared engineering changes and promotion into
+canonical components still require their applicable validation.
 Production components must not import member experiments. Shared requirements
 remain in their existing records; personal/app context links rather than replaces
 them. Keep private chats, account exports and credentials out of this public repo.
@@ -69,15 +73,15 @@ links to the project folder, launcher and preview. Do not add login/boot automat
 - Append a completed entry to `ENTRY_TEMPLATE.md` using its four sections. Keep
   old entries intact. List exact changed paths, API changes, actual validation,
   and a three-sentence handoff. An unchecked physics box means blocked for a
-  physics contribution or explicitly not applicable for preliminary research;
+  physics contribution or explicitly not applicable for research/member workspaces;
   it never means passed.
 - Run `python tools/check_entry.py --base origin/main` after fetching the base.
 - Run `python tools/check_entry.py --base origin/main --require-passed` and
   `python tools/physics_gate.py --base origin/main` before publication. The gate
   classifies the complete diff. Preliminary research and contribution-policy
-  changes use the documented scope and evidence in
+  changes and isolated member workspaces use the documented scope and evidence in
   `agent_skills/preliminary_research.md`; they can be published before a canonical
-  robot exists. Runtime/assets/dependencies and mixed changes must pass both
+  robot exists. Shared runtime/assets/dependencies and mixed engineering changes must pass both
   `python simulation/run.py --headless-check` and
   `python simulation/experiments/verify_backend.py`. Missing models, NaNs,
   warnings or drift remain failures whenever physics applies.
@@ -116,8 +120,10 @@ automatically discover `AGENTS.md`, explicitly load it before working.
 
 Teammates with write access push directly to `main` after local validation. GitHub
 blocks force pushes and deletion, but does not require a PR or passing statuses
-before publication. Architecture and scoped physics CI run on every push to
-`main`, against the previous remote tip so the entire push is checked. Report and
+before publication. Architecture and scoped physics CI run on engineering and
+enforcement changes, against the previous remote tip so the entire push is checked.
+Changes confined to `users/`, `context/`, `docs/`, `database/`, the root README,
+CONTRIBUTING.md and contribution log do not trigger CI. Report and
 fix failures promptly; post-push CI cannot prevent a failed commit entering `main`.
 Install the local hooks per clone for pre-publication checks. Routine contributions
 do not require teammate approval. Critical changes retain the human-review

@@ -46,8 +46,13 @@ resolving conflicts. After appending the contribution log and passing the
 applicable checks, commit exact intended paths and use `git push origin main`.
 No PR is required for teammates with write access. If the push is rejected because
 `main` moved, integrate the new commits, preserve both contributions and rerun checks.
-Hooks can be bypassed; CI checks every push to `main` after publication, so inspect
+Hooks can be bypassed; CI checks shared engineering/enforcement pushes after publication, so inspect
 the result and fix failures promptly. GitHub blocks force pushes and deletion of `main`.
+
+Member apps and Markdown context/scaffolds need only the standard-library
+structure/log checks when shared in isolation; the scoped physics command reports
+them not applicable without importing the app or running regressions. CI does not
+run for changes confined to member workspaces, context, documentation and research.
 
 ## Python validation
 

@@ -39,8 +39,10 @@ Push directly with `git push origin main` after checks pass. If remote `main`
 has moved, fetch and integrate it, retain every independent log entry and rerun
 checks before retrying. Never force-push to make a rejected update succeed.
 
-Hooks are installed locally and can be bypassed. CI runs after every push to
-`main`, using the push event's previous tip as its base; it reports failures after
+Hooks are installed locally and can be bypassed. Member app/context-only pushes
+use basic structure/log checks without executing apps, physics or gate regressions.
+CI skips collaboration-only changes and runs for shared engineering/enforcement,
+using the push event's previous tip as its base; it reports failures after
 publication and cannot block a bad direct update. GitHub blocks force pushes and
 deletion, without requiring PRs or passing statuses before publication. Routine
 work needs no teammate approval. Optional PRs need user merge authorization and
@@ -48,7 +50,7 @@ passing checks. Canonical assets, shared interfaces, checks and agent rules reta
 human review; enforcement changes need owner authorization/review, which an
 explicit owner request can provide without a separate author or PR. CODEOWNERS
 requests critical reviews on optional PRs. Report failures honestly and keep
-blocked work local. A missing robot model does not block an eligible preliminary
+blocked work local. A missing robot model does not block isolated member apps or eligible preliminary
 contribution; its physics status is explicitly not applicable. Do not use
 `--no-verify` to bypass this protocol.
 

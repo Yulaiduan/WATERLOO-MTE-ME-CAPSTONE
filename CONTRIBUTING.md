@@ -10,7 +10,7 @@ Use the [repository architecture](README.md#repository-architecture) to choose a
 4. Run the applicable checks, then push directly to `main`. No PR or teammate approval is required for routine contributions. Canonical assets, shared interfaces, checks and agent rules retain human review; enforcement changes need owner authorization/review, which can be given by an explicit owner request without a separate author or PR.
 5. If someone pushes first, fetch and integrate their changes, preserve both contributions and rerun checks before retrying. Check the CI results after publication and fix failures promptly. Optional branches/PRs are available when review helps; an agent needs user authorization to merge an optional PR. Contributors without write access use a fork and PR.
 
-Local hooks validate before pushing; CI runs after every branch push, including `main`. GitHub protects `main` against force pushes and deletion. PRs and pre-publication status checks are not required, so CI reports failures after a commit enters `main`; local validation remains part of the team procedure. CODEOWNERS requests reviewers for critical paths in optional PRs. See [the protocol record](database/md_research/entry-protocol.md). [Preliminary research](agent_skills/preliminary_research.md) can be published without a canonical robot after structure, evidence and gate-regression checks. Executable robot, asset, dependency and mixed changes still require passing physics validation; a missing model blocks those contributions.
+Local hooks check structure and the contribution record before pushing. CI runs on shared engineering and enforcement changes, including direct pushes to `main`; changes confined to member experiments, context, documentation and research do not trigger it. GitHub protects `main` against force pushes and deletion. PRs and pre-publication status checks are not required, so CI reports failures after publication. CODEOWNERS requests reviewers for critical paths in optional PRs. See [the protocol record](database/md_research/entry-protocol.md). [Preliminary research and member experiments](agent_skills/preliminary_research.md) can be published without a canonical robot. Shared executable robot, asset, dependency and mixed engineering changes still require passing physics validation; a missing model blocks those contributions.
 
 ## Shared chat context and experimental tools
 
@@ -23,10 +23,12 @@ both notes when concurrent contributions conflict. No private account exports.
 
 Use [the app scaffold](users/README.md) for
 `users/<member>/experimental-apps/<app>/`. Folder ownership is organizational,
-not an access control. Markdown-only context/scaffold contributions use the
-preliminary gate; app code/configs/dependencies/launchers still require the
-existing physics checks and their own relevant validation. Do not import a local
-app until those checks pass. A localhost app delivery also needs a durable
+not an access control. All member apps live together on `main`, so one pull gets
+everyone's experiments and context. Isolated app source, configs, dependencies,
+launchers and experimental models use the basic workspace checks; they do not
+need CI or the canonical robot. Record tested/untested status and keep production
+components from importing these experiments. Promotion into a shared component
+requires that component's validation. A working localhost app delivery also needs a durable
 project-local Windows launcher with verified start/restart at its original URL.
 
 ## Markdown style

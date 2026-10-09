@@ -211,29 +211,74 @@ class ValidationScopeTests(unittest.TestCase):
         errors = "\n".join(entry.structural_errors(current))
         self.assertNotIn("Unapproved repository location", errors)
 
-    def test_experimental_app_code_configs_and_mixed_changes_require_physics(self):
+    def test_experimental_app_code_configs_and_models_are_non_physics(self):
         for path in ("users/andy-zhang/experimental-apps/sizing/src/main.js",
                      "users/andy-zhang/experimental-apps/sizing/model.py",
                      "users/andy-zhang/experimental-apps/sizing/package.json",
                      "users/andy-zhang/experimental-apps/sizing/requirements.txt",
                      "users/andy-zhang/experimental-apps/sizing/Start App.cmd",
-                     "context/users/andy-zhang/config.json"):
+                     "users/andy-zhang/experimental-apps/sizing/robot.xml"):
             with self.subTest(path=path):
-                self.assertEqual("physics", entry.validation_scope(
+                self.assertEqual("preliminary", entry.validation_scope(
                     self.previous, self.research({path: b"runtime or config"})))
 
-    def test_moving_app_runtime_to_context_still_requires_physics(self):
+    def workspace(self, path="users/andy-zhang/experimental-apps/sizing/main.js"):
+        current = self.research({path: b"Experimental source, not executed."})
+        del current["docs/study.md"]
+        current["ENTRY_TEMPLATE.md"] = current["ENTRY_TEMPLATE.md"].replace(
+            b"**Validation Scope:** preliminary", b"**Validation Scope:** workspace")
+        return current
+
+    def test_workspace_only_never_executes_apps_or_physics_or_regressions(self):
+        current = self.workspace()
+        self.assertEqual("workspace", entry.validation_scope(self.previous, current))
+        with patch.object(gate.subprocess, "run") as run, redirect_stdout(StringIO()) as output:
+            gate.run_validation(self.previous, current)
+        run.assert_not_called()
+        self.assertIn("NOT APPLICABLE", output.getvalue())
+
+    def test_context_only_is_workspace_and_does_not_claim_physics(self):
+        current = self.workspace("context/users/andy-zhang/note.md")
+        self.assertEqual("workspace", entry.validation_scope(self.previous, current))
+        log = current["ENTRY_TEMPLATE.md"].decode()
+        self.assertEqual([], entry.preliminary_validation_errors(log, "workspace"))
+        self.assertTrue(entry.preliminary_validation_errors(log.replace("- [ ] Executed", "- [x] Executed"), "workspace"))
+
+    def test_workspace_mixed_with_shared_code_or_promotion_requires_physics(self):
+        current = self.workspace()
+        for path in ("simulation/src/controllers/control.py", "firmware/main.c",
+                     "assets/robot.xml", "shared/interface.json"):
+            with self.subTest(path=path):
+                self.assertEqual("physics", entry.validation_scope(self.previous, {**current, path: b"shared code"}))
+        previous = {**self.previous, "simulation/src/controllers/old.py": b"shared code"}
+        self.assertEqual("physics", entry.validation_scope(previous, current))
+
+    def test_unknown_members_and_runtime_context_remain_outside_workspace_scope(self):
+        for path in ("users/unknown/experimental-apps/app/main.js", "users/andy-zhang/main.js",
+                     "context/users/andy-zhang/config.json"):
+            with self.subTest(path=path):
+                self.assertEqual("physics", entry.validation_scope(self.previous, self.workspace(path)))
+
+    def test_moving_isolated_app_runtime_to_context_needs_no_canonical_robot(self):
         path = "users/andy-zhang/experimental-apps/sizing/main.js"
         previous = {**self.previous, path: b"runtime"}
         current = self.research({"context/users/andy-zhang/main.md": b"runtime"})
-        self.assertEqual("physics", entry.validation_scope(previous, current))
+        self.assertEqual("preliminary", entry.validation_scope(previous, current))
 
-    def test_user_folder_does_not_exempt_artifacts_or_robot_models(self):
+    def test_user_folder_does_not_exempt_artifacts_or_credentials(self):
         for path in ("users/andy-zhang/experimental-apps/sizing/node_modules/pkg/index.js",
-                     "users/andy-zhang/experimental-apps/sizing/.env",
-                     "users/andy-zhang/experimental-apps/sizing/robot.xml"):
+                     "users/andy-zhang/experimental-apps/sizing/.env"):
             with self.subTest(path=path):
                 self.assertIn(path, "\n".join(entry.structural_errors({path: b"example"})))
+
+    def test_experimental_models_are_allowed_only_inside_member_apps(self):
+        allowed = "users/andy-zhang/experimental-apps/sizing/robot.xml"
+        errors = "\n".join(entry.structural_errors({allowed: b"<mujoco/>"}))
+        self.assertNotIn("Model/mesh must be canonical", errors)
+        for path in ("users/unknown/experimental-apps/sizing/robot.xml", "context/robot.xml",
+                     "database/code_prototypes/robot.xml", "simulation/robot.xml"):
+            with self.subTest(path=path):
+                self.assertIn("Model/mesh must be canonical", "\n".join(entry.structural_errors({path: b"<mujoco/>"})))
 
     def test_deleting_or_moving_runtime_into_research_still_requires_physics(self):
         previous = {**self.previous, "simulation/src/controllers/old.py": b"runtime"}

@@ -17,9 +17,16 @@ from review; contributors without write access use a fork and PR.
 - Shared ChatGPT/Codex handoffs: `context/users/<member>/`.
 - Team engineering code and accepted records: their existing component folders.
 
+**One pull of `main` gets everyone's experiments and context.** Members' folders
+keep work organized; teammates can use each other's tools without switching branches.
+Changes confined to member experiments, context, docs and research do not run CI.
+Member apps can be shared as untested experiments without the canonical robot;
+record their current status and keep their setup/context with the app.
+
 The [team registry](database/md_research/team.md) lists member folders.
 [Contribution instructions](CONTRIBUTING.md) explain validation and coordination.
-Local hooks validate before pushing; CI checks every push, including `main`.
+Local hooks check structure before pushing; CI checks shared engineering and
+enforcement changes, including direct pushes to `main`.
 GitHub blocks force pushes and deletion of `main`. CI failures are visible after
 publication, so resolve them promptly; CI is not a required pre-publication gate.
 
@@ -110,7 +117,7 @@ Use **one repository with separate components**. One commit can capture compatib
 
 **Agent entry point:** every agent follows [AGENTS.md](AGENTS.md), reads the [knowledge database](database/README.md) and [shared procedures](agent_skills/README.md), and appends the [contribution log](ENTRY_TEMPLATE.md). Direct pushes and checks are independent of agent vendor or tool. `CLAUDE.md` is only a compatibility pointer.
 
-**Implementation status:** the entry protocol, local hooks, structural checks and CPU physics validator are implemented. Physics remains blocked until a reviewed canonical robot and mass/joint baseline are supplied. Teammates push directly to `main`; CI runs architecture/physics checks after publication. Critical changes retain human review as a team procedure, which can be completed without a PR. [Live rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules) protect `main` from force pushes and deletion. Existing local MuJoCo work will be imported separately after review; firmware, training, GPU deployment and hardware runtime choices remain open.
+**Implementation status:** the entry protocol, local hooks, structural checks and CPU physics validator are implemented. Shared robot physics remains blocked until a reviewed canonical robot and mass/joint baseline are supplied; isolated member apps can be shared without it. Teammates push directly to `main`; CI checks shared engineering/enforcement changes after publication and skips collaboration-only changes. Critical changes retain human review as a team procedure, which can be completed without a PR. [Live rules](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE/rules) protect `main` from force pushes and deletion. Existing local MuJoCo work will be imported separately after review; firmware, training, GPU deployment and hardware runtime choices remain open.
 
 ```text
 WATERLOO-MTE-ME-CAPSTONE/
@@ -186,9 +193,9 @@ not automatic synchronization of private chats or account memories.
 Develop personal simulation sandboxes and toolkits under
 [users](users/README.md): `users/<member>/experimental-apps/<app>/`. Each app keeps
 its own README, dependencies, focused AGENTS.md and model/setup/handoff context.
-Canonical components and existing research stay in place. Only Markdown context
-and scaffolds qualify for preliminary validation; executable apps retain the
-existing physics gate. Promote validated team tools into their owning component
+Canonical components and existing research stay in place. Isolated member apps
+and Markdown context use basic workspace checks without CI or canonical physics.
+Label app models and results experimental. Promote validated team tools into their owning component
 with an explicit migration.
 
 | Contribution | Destination |
@@ -208,7 +215,7 @@ Commit Markdown, source, small configs, schemas and manageable text robot models
 
 Planned checks are scoped by changed paths: Markdown links for docs, embedded build/tests for firmware, headless smoke tests for simulation, CPU smoke tests for training, and image/config checks for deployment. Changes to `shared/` or `assets/` also exercise affected consumers. Full GPU jobs require explicit launch and runtime/cost limits, rather than running on every pull request.
 
-**Shared contribution gate:** run the applicable checks locally before pushing; `Entry architecture` and `Headless physics` also run after every push to `main`. No PR or required GitHub status-check barrier is configured. Routine work needs no teammate approval. Canonical assets, shared interfaces, checks and agent rules retain human review, with owner authorization/review for enforcement changes; an explicit owner request can authorize the policy change without requiring a separate author or PR. This critical-path review is a team procedure, not path-specific GitHub enforcement. The validation gate permits [preliminary research](agent_skills/preliminary_research.md) before an approved robot exists, with explicit assumptions and research checks. Executable robot, asset, dependency and mixed changes still require canonical physics validation. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
+**Shared contribution gate:** run the applicable local checks before pushing. `Entry architecture` and `Headless physics` CI run for shared engineering and enforcement changes; member experiments, context and research/documentation-only changes skip CI. No PR or required GitHub status-check barrier is configured. Routine work needs no teammate approval. Canonical assets, shared interfaces, checks and agent rules retain human review, with owner authorization/review for enforcement changes; an explicit owner request can authorize the policy change without requiring a separate author or PR. The validation gate permits [preliminary research and isolated member apps](agent_skills/preliminary_research.md) before an approved robot exists. Shared executable robot, asset, dependency and mixed engineering changes still require canonical physics validation. Confirmed specialist assignments, the canonical robot, GPU runners and artifact storage remain open. See the [rollout record](database/md_research/entry-protocol.md).
 
 ### Bring existing work into this layout
 

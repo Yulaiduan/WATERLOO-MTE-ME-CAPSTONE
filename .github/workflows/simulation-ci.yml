@@ -2,8 +2,24 @@ name: Simulation CI
 
 on:
   pull_request:
+    paths-ignore:
+      - 'users/**'
+      - 'context/**'
+      - 'docs/**'
+      - 'database/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'ENTRY_TEMPLATE.md'
   push:
     branches: ['**']
+    paths-ignore:
+      - 'users/**'
+      - 'context/**'
+      - 'docs/**'
+      - 'database/**'
+      - 'README.md'
+      - 'CONTRIBUTING.md'
+      - 'ENTRY_TEMPLATE.md'
 
 env:
   # main already points at the pushed tip; validate the entire push against its

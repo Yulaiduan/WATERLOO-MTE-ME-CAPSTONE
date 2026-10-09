@@ -7,6 +7,10 @@ Use this folder for public, project-relevant knowledge carried out of conversati
 All teammates can read it through Git. A member folder identifies the author; it
 is not private storage or an access restriction.
 
+Member context and experiments are published together on `main`: one pull makes
+everyone's selected files available without switching branches. Context-only
+updates use the basic structure/log checks and do not trigger CI.
+
 ## Start a conversation
 
 Read or attach [start-here.md](start-here.md), then the relevant member page,

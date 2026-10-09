@@ -10,6 +10,7 @@ easy to find the work; all teammates may use it. Coordinate changes with its own
 Teammates work on `main` and push validated changes directly; no branch or PR is
 required. These member folders organize experiments within the same shared
 repository. Follow [CONTRIBUTING.md](../CONTRIBUTING.md) for checks and coordination.
+One pull of `main` includes every member's experiments; no branch switching is needed.
 
 | Member | Apps/toolkits |
 | --- | --- |
@@ -45,15 +46,17 @@ context: document a nonsecret import/export config when reproducibility needs it
 
 ## Validation and promotion
 
-The experimental label is a maturity label, not a gate exemption. Markdown-only
-context/scaffolding uses the preliminary scope. Executable app code, configs,
-dependency files and launchers retain the existing physics/mixed gate, plus the
-app's own relevant checks. With no canonical robot, those contributions remain
-blocked under current policy. A future app-only gate would require a separate
-owner-reviewed change; this layout does not silently create one.
+Isolated member apps and Markdown context use `workspace` scope. App source,
+configs, dependency files, launchers and clearly labelled experimental models
+can be published without a canonical robot, physics checks or gate regressions.
+Changes confined to these workspaces do not trigger CI. Keep a README and app
+context that state what works, what is untested and how to run it if known. Sharing
+source does not claim the app works or validates the team robot; relevant local
+checks are useful when developing or delivering a working tool.
 
 Root artifact, size, script-documentation and credential checks still apply.
-Canonical robot models/meshes stay in `assets/`; production components must not
+Canonical robot models/meshes stay in `assets/`; app-local experimental models
+may stay with their app and cannot satisfy the canonical baseline. Production components must not
 import member experiments. Keep caches and raw output out of Git, and add explicit
 app ignore rules when importing/building an app.
 

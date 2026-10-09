@@ -16,7 +16,9 @@ reduce the effort needed for independent agents to understand one another.
    each exact commit being pushed in a temporary checkout, including physics.
    Each clone must install the hooks; local hooks can be bypassed.
 4. `.github/workflows/simulation-ci.yml` runs architecture and the scoped validation
-   gate on pushes and PRs. The job names remain unchanged. Preliminary research
+   gate on engineering/enforcement pushes and PRs. Collaboration-only updates
+   under users/context/docs/database and the root README/contribution documents
+   do not trigger it. The job names remain unchanged. Preliminary policy work
    runs gate regressions; executable robot changes require canonical physics.
 5. Teammates push directly to `main` after local validation. GitHub blocks force
    pushes and deletion of `main`; PRs and passing statuses are not required before
@@ -42,9 +44,10 @@ shared context and member app folders. The updated policy is:
   components and accepted records stay in place. Personal branches/PRs are optional.
 - Ruleset 24282754 keeps `deletion` and `non_fast_forward` protection on `main`,
   and removes `pull_request` and `required_status_checks`. No bypass actors are added.
-- Keep `Entry architecture` and `Headless physics` CI; run them on `main` pushes
+- Keep `Entry architecture` and `Headless physics` CI; run them on engineering/enforcement pushes
   against `github.event.before`, covering multi-commit updates. CI reports failures
   after publication rather than preventing the direct push. Local checks still apply.
+  The follow-up member-workspace policy below narrows the CI triggers.
 - Keep human review for canonical assets, shared interfaces, checks and agent rules.
   Enforcement changes need owner authorization/review; an explicit owner request
   can authorize the policy change without a separate author or PR.
@@ -69,12 +72,12 @@ contribution-policy changes without a canonical robot. Sources, assumptions and
 actual calculation checks remain required; the log marks physics not applicable.
 
 `validation_scope` in `tools/check_entry.py` uses every changed/deleted path, not
-the author's label. Its narrow allowlist excludes assets, runtime/configuration,
+the author's label. Its narrow allowlist excludes canonical assets, shared runtime/configuration,
 dependencies, firmware, training, deployment and shared interfaces. Unknown or
 mixed changes require full physics. `tools/physics_gate.py` runs gate regressions
 for preliminary contributions; robot changes retain both actual physics checks.
 The same classifier is used for staged/working-tree checks, exact pushed commits
-and CI. Job names and physics classification are unchanged; the owner's
+and CI. Job names and shared robot physics requirements are unchanged; the owner's
 2026-10-08 direct-push policy above replaces the former PR/status-check barrier.
 
 Fork owners control their own settings. PRs from forks must still pass these
@@ -135,8 +138,8 @@ tools with their own model/setup/handoff context. Existing database research and
 canonical components stay in place. Root AGENTS.md routes agents to relevant
 member/app context; it does not require reading every chat history.
 
-The structural validator accepts these two roots and requires their entry
-documents. Only `.md` paths there join preliminary scope. Executable apps,
+The original scaffold's structural validator accepted these two roots and required
+their entry documents. Initially only `.md` paths there joined preliminary scope. Executable apps,
 configs, dependencies and launchers retain physics classification, including
 mixed/deletion changes; no app-only gate is introduced. CODEOWNERS routes nested
 AGENTS.md and the ChatGPT instruction template to the owner. At introduction,
@@ -146,6 +149,27 @@ the later direct-push rollout above supersedes the branch/PR requirement.
 This is manual sharing of versioned files, not live chat/account-memory sync.
 See [the workflow](../../context/README.md) and [app scaffolds](../../users/README.md).
 Owner authorization/review applies to validator and instruction changes before publication.
+
+## Unified member experiments without CI (2026-10-08)
+
+The owner's follow-up team discussion clarifies the purpose: all members' tools
+and exploratory work are available together on `main`, organized by folder, so
+teammates do not switch branches to use each other's work. The former canonical
+robot requirement for isolated member apps is superseded.
+
+- `workspace` scope covers changes confined to member app source/configs/dependencies,
+  launchers and experimental models, plus Markdown context/scaffolds and the log.
+  Only basic structure/log checks apply; no app execution, regression suite or
+  canonical robot is needed merely to share this work. Record tested/untested status.
+- Experimental model files may stay inside an app belonging to a registered
+  member. They cannot supply the canonical robot baseline or be imported by
+  production components. Existing artifact/credential/size checks still apply.
+- CI ignores pushes/PRs confined to users/context/docs/database, README.md,
+  CONTRIBUTING.md and ENTRY_TEMPLATE.md. Shared engineering/enforcement and mixed
+  updates still run CI. No GitHub ruleset changes are needed for this refinement.
+- Any changed/deleted canonical component path still selects its physics gate,
+  including moving shared code into a member app. Promoting an app into shared
+  engineering components requires their validation and migration record.
 
 ## Open engineering inputs
 

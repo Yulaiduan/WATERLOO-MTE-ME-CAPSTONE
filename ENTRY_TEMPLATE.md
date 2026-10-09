@@ -611,3 +611,55 @@ The existing users and context folders organize personal experiments and shared 
 Pull the published main, install the tracked hooks per clone, and inspect post-push CI because it cannot block a bad direct update before publication.
 
 ---
+
+## Entry: 2026-10-08 — Yulai Duan with Codex — unified member experiments without CI
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Member experiment publication, validation scope and CI triggers.
+- **Associated Issue/Task:** Follow-up owner-supplied team discussion clarifies that members want their exploratory tools together on main in dedicated folders, without switching branches or requiring CI/canonical robot validation to store them. Shared engineering and enforcement retain their applicable checks.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no existing app or engineering-code imports.
+- `.github/pull_request_template.md`
+- `.github/workflows/simulation-ci.yml`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `ENTRY_TEMPLATE.md`
+- `README.md`
+- `agent_skills/git_hygiene.md`
+- `agent_skills/physics_validation.md`
+- `agent_skills/preliminary_research.md`
+- `context/README.md`
+- `database/md_research/entry-protocol.md`
+- `database/md_research/team.md`
+- `docs/README.md`
+- `docs/setup.md`
+- `tools/README.md`
+- `tools/check_entry.py`
+- `tools/physics_gate.py`
+- `tools/tests/test_gates.py`
+- `users/README.md`
+- `users/_template/experimental-app/AGENTS.md`
+- **API/Interface Changes:** Add workspace scope for isolated registered-member apps and Markdown context/scaffolds, including experimental models. The scoped gate checks declarations without executing apps, physics or regressions. Basic structure/log/artifact checks remain; unknown paths and changes/deletions involving shared runtime/assets retain physics scope. Both push and PR CI ignore collaboration-only paths plus the contribution log, while mixed engineering/enforcement updates still trigger CI. Align agent routing, quickstart, app templates and protocol history; all member folders remain on main. No GitHub protection, collaborator access, canonical models, runtime interfaces or dependency pin changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** All 36 gate regressions pass without skips with Python 3.11.16, MuJoCo 3.14.0 and NumPy 2.4.6. Regression coverage includes no automatic workspace execution, experimental model placement, non-physics declarations, unknown locations and mixed/deleted shared engineering paths. Workflow YAML parses successfully and all 16 push/PR trigger cases pass: collaboration-only changes skip, shared/mixed changes run. All 231 relative Markdown links resolve, code fences are balanced, and git diff --check passes. Working/staged checks, a disposable source-sharing checkout and the exact committed snapshot are checked before publication; GitHub CI is inspected after the policy update.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this contribution-policy change.
+The tests use temporary fixtures and do not certify a team robot or member app.
+No existing local Capstone work is imported.
+
+## 4. Compute Saving Handoff State
+
+All member experiments and selected context stay together on main, organized by folder and accessible with one pull.
+Workspace-only publication now uses basic structure/log checks without CI, automatic app execution or a canonical robot, with tested/untested status recorded honestly.
+Shared engineering and enforcement still trigger CI, and moving an experiment into a canonical component requires its normal validation and migration record.
+
+---
