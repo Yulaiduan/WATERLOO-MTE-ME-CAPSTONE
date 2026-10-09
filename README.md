@@ -20,6 +20,8 @@ WATERLOO-MTE-ME-CAPSTONE/
 ├── CLAUDE.md                 Compatibility pointer to AGENTS.md
 ├── ENTRY_TEMPLATE.md         Template and append-only contribution summaries
 ├── database/                 Compact agent knowledge: research, LaTeX, prototypes
+├── context/                  Shared orientation and member ChatGPT/Codex handoffs
+├── users/                    Member experimental apps with app-local context
 ├── agent_skills/             Shared physics, ingestion and Git procedures
 ├── tools/                    Entry validator, hook runner and regression tests
 ├── .githooks/                Local staged-commit and exact-push checks
@@ -72,6 +74,22 @@ Each component owns its dependency manifest, lockfile where supported, tests and
 ### Multiple contributors: Markdown and code
 
 Each member has a personal `members/<name>/work` branch, listed in [the team registry](database/md_research/team.md). Use `members/<name>/<topic>` for parallel tasks and small pull requests into reviewed `main`. Organize files by topic or subsystem. Integrate `main` regularly to keep assets and interfaces consistent.
+
+### Share chat context and experimental apps
+
+Use [context](context/README.md) to share selected regular ChatGPT and Codex
+conversation summaries across members, with [a small start packet](context/start-here.md)
+and dated, sourced handoffs in `context/users/<member>/`. ChatGPT consumes attached
+or connected files; Codex reads the checkout. These are versioned shared files,
+not automatic synchronization of private chats or account memories.
+
+Develop personal simulation sandboxes and toolkits under
+[users](users/README.md): `users/<member>/experimental-apps/<app>/`. Each app keeps
+its own README, dependencies, focused AGENTS.md and model/setup/handoff context.
+Canonical components and existing research stay in place. Only Markdown context
+and scaffolds qualify for preliminary validation; executable apps retain the
+existing physics gate. Promote validated team tools into their owning component
+with an explicit migration.
 
 | Contribution | Destination |
 | --- | --- |

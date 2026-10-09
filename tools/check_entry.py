@@ -19,7 +19,8 @@ BRANCH = re.compile(r"(?:members/(?:" + "|".join(MEMBERS) + r")|contributors/[a-
 ROOT_FILES = {"README.md", "CONTRIBUTING.md", "AGENTS.md", "CLAUDE.md",
               "ENTRY_TEMPLATE.md", ".gitignore", ".gitattributes"}
 ROOT_DIRS = {".github", ".githooks", "assets", "simulation", "database",
-             "agent_skills", "docs", "firmware", "training", "deploy", "shared", "tools"}
+             "agent_skills", "docs", "firmware", "training", "deploy", "shared", "tools",
+             "context", "users"}
 REQUIRED = ROOT_FILES - {".gitattributes"} | {
     ".github/CODEOWNERS", ".github/workflows/simulation-ci.yml",
     ".github/pull_request_template.md", ".githooks/pre-commit", ".githooks/pre-push",
@@ -33,6 +34,7 @@ REQUIRED = ROOT_FILES - {".gitattributes"} | {
     "agent_skills/README.md", "agent_skills/physics_validation.md",
     "agent_skills/notion_ingestion.md", "agent_skills/git_hygiene.md",
     "agent_skills/preliminary_research.md",
+    "context/README.md", "context/start-here.md", "users/README.md",
     "tools/README.md", "tools/check_entry.py", "tools/pre_push.py", "tools/physics_gate.py",
 }
 BLOCKED_DIRS = {"results", "runs", "checkpoints", "logs", "__pycache__", ".venv",
@@ -68,6 +70,9 @@ def preliminary_path(path):
     if path in PRELIMINARY_FILES:
         return True
     suffix = PurePosixPath(path).suffix.lower()
+    if path.startswith(("context/", "users/")):
+        # Only Markdown context/scaffolding is exempt; app code and configs are not.
+        return suffix == ".md"
     if path.startswith("docs/"):
         return suffix in RESEARCH_CONTENT_SUFFIXES
     if path.startswith(("database/md_research/", "agent_skills/")):

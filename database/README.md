@@ -15,6 +15,8 @@ repository root so this database can stay small.
 | [Prototypes](code_prototypes/README.md) | Small experimental snippets |
 | [Contribution log](../ENTRY_TEMPLATE.md) | Exact changes and latest handoff |
 | [Existing documentation](../docs/README.md) | Design and terrain sources |
+| [Shared chat context](../context/README.md) | Orientation and selected member ChatGPT/Codex handoffs; read relevant notes only |
+| [Member experimental apps](../users/README.md) | App/tool workspaces with their own setup, model context and validation |
 
 Promote a prototype to its owning component only with documented interfaces,
 dependencies and validation. Link its replacement and retire duplicate code in

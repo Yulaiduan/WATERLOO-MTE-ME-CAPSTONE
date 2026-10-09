@@ -411,3 +411,77 @@ This policy PR removes automatic review requests for routine work and aligns con
 Complete owner review before merging this enforcement change; routine agents still need user authorization to merge and must not infer it from a push-only request.
 
 ---
+
+## Entry: 2026-10-08 — Andy Zhang — shared chat context and experimental app structure
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Shared context, member experimental workspaces and contribution structure.
+- **Associated Issue/Task:** User requested a structure for sharing regular ChatGPT/Codex context across teammates and keeping developing apps/toolkits with each member.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions or existing app imports.
+- `.github/CODEOWNERS`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `ENTRY_TEMPLATE.md`
+- `README.md`
+- `agent_skills/preliminary_research.md`
+- `context/README.md`
+- `context/start-here.md`
+- `context/templates/README.md`
+- `context/templates/app-context.md`
+- `context/templates/chat-handoff.md`
+- `context/templates/chatgpt-project-instructions.md`
+- `context/users/README.md`
+- `context/users/ali-muizz/README.md`
+- `context/users/andy-zhang/README.md`
+- `context/users/jiaan-li/README.md`
+- `context/users/jonathan-xie/README.md`
+- `context/users/yulai-duan/README.md`
+- `database/README.md`
+- `database/md_research/entry-protocol.md`
+- `docs/README.md`
+- `tools/README.md`
+- `tools/check_entry.py`
+- `tools/tests/test_gates.py`
+- `users/README.md`
+- `users/_template/README.md`
+- `users/_template/experimental-app/AGENTS.md`
+- `users/_template/experimental-app/README.md`
+- `users/_template/experimental-app/context/README.md`
+- `users/ali-muizz/README.md`
+- `users/ali-muizz/experimental-apps/README.md`
+- `users/andy-zhang/README.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/jiaan-li/README.md`
+- `users/jiaan-li/experimental-apps/README.md`
+- `users/jonathan-xie/README.md`
+- `users/jonathan-xie/experimental-apps/README.md`
+- `users/yulai-duan/README.md`
+- `users/yulai-duan/experimental-apps/README.md`
+- **API/Interface Changes:** Add context/users member summaries and users/member/experimental-apps scaffolds, reusable chat/app templates and agent routing. The validator accepts context and users roots, requires their entry documents and classifies only Markdown there as preliminary; app code/configs/dependencies/launchers, mixed changes and runtime deletions retain physics validation. No robot, simulator, dependencies, shared engineering interfaces or GitHub protection changes. Nested AGENTS.md and the ChatGPT instruction template route to owner review.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** All 27 gate regressions pass with no skips under Windows Python 3.13.12, MuJoCo 3.14.0 and NumPy 2.4.6; four added tests cover context/app Markdown, executable and mixed scope, runtime moves and artifact/model restrictions. All 225 relative Markdown file links resolve, and git diff --check passes. Entry/scoped/staged gates run before publication; GitHub CI additionally checks the pinned Python 3.11 environment. Official OpenAI Projects/AGENTS.md guidance checked on 2026-10-08; docs distinguish file sharing from live chat/account-memory sync.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is NOT APPLICABLE to this documentation/scaffold and policy
+contribution; no executable app or canonical model is imported. Synthetic gate
+fixtures are not robot validation. The existing empty canonical baseline still
+blocks applicable executable app contributions; an app-only gate would be a
+separate owner-reviewed policy change. Owner review is required before merging
+the validator and agent instruction changes; no bypass or review removal is made.
+
+## 4. Compute Saving Handoff State
+
+The repository has a shared context entry packet, public member handoff folders and five experimental app workspaces with app-local context templates.
+The sharing workflow uses reviewed Markdown summaries, Git publication and selected ChatGPT uploads or Codex file reads, while canonical engineering records stay authoritative.
+Review the protocol/validator changes with Yulai before merging, then have each member add selected context and import apps only through the applicable validation gates.
+
+---

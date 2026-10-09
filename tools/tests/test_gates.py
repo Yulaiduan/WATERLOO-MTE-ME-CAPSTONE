@@ -155,6 +155,39 @@ class ValidationScopeTests(unittest.TestCase):
                                  "AGENTS.md": b"Updated policy"})
         self.assertEqual("preliminary", entry.validation_scope(self.previous, current))
 
+    def test_context_and_app_documentation_are_preliminary(self):
+        paths = ("context/start-here.md", "context/users/andy-zhang/2026-10-08-chatgpt-motors.md",
+                 "users/andy-zhang/experimental-apps/sizing/context/model.md",
+                 "users/_template/experimental-app/AGENTS.md")
+        current = self.research(dict.fromkeys(paths, b"Public project context."))
+        self.assertEqual("preliminary", entry.validation_scope(self.previous, current))
+        errors = "\n".join(entry.structural_errors(current))
+        self.assertNotIn("Unapproved repository location", errors)
+
+    def test_experimental_app_code_configs_and_mixed_changes_require_physics(self):
+        for path in ("users/andy-zhang/experimental-apps/sizing/src/main.js",
+                     "users/andy-zhang/experimental-apps/sizing/model.py",
+                     "users/andy-zhang/experimental-apps/sizing/package.json",
+                     "users/andy-zhang/experimental-apps/sizing/requirements.txt",
+                     "users/andy-zhang/experimental-apps/sizing/Start App.cmd",
+                     "context/users/andy-zhang/config.json"):
+            with self.subTest(path=path):
+                self.assertEqual("physics", entry.validation_scope(
+                    self.previous, self.research({path: b"runtime or config"})))
+
+    def test_moving_app_runtime_to_context_still_requires_physics(self):
+        path = "users/andy-zhang/experimental-apps/sizing/main.js"
+        previous = {**self.previous, path: b"runtime"}
+        current = self.research({"context/users/andy-zhang/main.md": b"runtime"})
+        self.assertEqual("physics", entry.validation_scope(previous, current))
+
+    def test_user_folder_does_not_exempt_artifacts_or_robot_models(self):
+        for path in ("users/andy-zhang/experimental-apps/sizing/node_modules/pkg/index.js",
+                     "users/andy-zhang/experimental-apps/sizing/.env",
+                     "users/andy-zhang/experimental-apps/sizing/robot.xml"):
+            with self.subTest(path=path):
+                self.assertIn(path, "\n".join(entry.structural_errors({path: b"example"})))
+
     def test_deleting_or_moving_runtime_into_research_still_requires_physics(self):
         previous = {**self.previous, "simulation/src/controllers/old.py": b"runtime"}
         current = self.research({"database/code_prototypes/old.py": b"runtime"})

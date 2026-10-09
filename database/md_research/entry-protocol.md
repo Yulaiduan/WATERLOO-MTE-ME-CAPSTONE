@@ -119,7 +119,26 @@ same environment; it is not a cross-platform floating-point guarantee.
 - Reading every database/skill file each loop is the explicit owner policy. Keep
   those files short; a later index-only policy would need an agreed rule change.
 
-## Open inputs
+## Shared chat context and member apps (2026-10-08)
+
+The requested layout adds `context/` for shared orientation and member-selected
+ChatGPT/Codex summaries, and `users/<member>/experimental-apps/` for developing
+tools with their own model/setup/handoff context. Existing database research and
+canonical components stay in place. Root AGENTS.md routes agents to relevant
+member/app context; it does not require reading every chat history.
+
+The structural validator accepts these two roots and requires their entry
+documents. Only `.md` paths there join preliminary scope. Executable apps,
+configs, dependencies and launchers retain physics classification, including
+mixed/deletion changes; no app-only gate is introduced. CODEOWNERS routes nested
+AGENTS.md and the ChatGPT instruction template to the owner. Required CI jobs,
+robot baseline checks, GitHub protection and review rules remain unchanged.
+
+This is manual sharing of versioned files, not live chat/account-memory sync.
+See [the workflow](../../context/README.md) and [app scaffolds](../../users/README.md).
+Owner review applies to the validator and instruction changes before merge.
+
+## Open engineering inputs
 
 Approved canonical robot and mass/joint specification; two missing collaborator
 accounts; confirmed subsystem ownership; GPU backend selection and benchmarks.

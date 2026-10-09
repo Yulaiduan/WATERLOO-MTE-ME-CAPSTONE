@@ -19,9 +19,11 @@ These tools need a local Git checkout and a fetched `origin/main`. Hook paths ar
 relative so linked worktrees can each use their version. No hook bypass should be
 used to publish work that fails validation. The push hook requires the applicable
 scoped gate. [Preliminary research and contribution-policy changes](../agent_skills/preliminary_research.md)
-run gate regressions and report canonical physics as not applicable. Runtime,
-assets, dependencies, unknown paths and mixed changes still require both robot
+run gate regressions and report canonical physics as not applicable. Only
+Markdown under `context/` and `users/` is preliminary. Runtime, assets,
+dependencies, unknown paths and mixed changes still require both robot
 physics commands. Classifying a path as research never certifies its scientific results.
+App code/configs/dependencies/launchers under `users/` retain those physics checks.
 
 External forks use `--base upstream/main` and `CAMEL_BASE_REF=upstream/main`
 after fetching this repository as their upstream. The initial protocol-only

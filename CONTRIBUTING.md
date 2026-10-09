@@ -12,7 +12,24 @@ Use the [repository architecture](README.md#repository-architecture) to choose a
 
 Local hooks and CI implement the contribution gate. GitHub requires PRs and status checks with zero mandatory approvals; critical-path human review is a team procedure, not path-specific GitHub enforcement. CODEOWNERS requests reviewers only for critical paths. The rule applies to member branches and forks; see [the protocol record](database/md_research/entry-protocol.md). Each member has an isolated branch; regularly integrate `main` so canonical assets and interfaces do not diverge. [Preliminary research](agent_skills/preliminary_research.md) can be published without a canonical robot after structure, evidence and gate-regression checks. Executable robot, asset, dependency and mixed changes still require passing physics validation; a missing model blocks those contributions.
 
-## Markdown
+## Shared chat context and experimental tools
+
+Follow [the context workflow](context/README.md) to publish reviewed summaries
+from ChatGPT, Codex or another tool. General member notes go in
+`context/users/<member>/`; app-specific assumptions, setup and current state stay
+in the app's own `context/`. Link canonical requirements/decisions instead of
+copying them. Date handoffs, record the source tool and Git revision, and retain
+both notes when concurrent contributions conflict. No private account exports.
+
+Use [the app scaffold](users/README.md) for
+`users/<member>/experimental-apps/<app>/`. Folder ownership is organizational,
+not an access control. Markdown-only context/scaffold contributions use the
+preliminary gate; app code/configs/dependencies/launchers still require the
+existing physics checks and their own relevant validation. Do not import a local
+app until those checks pass. A localhost app delivery also needs a durable
+project-local Windows launcher with verified start/restart at its original URL.
+
+## Markdown style
 
 - Use lowercase filenames with hyphens; date meeting notes and benchmarks.
 - Include authors, updated date, status, assumptions and sources in substantive notes. Distinguish draft/proposed/accepted decisions and verified measurements.
