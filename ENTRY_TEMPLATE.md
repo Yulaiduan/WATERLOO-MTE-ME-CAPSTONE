@@ -516,3 +516,34 @@ The new shared context and app structure is otherwise unchanged and retains the 
 Publish the verified branch and complete Yulai's owner review before merging into main.
 
 ---
+
+## Entry: 2026-10-08 — Andy Zhang — README chat-context quickstart
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Root README contributor quickstart.
+- **Associated Issue/Task:** User requested the regular ChatGPT export/Codex import guidance near the top of the repository README.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** `README.md`, `ENTRY_TEMPLATE.md`.
+- **API/Interface Changes:** None. Add the reviewed handoff workflow, two copyable prompts, folder destinations and conditional GitHub web-chat publishing guidance before repository architecture.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** All 25 relative README file links resolve, Markdown code fences are balanced, the quickstart precedes repository architecture, and git diff --check passes. The complete entry/scoped/staged checks and exact-push gate run before publication. Product guidance uses the official OpenAI plugin/project documentation reviewed in this conversation on 2026-10-08.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is NOT APPLICABLE to this README-only addition and the full
+preliminary-scoped PR. No runtime, model or dependency changes are introduced.
+
+## 4. Compute Saving Handoff State
+
+The README now provides a chat-context quickstart immediately after the project introduction.
+Members can copy a ChatGPT export prompt and a Codex import prompt, with explicit destinations and the limits of naming a repo in a web chat.
+Use these prompts to publish reviewed handoffs through member branches and PRs; the existing PR still requires owner review of its earlier enforcement changes.
+
+---

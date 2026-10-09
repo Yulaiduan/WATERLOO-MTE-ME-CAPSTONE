@@ -4,6 +4,86 @@
 
 The team's [GitHub repository](https://github.com/Yulaiduan/WATERLOO-MTE-ME-CAPSTONE) is the shared home for documentation and engineering code. It is currently **public**; include only material approved for public sharing.
 
+## Save useful ChatGPT context to this repository
+
+**Recommended workflow: summarize in the original ChatGPT chat, then import
+through Codex and a pull request.** This lets the chat preserve the discussion's
+reasoning while Codex checks the repository's files and contribution rules.
+
+1. In the regular ChatGPT conversation containing the useful work, use the export
+   prompt below. Review the Markdown for accuracy and public-sharing suitability.
+2. Give the exported Markdown to Codex with the import prompt below. Replace
+   `<member-slug>` with your name from [the team registry](database/md_research/team.md)
+   (for example, `andy-zhang`).
+3. Publish a dated handoff under `context/users/<member-slug>/` through a member
+   branch and PR. App-specific model/setup context belongs with the relevant
+   `users/<member-slug>/experimental-apps/<app>/context/`.
+4. Other members pull the merged files and have Codex read them, or attach the
+   relevant files to their ChatGPT conversations. Include the summary itself;
+   a chat link alone may be inaccessible to another member.
+
+See the [handoff template](context/templates/chat-handoff.md) and
+[full sharing workflow](context/README.md).
+
+### Prompt 1 — export from the original ChatGPT chat
+
+```text
+Extract the reusable engineering context from this conversation for
+Yulaiduan/WATERLOO-MTE-ME-CAPSTONE.
+
+Member: <member-slug>
+Topic: <topic>
+Destination: context/users/<member-slug>/YYYY-MM-DD-chatgpt-<topic>.md
+
+Produce a self-contained Markdown handoff covering:
+- Goal and relevant constraints.
+- Findings and proposed decisions, with reasoning.
+- Important equations, values, units and assumptions.
+- Alternatives considered, failed approaches and why.
+- Sources and links supporting the findings.
+- Uncertainties, unresolved disagreements and next steps.
+
+Separate facts, assumptions, proposals and verified results.
+Do not mark a decision as team-approved without evidence.
+Preserve enough detail for another teammate or Codex to continue without
+access to this chat. Exclude unrelated conversation and private information.
+Use the actual date; mark unavailable information as unknown.
+
+Return the Markdown in one code block, or as a downloadable .md file.
+```
+
+### Prompt 2 — import the handoff through Codex
+
+```text
+Import the handoff below into
+Yulaiduan/WATERLOO-MTE-ME-CAPSTONE.
+
+Follow AGENTS.md. Use my member topic branch.
+Save the dated handoff under context/users/<member-slug>/ and link it
+from my context README. Add a numeric suffix if that filename already exists.
+
+If it concerns a particular experimental app, place its detailed model/setup
+context with that app and link it from my general handoff.
+
+Preserve existing context, distinguish proposals from accepted requirements,
+append the contribution log, run the required checks, and open a PR into main.
+
+[Paste handoff here]
+```
+
+### Can a regular web chat save directly by naming this repo?
+
+You can name `Yulaiduan/WATERLOO-MTE-ME-CAPSTONE` in a prompt, but the name or
+URL alone grants no repository access or write permission. Direct publishing
+depends on connected GitHub tools that support writes, your repository access,
+and the tools available to that chat. If those tools are available, explicitly
+request your member branch and a PR, and verify the required checks run. Otherwise,
+export Markdown and use the Codex import workflow above. A summary is shared
+knowledge; it does not automatically synchronize private chats or account memories.
+
+Product guidance checked 2026-10-08: [OpenAI plugin permissions](https://learn.chatgpt.com/docs/plugins)
+and [projects and chat context](https://learn.chatgpt.com/docs/projects).
+
 ## Repository architecture
 
 Use **one repository with separate components**. One commit can capture compatible code, interfaces, robot assets, and documentation, while each component keeps its own dependencies and run instructions. Documentation contributors do not need a firmware compiler or GPU environment.
