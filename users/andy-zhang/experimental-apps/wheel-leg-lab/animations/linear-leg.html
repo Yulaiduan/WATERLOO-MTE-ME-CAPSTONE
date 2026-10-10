@@ -1,0 +1,166 @@
+<div id="linear-leg-motion">
+  <style>
+    #linear-leg-motion .leg-svg { width:100%; display:block; height:400px; overflow:visible; }
+    #linear-leg-motion .leg-svg text { fill:var(--foreground); }
+    #linear-leg-motion .leg-controls { display:grid; grid-template-columns:auto minmax(0,1fr); gap:16px; align-items:center; }
+    #linear-leg-motion .leg-field { min-width:0; }
+    #linear-leg-motion .leg-key { display:flex; flex-wrap:wrap; gap:16px; margin-top:8px; }
+    #linear-leg-motion .leg-key span { display:inline-flex; align-items:center; gap:6px; }
+    #linear-leg-motion .leg-swatch { width:18px; height:4px; display:inline-block; }
+  </style>
+  <div class="leg-controls">
+    <button type="button" class="btn" data-play>Pause</button>
+    <div class="leg-field">
+      <label class="form-label" for="leg-angle">Upper link angle from vertical: <output class="tabular-nums" data-angle>43°</output></label>
+      <input class="form-range" id="leg-angle" type="range" min="12" max="75" step="0.1" value="43">
+    </div>
+  </div>
+  <svg class="leg-svg" role="img" aria-labelledby="leg-title leg-desc">
+    <title id="leg-title">Two equal links with a grounded 2:1 pulley drive</title>
+    <desc id="leg-desc">A fixed chassis pivot drives an upper link to a moving knee. Dots track material on an open belt around a fixed large pulley and a smaller knee pulley. Belt material remains stationary while touching the grounded pulley and moves along the free spans as the leg swings. The lower link mirrors the upper link about vertical, keeping the foot on a straight path.</desc>
+    <line data-axis stroke="var(--muted-foreground)" stroke-width="1.5" stroke-dasharray="6 6"/>
+    <path data-ghost fill="none" stroke="var(--border)" stroke-width="1.5"/>
+    <line data-upper stroke="var(--viz-series-1)" stroke-width="17" stroke-linecap="round"/>
+    <line data-lower stroke="var(--viz-series-2)" stroke-width="17" stroke-linecap="round"/>
+    <path data-belt fill="none" stroke="var(--foreground)" stroke-width="4"/>
+    <circle data-large r="24" fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <circle data-small r="12" fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <line data-fixed-mark stroke="var(--foreground)" stroke-width="2"/>
+    <line data-moving-mark stroke="var(--viz-series-2)" stroke-width="3"/>
+    <g data-belt-dots fill="var(--viz-series-3)" stroke="var(--background)" stroke-width="0.8" aria-hidden="true"></g>
+    <path data-ground fill="none" stroke="var(--muted-foreground)" stroke-width="1.5"/>
+    <circle data-base r="4" fill="var(--foreground)"/>
+    <circle data-foot r="7" fill="var(--viz-series-2)" stroke="var(--background)" stroke-width="2"/>
+    <text data-base-label text-anchor="end">A · Fixed</text>
+    <text data-knee-label>B · Knee</text>
+    <text data-foot-label text-anchor="end">C · Foot</text>
+    <text data-large-label text-anchor="middle">2r</text>
+    <text data-small-label text-anchor="middle">r</text>
+    <text data-track-label text-anchor="middle">Straight foot path</text>
+  </svg>
+  <div class="leg-key text-small">
+    <span><i class="leg-swatch" style="background:var(--viz-series-1)"></i>Upper link · length L</span>
+    <span><i class="leg-swatch" style="background:var(--viz-series-2)"></i>Lower link · length L</span>
+    <span><i class="leg-swatch" style="background:var(--viz-series-3)"></i>Dots · belt material</span>
+  </div>
+  <div class="text-small tabular-nums" data-detail aria-live="polite" style="margin-top:8px"></div>
+  <script>
+    (() => {
+      const root = document.getElementById('linear-leg-motion');
+      const svg = root.querySelector('.leg-svg');
+      const slider = root.querySelector('#leg-angle');
+      const play = root.querySelector('[data-play]');
+      const field = key => root.querySelector('[data-' + key + ']');
+      const attrs = (key, values) => Object.entries(values).forEach(([name, value]) => field(key).setAttribute(name, value));
+      const beltDots = Array.from({length:28}, (_,index) => {
+        const dot = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        dot.setAttribute('r',index===0 ? '5' : '2.6');
+        dot.setAttribute('data-belt-marker',String(index));
+        field('belt-dots').appendChild(dot);
+        return dot;
+      });
+      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let theta = 43, playing = !reduced, phase = Math.acos((theta - 43.5) / 31.5), previous = null;
+      const saved = window.openai?.widgetState;
+      const restore = state => {
+        const angle = state?.modelContent?.upperAngleDegrees;
+        if (typeof angle === 'number' && Number.isFinite(angle)) {
+          theta = Math.min(75, Math.max(12, angle));
+          phase = Math.acos((theta - 43.5) / 31.5);
+        }
+        if (typeof state?.privateContent?.playing === 'boolean') playing = state.privateContent.playing && !reduced;
+      };
+      restore(saved);
+      function draw(announce = false) {
+        const w = Math.max(280, root.getBoundingClientRect().width);
+        svg.setAttribute('viewBox', `0 0 ${w} 400`);
+        const L = Math.min(152, (w - 80) / 2.05);
+        const ax = Math.max(100, w * 0.38), ay = 350;
+        const t = theta * Math.PI / 180, dx = Math.sin(t), dy = -Math.cos(t);
+        const bx = ax + L * dx, by = ay + L * dy;
+        const cx = ax, cy = ay - 2 * L * Math.cos(t);
+        attrs('axis', {x1:ax, y1:25, x2:ax, y2:ay - 26});
+        attrs('upper', {x1:ax, y1:ay, x2:bx, y2:by});
+        attrs('lower', {x1:bx, y1:by, x2:cx, y2:cy});
+        attrs('large', {cx:ax, cy:ay}); attrs('small', {cx:bx, cy:by});
+        attrs('base', {cx:ax, cy:ay}); attrs('foot', {cx:cx, cy:cy});
+        attrs('fixed-mark', {x1:ax, y1:ay-24, x2:ax, y2:ay-15});
+        attrs('moving-mark', {x1:bx-12*Math.sin(t), y1:by-12*Math.cos(t), x2:bx-5*Math.sin(t), y2:by-5*Math.cos(t)});
+        const q = 12 / L, k = Math.sqrt(1-q*q);
+        const np = [q*dx+k*(-dy), q*dy+k*dx], nm = [q*dx-k*(-dy), q*dy-k*dx];
+        const point = (x,y,r,n) => `${x+r*n[0]} ${y+r*n[1]}`;
+        attrs('belt', {d:`M ${point(ax,ay,24,np)} L ${point(bx,by,12,np)} A 12 12 0 0 0 ${point(bx,by,12,nm)} L ${point(ax,ay,24,nm)} A 24 24 0 1 0 ${point(ax,ay,24,np)}`});
+        // Exact arc-length positions keep material on the fixed pulley stationary.
+        // Positive path travel is counterclockwise on both pulley wraps.
+        const straight = Math.sqrt(L*L-12*12);
+        const smallWrap = Math.PI-2*Math.asin(q);
+        const largeWrap = 2*Math.PI-smallWrap;
+        const total = 2*straight+12*smallWrap+24*largeWrap;
+        const plusAngle = Math.atan2(np[1],np[0]);
+        const minusAngle = Math.atan2(nm[1],nm[0]);
+        function beltPoint(distance) {
+          let s = ((distance % total)+total)%total;
+          if (s < straight) {
+            const f=s/straight;
+            return [ax+24*np[0]+f*(bx+12*np[0]-ax-24*np[0]),ay+24*np[1]+f*(by+12*np[1]-ay-24*np[1])];
+          }
+          s-=straight;
+          if (s < 12*smallWrap) {
+            const a=plusAngle-s/12;
+            return [bx+12*Math.cos(a),by+12*Math.sin(a)];
+          }
+          s-=12*smallWrap;
+          if (s < straight) {
+            const f=s/straight;
+            return [bx+12*nm[0]+f*(ax+24*nm[0]-bx-12*nm[0]),by+12*nm[1]+f*(ay+24*nm[1]-by-12*nm[1])];
+          }
+          s-=straight;
+          const a=minusAngle-s/24;
+          return [ax+24*Math.cos(a),ay+24*Math.sin(a)];
+        }
+        beltDots.forEach((dot,index) => {
+          const [x,y] = beltPoint(index*total/beltDots.length+24*t);
+          dot.setAttribute('cx',x); dot.setAttribute('cy',y);
+        });
+        attrs('ground', {d:`M ${ax-30} ${ay+27} H ${ax+30} M ${ax-25} ${ay+27} l -8 10 M ${ax-10} ${ay+27} l -8 10 M ${ax+5} ${ay+27} l -8 10 M ${ax+20} ${ay+27} l -8 10`});
+        const paths = [12,43.5,75].map(deg => {
+          const a = deg*Math.PI/180;
+          return `M ${ax} ${ay} L ${ax+L*Math.sin(a)} ${ay-L*Math.cos(a)} L ${ax} ${ay-2*L*Math.cos(a)}`;
+        }).join(' ');
+        attrs('ghost', {d:paths});
+        attrs('base-label', {x:ax-34, y:ay+4});
+        attrs('knee-label', {x:bx+20, y:by+4});
+        attrs('foot-label', {x:cx-16, y:cy+4});
+        attrs('large-label', {x:ax, y:ay+17});
+        attrs('small-label', {x:bx+3, y:by+33});
+        attrs('track-label', {x:ax, y:17});
+        slider.value = String(theta);
+        field('angle').textContent = `${Math.round(theta)}°`;
+        play.textContent = playing ? 'Pause' : 'Play';
+        if (announce || !field('detail').textContent) field('detail').textContent = `Upper: +${Math.round(theta)}° · Lower: −${Math.round(theta)}° from vertical · Foot height: ${(2*Math.cos(t)).toFixed(2)} L`;
+      }
+      function save() {
+        window.openai?.setWidgetState?.({modelContent:{upperAngleDegrees:Math.round(theta*10)/10}, privateContent:{playing}})?.catch(() => {});
+      }
+      slider.addEventListener('input', () => {playing=false; theta=Number(slider.value); phase=Math.acos((theta-43.5)/31.5); draw(true);});
+      slider.addEventListener('change', save);
+      play.addEventListener('click', () => {playing=!playing; previous=null; draw(true); save();});
+      window.addEventListener('openai:set_globals', e => {const state=e.detail?.globals?.widgetState; if(state){restore(state); draw(true);}});
+      new ResizeObserver(() => draw()).observe(root);
+      function tick(now) {
+        if (previous !== null && playing) {
+          phase += Math.min(now-previous,100)*2*Math.PI/8000;
+          theta = 43.5 + 31.5*Math.cos(phase);
+          draw();
+          const t = theta*Math.PI/180;
+          field('detail').setAttribute('aria-live','off');
+          field('detail').textContent = `Upper: +${Math.round(theta)}° · Lower: −${Math.round(theta)}° from vertical · Foot height: ${(2*Math.cos(t)).toFixed(2)} L`;
+        } else {field('detail').setAttribute('aria-live','polite');}
+        previous=now;
+        requestAnimationFrame(tick);
+      }
+      draw(true);
+      requestAnimationFrame(tick);
+    })();
+  </script>
+</div>

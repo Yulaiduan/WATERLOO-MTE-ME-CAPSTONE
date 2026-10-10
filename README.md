@@ -32,6 +32,8 @@ publication, so resolve them promptly; CI is not a required pre-publication gate
 
 ## Save useful ChatGPT context to this repository
 
+Andy Zhang's [Wheel Leg Lab](users/andy-zhang/experimental-apps/wheel-leg-lab/README.md) combines the rough-animation and wheel/link-ratio chats: seven motion studies, force calculator, detailed linkage bench and Pymunk spring/debug toolkit. Its [design decisions](users/andy-zhang/experimental-apps/wheel-leg-lab/docs/decisions.md), [coordinate/model notes](users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md) and [validation](users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md) are experimental records, not team hardware acceptance.
+
 **Recommended workflow: summarize in the original ChatGPT chat, then import
 through Codex and push directly to `main`.** This lets the chat preserve the discussion's
 reasoning while Codex checks the repository's files and contribution rules.

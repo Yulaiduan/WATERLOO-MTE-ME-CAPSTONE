@@ -1,7 +1,7 @@
 # Member experimental apps and toolkits
 
-Author: Andy Zhang with Codex. Updated: 2026-10-08.
-Status: experimental workspace scaffold; no apps imported by this change.
+Author: Andy Zhang with Codex. Updated: 2026-10-09.
+Status: member experimental tools; Andy's Wheel Leg Lab is now imported. No canonical robot validation is implied.
 
 Use `users/<member>/experimental-apps/<app>/` for developing simulation sandboxes,
 calculators, visualizations and other vibe-coded tools. A named owner makes it

@@ -1,0 +1,13 @@
+{
+  "name": "andy-wheel-leg-lab",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build && python scripts/build_animations.py",
+    "test": "node --test tests/linkage.test.js",
+    "test:browser": "node scripts/verify_suite.cjs"
+  },
+  "dependencies": {"ml-matrix": "6.15.0"},
+  "devDependencies": {"vite": "7.3.6", "playwright": "1.62.1"}
+}

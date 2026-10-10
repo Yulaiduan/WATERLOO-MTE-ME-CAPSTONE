@@ -663,3 +663,118 @@ Workspace-only publication now uses basic structure/log checks without CI, autom
 Shared engineering and enforcement still trigger CI, and moving an experiment into a canonical component requires its normal validation and migration record.
 
 ---
+
+## Entry: 2026-10-09 — Andy Zhang with Codex — import both wheel-leg chats
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's isolated Wheel Leg Lab and member engineering context.
+- **Associated Issue/Task:** User explicitly requested publishing all current rough animations and wheel-to-link-ratio simulations from both chats under their experimental apps, with design decisions and documentation.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths follow; generated pages, environments, raw frame/GIF output, logs and full traces are excluded.
+- `ENTRY_TEMPLATE.md`
+- `README.md`
+- `context/users/andy-zhang/2026-10-09-codex-wheel-leg-lab.md`
+- `context/users/andy-zhang/README.md`
+- `docs/README.md`
+- `users/README.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/.gitignore`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/AGENTS.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/GLOSSARY.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Open Pymunk GUI.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Setup Pymunk.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start Geometry Preview.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start Pymunk Linkage.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop Geometry Preview.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop Pymunk Linkage.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/coaxial-wheel-leg.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/fixed-ratio-left-leg.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/left-tilted-leg.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/leg-path-family.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/linear-leg.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/pymunk-remote-preview.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/tilted-invertible-leg.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/two-position-left-leg.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_view.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/decisions.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/design.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/equation-cross-check.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/linkage-architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/linkage-handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/linkage-model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/linkage-validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/equation_checks.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/licenses/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/licenses/d3-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/licenses/ml-matrix-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/licenses/playwright-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/licenses/vite-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/linkage/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/linkage/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/package-lock.json`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/package.json`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/references/equations-1.png`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/references/equations-2.png`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/references/equations-complete.png`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/requirements-analysis.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/requirements.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_animations.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/check_docs.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/search_fixed_pulley_geometry.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/validate_linkage_reference.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify-force-plots.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_pymunk.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suite.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/charts.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/main.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/model.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/view.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/worker.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_equation_checks.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/fixtures/linkage/sympy-reference.json`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/linkage.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/vite.config.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/D3-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/d3.min.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/viewer-state.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/viewer.css`
+- **API/Interface Changes:** Add the member-local toolkit only; canonical assets/shared runtime are unchanged. The unified loopback service preserves the 4186 Pymunk route and serves gallery, force plots, detailed linkage and recorded playback. A separately tracked 4175 launcher preserves original geometry routes. Source/build/tests and launchers use project-relative paths and pinned dependencies. Add curated context from both chats, coordinate glossary, model/design/decision/architecture/validation/handoff docs and conditional reference-equation checks. Historical timing reindexing is retained but marked incompatible with the later fixed-pulley constraint.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** App build passes; 24 JavaScript model tests and 19 Pymunk/reference tests pass. Three independent SymPy/SciPy cases agree after regenerating fixtures. Offline browser checks pass for all seven rough studies, fixed-ratio error under 0.768 mm, calculator, detailed entry, recorded disturbances, Pymunk controls, units and full exports. Native engine debug drawing passes. Both 4186 and 4175 launchers pass start/reuse/scoped-stop/restart from C:\Windows; their intended routes respond HTTP 200. Repository gate regressions run 36 cases with 34 passing and two MuJoCo-dependent fixtures explicitly skipped in the current global environment; canonical physics is not claimed. Relative-link/fence, structure/log and staged checks are run before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member toolkit and documentation import. The shared manifest stays empty and unchanged. Initial browser import harness failures (vertical SVG visibility wait and old-port allowlist) were corrected and rerun; they are recorded in the app validation notes. Hardware, collision/contact, belt-bearing loads, GPU and other operating systems remain unverified.
+
+## 4. Compute Saving Handoff State
+
+Both authorized chats are packaged in Andy Zhang's Wheel Leg Lab with source, portable setup and scoped documentation.
+The gallery preserves historical alternatives while the current fixed-pulley constraint and the separate fixture/control models remain explicit.
+Continue from the app README and validation record, confirming missing belt/component inputs and hardware/contact behavior before promotion into canonical code.
+
+---

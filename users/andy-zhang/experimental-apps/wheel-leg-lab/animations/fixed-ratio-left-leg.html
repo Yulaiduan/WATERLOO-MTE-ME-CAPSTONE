@@ -1,0 +1,104 @@
+<div id="fixed-ratio-left-leg">
+  <style>
+    #fixed-ratio-left-leg .leg-svg{display:block;width:100%;height:520px;}
+    #fixed-ratio-left-leg .leg-svg text{fill:var(--foreground);}
+    #fixed-ratio-left-leg .control-field{min-width:0;}
+    #fixed-ratio-left-leg .angle-field{margin-top:12px;}
+    #fixed-ratio-left-leg .legend{display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:8px;}
+    #fixed-ratio-left-leg .legend span{display:inline-flex;align-items:center;gap:6px;}
+    #fixed-ratio-left-leg .swatch{width:18px;height:3px;display:inline-block;}
+  </style>
+  <div class="viz-controls">
+    <button class="btn" type="button" data-play>Pause</button>
+    <label class="form-label control-field" for="fixed-leg-mode">Motion <select class="form-select" id="fixed-leg-mode"><option value="lower">Lower working stroke</option><option value="upper">Upper working stroke</option><option value="transition">Full transition</option></select></label>
+  </div>
+  <div class="angle-field"><label class="form-label" for="fixed-leg-angle">Upper-link angle: <output data-angle-value class="tabular-nums">26.4°</output></label><input class="form-range" id="fixed-leg-angle" type="range" min="24.3957" max="28.3957" step="0.01" value="26.3957"></div>
+  <div class="text-small tabular-nums" style="margin-top:8px">Upper link: 250 mm · Lower link: 168.45 mm · Hip:knee pulleys: 4:1</div>
+  <svg class="leg-svg" role="img" aria-labelledby="fixed-leg-title fixed-leg-desc">
+    <title id="fixed-leg-title">Unequal links and a fixed 4:1 pulley ratio approximate two left-leaning working strokes</title>
+    <desc id="fixed-leg-desc">A permanently fixed hip pulley drives the lower-link angle at negative three times the upper-link angle through an open 4:1 belt. The upper link is 250 mm and the lower link is 168.45 mm. Two approximately 42 mm suspension strokes lie within 0.77 mm of 12-degree left-leaning rays above and below the hip. The full transition leaves these rays, swings far to the right, and requires more than a full turn of relative knee travel. No pulley reindexing is used.</desc>
+    <line data-vertical stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4 6"/>
+    <path data-target fill="none" stroke="var(--border)" stroke-width="1.5" stroke-dasharray="7 5"/>
+    <path data-trajectory fill="none" stroke="var(--muted-foreground)" stroke-width="1.5"/>
+    <path data-working fill="none" stroke="var(--viz-series-3)" stroke-width="5" stroke-linecap="round"/>
+    <line data-upper stroke="var(--viz-series-1)" stroke-width="11" stroke-linecap="round"/>
+    <line data-lower stroke="var(--viz-series-2)" stroke-width="11" stroke-linecap="round"/>
+    <path data-belt fill="none" stroke="var(--foreground)" stroke-width="2"/>
+    <circle data-large fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <circle data-small fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <path data-mount fill="none" stroke="var(--muted-foreground)" stroke-width="1.5"/>
+    <line data-fixed-mark stroke="var(--foreground)" stroke-width="2"/>
+    <line data-knee-mark stroke="var(--foreground)" stroke-width="2"/>
+    <circle data-wheel fill="var(--background)" stroke="var(--viz-series-3)" stroke-width="3"/>
+    <circle data-hip r="3" fill="var(--foreground)"/>
+    <text data-label-a text-anchor="middle">A · Fixed</text>
+    <text data-label-b>B · Knee</text>
+    <text data-label-c text-anchor="end">C · Wheel</text>
+    <text data-path-label text-anchor="end">Full transition path</text>
+  </svg>
+  <div class="legend text-small">
+    <span><i class="swatch" style="background:var(--viz-series-3)"></i>Near-linear working strokes</span>
+    <span><i class="swatch" style="background:var(--muted-foreground)"></i>Full transition</span>
+    <span class="text-muted">Dashed reference · 12° rays</span>
+  </div>
+  <div class="text-small tabular-nums" data-detail aria-live="polite" style="margin-top:8px"></div>
+  <script>
+    (()=>{
+      const root=document.getElementById('fixed-ratio-left-leg'),svg=root.querySelector('.leg-svg'),modeInput=root.querySelector('#fixed-leg-mode'),angleInput=root.querySelector('#fixed-leg-angle');
+      const el=key=>root.querySelector('[data-'+key+']');
+      const set=(key,values)=>Object.entries(values).forEach(([name,value])=>el(key).setAttribute(name,value));
+      const L1=250,L2=168.44901684471338,ratio=4,center=26.395687229702627,half=2;
+      let mode='lower',theta=center,phase=0,previous=null,playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const bounds=()=>mode==='lower'?[center-half,center+half]:mode==='upper'?[180-center-half,180-center+half]:[center-half,180-center+half];
+      function restore(state){
+        if(state?.modelContent?.view!=='fixed-ratio-left-leg')return;
+        const m=state.modelContent,p=state.privateContent;
+        if(['lower','upper','transition'].includes(m.mode))mode=m.mode;
+        const [lo,hi]=bounds();if(Number.isFinite(m.upperAngle))theta=Math.max(lo,Math.min(hi,m.upperAngle));
+        if(typeof p?.playing==='boolean')playing=p.playing;
+        phase=Math.asin(Math.max(-1,Math.min(1,(theta-(lo+hi)/2)/((hi-lo)/2))));
+      }
+      restore(window.openai?.widgetState);if(matchMedia('(prefers-reduced-motion: reduce)').matches)playing=false;
+      const save=()=>window.openai?.setWidgetState?.({modelContent:{view:'fixed-ratio-left-leg',mode,upperAngle:theta,upperLengthMm:L1,lowerLengthMm:L2,pulleyRatio:ratio},privateContent:{playing}})?.catch(()=>{});
+      const position=degrees=>{const t=degrees*Math.PI/180,b=-(ratio-1)*t;return [L1*Math.sin(t)+L2*Math.sin(b),L1*Math.cos(t)+L2*Math.cos(b)];};
+      function draw(){
+        const w=Math.max(280,root.getBoundingClientRect().width),ax=w*.30,ay=260,s=Math.min(.68,(w-ax-26)/(L1+L2));
+        svg.setAttribute('viewBox',`0 0 ${w} 520`);
+        const point=([x,y])=>[ax+s*x,ay+s*y];
+        const t=theta*Math.PI/180,b=-(ratio-1)*t,B=point([L1*Math.sin(t),L1*Math.cos(t)]),C=point(position(theta));
+        const R=40*s,r=R/ratio,wheelRadius=32*s;
+        set('vertical',{x1:ax,y1:16,x2:ax,y2:504});
+        const tilt=12*Math.PI/180,extent=350;
+        set('target',{d:`M ${point([-extent*Math.tan(tilt),-extent])} L ${ax} ${ay} L ${point([-extent*Math.tan(tilt),extent])}`});
+        const curve=(lo,hi,count=241)=>Array.from({length:count},(_,i)=>`${i?'L':'M'} ${point(position(lo+(hi-lo)*i/(count-1)))}`).join(' ');
+        set('trajectory',{d:curve(center-half,180-center+half)});
+        set('working',{d:curve(center-half,center+half,81)+' '+curve(180-center-half,180-center+half,81)});
+        set('upper',{x1:ax,y1:ay,x2:B[0],y2:B[1]});set('lower',{x1:B[0],y1:B[1],x2:C[0],y2:C[1]});
+        set('large',{cx:ax,cy:ay,r:R});set('small',{cx:B[0],cy:B[1],r});set('hip',{cx:ax,cy:ay});set('wheel',{cx:C[0],cy:C[1],r:wheelRadius});
+        set('fixed-mark',{x1:ax,y1:ay-R,x2:ax,y2:ay-.7*R});
+        set('knee-mark',{x1:B[0]+.4*r*Math.sin(b),y1:B[1]+.4*r*Math.cos(b),x2:B[0]+r*Math.sin(b),y2:B[1]+r*Math.cos(b)});
+        set('mount',{d:`M ${ax-R-8} ${ay-R-7} H ${ax+R+8} M ${ax-R} ${ay-R-7} l -5 -7 M ${ax} ${ay-R-7} l -5 -7 M ${ax+R} ${ay-R-7} l -5 -7`});
+        const q=(R-r)/(L1*s),k=Math.sqrt(1-q*q),dx=Math.sin(t),dy=Math.cos(t);
+        const np=[q*dx+k*dy,q*dy-k*dx],nm=[q*dx-k*dy,q*dy+k*dx];
+        const tangent=(x,y,radius,n)=>`${x+radius*n[0]} ${y+radius*n[1]}`;
+        set('belt',{d:`M ${tangent(ax,ay,R,np)} L ${tangent(B[0],B[1],r,np)} A ${r} ${r} 0 0 1 ${tangent(B[0],B[1],r,nm)} L ${tangent(ax,ay,R,nm)} A ${R} ${R} 0 1 1 ${tangent(ax,ay,R,np)}`});
+        set('label-a',{x:ax,y:ay-R-23});set('label-b',{x:B[0]+r+10,y:B[1]+4});set('label-c',{x:C[0]-wheelRadius-8,y:C[1]+4});
+        set('path-label',{x:w-20,y:ay-26});
+        el('label-a').textContent=w<480?'A':'A · Fixed';el('label-b').textContent=w<480?'B':'B · Knee';el('label-c').textContent=w<480?'C':'C · Wheel';el('path-label').textContent=w<480?'':'Full transition path';
+        const [lo,hi]=bounds();angleInput.min=String(lo);angleInput.max=String(hi);angleInput.value=String(theta);modeInput.value=mode;
+        el('angle-value').textContent=theta.toFixed(1)+'°';el('play').textContent=playing?'Pause':'Play';
+        el('detail').setAttribute('aria-live',playing?'off':'polite');
+        el('detail').textContent=mode==='transition'?'Transition: swings right · about 525° of relative knee travel':'Working stroke: 42.35 mm · Maximum deviation from 12° line: 0.77 mm';
+        root.dataset.theta=String(theta);root.dataset.mode=mode;root.dataset.lowerAngle=String(-(ratio-1)*theta);
+      }
+      modeInput.addEventListener('change',()=>{mode=modeInput.value;const [lo,hi]=bounds();theta=(lo+hi)/2;phase=0;draw();save();});
+      angleInput.addEventListener('input',()=>{theta=Number(angleInput.value);playing=false;const [lo,hi]=bounds();phase=Math.asin(Math.max(-1,Math.min(1,(theta-(lo+hi)/2)/((hi-lo)/2))));draw();});angleInput.addEventListener('change',save);
+      el('play').addEventListener('click',()=>{playing=!playing;previous=null;draw();save();});
+      root.addEventListener('leg:pose',event=>{const d=event.detail;if(['lower','upper','transition'].includes(d.mode))mode=d.mode;const [lo,hi]=bounds();if(Number.isFinite(d.theta))theta=Math.max(lo,Math.min(hi,d.theta));playing=false;draw();});
+      window.addEventListener('openai:set_globals',event=>{if(event.detail?.globals?.widgetState){restore(event.detail.globals.widgetState);draw();}});
+      new ResizeObserver(draw).observe(root);
+      function tick(now){if(previous!==null&&playing){phase+=Math.min(now-previous,100)/1000*2*Math.PI/(mode==='transition'?12:4);const [lo,hi]=bounds();theta=(lo+hi)/2+(hi-lo)/2*Math.sin(phase);draw();}previous=now;requestAnimationFrame(tick);}
+      draw();requestAnimationFrame(tick);
+    })();
+  </script>
+</div>

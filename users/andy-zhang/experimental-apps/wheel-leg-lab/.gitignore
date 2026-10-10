@@ -1,0 +1,9 @@
+.venv/
+.preview/
+node_modules/
+__pycache__/
+artifacts/
+web/linkage/
+web/animations/
+web/recorded/
+*.pyc

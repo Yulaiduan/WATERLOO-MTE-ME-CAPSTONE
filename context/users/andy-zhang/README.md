@@ -1,22 +1,18 @@
 # Andy Zhang — shared project context
 
-Updated: 2026-10-08. Status: initial scaffold; member has not supplied a profile.
+Updated: 2026-10-09. Status: curated member engineering context, not a private profile export.
 
 Registered focus and contribution workflow: see the [team registry](../../../database/md_research/team.md).
 Apps/toolkits: [experimental apps](../../../users/andy-zhang/experimental-apps/README.md).
 
 ## Current focus and working preferences
 
-Not supplied. Add only project-relevant context you choose to share publicly;
-do not infer preferences, personal memory or ongoing tasks from a registered role.
+Current published focus: guided wheel-leg geometry, suspension load/impedance tradeoffs and experimental tooling, from the user's explicit two-chat import request.
 
 ## Conversation handoffs
 
-No past ChatGPT or Codex conversations imported. Add dated notes beside this
-README using the [handoff template](../../templates/chat-handoff.md), then link
-active notes here. Use the source tool in the filename and record the Git revision.
+- [2026-10-09 Wheel Leg Lab](2026-10-09-codex-wheel-leg-lab.md): curated rough-animation and wheel/link-ratio findings, source and validation.
 
 ## Open questions and next action
 
-The member should add their current work and selected public conversation context.
-Keep app-specific setup and model notes inside the relevant app.
+Confirm belt/pulley inputs, component limits, collision clearance and real contact requirements. App-specific setup and model context remain in the toolkit.

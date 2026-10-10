@@ -1,0 +1,161 @@
+<div id="coaxial-wheel-leg">
+  <style>
+    #coaxial-wheel-leg .motion-svg {display:block;width:100%;height:480px;}
+    #coaxial-wheel-leg .motion-svg text {fill:var(--foreground);}
+    #coaxial-wheel-leg .fields {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:12px;}
+    #coaxial-wheel-leg .key {display:flex;flex-wrap:wrap;gap:8px 18px;margin-top:8px;}
+    #coaxial-wheel-leg .key span {display:inline-flex;align-items:center;gap:6px;}
+    #coaxial-wheel-leg .swatch {display:inline-block;width:18px;height:4px;}
+    @media(max-width:430px){#coaxial-wheel-leg .fields{grid-template-columns:1fr;gap:8px;}}
+  </style>
+  <div class="viz-controls" data-controls>
+    <button class="btn" type="button" data-play>Pause</button>
+    <label class="form-check"><input class="form-check-input" type="checkbox" data-fold checked><span class="form-check-label">Move leg</span></label>
+  </div>
+  <div class="fields" data-fields>
+    <div><label class="form-label" for="coax-leg-angle">Leg angle: <output data-angle class="tabular-nums">43°</output></label><input class="form-range" id="coax-leg-angle" type="range" min="12" max="75" value="43" step="0.1"></div>
+    <div><label class="form-label" for="coax-wheel-speed">Wheel drive: <output data-rpm-label class="tabular-nums">30 rpm</output></label><input class="form-range" id="coax-wheel-speed" type="range" min="-60" max="60" value="30" step="5"></div>
+  </div>
+  <svg class="motion-svg" role="img" aria-labelledby="coax-title coax-desc">
+    <title id="coax-title">Linear leg with an independent coaxial wheel drive</title>
+    <desc id="coax-desc">At fixed pivot A, a stationary outer pulley controls the two-link leg through a 2:1 belt. An independently rotating coaxial inner pulley drives a compound transfer pulley at B, then the wheel hub at C, through two 1:1 open belts in separate axial planes. The hub pulleys all rotate at the same absolute speed. The wheel center stays on a vertical line below A.</desc>
+    <line data-axis stroke="var(--muted-foreground)" stroke-width="1.5" stroke-dasharray="6 6"/>
+    <line data-upper stroke="var(--viz-series-1)" stroke-width="16" stroke-linecap="round"/>
+    <line data-lower stroke="var(--viz-series-2)" stroke-width="16" stroke-linecap="round"/>
+    <circle data-wheel r="31" fill="var(--background)" stroke="var(--foreground)" stroke-width="5"/>
+    <g data-spokes stroke="var(--foreground)" stroke-width="2"></g>
+    <path data-leg-belt fill="none" stroke="var(--foreground)" stroke-width="3"/>
+    <circle data-fixed-pulley r="44" fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <circle data-leg-knee r="22" fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <path data-ground fill="none" stroke="var(--muted-foreground)" stroke-width="1.5"/>
+    <line data-fixed-mark stroke="var(--foreground)" stroke-width="2"/>
+    <line data-leg-mark stroke="var(--viz-series-2)" stroke-width="2"/>
+    <g data-leg-dots fill="var(--muted-foreground)" stroke="var(--background)" stroke-width="0.7"></g>
+    <path data-drive-ab fill="none" stroke="var(--viz-series-3)" stroke-width="3"/>
+    <path data-drive-bc fill="none" stroke="var(--viz-series-3)" stroke-width="3"/>
+    <circle data-drive-a r="17" fill="var(--background)" stroke="var(--viz-series-3)" stroke-width="3"/>
+    <circle data-drive-b r="17" fill="var(--background)" stroke="var(--viz-series-3)" stroke-width="3"/>
+    <circle data-drive-c r="17" fill="var(--background)" stroke="var(--viz-series-3)" stroke-width="3"/>
+    <g data-dots-ab fill="var(--foreground)" stroke="var(--background)" stroke-width="1"></g>
+    <g data-dots-bc fill="var(--foreground)" stroke="var(--background)" stroke-width="1"></g>
+    <g data-rotors stroke="var(--viz-series-3)" stroke-width="3"></g>
+    <circle data-wheel-marker r="4.5" fill="var(--viz-series-3)" stroke="var(--background)" stroke-width="1"/>
+    <text data-label-a text-anchor="end">A · Coaxial</text>
+    <text data-label-b>B · Transfer</text>
+    <text data-label-c text-anchor="end">C · Wheel</text>
+    <text data-label-fixed text-anchor="middle">Fixed 2r</text>
+    <text data-label-path text-anchor="middle">Straight wheel-center path</text>
+  </svg>
+  <div class="key text-small">
+    <span><i class="swatch" style="background:var(--foreground)"></i>2:1 leg belt</span>
+    <span><i class="swatch" style="background:var(--viz-series-3)"></i>1:1 wheel belts · A–B–C</span>
+    <span class="text-muted">Belts in separate axial planes</span>
+  </div>
+  <div class="text-small tabular-nums" data-detail aria-live="polite" style="margin-top:8px"></div>
+  <script>
+    (()=>{
+      const root=document.getElementById('coaxial-wheel-leg');
+      const svg=root.querySelector('.motion-svg');
+      const el=key=>root.querySelector('[data-'+key+']');
+      const set=(key,values)=>Object.entries(values).forEach(([name,value])=>el(key).setAttribute(name,value));
+      const angle=root.querySelector('#coax-leg-angle'),speed=root.querySelector('#coax-wheel-speed');
+      const ns='http://www.w3.org/2000/svg';
+      const make=(parent,type,count,attributes)=>Array.from({length:count},(_,index)=>{
+        const node=document.createElementNS(ns,type);
+        Object.entries(attributes).forEach(([key,value])=>node.setAttribute(key,value));
+        node.dataset.index=String(index);el(parent).appendChild(node);return node;
+      });
+      const legDots=make('leg-dots','circle',28,{r:2.1});
+      const dotsAB=make('dots-ab','circle',20,{r:2.6});
+      const dotsBC=make('dots-bc','circle',20,{r:2.6});
+      const spokes=make('spokes','line',4,{}),rotors=make('rotors','line',3,{});
+      dotsAB[0].setAttribute('r','4');dotsBC[0].setAttribute('r','4');
+      let theta=43,psi=0,rpm=30,fold=true,playing=!matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let phase=Math.acos((43.5-theta)/31.5),previous=null;
+      function restore(state){
+        const m=state?.modelContent,p=state?.privateContent;
+        if(Number.isFinite(m?.legAngle))theta=Math.max(12,Math.min(75,m.legAngle));
+        if(Number.isFinite(m?.wheelRpm))rpm=Math.max(-60,Math.min(60,m.wheelRpm));
+        if(typeof m?.moveLeg==='boolean')fold=m.moveLeg;
+        if(Number.isFinite(p?.wheelAngle))psi=p.wheelAngle;
+        if(typeof p?.playing==='boolean')playing=p.playing;
+        phase=Math.acos((43.5-theta)/31.5);
+      }
+      restore(window.openai?.widgetState);
+      if(matchMedia('(prefers-reduced-motion: reduce)').matches)playing=false;
+      function save(){window.openai?.setWidgetState?.({modelContent:{legAngle:theta,wheelRpm:rpm,moveLeg:fold},privateContent:{wheelAngle:psi,playing}})?.catch(()=>{});}
+      // Open belt path, with exact arc-length positions for material markers.
+      function belt(key,dots,a,b,R,r,materialOffset){
+        const vx=b[0]-a[0],vy=b[1]-a[1],L=Math.hypot(vx,vy),dx=vx/L,dy=vy/L;
+        const q=(R-r)/L,k=Math.sqrt(1-q*q);
+        const np=[q*dx+k*dy,q*dy-k*dx],nm=[q*dx-k*dy,q*dy+k*dx];
+        const ap=[a[0]+R*np[0],a[1]+R*np[1]],bp=[b[0]+r*np[0],b[1]+r*np[1]];
+        const am=[a[0]+R*nm[0],a[1]+R*nm[1]],bm=[b[0]+r*nm[0],b[1]+r*nm[1]];
+        const straight=Math.sqrt(L*L-(R-r)*(R-r)),small=Math.PI-2*Math.asin(q),large=2*Math.PI-small;
+        const total=2*straight+r*small+R*large;
+        set(key,{d:`M ${ap} L ${bp} A ${r} ${r} 0 0 1 ${bm} L ${am} A ${R} ${R} 0 1 1 ${ap}`});
+        const plus=Math.atan2(np[1],np[0]),minus=Math.atan2(nm[1],nm[0]);
+        dots.forEach((dot,index)=>{
+          let s=((index*total/dots.length+materialOffset)%total+total)%total,x,y;
+          if(s<straight){const f=s/straight;x=ap[0]+f*(bp[0]-ap[0]);y=ap[1]+f*(bp[1]-ap[1]);}
+          else if((s-=straight)<r*small){const p=plus+s/r;x=b[0]+r*Math.cos(p);y=b[1]+r*Math.sin(p);}
+          else if((s-=r*small)<straight){const f=s/straight;x=bm[0]+f*(am[0]-bm[0]);y=bm[1]+f*(am[1]-bm[1]);}
+          else {s-=straight;const p=minus+s/R;x=a[0]+R*Math.cos(p);y=a[1]+R*Math.sin(p);}
+          dot.setAttribute('cx',x);dot.setAttribute('cy',y);
+        });
+        return total;
+      }
+      function draw(announce=false){
+        const w=Math.max(280,root.getBoundingClientRect().width);
+        svg.setAttribute('viewBox',`0 0 ${w} 480`);
+        const L=Math.min(165,(w-100)/1.65),ax=Math.max(112,w*.38),ay=72;
+        const t=theta*Math.PI/180;
+        const A=[ax,ay],B=[ax+L*Math.sin(t),ay+L*Math.cos(t)],C=[ax,ay+2*L*Math.cos(t)];
+        set('axis',{x1:ax,y1:ay+46,x2:ax,y2:437});
+        set('upper',{x1:A[0],y1:A[1],x2:B[0],y2:B[1]});set('lower',{x1:B[0],y1:B[1],x2:C[0],y2:C[1]});
+        set('fixed-pulley',{cx:A[0],cy:A[1]});set('leg-knee',{cx:B[0],cy:B[1]});set('wheel',{cx:C[0],cy:C[1]});
+        set('ground',{d:`M ${ax-40} 20 H ${ax+40} M ${ax-32} 20 l -8 -10 M ${ax-12} 20 l -8 -10 M ${ax+8} 20 l -8 -10 M ${ax+28} 20 l -8 -10`});
+        set('fixed-mark',{x1:ax,y1:ay-44,x2:ax,y2:ay-35});
+        set('leg-mark',{x1:B[0]-22*Math.sin(t),y1:B[1]+22*Math.cos(t),x2:B[0]-18*Math.sin(t),y2:B[1]+18*Math.cos(t)});
+        belt('leg-belt',legDots,A,B,44,22,44*t);
+        const lengthAB=belt('drive-ab',dotsAB,A,B,17,17,17*(psi+t));
+        const lengthBC=belt('drive-bc',dotsBC,B,C,17,17,17*(psi-t));
+        [A,B,C].forEach((center,index)=>{
+          set(['drive-a','drive-b','drive-c'][index],{cx:center[0],cy:center[1]});
+          const node=rotors[index];
+          Object.entries({x1:center[0]+5*Math.cos(psi),y1:center[1]+5*Math.sin(psi),x2:center[0]+15*Math.cos(psi),y2:center[1]+15*Math.sin(psi)}).forEach(([key,value])=>node.setAttribute(key,value));
+        });
+        spokes.forEach((node,index)=>{
+          const p=psi+index*Math.PI/2;
+          Object.entries({x1:C[0]+18*Math.cos(p),y1:C[1]+18*Math.sin(p),x2:C[0]+29*Math.cos(p),y2:C[1]+29*Math.sin(p)}).forEach(([key,value])=>node.setAttribute(key,value));
+        });
+        set('wheel-marker',{cx:C[0]+31*Math.cos(psi),cy:C[1]+31*Math.sin(psi)});
+        set('label-a',{x:ax-51,y:ay+4});set('label-b',{x:B[0]+29,y:B[1]+4});set('label-c',{x:ax-41,y:C[1]+4});
+        el('label-a').textContent=w<440?'A':'A · Coaxial';el('label-b').textContent=w<440?'B':'B · Transfer';
+        set('label-fixed',{x:ax,y:ay-26});set('label-path',{x:ax,y:461});
+        angle.value=String(theta);speed.value=String(rpm);el('fold').checked=fold;
+        el('angle').textContent=Math.round(theta)+'°';el('rpm-label').textContent=rpm+' rpm';el('play').textContent=playing?'Pause':'Play';
+        el('detail').setAttribute('aria-live',playing?'off':'polite');
+        el('detail').textContent=`Leg: ${Math.round(theta)}° · Wheel: ${rpm} rpm · Extension: ${(2*Math.cos(t)).toFixed(2)} L`;
+        root.dataset.theta=String(theta);root.dataset.wheelAngle=String(psi);root.dataset.beltAbLength=String(lengthAB);root.dataset.beltBcLength=String(lengthBC);
+      }
+      angle.addEventListener('input',()=>{theta=Number(angle.value);phase=Math.acos((43.5-theta)/31.5);fold=false;draw(true);});
+      angle.addEventListener('change',save);
+      speed.addEventListener('input',()=>{rpm=Number(speed.value);draw(true);});speed.addEventListener('change',save);
+      el('fold').addEventListener('change',()=>{fold=el('fold').checked;draw(true);save();});
+      el('play').addEventListener('click',()=>{playing=!playing;previous=null;draw(true);save();});
+      root.addEventListener('leg:pose',event=>{const d=event.detail;if(Number.isFinite(d.theta))theta=Math.max(12,Math.min(75,d.theta));if(Number.isFinite(d.psi))psi=d.psi;playing=false;draw(true);});
+      window.addEventListener('openai:set_globals',event=>{const state=event.detail?.globals?.widgetState;if(state){restore(state);draw(true);}});
+      new ResizeObserver(()=>draw()).observe(root);
+      function tick(now){
+        if(previous!==null&&playing){
+          const dt=Math.min(now-previous,100)/1000;
+          if(fold){phase+=dt*2*Math.PI/8;theta=43.5-31.5*Math.cos(phase);}
+          psi+=dt*rpm*2*Math.PI/60;draw();
+        }
+        previous=now;requestAnimationFrame(tick);
+      }
+      draw();requestAnimationFrame(tick);
+    })();
+  </script>
+</div>

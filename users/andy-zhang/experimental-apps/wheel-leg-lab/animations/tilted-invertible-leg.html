@@ -1,0 +1,96 @@
+<div id="tilted-invertible-leg">
+  <style>
+    #tilted-invertible-leg .angle-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:12px;}
+    #tilted-invertible-leg .leg-view{width:100%;height:520px;display:block;}
+    #tilted-invertible-leg .leg-view text{fill:var(--foreground);}
+    #tilted-invertible-leg .legend{display:flex;flex-wrap:wrap;gap:8px 18px;}
+    #tilted-invertible-leg .legend span{display:inline-flex;align-items:center;gap:6px;}
+    #tilted-invertible-leg .swatch{width:18px;height:3px;display:inline-block;}
+    @media(max-width:430px){#tilted-invertible-leg .angle-fields{grid-template-columns:1fr;gap:8px;}}
+  </style>
+  <div class="viz-controls"><button class="btn" type="button" data-play>Pause</button><button class="btn" type="button" data-flip>Flip 180°</button></div>
+  <div class="angle-fields">
+    <div><label class="form-label" for="tilted-axis">Path tilt: <output data-tilt-value class="tabular-nums">12°</output></label><input id="tilted-axis" class="form-range" type="range" min="-15" max="15" step="0.5" value="12"></div>
+    <div><label class="form-label" for="tilted-hip">Upper-link angle: <output data-hip-value class="tabular-nums">55°</output></label><input id="tilted-hip" class="form-range" type="range" min="0" max="360" step="0.5" value="55"></div>
+  </div>
+  <svg class="leg-view" role="img" aria-labelledby="tilted-leg-title tilted-leg-desc">
+    <title id="tilted-leg-title">Tilted straight wheel-center path with a fixed chassis and a 2:1 belt</title>
+    <desc id="tilted-leg-desc">Two equal links retain their 2:1 coupling. A constant lower-link timing offset of twice the desired tilt makes their combined displacement lie exactly on a tilted line through the hip. A 180-degree upper-link rotation inverts the entire linkage without rotating the chassis. The continuous flip passes through a folded state where the wheel center coincides with the hip; this ideal illustration allows overlapping parts.</desc>
+    <line data-vertical stroke="var(--border)" stroke-width="1.5" stroke-dasharray="4 6"/>
+    <line data-path stroke="var(--viz-series-3)" stroke-width="2" stroke-dasharray="7 5"/>
+    <line data-upper stroke="var(--viz-series-1)" stroke-width="13" stroke-linecap="round"/>
+    <line data-lower stroke="var(--viz-series-2)" stroke-width="13" stroke-linecap="round"/>
+    <path data-belt fill="none" stroke="var(--foreground)" stroke-width="2.5"/>
+    <circle data-large r="28" fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <circle data-knee r="14" fill="var(--background)" stroke="var(--foreground)" stroke-width="2"/>
+    <line data-fixed-tick stroke="var(--foreground)" stroke-width="2"/>
+    <line data-knee-tick stroke="var(--foreground)" stroke-width="2"/>
+    <path data-mount fill="none" stroke="var(--muted-foreground)" stroke-width="1.5"/>
+    <circle data-wheel r="16" fill="var(--background)" stroke="var(--viz-series-3)" stroke-width="3"/>
+    <circle data-hip r="3" fill="var(--foreground)"/>
+    <text data-label-a text-anchor="end">A · Fixed chassis</text>
+    <text data-label-b>B · Knee</text>
+    <text data-label-c>C · Wheel</text>
+    <text data-ratio text-anchor="middle">2r</text>
+  </svg>
+  <div class="legend text-small">
+    <span><i class="swatch" style="background:var(--viz-series-1)"></i>Upper link · L</span>
+    <span><i class="swatch" style="background:var(--viz-series-2)"></i>Lower link · L</span>
+    <span><i class="swatch" style="background:var(--viz-series-3)"></i>Tilted straight path</span>
+    <span class="text-muted">Dotted reference · vertical</span>
+  </div>
+  <div data-detail class="text-small tabular-nums" aria-live="polite" style="margin-top:8px"></div>
+  <script>
+    (()=>{
+      const root=document.getElementById('tilted-invertible-leg');
+      const svg=root.querySelector('.leg-view'),tiltInput=root.querySelector('#tilted-axis'),hipInput=root.querySelector('#tilted-hip');
+      const el=key=>root.querySelector('[data-'+key+']');
+      const set=(key,values)=>Object.entries(values).forEach(([name,value])=>el(key).setAttribute(name,value));
+      let tilt=12,hip=55,playing=!matchMedia('(prefers-reduced-motion: reduce)').matches,previous=null;
+      const restore=state=>{
+        const m=state?.modelContent,p=state?.privateContent;
+        if(Number.isFinite(m?.pathTilt))tilt=Math.min(15,Math.max(-15,m.pathTilt));
+        if(Number.isFinite(m?.upperAngle))hip=((m.upperAngle%360)+360)%360;
+        if(typeof p?.playing==='boolean')playing=p.playing;
+      };
+      restore(window.openai?.widgetState);if(matchMedia('(prefers-reduced-motion: reduce)').matches)playing=false;
+      const save=()=>window.openai?.setWidgetState?.({modelContent:{pathTilt:tilt,upperAngle:hip,lowerTimingOffset:2*tilt},privateContent:{playing}})?.catch(()=>{});
+      function draw(){
+        const w=Math.max(280,root.getBoundingClientRect().width),ax=w*.46,L=Math.min(112,ax-42,w-ax-42),ay=260;
+        svg.setAttribute('viewBox',`0 0 ${w} 520`);
+        const a=tilt*Math.PI/180,t=hip*Math.PI/180,beta=2*a-t;
+        const bx=ax+L*Math.sin(t),by=ay+L*Math.cos(t);
+        const cx=bx+L*Math.sin(beta),cy=by+L*Math.cos(beta);
+        set('vertical',{x1:ax,y1:16,x2:ax,y2:504});
+        set('path',{x1:ax-2*L*Math.sin(a),y1:ay-2*L*Math.cos(a),x2:ax+2*L*Math.sin(a),y2:ay+2*L*Math.cos(a)});
+        set('upper',{x1:ax,y1:ay,x2:bx,y2:by});set('lower',{x1:bx,y1:by,x2:cx,y2:cy});
+        set('large',{cx:ax,cy:ay});set('knee',{cx:bx,cy:by});set('hip',{cx:ax,cy:ay});set('wheel',{cx,cy});
+        set('fixed-tick',{x1:ax,y1:ay-28,x2:ax,y2:ay-21});
+        set('knee-tick',{x1:bx-14*Math.sin(t),y1:by+14*Math.cos(t),x2:bx-8*Math.sin(t),y2:by+8*Math.cos(t)});
+        const dx=Math.sin(t),dy=Math.cos(t),q=14/L,k=Math.sqrt(1-q*q);
+        const np=[q*dx+k*dy,q*dy-k*dx],nm=[q*dx-k*dy,q*dy+k*dx];
+        const point=(x,y,r,n)=>`${x+r*n[0]} ${y+r*n[1]}`;
+        set('belt',{d:`M ${point(ax,ay,28,np)} L ${point(bx,by,14,np)} A 14 14 0 0 1 ${point(bx,by,14,nm)} L ${point(ax,ay,28,nm)} A 28 28 0 1 1 ${point(ax,ay,28,np)}`});
+        set('mount',{d:`M ${ax-36} ${ay-34} H ${ax+36} M ${ax-28} ${ay-34} l -6 -9 M ${ax-10} ${ay-34} l -6 -9 M ${ax+8} ${ay-34} l -6 -9 M ${ax+26} ${ay-34} l -6 -9`});
+        const left=bx<ax;
+        set('label-a',{x:ax-40,y:ay+4});set('label-b',{x:bx+(left?-21:21),y:by+4,'text-anchor':left?'end':'start'});
+        set('label-c',{x:cx+24,y:cy+4});set('ratio',{x:ax,y:ay-12});
+        el('label-a').textContent=w<480?'A':'A · Fixed chassis';el('label-b').textContent=w<480?'B':'B · Knee';el('label-c').textContent=w<480?'C':'C · Wheel';
+        tiltInput.value=String(tilt);hipInput.value=String(hip);el('tilt-value').textContent=tilt+'°';el('hip-value').textContent=Math.round(hip)+'°';el('play').textContent=playing?'Pause':'Play';
+        const folded=Math.abs(Math.cos(t-a))<.025;
+        el('detail').setAttribute('aria-live',playing?'off':'polite');
+        el('detail').textContent=folded?'Fully folded: C coincides with A in this ideal model':`Lower-link timing offset: ${2*tilt>0?'+':''}${2*tilt}° · Wheel center ${cy>=ay?'below':'above'} hip`;
+        root.dataset.tilt=String(tilt);root.dataset.hip=String(hip);root.dataset.lower=String(2*tilt-hip);
+      }
+      tiltInput.addEventListener('input',()=>{tilt=Number(tiltInput.value);draw();});tiltInput.addEventListener('change',save);
+      hipInput.addEventListener('input',()=>{hip=Number(hipInput.value);playing=false;draw();});hipInput.addEventListener('change',save);
+      el('play').addEventListener('click',()=>{playing=!playing;previous=null;draw();save();});
+      el('flip').addEventListener('click',()=>{hip=(hip+180)%360;playing=false;draw();save();});
+      root.addEventListener('leg:pose',event=>{const d=event.detail;if(Number.isFinite(d.tilt))tilt=Math.max(-15,Math.min(15,d.tilt));if(Number.isFinite(d.hip))hip=((d.hip%360)+360)%360;playing=false;draw();});
+      window.addEventListener('openai:set_globals',event=>{const s=event.detail?.globals?.widgetState;if(s){restore(s);draw();}});
+      new ResizeObserver(draw).observe(root);
+      function tick(now){if(previous!==null&&playing){hip=(hip+Math.min(now-previous,100)*.03)%360;draw();}previous=now;requestAnimationFrame(tick);}
+      draw();requestAnimationFrame(tick);
+    })();
+  </script>
+</div>

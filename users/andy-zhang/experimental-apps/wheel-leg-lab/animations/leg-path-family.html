@@ -1,0 +1,114 @@
+<div id="leg-path-family">
+  <style>
+    #leg-path-family .fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+    #leg-path-family .plots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 24px;margin-top:16px;}
+    #leg-path-family .plot-panel{min-width:0;}
+    #leg-path-family .family-chart{display:block;width:100%;}
+    #leg-path-family .family-chart text{fill:var(--foreground);font-size:12px;}
+    #leg-path-family .family-chart .domain,#leg-path-family .family-chart .tick line{stroke:var(--border);}
+    #leg-path-family .angle-field{margin-top:12px;}
+    #leg-path-family .legend{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:8px;}
+    #leg-path-family .legend span{display:inline-flex;align-items:center;gap:6px;}
+    #leg-path-family .swatch{width:18px;height:3px;display:inline-block;}
+    @media(min-width:900px){#leg-path-family .plots{grid-template-columns:repeat(3,minmax(0,1fr));}}
+    @media(max-width:600px){#leg-path-family .plots{grid-template-columns:1fr;}}
+    @media(max-width:430px){#leg-path-family .fields{grid-template-columns:1fr;gap:8px;}}
+  </style>
+  <h3>Wheel paths with a fixed hip pulley</h3>
+  <div class="fields">
+    <div><label class="form-label" for="family-length">Lower / upper link length: <output data-length class="tabular-nums">0.674</output></label><input id="family-length" class="form-range" type="range" min="0.25" max="2" step="0.001" value="0.674"></div>
+    <div><label class="form-label" for="family-ratio">Custom hip / knee pulley ratio: <output data-ratio class="tabular-nums">2.10:1</output></label><input id="family-ratio" class="form-range" type="range" min="0.5" max="6" step="0.01" value="2.1"></div>
+  </div>
+  <div class="viz-controls" style="margin-top:8px"><button class="btn" type="button" data-equal>Equal links</button><button class="btn" type="button" data-previous>Previous 4:1 geometry</button></div>
+  <div class="angle-field"><label class="form-label" for="family-angle">Upper-link angle: <output data-angle class="tabular-nums">26.4°</output></label><input id="family-angle" class="form-range" type="range" min="0" max="360" step="0.1" value="26.4"></div>
+  <div class="text-small text-muted" style="margin-top:8px">Upper link: 250 mm · Fixed timing: 0° · Curves: one 360° upper-link revolution · Positive y: down</div>
+  <div class="legend text-small"><span><i class="swatch" style="background:var(--viz-series-1)"></i>Wheel-center path</span><span><i class="swatch" style="background:var(--foreground)"></i>Hip A</span><span class="text-muted">Dashed · desired 12° rays</span></div>
+  <div class="plots">
+    <div class="plot-panel" data-panel="reference"><div class="text-small" data-caption>2:1 · Equal-link reference</div><svg class="family-chart" role="img" aria-label="Exact straight-line reference, equal links and a 2:1 ratio"></svg></div>
+    <div class="plot-panel" data-panel="two"><div class="text-small" data-caption>2:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="Two-to-one ratio with current link lengths"></svg></div>
+    <div class="plot-panel" data-panel="one-half"><div class="text-small" data-caption>1.5:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="One-and-a-half-to-one ratio with current link lengths"></svg></div>
+    <div class="plot-panel" data-panel="three"><div class="text-small" data-caption>3:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="Three-to-one ratio with current link lengths"></svg></div>
+    <div class="plot-panel" data-panel="four"><div class="text-small" data-caption>4:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="Four-to-one ratio with current link lengths"></svg></div>
+    <div class="plot-panel" data-panel="custom"><div class="text-small" data-caption>Custom · 2.10:1</div><svg class="family-chart" role="img" aria-label="Custom pulley ratio with current link lengths"></svg></div>
+  </div>
+  <div data-detail class="text-small tabular-nums" aria-live="polite" style="margin-top:8px"></div>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script>
+    (()=>{
+      const root=document.getElementById('leg-path-family');
+      if(!window.d3){const detail=root.querySelector('[data-detail]');detail.setAttribute('role','alert');detail.textContent='The plotting library could not load.';return;}
+      const d=window.d3,el=key=>root.querySelector('[data-'+key+']');
+      const lengthInput=root.querySelector('#family-length'),ratioInput=root.querySelector('#family-ratio'),angleInput=root.querySelector('#family-angle');
+      let lambda=168.44901684471338/250,custom=2.1,theta=26.4;
+      let previousWidth=0,initialized=false;
+      const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+      function restore(state){
+        if(state?.modelContent?.view!=='leg-path-family')return;
+        const m=state.modelContent;
+        if(Number.isFinite(m.lengthRatio))lambda=Math.max(.25,Math.min(2,m.lengthRatio));
+        if(Number.isFinite(m.pulleyRatio))custom=Math.max(.5,Math.min(6,m.pulleyRatio));
+        if(Number.isFinite(m.upperAngle))theta=Math.max(0,Math.min(360,m.upperAngle));
+      }
+      restore(window.openai?.widgetState);
+      const save=()=>window.openai?.setWidgetState?.({modelContent:{view:'leg-path-family',lengthRatio:lambda,pulleyRatio:custom,upperAngle:theta},privateContent:null})?.catch(()=>{});
+      const panels=Array.from(root.querySelectorAll('[data-panel]')).map(node=>({node,svg:d.select(node.querySelector('svg')),key:node.dataset.panel}));
+      const config=key=>({ratio:key==='reference'||key==='two'?2:key==='one-half'?1.5:key==='three'?3:key==='four'?4:custom,linkRatio:key==='reference'?1:lambda});
+      const position=(R,l,degrees)=>{const t=degrees*Math.PI/180,b=-(R-1)*t;return {x:250*(Math.sin(t)+l*Math.sin(b)),y:250*(Math.cos(t)+l*Math.cos(b)),theta:degrees,beta:b*180/Math.PI};};
+      function draw(animate=false){
+        const all=[];
+        panels.forEach(panel=>{
+          const cfg=config(panel.key);panel.cfg=cfg;
+          panel.data=Array.from({length:721},(_,i)=>position(cfg.ratio,cfg.linkRatio,i/2));
+          all.push(...panel.data);
+        });
+        const ex=d.extent(all,p=>p.x),ey=d.extent(all,p=>p.y);
+        const largest=Math.max(...ex.map(Math.abs),...ey.map(Math.abs));
+        const bound=largest*1.08;
+        const ray=bound*.88,tilt=Math.tan(12*Math.PI/180);
+        const reference=[{x:-ray*tilt,y:-ray},{x:0,y:0},{x:-ray*tilt,y:ray}];
+        panels.forEach(panel=>{
+          const width=Math.max(260,panel.node.getBoundingClientRect().width),left=64,right=16,top=16,bottom=52;
+          const side=width-left-right,height=side+top+bottom;
+          const x=d.scaleLinear().domain([-bound,bound]).range([left+5,width-right-5]);
+          const y=d.scaleLinear().domain([-bound,bound]).range([top+5,height-bottom-5]);
+          const svg=panel.svg.attr('viewBox',`0 0 ${width} ${height}`).attr('height',height);
+          const clipId='family-clip-'+panel.key;
+          svg.selectAll('defs').data([0]).join('defs').selectAll('clipPath').data([0]).join('clipPath').attr('id',clipId).selectAll('rect').data([0]).join('rect').attr('x',left).attr('y',top).attr('width',side).attr('height',side);
+          svg.selectAll('rect[data-chart-frame]').data([0]).join('rect').attr('data-chart-frame','').attr('x',left).attr('y',top).attr('width',side).attr('height',side).attr('fill','none').attr('stroke','var(--border)').attr('stroke-width',1);
+          svg.selectAll('line.origin-x').data([0]).join('line').attr('class','origin-x').attr('x1',left).attr('x2',width-right).attr('y1',y(0)).attr('y2',y(0)).attr('stroke','var(--border)').attr('stroke-width',1);
+          svg.selectAll('line.origin-y').data([0]).join('line').attr('class','origin-y').attr('x1',x(0)).attr('x2',x(0)).attr('y1',top).attr('y2',height-bottom).attr('stroke','var(--border)').attr('stroke-width',1);
+          svg.selectAll('g.axis-x').data([0]).join('g').attr('class','axis-x').attr('transform',`translate(0,${height-bottom})`).call(d.axisBottom(x).ticks(3).tickSize(3).tickPadding(7));
+          svg.selectAll('g.axis-y').data([0]).join('g').attr('class','axis-y').attr('transform',`translate(${left},0)`).call(d.axisLeft(y).ticks(3).tickSize(3).tickPadding(7));
+          svg.selectAll('text.axis-title[data-axis="x"]').data([0]).join('text').attr('class','axis-title').attr('data-axis','x').attr('text-anchor','middle').attr('x',left+side/2).attr('y',height-9).text('x (mm)');
+          svg.selectAll('text.axis-title[data-axis="y"]').data([0]).join('text').attr('class','axis-title').attr('data-axis','y').attr('text-anchor','middle').attr('transform',`translate(14,${top+side/2}) rotate(-90)`).text('y (mm)');
+          const line=d.line().x(p=>x(p.x)).y(p=>y(p.y));
+          svg.selectAll('path.target').data([reference]).join('path').attr('class','target').attr('d',line).attr('fill','none').attr('stroke','var(--muted-foreground)').attr('stroke-width',1).attr('stroke-dasharray','5 5').attr('opacity',.55).attr('clip-path',`url(#${clipId})`);
+          const trace=svg.selectAll('path.wheel-path').data([panel.data]).join('path').attr('class','wheel-path').attr('fill','none').attr('stroke','var(--viz-series-1)').attr('stroke-width',2).attr('clip-path',`url(#${clipId})`);
+          if(animate&&!reduced&&initialized)trace.interrupt().transition().duration(220).attr('d',line);else trace.interrupt().attr('d',line);
+          svg.selectAll('circle.hip').data([0]).join('circle').attr('class','hip').attr('cx',x(0)).attr('cy',y(0)).attr('r',3).attr('fill','var(--foreground)');
+          const p=position(panel.cfg.ratio,panel.cfg.linkRatio,theta);
+          const mark=svg.selectAll('circle.current').data([p]).join('circle').attr('class','current').attr('r',5).attr('fill','var(--viz-series-1)').attr('stroke','var(--background)').attr('stroke-width',1.5).attr('clip-path',`url(#${clipId})`).attr('data-tooltip',`θ ${theta.toFixed(1)}° · x ${p.x.toFixed(1)} mm · y ${p.y.toFixed(1)} mm`);
+          mark.interrupt().attr('cx',x(p.x)).attr('cy',y(p.y));
+          svg.attr('data-ratio',panel.cfg.ratio).attr('data-length-ratio',panel.cfg.linkRatio).attr('data-current-x',p.x).attr('data-current-y',p.y).attr('data-bound',bound);
+          const labels=svg.selectAll('.axis-x .tick text').nodes();
+          labels.forEach((text,index)=>{if(index===0)text.setAttribute('text-anchor','start');if(index===labels.length-1)text.setAttribute('text-anchor','end');});
+        });
+        root.querySelector('[data-panel="custom"] [data-caption]').textContent=`Custom · ${custom.toFixed(2)}:1`;
+        lengthInput.value=String(lambda);ratioInput.value=String(custom);angleInput.value=String(theta);
+        el('length').textContent=lambda.toFixed(3);el('ratio').textContent=custom.toFixed(2)+':1';el('angle').textContent=theta.toFixed(1)+'°';
+        const current=position(custom,lambda,theta);
+        el('detail').textContent=`Custom: lower link ${current.beta.toFixed(1)}° · Wheel x ${current.x.toFixed(1)} mm, y ${current.y.toFixed(1)} mm`;
+        root.dataset.lambda=String(lambda);root.dataset.ratio=String(custom);root.dataset.theta=String(theta);initialized=true;
+      }
+      lengthInput.addEventListener('input',()=>{lambda=Number(lengthInput.value);draw(true);});lengthInput.addEventListener('change',save);
+      ratioInput.addEventListener('input',()=>{custom=Number(ratioInput.value);draw(true);});ratioInput.addEventListener('change',save);
+      angleInput.addEventListener('input',()=>{theta=Number(angleInput.value);draw(false);});angleInput.addEventListener('change',save);
+      el('equal').addEventListener('click',()=>{lambda=1;draw(true);save();});
+      el('previous').addEventListener('click',()=>{lambda=168.44901684471338/250;custom=4;theta=26.395687229702627;draw(true);save();});
+      root.addEventListener('family:settings',event=>{const q=event.detail;if(Number.isFinite(q.lambda))lambda=Math.max(.25,Math.min(2,q.lambda));if(Number.isFinite(q.ratio))custom=Math.max(.5,Math.min(6,q.ratio));if(Number.isFinite(q.theta))theta=Math.max(0,Math.min(360,q.theta));draw(false);});
+      window.addEventListener('openai:set_globals',event=>{const s=event.detail?.globals?.widgetState;if(s){restore(s);draw(false);}});
+      new ResizeObserver(()=>{const width=root.getBoundingClientRect().width;if(Math.abs(width-previousWidth)>1){previousWidth=width;draw(false);}}).observe(root);
+      draw(false);
+    })();
+  </script>
+</div>
