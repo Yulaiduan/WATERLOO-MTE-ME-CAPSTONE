@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+.preview/
+
+# Complete historical outputs and large evidence are backed up in capstone-archive.
+artifacts/
+data/terrain/sources/usfs-trail-design-guide.pdf
+data/terrain/synthetic-boreal-forest-1000m.csv
+data/terrain/synthetic-gravel-1000m.csv
+data/terrain/synthetic-maintained-trail-1000m.csv

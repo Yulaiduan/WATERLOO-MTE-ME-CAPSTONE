@@ -1,0 +1,49 @@
+{
+  "samples": [
+    {
+      "location": {
+        "x": -78.35,
+        "y": 38.60900836413598,
+        "spatialReference": {
+          "wkid": 4326,
+          "latestWkid": 4326
+        }
+      },
+      "locationId": 0,
+      "value": "804.085815430",
+      "rasterId": 75304,
+      "resolution": 1,
+      "attributes": {
+        "Name": "VA_Shenandoah_2014",
+        "MinPS": 0,
+        "MaxPS": 10,
+        "LowPS": 1,
+        "HighPS": 16,
+        "Category": 1,
+        "Tag": "Dataset",
+        "GroupName": "",
+        "ProductName": "USGS_3DEP",
+        "CenterX": -8716511.64391707,
+        "CenterY": 4663457.900564342,
+        "ZOrder": null,
+        "Shape_Length": 51262.50651078505,
+        "Shape_Area": 164239590.6196222,
+        "Dataset_ID": "usgs",
+        "Best": 110058,
+        "DEM_Type": 1,
+        "Source": "USGS",
+        "VerticalDatum": "North American Vertical Datum of 1988 (NAVD 88)",
+        "AcquisitionDate": 1409788800000,
+        "URL": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1m/Projects/VA_Shenandoah_2014/TIFF/USGS_one_meter_x73y428_VA_Shenandoah_2014.tif",
+        "Metadata": "D:\\USGS_3DEP\\data\\1m\\VA_Shenandoah_2014\\USGS_one_meter_x73y428_VA_Shenandoah_2014.xml",
+        "pubdate": 20200330,
+        "title": "USGS one meter x73y428 VA Shenandoah 2014",
+        "Resolution_X": null,
+        "Resolution_Y": null,
+        "Cdate": null,
+        "StartDate": 20140118,
+        "EndDate": "20140409"
+      }
+    }
+  ]
+}

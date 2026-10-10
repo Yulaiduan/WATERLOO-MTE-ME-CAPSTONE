@@ -1,0 +1,67 @@
+{
+  "evidence_type": "observed_dem_derived_profile",
+  "retrieved_client_date": "2026-10-02",
+  "site": "Shenandoah area, Virginia; illustrative northward off-road transect",
+  "start_wgs84": [
+    -78.35,
+    38.6
+  ],
+  "end_wgs84": [
+    -78.35,
+    38.60900836413598
+  ],
+  "source_attributes": {
+    "Name": "VA_Shenandoah_2014",
+    "MinPS": 0,
+    "MaxPS": 10,
+    "LowPS": 1,
+    "HighPS": 16,
+    "Category": 1,
+    "Tag": "Dataset",
+    "GroupName": "",
+    "ProductName": "USGS_3DEP",
+    "CenterX": -8716511.64391707,
+    "CenterY": 4663457.900564342,
+    "ZOrder": null,
+    "Shape_Length": 51262.50651078505,
+    "Shape_Area": 164239590.6196222,
+    "Dataset_ID": "usgs",
+    "Best": 110058,
+    "DEM_Type": 1,
+    "Source": "USGS",
+    "VerticalDatum": "North American Vertical Datum of 1988 (NAVD 88)",
+    "AcquisitionDate": 1409788800000,
+    "URL": "https://prd-tnm.s3.amazonaws.com/StagedProducts/Elevation/1m/Projects/VA_Shenandoah_2014/TIFF/USGS_one_meter_x73y428_VA_Shenandoah_2014.tif",
+    "Metadata": "D:\\USGS_3DEP\\data\\1m\\VA_Shenandoah_2014\\USGS_one_meter_x73y428_VA_Shenandoah_2014.xml",
+    "pubdate": 20200330,
+    "title": "USGS one meter x73y428 VA Shenandoah 2014",
+    "Resolution_X": null,
+    "Resolution_Y": null,
+    "Cdate": null,
+    "StartDate": 20140118,
+    "EndDate": "20140409"
+  },
+  "service_url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
+  "service_description": "The USGS 3D Elevation Program (3DEP) Bare Earth DEM Dynamic service is based on multi-resolution USGS DEM sources and provides dynamic functions for visualization. These functions include: Hillshade, Aspect Map, Hillshade Stretched, Multi-directional Hillshade, Slope Map, Elevation Tinted Hillshade, Contour. In addition the OGC Web Map Service (WMS) and Web Coverage Service (WCS) interfaces are enabled. Data available in this map service reflects all 3DEP DEM data published as of August 24, 2026.",
+  "selection": "LockRaster source 75304; bilinear samples of a 1 m bare-earth DEM",
+  "path_method": "WGS84 meridional arc integrated numerically; due north, horizontal ground distance",
+  "vertical_accuracy_m": null,
+  "biome_classification": null,
+  "limitations": [
+    "Not a surveyed trail or traversable route.",
+    "One site does not define a biome distribution.",
+    "Source-specific vertical accuracy is not established here.",
+    "1 m DEM cannot establish 50–300 mm roots, rock shapes, or suspension-scale RMS.",
+    "100 m file is the first 100 m of the same 1 km transect."
+  ],
+  "summary": {
+    "length_m": 1000,
+    "sample_count": 1001,
+    "sample_interval_m": 1,
+    "source_resolution_m": 1,
+    "net_elevation_change_m": 118.39196777400002,
+    "elevation_range_m": 142.59722900400004,
+    "grade_10m_p05_percent": -37.26745605500014,
+    "grade_10m_p95_percent": 47.78228760000047
+  }
+}

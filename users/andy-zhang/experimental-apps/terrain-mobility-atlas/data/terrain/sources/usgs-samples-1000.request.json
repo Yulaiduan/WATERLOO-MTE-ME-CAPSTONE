@@ -1,0 +1,14 @@
+{
+  "url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer/getSamples",
+  "params": {
+    "f": "json",
+    "geometryType": "esriGeometryMultipoint",
+    "geometry": "{\"points\": [[-78.35, 38.60900836413598]], \"spatialReference\": {\"wkid\": 4326}}",
+    "mosaicRule": "{\"mosaicMethod\": \"esriMosaicLockRaster\", \"lockRasterIds\": [75304], \"mosaicOperation\": \"MT_FIRST\"}",
+    "returnFirstValueOnly": "true",
+    "interpolation": "RSP_BilinearInterpolation",
+    "outFields": "*",
+    "pixelSize": "{\"x\": 1, \"y\": 1, \"spatialReference\": {\"wkid\": 3857}}"
+  },
+  "retrieved_client_date": "2026-10-02"
+}

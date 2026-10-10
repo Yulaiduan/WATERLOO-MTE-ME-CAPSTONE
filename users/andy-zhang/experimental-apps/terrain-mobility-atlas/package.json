@@ -1,0 +1,20 @@
+{
+  "name": "terrain-mobility-atlas",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --test tests/*.test.js"
+  },
+  "dependencies": {
+    "maplibre-gl": "^6.11.2",
+    "ml-matrix": "^6.15.0"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1",
+    "vite": "^7.0.0"
+  }
+}

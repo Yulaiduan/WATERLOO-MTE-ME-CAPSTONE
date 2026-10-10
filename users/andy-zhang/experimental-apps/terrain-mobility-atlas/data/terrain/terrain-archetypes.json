@@ -1,0 +1,173 @@
+{
+  "schema_version": 1,
+  "source_url": "https://app.notion.com/p/3ebb26c7416c801aa3acd33e730cba0c?pvs=204",
+  "source_title": "Specs — Terrain / Mobility",
+  "retrieved_client_date": "2026-10-02",
+  "evidence_type": "synthesized_design_envelope",
+  "measurement_band_and_detrending": "not specified in source; do not compare directly to measured RMS without defining a band",
+  "columns": [
+    "Terrain archetype",
+    "Grade",
+    "Cross-slope",
+    "Roughness",
+    "Obstacles",
+    "Corridor",
+    "Surface"
+  ],
+  "archetypes": [
+    {
+      "Terrain archetype": "Improved road",
+      "Grade": "0–7%",
+      "Cross-slope": "<5%",
+      "Roughness": "2–10 mm RMS",
+      "Obstacles": "<25 mm, rare",
+      "Corridor": ">3 m",
+      "Surface": "Hard"
+    },
+    {
+      "Terrain archetype": "Gravel / service road",
+      "Grade": "0–15%",
+      "Cross-slope": "<8%",
+      "Roughness": "8–30 mm RMS",
+      "Obstacles": "25–75 mm, sparse",
+      "Corridor": ">2 m",
+      "Surface": "Hard / loose"
+    },
+    {
+      "Terrain archetype": "Maintained natural trail",
+      "Grade": "5–15%",
+      "Cross-slope": "<10%",
+      "Roughness": "25–80 mm RMS",
+      "Obstacles": "50–150 mm, ~2–5 m spacing",
+      "Corridor": "~1.2–2 m",
+      "Surface": "Mixed"
+    },
+    {
+      "Terrain archetype": "Primitive trail",
+      "Grade": "10–25%",
+      "Cross-slope": "<15%",
+      "Roughness": "40–120 mm RMS",
+      "Obstacles": "100–300 mm, ~1–3 m spacing",
+      "Corridor": "~0.8–1.5 m",
+      "Surface": "Mixed"
+    },
+    {
+      "Terrain archetype": "Canadian Shield / boreal rough trail",
+      "Grade": "up to ~25%",
+      "Cross-slope": "up to ~20%",
+      "Roughness": "~70–120 mm RMS",
+      "Obstacles": "150–300 mm roots/rock",
+      "Corridor": "~0.8–1.5 m",
+      "Surface": "Hard / mixed"
+    },
+    {
+      "Terrain archetype": "Wet forest / Amazon-style",
+      "Grade": "~10–20%",
+      "Cross-slope": "~10–15%",
+      "Roughness": "~50–100 mm RMS",
+      "Obstacles": "150–300 mm roots/logs",
+      "Corridor": "~0.6–1.2 m",
+      "Surface": "Soft / mixed"
+    },
+    {
+      "Terrain archetype": "Grassland / open field",
+      "Grade": "~0–15%",
+      "Cross-slope": "~0–10%",
+      "Roughness": "~20–80 mm RMS",
+      "Obstacles": "50–200 mm, sparse",
+      "Corridor": "Open",
+      "Surface": "Mixed"
+    },
+    {
+      "Terrain archetype": "Sand / dunes",
+      "Grade": "~5–15° normal, ~30° slip face",
+      "Cross-slope": "low–moderate",
+      "Roughness": "low small-scale roughness",
+      "Obstacles": "usually small",
+      "Corridor": "Open",
+      "Surface": "Loose"
+    },
+    {
+      "Terrain archetype": "Tundra / muskeg",
+      "Grade": "usually low",
+      "Cross-slope": "usually low",
+      "Roughness": "~30–100 mm RMS",
+      "Obstacles": "100–300 mm hummocks",
+      "Corridor": "Open",
+      "Surface": "Soft"
+    },
+    {
+      "Terrain archetype": "Alpine / scree",
+      "Grade": "~10–30%+",
+      "Cross-slope": "~10–25%",
+      "Roughness": "~80–150+ mm RMS",
+      "Obstacles": "200–400+ mm, dense",
+      "Corridor": "~0.5–1.5 m",
+      "Surface": "Loose / rock"
+    },
+    {
+      "Terrain archetype": "Talus / boulder field",
+      "Grade": "~10–30%+",
+      "Cross-slope": "~15–30%",
+      "Roughness": "~100–250+ mm RMS",
+      "Obstacles": "200–600+ mm, dense",
+      "Corridor": "Variable",
+      "Surface": "Hard / loose"
+    }
+  ],
+  "periodic_presets_from_chat": {
+    "evidence_type": "illustrative_design_preset",
+    "source_url": "https://chatgpt.com/c/6abb5d6d-029c-83ea-8d0d-cab0e6a3ef19",
+    "presets": [
+      {
+        "name": "Road",
+        "roughness_rms_mm": 5,
+        "roughness_wavelength_m": 3,
+        "obstacle_height_mm": 10,
+        "obstacle_spacing_m": 50
+      },
+      {
+        "name": "Gravel",
+        "roughness_rms_mm": 20,
+        "roughness_wavelength_m": 0.5,
+        "obstacle_height_mm": 50,
+        "obstacle_spacing_m": 10
+      },
+      {
+        "name": "Maintained trail",
+        "roughness_rms_mm": 40,
+        "roughness_wavelength_m": 1,
+        "obstacle_height_mm": 100,
+        "obstacle_spacing_m": 5
+      },
+      {
+        "name": "Primitive trail",
+        "roughness_rms_mm": 80,
+        "roughness_wavelength_m": 0.7,
+        "obstacle_height_mm": 200,
+        "obstacle_spacing_m": 2
+      },
+      {
+        "name": "Boreal forest",
+        "roughness_rms_mm": 100,
+        "roughness_wavelength_m": 0.6,
+        "obstacle_height_mm": 250,
+        "obstacle_spacing_m": 1.5
+      },
+      {
+        "name": "Alpine",
+        "roughness_rms_mm": 130,
+        "roughness_wavelength_m": 0.5,
+        "obstacle_height_mm": 300,
+        "obstacle_spacing_m": 1
+      },
+      {
+        "name": "Talus",
+        "roughness_rms_mm": 200,
+        "roughness_wavelength_m": 0.4,
+        "obstacle_height_mm": 400,
+        "obstacle_spacing_m": 0.5
+      }
+    ]
+  }
+}

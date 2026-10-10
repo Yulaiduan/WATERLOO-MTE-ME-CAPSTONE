@@ -830,3 +830,277 @@ The default floating chassis, finite ramps and regenerated remote recordings dis
 Continue from the member app README/model/validation notes, refine timestep for peak loads and confirm real contact/belt/hardware inputs before canonical promotion.
 
 ---
+
+## Entry: 2026-10-10 — Andy Zhang — nondeleting Capstone reorganization and complete legacy archive
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang member experimental apps and curated context.
+- **Associated Issue/Task:** Owner explicitly requested moving all loose old Capstone files into Capstone_Old, making Capstone the Git repo itself, preserving original files and backing up the old source/apps/content under his GitHub member folder.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no tracked deletions.
+- `ENTRY_TEMPLATE.md`
+- `context/users/andy-zhang/2026-10-10-workspace-reorganization.md`
+- `context/users/andy-zhang/README.md`
+- `users/README.md`
+- `users/andy-zhang/README.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/.gitignore`
+- `users/andy-zhang/experimental-apps/capstone-archive/AGENTS.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/archive-manifest.json`
+- `users/andy-zhang/experimental-apps/capstone-archive/context/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0000.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0001.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0002.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0003.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0004.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0005.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0006.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0007.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0008.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0009.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0010.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0011.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0012.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0013.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0014.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0015.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0016.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0017.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0018.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0019.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0020.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0021.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0022.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0023.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0024.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0025.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0026.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0027.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0028.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0029.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0030.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0031.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0032.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0033.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0034.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0035.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0036.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0037.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0038.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0039.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0040.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0041.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0042.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0043.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0044.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0045.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0046.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0047.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0048.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0049.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0050.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0051.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0052.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0053.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0054.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0055.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0056.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0057.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0058.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0059.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0060.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0061.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0062.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0063.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0064.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0065.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0066.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0067.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0068.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0069.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0070.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0071.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0072.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0073.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0074.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0075.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0076.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0077.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0078.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0079.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0080.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0081.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0082.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0083.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0084.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0085.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0086.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0087.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0088.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0089.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0090.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0091.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0092.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0093.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0094.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0095.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0096.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0097.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0098.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0099.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0100.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0101.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/payload/legacy-workspace-0102.part`
+- `users/andy-zhang/experimental-apps/capstone-archive/restore_archive.py`
+- `users/andy-zhang/experimental-apps/capstone-archive/scripts/create_archive.py`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.gitignore`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.references/awesome-design-html-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.references/design.posthog.html`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.references/robot-design-notes/diagram-0.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.references/robot-design-notes/diagram-1.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.references/robot-design-notes/diagram-2.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.references/robot-design-notes/diagram-3.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/.references/robot-design-notes/diagram-4.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/AGENTS.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/README.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start Capstone.cmd`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start Force Plots.cmd`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start-Capstone.ps1`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start-Force-Plots.ps1`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Stop Capstone.cmd`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Stop-Capstone.ps1`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/THIRD_PARTY_NOTICES.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/context/README.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usfs-trail-design-guide.provenance.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0000.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0000.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0100.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0100.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0200.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0200.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0300.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0300.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0400.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0400.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0500.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0500.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0600.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0600.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0700.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0700.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0800.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0800.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0900.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-0900.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-1000.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-samples-1000.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-service.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/sources/usgs-service.request.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-boreal-forest-100m.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-boreal-forest-provenance.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-class3-slope-cycle-1000m.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-class3-slope-cycle-100m.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-class3-slope-cycle-provenance.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-example-summary.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-gravel-100m.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-gravel-provenance.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-maintained-trail-100m.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/synthetic-maintained-trail-provenance.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/terrain-archetypes.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/usfs-trail-benchmarks.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/usgs-shenandoah-provenance.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/usgs-shenandoah-transect-1000m.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/data/terrain/usgs-shenandoah-transect-100m.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/ARCHITECTURE.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/DECISIONS.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/DESIGN.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/HANDOFF.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/IMPORT-2026-10-10.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/VALIDATION.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/linkage/ARCHITECTURE.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/linkage/HANDOFF.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/linkage/MODEL.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/linkage/VALIDATION.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/terrain-data-and-profile-specification.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/terrain-simulation-development-plan.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/workbench/ARCHITECTURE.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/workbench/DECISIONS.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/workbench/DESIGN.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/workbench/HANDOFF.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/workbench/VALIDATION.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/README.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/linkage-ui/desktop.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/terrain-evidence/measured-transect.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/terrain-evidence/slope-cycle.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/terrain-evidence/synthetic-cycles.png`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/terrain-preview.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/ui-iteration-1/posthog-reference.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/ui-iteration-1/terrain-desktop.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/ui-iteration-1/terrain-laptop.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/ui-iteration-1/terrain-mobile.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/ui-iteration-1/verified-profile.csv`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/workbench-ui/atlas-desktop.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/workbench-ui/workbench-graph.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/evidence/workbench-ui/workbench-terrain.jpg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/index.html`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/linkage/index.html`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/package-lock.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/package.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/public/countries.geojson`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/public/design/terrain-rover.svg`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/public/force-plots/D3-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/public/force-plots/d3.min.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/public/force-plots/index.html`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/scripts/build_terrain_evidence.py`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/scripts/validate_linkage_reference.py`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/scripts/verify-force-plots.cjs`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/scripts/verify_import.cjs`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/data.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/linkage/charts.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/linkage/main.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/linkage/model.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/linkage/style.css`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/linkage/view.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/linkage/worker.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/main.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/model.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/style.css`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/workbench/charts.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/workbench/engine.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/workbench/main.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/workbench/style.css`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/workbench/terrain.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/src/workbench/worker.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/tests/fixtures/linkage/sympy-reference.json`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/tests/linkage.test.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/tests/model.test.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/tests/workbench.test.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/vite.config.js`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/workbench/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/handoff.md`
+- **API/Interface Changes:** Flatten the local existing checkout while retaining Git metadata/history/remote; archive the former loose workspace and empty nesting container without deleting files. Publish Terrain Mobility Atlas/workbench/historical linkage/force plots with project-local original-port launchers, model/design context, pinned Playwright verification and PATH-based Node analysis lookup. Add the owner's expressly requested historical source/evidence/output archive as 103 sub-MiB ZIP parts, exact per-file hashes and a standard-library nonoverwriting restore tool; original raw outputs are historical preservation, never active/canonical imports. Installed dependencies, bytecode, process logs/state and rebuildable dist are local-only. Update member indexes/handoff and make app start/stop helpers archive old logs/state instead of deleting them. Canonical code/assets and shared enforcement are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Original inventory and post-move verification match all 4534 file SHA-256 values and all 431 directories. A separate restoration of the GitHub payload matches all 668 included file hashes; all 103 ordered ZIP parts are at most 900000 bytes. Imported atlas/workbench/linkage npm tests pass all 49 cases, Vite builds all three entries and local force page, and Playwright lockfile/audit reports 98 packages with zero vulnerabilities. Browser verification passes atlas controls, observed-USGS background-worker run, finite plots, mobile workbench, historical linkage route, force/travel averages and offline force controls; relocated Pymunk backend/controls/export browser checks also pass. Both app-local 4175/4186 launchers pass start/reuse/scoped-stop/restart from an unrelated Windows folder, with state/log history retained; the force launcher passes too. Relocated Python imports Pymunk 7.3.0. All 391 relative Markdown links resolve and fences balance; structure/log/staged workspace checks and diff hygiene run before publication. No automatic canonical execution or gate regressions are required for this member-only scope.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE: this is an owner-requested archive/member-app organization with no shared runtime/asset change. Original files are byte-verified in the local sibling archive; historical raw outputs are explicitly preserved at the owner's request and not used as new validation. The initial scoped-stop attempt compared a PowerShell-decoded date as a string and refused safely; comparing UTC DateTime values then verified and stopped only the correct servers. Imported CRLF text initially failed whitespace checks; working-copy text was normalized to LF without altering original/archive bytes and extra EOF blank lines were removed. A draft documentation command was rejected by automatic command review; the same authorized file edits were completed through structured patches. No original was deleted, no unrelated process stopped and no validation/size rule bypassed. Hardware, canonical robot, GPU, tire/belt structural suitability and old payload-script execution remain unverified.
+
+## 4. Compute Saving Handoff State
+
+Capstone is now the Git checkout itself and all original loose workspace files remain intact in sibling Capstone_Old with matching hashes.
+Andy's experimental app index links the maintained terrain atlas/workbench, Wheel Leg Lab and a fully verified 668-file GitHub historical backup, with dependencies/caches/logs preserved locally.
+Continue from each app's context and verification record, use the project-local 4175/4186 launchers and preserve archive hashes before any future cleanup or canonical promotion.
+
+---

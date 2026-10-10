@@ -1,0 +1,23 @@
+{
+  "name": "Boreal forest",
+  "roughness_rms_mm": 100,
+  "roughness_wavelength_m": 0.6,
+  "obstacle_height_mm": 250,
+  "obstacle_spacing_m": 1.5,
+  "grade_percent": 10,
+  "grade_evidence": "chosen baseline test point within source design envelope; not total instantaneous slope",
+  "obstacle_fwhm_m": 0.3,
+  "width_evidence": "added engineering assumption",
+  "generator": "constant grade + sine roughness + equally spaced Gaussian obstacles",
+  "evidence_type": "synthetic_engineering_cycle",
+  "sampling_m": 0.01,
+  "sine_peak_amplitude_mm": 141.42135623730954,
+  "realized_roughness_rms_mm_1km": 99.99781315170169,
+  "combined_residual_min_mm": -141.42135623730954,
+  "combined_residual_max_mm": 391.42135623730957,
+  "obstacle_count_1km": 667,
+  "cycle_count_100m": 166.66666666666669,
+  "cycle_count_1km": 1666.6666666666667,
+  "roughness_definition": "RMS of the sine component about its mean; excludes grade and discrete obstacles",
+  "interpretation": "Illustrative deterministic test; not a measured biome profile or inferred periodicity."
+}

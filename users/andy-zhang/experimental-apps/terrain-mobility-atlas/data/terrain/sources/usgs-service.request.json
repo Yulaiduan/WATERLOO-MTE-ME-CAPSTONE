@@ -1,0 +1,7 @@
+{
+  "url": "https://elevation.nationalmap.gov/arcgis/rest/services/3DEPElevation/ImageServer",
+  "params": {
+    "f": "json"
+  },
+  "retrieved_client_date": "2026-10-02"
+}

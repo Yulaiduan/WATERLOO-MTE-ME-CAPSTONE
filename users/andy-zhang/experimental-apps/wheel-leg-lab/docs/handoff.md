@@ -25,3 +25,14 @@ All 27 Python tests pass, including an independent energy-model response and tim
 Run setup/build from the app root, then its start launcher. Inspect the gallery, detailed bench and Pymunk space before editing. Use the [coordinate map](model.md), [decisions](decisions.md) and [validation record](validation.md). Source and reference fixtures are portable; generated output remains local. Shared requirements and canonical assets retain their existing authority.
 
 Next confirm real pulley radii/route and belt tension, physical spring/motor limits, structural properties and wheel/chassis clearance. Extend contact/terrain physics only as a deliberately validated new model, not by treating the scrolling input graphic as a road collision. If an experiment becomes team runtime, follow promotion and canonical validation instead of importing member code into production.
+
+## Workspace reorganization, 2026-10-10
+
+This toolkit moved with the Git repo into the Capstone checkout root; its relative
+app folder and port 4186 are unchanged. The user confirms the floating-chassis
+fixture with prescribed wheel height. Original loose files remain in sibling
+Capstone_Old and the [restorable archive](../../capstone-archive/README.md).
+The [atlas/workbench](../../terrain-mobility-atlas/README.md) runs on port 4175,
+sharing that port with this app's optional legacy geometry launcher. Both
+relocated apps pass actual start/reuse/scoped-stop/restart; helpers archive state
+and previous logs instead of deleting them.

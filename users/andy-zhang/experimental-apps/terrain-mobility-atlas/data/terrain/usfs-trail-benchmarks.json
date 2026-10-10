@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "evidence_type": "published_design_guideline",
+  "source": {
+    "title": "Designing Sustainable Off-Highway Vehicle Trails — An Alaska Trail Manager's Perspective",
+    "edition": "Revised November 2013",
+    "figure": "4-4",
+    "printed_page": 14,
+    "pdf_page": 22,
+    "underlying_table": "FSH 2309.18 ATV design parameters, October 16 2008",
+    "url": "https://www.fs.usda.gov/eng/pubs/pdfpubs/pdf11232804/pdf11232804dpi100.pdf",
+    "local_pdf": "sources/usfs-trail-design-guide.pdf",
+    "visually_verified_client_date": "2026-10-02"
+  },
+  "interpretation": "Design objectives; not measured trail-condition statistics. Maximum pitch density is a design fraction of trail length, not obstacle frequency or a repeat cycle.",
+  "classes": [
+    {
+      "trail_class": 2,
+      "development": "Moderately developed",
+      "target_grade_percent": [
+        10,
+        25
+      ],
+      "short_pitch_max_percent": 35,
+      "max_pitch_density_percent": [
+        20,
+        40
+      ],
+      "max_protrusion_mm": 152.4,
+      "max_obstacle_height_mm": 304.8,
+      "single_lane_tread_width_mm": [
+        1219.2,
+        1524
+      ],
+      "roughness_rms_mm": null,
+      "roughness_wavelength_m": null,
+      "obstacle_spacing_m": null
+    },
+    {
+      "trail_class": 3,
+      "development": "Developed",
+      "target_grade_percent": [
+        5,
+        15
+      ],
+      "short_pitch_max_percent": 25,
+      "max_pitch_density_percent": [
+        15,
+        30
+      ],
+      "max_protrusion_mm": 76.2,
+      "max_obstacle_height_mm": 152.4,
+      "single_lane_tread_width_mm": [
+        1524,
+        1524
+      ],
+      "roughness_rms_mm": null,
+      "roughness_wavelength_m": null,
+      "obstacle_spacing_m": null
+    },
+    {
+      "trail_class": 4,
+      "development": "Highly developed",
+      "target_grade_percent": [
+        3,
+        10
+      ],
+      "short_pitch_max_percent": 15,
+      "max_pitch_density_percent": [
+        10,
+        20
+      ],
+      "max_protrusion_mm": 76.2,
+      "max_obstacle_height_mm": 76.2,
+      "single_lane_tread_width_mm": [
+        1524,
+        1828.8
+      ],
+      "roughness_rms_mm": null,
+      "roughness_wavelength_m": null,
+      "obstacle_spacing_m": null
+    }
+  ]
+}

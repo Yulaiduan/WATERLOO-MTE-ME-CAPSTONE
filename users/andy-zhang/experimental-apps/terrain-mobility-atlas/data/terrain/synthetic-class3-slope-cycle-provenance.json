@@ -1,0 +1,31 @@
+{
+  "evidence_type": "synthetic_engineering_cycle",
+  "benchmark_source": "usfs-trail-benchmarks.json",
+  "published_constraints": {
+    "target_grade_percent": [
+      5,
+      15
+    ],
+    "short_pitch_max_percent": 25,
+    "max_pitch_density_percent": [
+      15,
+      30
+    ]
+  },
+  "chosen_assumptions": {
+    "cycle_length_m": 100,
+    "baseline_grade_percent": 8,
+    "maximum_grade_percent": 25,
+    "maximum_grade_plateau_m": 20,
+    "transition_length_m_each": 5,
+    "transition_shape": "raised cosine"
+  },
+  "summary": {
+    "mean_grade_percent": 12.25,
+    "ascent_per_cycle_m": 12.25,
+    "ascent_1km_m": 122.5,
+    "maximum_grade_fraction_percent": 20,
+    "repeats_1km": 10
+  },
+  "interpretation": "The GRADE pattern repeats every 100 m; elevation accumulates without a reset. Segment lengths and periodicity are chosen assumptions, not observations."
+}

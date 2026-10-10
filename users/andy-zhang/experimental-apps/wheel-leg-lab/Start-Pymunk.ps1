@@ -32,6 +32,14 @@ try {
         if(!(Test-PymunkProcess $server) -or !(Test-PymunkHttp)) { throw 'Port $Port belongs to another or unready app; nothing was stopped.' }
         Write-Host 'Pymunk linkage is already running; reusing verified server.'
     } else {
+        foreach ($taskLogName in @('server.stdout.log','server.stderr.log')) {
+            $taskPreviousLog=Join-Path $taskStateDir $taskLogName
+            if (Test-Path -LiteralPath $taskPreviousLog) {
+                $taskLogHistory=Join-Path $taskStateDir 'history'
+                New-Item -ItemType Directory -Force -Path $taskLogHistory | Out-Null
+                Move-Item -LiteralPath $taskPreviousLog -Destination (Join-Path $taskLogHistory ([guid]::NewGuid().ToString()+'-'+$taskLogName))
+            }
+        }
         $started=Start-Process -FilePath $taskPython -ArgumentList @('-u',('"'+$taskServer+'"'),'--port',$Port) -WorkingDirectory $taskRoot -WindowStyle Hidden -RedirectStandardOutput (Join-Path $taskStateDir 'server.stdout.log') -RedirectStandardError (Join-Path $taskStateDir 'server.stderr.log') -PassThru
         $deadline=[DateTime]::UtcNow.AddSeconds(25)
         $ready=$false

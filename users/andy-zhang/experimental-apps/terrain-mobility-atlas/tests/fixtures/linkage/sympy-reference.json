@@ -1,0 +1,932 @@
+{
+  "derivation": "Independent SymPy kinetic-energy Hessian and potential derivatives",
+  "cases": [
+    {
+      "name": "reference_equal_links",
+      "config": {
+        "geometry": {
+          "upperLength": 0.18,
+          "lowerLength": 0.18,
+          "guideRatio": 2,
+          "guidePhase": 0,
+          "driveRatio1": 1,
+          "driveRatio2": 1,
+          "wheelRadius": 0.075,
+          "foldMin": 0.12,
+          "foldMax": 1.38,
+          "pose": 0.63,
+          "driveAngle": 0
+        },
+        "mass": {
+          "upperMass": 0.35,
+          "lowerMass": 0.35,
+          "wheelMass": 0.6,
+          "upperComFraction": 0.5,
+          "lowerComFraction": 0.5,
+          "upperInertia": 0.000945,
+          "lowerInertia": 0.000945,
+          "wheelInertia": 0.0016875,
+          "compoundPulleyInertia": 4e-05,
+          "gravity": 9.80665
+        },
+        "spring": {
+          "type": "torsion",
+          "stiffness": 20,
+          "damping": 0.15,
+          "restAngle": 0.2,
+          "preloadTorque": 0,
+          "anchorX": -0.08,
+          "anchorY": 0.02,
+          "attachLink": "upper",
+          "attachFraction": 0.75,
+          "freeLength": 0.15,
+          "linearStiffness": 1600,
+          "linearDamping": 10,
+          "tensionOnly": false
+        },
+        "load": {
+          "forceX": 0,
+          "forceY": 50,
+          "wheelMoment": 0,
+          "disturbanceTorque": 0,
+          "disturbanceStart": 0.5,
+          "disturbanceDuration": 0.2
+        },
+        "actuators": {
+          "fold": {
+            "kp": 25,
+            "kd": 1.5,
+            "feedforward": true,
+            "torqueFeedforward": 0,
+            "torqueLimit": 18,
+            "continuousTorque": 6,
+            "noLoadSpeed": 35,
+            "lag": 0.012,
+            "slewRate": 500,
+            "rotorInertia": 8e-05,
+            "reduction": 6,
+            "viscousFriction": 0.015
+          },
+          "drive": {
+            "kp": 2,
+            "kd": 0.25,
+            "feedforward": true,
+            "torqueFeedforward": 0,
+            "torqueLimit": 4,
+            "continuousTorque": 1.5,
+            "noLoadSpeed": 90,
+            "lag": 0.012,
+            "slewRate": 500,
+            "rotorInertia": 8e-05,
+            "reduction": 1,
+            "viscousFriction": 0.003
+          }
+        },
+        "motion": {
+          "type": "step",
+          "target": 0.6,
+          "initialAngle": 0.55,
+          "initialVelocity": 0,
+          "amplitude": 0.08,
+          "frequency": 1,
+          "stepTime": 0.4,
+          "stepSize": 0.12,
+          "driveSpeed": 0,
+          "initialDriveAngle": 0.27,
+          "initialDriveVelocity": 0
+        },
+        "simulation": {
+          "mode": "finite",
+          "duration": 3,
+          "dt": 0.001,
+          "outputDt": 0.01
+        }
+      },
+      "q": 0.63,
+      "phi": 0.27,
+      "expected": {
+        "C": [
+          0.0,
+          -0.29088990299237466
+        ],
+        "wheelAngle": 0.27,
+        "jacobian": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.212092112859217,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ],
+        "massMatrix": [
+          [
+            0.045301874861242306,
+            0.0
+          ],
+          [
+            0.0,
+            0.0018075
+          ]
+        ],
+        "gravity": 1.9759174626422984,
+        "gravityDerivative": 2.7100226938211622,
+        "gravitationalEnergy": -2.7100226938211622,
+        "springEnergy": 1.8489999999999998,
+        "springElasticTorque": -8.6,
+        "springTangent": 20.0,
+        "staticFoldTorque": -0.02868818031855369,
+        "power": 7.423223950072596,
+        "idealStateMatrix": [
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            -732.1005509327596,
+            -0.0,
+            -36.75344574810255,
+            -0.0
+          ],
+          [
+            -0.0,
+            -1106.5006915629322,
+            -0.0,
+            -139.9723374827109
+          ]
+        ],
+        "idealPoles": [
+          [
+            -18.376722874051275,
+            19.859421123060987
+          ],
+          [
+            -18.376722874051275,
+            -19.859421123060987
+          ],
+          [
+            -8.4104988421936,
+            0.0
+          ],
+          [
+            -131.5618386405173,
+            0.0
+          ]
+        ],
+        "finiteUnsaturatedStateMatrix": [
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            -180.24701117146006,
+            -0.0,
+            -3.642233362424578,
+            -0.0,
+            22.074141590451983,
+            0.0
+          ],
+          [
+            -0.0,
+            -0.0,
+            -0.0,
+            -1.6597510373443998,
+            0.0,
+            553.2503457814661
+          ],
+          [
+            -2083.333333333333,
+            0.0,
+            -125.0,
+            0.0,
+            -83.33333333333333,
+            -0.0
+          ],
+          [
+            0.0,
+            -166.66666666666666,
+            0.0,
+            -20.833333333333332,
+            -0.0,
+            -83.33333333333333
+          ]
+        ],
+        "finiteUnsaturatedPoles": [
+          [
+            -20.96354159002484,
+            30.24586856666173
+          ],
+          [
+            -20.96354159002484,
+            -30.24586856666173
+          ],
+          [
+            -45.04848351570822,
+            0.0
+          ],
+          [
+            -8.364801151645137,
+            0.0
+          ],
+          [
+            -38.31414160951632,
+            97.75176549760805
+          ],
+          [
+            -38.31414160951632,
+            -97.75176549760805
+          ]
+        ],
+        "idealFrequencyResponse": [
+          {
+            "frequencyHz": 0.05,
+            "qMagnitude": 0.030152103848614283,
+            "qPhaseDeg": -0.9036960207468264,
+            "yMagnitude": 0.006395023412403132,
+            "wheelMagnitude": 0.0
+          },
+          {
+            "frequencyHz": 3.1622776601683795,
+            "qMagnitude": 0.02744166957179985,
+            "qPhaseDeg": -65.20720567157832,
+            "yMagnitude": 0.005820161679867515,
+            "wheelMagnitude": 0.0
+          },
+          {
+            "frequencyHz": 200.0,
+            "qMagnitude": 1.3979113832976526e-05,
+            "qPhaseDeg": -178.3239448051112,
+            "yMagnitude": 2.9648597887354986e-06,
+            "wheelMagnitude": 0.0
+          }
+        ],
+        "finiteUnsaturatedFrequencyResponse": [
+          {
+            "frequencyHz": 0.05,
+            "qMagnitude": 0.030152041623259806,
+            "qPhaseDeg": -0.7408470502195482,
+            "yMagnitude": 0.006395010214896227,
+            "wheelMagnitude": 0.0
+          },
+          {
+            "frequencyHz": 3.1622776601683795,
+            "qMagnitude": 0.030226929612609088,
+            "qPhaseDeg": -51.35499935997404,
+            "yMagnitude": 0.006410893366785095,
+            "wheelMagnitude": 0.0
+          },
+          {
+            "frequencyHz": 200.0,
+            "qMagnitude": 1.4004534014716807e-05,
+            "qPhaseDeg": -179.82832809184248,
+            "yMagnitude": 2.97025120879006e-06,
+            "wheelMagnitude": 0.0
+          }
+        ]
+      }
+    },
+    {
+      "name": "unequal_links_carrier_drive",
+      "config": {
+        "geometry": {
+          "upperLength": 0.21,
+          "lowerLength": 0.16,
+          "guideRatio": 1.7,
+          "guidePhase": 0.12,
+          "driveRatio1": 1.5,
+          "driveRatio2": 0.8,
+          "wheelRadius": 0.075,
+          "foldMin": 0.12,
+          "foldMax": 1.38,
+          "pose": 0.63,
+          "driveAngle": 0
+        },
+        "mass": {
+          "upperMass": 0.35,
+          "lowerMass": 0.35,
+          "wheelMass": 0.6,
+          "upperComFraction": 0.5,
+          "lowerComFraction": 0.5,
+          "upperInertia": 0.000945,
+          "lowerInertia": 0.000945,
+          "wheelInertia": 0.0016875,
+          "compoundPulleyInertia": 4e-05,
+          "gravity": 9.80665
+        },
+        "spring": {
+          "type": "torsion",
+          "stiffness": 20,
+          "damping": 0.15,
+          "restAngle": 0.2,
+          "preloadTorque": 0,
+          "anchorX": -0.08,
+          "anchorY": 0.02,
+          "attachLink": "upper",
+          "attachFraction": 0.75,
+          "freeLength": 0.15,
+          "linearStiffness": 1600,
+          "linearDamping": 10,
+          "tensionOnly": false
+        },
+        "load": {
+          "forceX": 11,
+          "forceY": 47,
+          "wheelMoment": 0.7,
+          "disturbanceTorque": 0,
+          "disturbanceStart": 0.5,
+          "disturbanceDuration": 0.2
+        },
+        "actuators": {
+          "fold": {
+            "kp": 25,
+            "kd": 1.5,
+            "feedforward": true,
+            "torqueFeedforward": 0,
+            "torqueLimit": 18,
+            "continuousTorque": 6,
+            "noLoadSpeed": 35,
+            "lag": 0.012,
+            "slewRate": 500,
+            "rotorInertia": 8e-05,
+            "reduction": 6,
+            "viscousFriction": 0.015
+          },
+          "drive": {
+            "kp": 2,
+            "kd": 0.25,
+            "feedforward": true,
+            "torqueFeedforward": 0,
+            "torqueLimit": 4,
+            "continuousTorque": 1.5,
+            "noLoadSpeed": 90,
+            "lag": 0.012,
+            "slewRate": 500,
+            "rotorInertia": 8e-05,
+            "reduction": 1,
+            "viscousFriction": 0.003
+          }
+        },
+        "motion": {
+          "type": "step",
+          "target": 0.6,
+          "initialAngle": 0.55,
+          "initialVelocity": 0,
+          "amplitude": 0.08,
+          "frequency": 1,
+          "stepTime": 0.4,
+          "stepSize": 0.12,
+          "driveSpeed": 0,
+          "initialDriveAngle": 0.27,
+          "initialDriveVelocity": 0
+        },
+        "simulation": {
+          "mode": "finite",
+          "duration": 3,
+          "dt": 0.001,
+          "outputDt": 0.01
+        }
+      },
+      "q": 0.63,
+      "phi": 0.27,
+      "expected": {
+        "C": [
+          0.07323789699304026,
+          -0.3215130370586052
+        ],
+        "wheelAngle": 0.007800000000000085,
+        "jacobian": [
+          [
+            0.06340669452641459,
+            0.0
+          ],
+          [
+            0.15905815069026202,
+            0.0
+          ],
+          [
+            -0.54,
+            1.2000000000000002
+          ]
+        ],
+        "massMatrix": [
+          [
+            0.037991700764123414,
+            -0.0011235000000000004
+          ],
+          [
+            -0.0011235000000000004,
+            0.0026000000000000007
+          ]
+        ],
+        "gravity": 1.6335153288115398,
+        "gravityDerivative": 2.437471306029021,
+        "gravitationalEnergy": -3.025965672157465,
+        "springEnergy": 1.8489999999999998,
+        "springElasticTorque": -8.6,
+        "springTangent": 20.0,
+        "staticFoldTorque": 2.438308606578663,
+        "power": 3.524644705563013,
+        "idealStateMatrix": [
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            -987.9556659698103,
+            -23.0423324261665,
+            -44.39263777163987,
+            -2.9148550519100627
+          ],
+          [
+            -426.910842583493,
+            -779.1877155695374,
+            -19.182741744783613,
+            -98.56724601954649
+          ]
+        ],
+        "idealPoles": [
+          [
+            -90.64499149156,
+            0.0
+          ],
+          [
+            -21.81848248405135,
+            22.137772297571413
+          ],
+          [
+            -21.81848248405135,
+            -22.137772297571413
+          ],
+          [
+            -8.67792733152358,
+            0.0
+          ]
+        ],
+        "finiteUnsaturatedStateMatrix": [
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            -321.3995432725149,
+            -0.0,
+            -4.39927040980215,
+            -0.03456349863924978,
+            26.662244907891818,
+            11.52116621308325
+          ],
+          [
+            -138.8816872564117,
+            -0.0,
+            -1.900992425158737,
+            -1.1687815733543072,
+            11.521166213083252,
+            389.5938577847687
+          ],
+          [
+            -2083.333333333333,
+            0.0,
+            -125.0,
+            0.0,
+            -83.33333333333333,
+            -0.0
+          ],
+          [
+            0.0,
+            -166.66666666666666,
+            0.0,
+            -20.833333333333332,
+            -0.0,
+            -83.33333333333333
+          ]
+        ],
+        "finiteUnsaturatedPoles": [
+          [
+            -37.903259477332995,
+            78.75360169619684
+          ],
+          [
+            -37.903259477332995,
+            -78.75360169619684
+          ],
+          [
+            -24.173641162206692,
+            38.094938553386804
+          ],
+          [
+            -24.173641162206692,
+            -38.094938553386804
+          ],
+          [
+            -39.485184895275715,
+            0.0
+          ],
+          [
+            -8.595732475468301,
+            0.0
+          ]
+        ],
+        "idealFrequencyResponse": [
+          {
+            "frequencyHz": 0.05,
+            "qMagnitude": 0.02698733069471369,
+            "qPhaseDeg": -0.8088371660262282,
+            "yMagnitude": 0.004292554912367704,
+            "wheelMagnitude": 0.014574951467559579
+          },
+          {
+            "frequencyHz": 3.1622776601683795,
+            "qMagnitude": 0.025133317744906937,
+            "qPhaseDeg": -56.347409859556194,
+            "yMagnitude": 0.0039976590412156435,
+            "wheelMagnitude": 0.014300634592727403
+          },
+          {
+            "frequencyHz": 200.0,
+            "qMagnitude": 1.6882288060793682e-05,
+            "qPhaseDeg": -177.91855773859731,
+            "yMagnitude": 2.6852655183701326e-06,
+            "wheelMagnitude": 7.894846615619261e-07
+          }
+        ],
+        "finiteUnsaturatedFrequencyResponse": [
+          {
+            "frequencyHz": 0.05,
+            "qMagnitude": 0.026987177424622755,
+            "qPhaseDeg": -0.6630814664929481,
+            "yMagnitude": 0.004292530533510483,
+            "wheelMagnitude": 0.014574868963383687
+          },
+          {
+            "frequencyHz": 3.1622776601683795,
+            "qMagnitude": 0.026524869175023637,
+            "qPhaseDeg": -43.34359459125635,
+            "yMagnitude": 0.004218996638280396,
+            "wheelMagnitude": 0.015802167869365228
+          },
+          {
+            "frequencyHz": 200.0,
+            "qMagnitude": 1.692410252244398e-05,
+            "qPhaseDeg": -179.79162199405135,
+            "yMagnitude": 2.6919164493123386e-06,
+            "wheelMagnitude": 3.188353595063337e-07
+          }
+        ]
+      }
+    },
+    {
+      "name": "linear_spring_lower_attachment",
+      "config": {
+        "geometry": {
+          "upperLength": 0.21,
+          "lowerLength": 0.16,
+          "guideRatio": 1.7,
+          "guidePhase": 0.12,
+          "driveRatio1": 1.5,
+          "driveRatio2": 0.8,
+          "wheelRadius": 0.075,
+          "foldMin": 0.12,
+          "foldMax": 1.38,
+          "pose": 0.63,
+          "driveAngle": 0
+        },
+        "mass": {
+          "upperMass": 0.35,
+          "lowerMass": 0.35,
+          "wheelMass": 0.6,
+          "upperComFraction": 0.5,
+          "lowerComFraction": 0.5,
+          "upperInertia": 0.000945,
+          "lowerInertia": 0.000945,
+          "wheelInertia": 0.0016875,
+          "compoundPulleyInertia": 4e-05,
+          "gravity": 9.80665
+        },
+        "spring": {
+          "type": "linear",
+          "stiffness": 20,
+          "damping": 0.15,
+          "restAngle": 0.2,
+          "preloadTorque": 0,
+          "anchorX": -0.075,
+          "anchorY": 0.035,
+          "attachLink": "lower",
+          "attachFraction": 0.64,
+          "freeLength": 0.24,
+          "linearStiffness": 1600,
+          "linearDamping": 10,
+          "tensionOnly": false
+        },
+        "load": {
+          "forceX": 11,
+          "forceY": 47,
+          "wheelMoment": 0.7,
+          "disturbanceTorque": 0,
+          "disturbanceStart": 0.5,
+          "disturbanceDuration": 0.2
+        },
+        "actuators": {
+          "fold": {
+            "kp": 25,
+            "kd": 1.5,
+            "feedforward": true,
+            "torqueFeedforward": 0,
+            "torqueLimit": 18,
+            "continuousTorque": 6,
+            "noLoadSpeed": 35,
+            "lag": 0.012,
+            "slewRate": 500,
+            "rotorInertia": 8e-05,
+            "reduction": 6,
+            "viscousFriction": 0.015
+          },
+          "drive": {
+            "kp": 2,
+            "kd": 0.25,
+            "feedforward": true,
+            "torqueFeedforward": 0,
+            "torqueLimit": 4,
+            "continuousTorque": 1.5,
+            "noLoadSpeed": 90,
+            "lag": 0.012,
+            "slewRate": 500,
+            "rotorInertia": 8e-05,
+            "reduction": 1,
+            "viscousFriction": 0.003
+          }
+        },
+        "motion": {
+          "type": "step",
+          "target": 0.6,
+          "initialAngle": 0.55,
+          "initialVelocity": 0,
+          "amplitude": 0.08,
+          "frequency": 1,
+          "stepTime": 0.4,
+          "stepSize": 0.12,
+          "driveSpeed": 0,
+          "initialDriveAngle": 0.27,
+          "initialDriveVelocity": 0
+        },
+        "simulation": {
+          "mode": "finite",
+          "duration": 3,
+          "dt": 0.001,
+          "outputDt": 0.01
+        }
+      },
+      "q": 0.63,
+      "phi": 0.27,
+      "expected": {
+        "C": [
+          0.07323789699304026,
+          -0.3215130370586052
+        ],
+        "wheelAngle": 0.007800000000000085,
+        "jacobian": [
+          [
+            0.06340669452641459,
+            0.0
+          ],
+          [
+            0.15905815069026202,
+            0.0
+          ],
+          [
+            -0.54,
+            1.2000000000000002
+          ]
+        ],
+        "massMatrix": [
+          [
+            0.037991700764123414,
+            -0.0011235000000000004
+          ],
+          [
+            -0.0011235000000000004,
+            0.0026000000000000007
+          ]
+        ],
+        "gravity": 1.6335153288115398,
+        "gravityDerivative": 2.437471306029021,
+        "gravitationalEnergy": -3.025965672157465,
+        "springEnergy": 8.767559435302093,
+        "springElasticTorque": 13.243932931560776,
+        "springTangent": -18.205359112539803,
+        "staticFoldTorque": -19.405624324982114,
+        "power": 3.524644705563013,
+        "idealStateMatrix": [
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            30.68497548268225,
+            -23.0423324261665,
+            -42.06017192447698,
+            -2.9148550519100627
+          ],
+          [
+            13.259449982612887,
+            -779.1877155695374,
+            -18.17484736813457,
+            -98.56724601954649
+          ]
+        ],
+        "idealPoles": [
+          [
+            -91.00868403431222,
+            0.0
+          ],
+          [
+            -41.653737940769815,
+            0.0
+          ],
+          [
+            0.7171630070164688,
+            0.0
+          ],
+          [
+            -8.682158975957813,
+            0.0
+          ]
+        ],
+        "finiteUnsaturatedStateMatrix": [
+          [
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            697.2410981799776,
+            -0.0,
+            -2.066804562639266,
+            -0.03456349863924978,
+            26.662244907891818,
+            11.52116621308325
+          ],
+          [
+            301.28860530969416,
+            -0.0,
+            -0.8930980485096983,
+            -1.1687815733543072,
+            11.521166213083252,
+            389.5938577847687
+          ],
+          [
+            -2083.333333333333,
+            0.0,
+            -125.0,
+            0.0,
+            -83.33333333333333,
+            -0.0
+          ],
+          [
+            0.0,
+            -166.66666666666666,
+            0.0,
+            -20.833333333333332,
+            -0.0,
+            -83.33333333333333
+          ]
+        ],
+        "finiteUnsaturatedPoles": [
+          [
+            -38.03901366880571,
+            78.58085713278433
+          ],
+          [
+            -38.03901366880571,
+            -78.58085713278433
+          ],
+          [
+            -43.055476013134324,
+            31.111771642597777
+          ],
+          [
+            -43.055476013134324,
+            -31.111771642597777
+          ],
+          [
+            0.8862716373706828,
+            0.0
+          ],
+          [
+            -8.5995450761507,
+            0.0
+          ]
+        ],
+        "idealFrequencyResponse": [
+          {
+            "frequencyHz": 0.05,
+            "qMagnitude": 0.7958658773878962,
+            "qPhaseDeg": -156.76990199681532,
+            "yMagnitude": 0.12658895465480158,
+            "wheelMagnitude": 0.42982044681756815
+          },
+          {
+            "frequencyHz": 3.1622776601683795,
+            "qMagnitude": 0.028331334915382745,
+            "qPhaseDeg": -117.24143542493886,
+            "yMagnitude": 0.004506329738227231,
+            "wheelMagnitude": 0.016120277961757364
+          },
+          {
+            "frequencyHz": 200.0,
+            "qMagnitude": 1.6872520156896604e-05,
+            "qPhaseDeg": -178.02610410827697,
+            "yMagnitude": 2.6837118536401434e-06,
+            "wheelMagnitude": 7.890278745272202e-07
+          }
+        ],
+        "finiteUnsaturatedFrequencyResponse": [
+          {
+            "frequencyHz": 0.05,
+            "qMagnitude": 0.8189690862227432,
+            "qPhaseDeg": -160.81107829029747,
+            "yMagnitude": 0.13026370832708328,
+            "wheelMagnitude": 0.44229772269062734
+          },
+          {
+            "frequencyHz": 3.1622776601683795,
+            "qMagnitude": 0.037822566229241066,
+            "qPhaseDeg": -114.08033931168137,
+            "yMagnitude": 0.006015987438783042,
+            "wheelMagnitude": 0.02253276111791109
+          },
+          {
+            "frequencyHz": 200.0,
+            "qMagnitude": 1.691325174672862e-05,
+            "qPhaseDeg": -179.89828753607202,
+            "yMagnitude": 2.690190544993498e-06,
+            "wheelMagnitude": 3.1863094033718096e-07
+          }
+        ]
+      }
+    }
+  ]
+}

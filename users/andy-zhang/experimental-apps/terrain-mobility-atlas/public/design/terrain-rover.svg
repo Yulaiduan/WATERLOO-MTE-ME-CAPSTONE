@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="310" height="130" viewBox="0 0 310 130" fill="none">
+  <!-- Original Terrain line illustration. No PostHog marks or artwork. -->
+  <g stroke="#23251d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m8 88 44-49 23 23 49-50 55 63 30-32 64 53M36 57l16 7 8-8m46-25 18 15 15-15m52 32 18 8 10-9"/>
+    <path d="M8 112h28l28-7h55l19-7h29l25 10h47l24-5h36"/>
+    <path d="m171 93-7-21 8-6h34l22 14-3 14m-58-19h37l17 10h-38m10-10v-9m-10 17-4 9h-16m52-5h10M191 64V45l12-7m-12 14h12"/>
+    <circle cx="177" cy="95" r="12" fill="#eeefe9"/><circle cx="177" cy="95" r="5"/>
+    <circle cx="220" cy="95" r="12" fill="#eeefe9"/><circle cx="220" cy="95" r="5"/>
+    <path d="m152 86-6 3m-2-9-6 1M280 24v12m-6-6h12M27 22v8m-4-4h8"/>
+  </g>
+  <path d="m172 68 31 1 15 10h-42Z" fill="#f7a501"/>
+  <circle cx="203" cy="38" r="3" fill="#f7a501" stroke="#23251d" stroke-width="1.8"/>
+</svg>
