@@ -13,7 +13,8 @@ try {
     if(!$server) { Archive-PymunkState; Write-Host 'Server already stopped.'; exit 0 }
     $taskServer=Join-Path $PSScriptRoot 'server.py'
     $taskPython=Join-Path $PSScriptRoot '.venv\Scripts\python.exe'
-    if($state.root -ne $PSScriptRoot -or $server.CreationDate.ToUniversalTime().ToString('o') -ne $state.created -or !$server.CommandLine.Contains($taskServer) -or !$server.CommandLine.Contains($taskPython) -or $state.port -ne $Port -or $server.CommandLine -notmatch "--port\s+$Port(?:\s|$)") {
+    $taskCreated=([DateTime]$state.created).ToUniversalTime()
+    if($state.root -ne $PSScriptRoot -or $server.CreationDate.ToUniversalTime() -ne $taskCreated -or !$server.CommandLine.Contains($taskServer) -or !$server.CommandLine.Contains($taskPython) -or $state.port -ne $Port -or $server.CommandLine -notmatch "--port\s+$Port(?:\s|$)") {
         throw 'Tracked process no longer matches this app; nothing was stopped.'
     }
     Stop-Process -Id $server.ProcessId

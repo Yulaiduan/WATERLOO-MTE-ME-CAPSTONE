@@ -5,7 +5,7 @@
  */
 export const RECORD_SCHEMA = 'wheel-leg-lab-record/v1';
 export const MAX_IMPORT_BYTES = 80 * 1024 * 1024;
-const BACKENDS = ['math', 'pymunk', 'linkage'];
+const BACKENDS = ['math', 'pymunk', 'linkage', 'counterbalance_math', 'counterbalance_pymunk'];
 const FORBIDDEN = new Set(['__proto__', 'prototype', 'constructor']);
 let databasePromise;
 
@@ -87,10 +87,11 @@ function validateTables(result) {
 
 function inferredBackend(value, config) {
   if (value.backend !== undefined && value.backend !== null) {
-    if (!BACKENDS.includes(value.backend)) throw new Error('Unknown backend. Choose math, pymunk or linkage.');
+    if (!BACKENDS.includes(value.backend)) throw new Error('Unknown model backend.');
     return value.backend;
   }
   if (object(config?.geometry) && object(config?.simulation)) return 'linkage';
+  if (typeof config?.spring_radius==='number' && typeof config?.anchor_height==='number' && typeof config?.law==='string') return 'counterbalance_math';
   if (typeof config?.length === 'number' && typeof config?.target === 'string') return 'pymunk';
   return null;
 }
@@ -137,6 +138,14 @@ export function normalizeImport(input, fileName = 'Imported study') {
     if (typeof config.target !== 'string' || !['position', 'force', 'knee'].includes(config.target)) throw new Error('Config target must be position, force or knee.');
     if (config.dt !== undefined && (typeof config.dt !== 'number' || config.dt <= 0)) throw new Error('Solver dt must be positive seconds.');
     if (config.duration !== undefined && (typeof config.duration !== 'number' || config.duration <= 0)) throw new Error('Duration must be positive seconds.');
+  }
+  if(config&&['counterbalance_math','counterbalance_pymunk'].includes(selectedBackend)){
+    for(const key of ['length','spring_radius','anchor_height'])if(typeof config[key]!=='number'||config[key]<=0)throw new Error(`Counterbalance ${key} must be positive metres.`);
+    if(config.spring_radius>config.length)throw new Error('Spring radius must fit on the counterbalance lever.');
+    if(!['zero_effective','ordinary'].includes(config.law))throw new Error('Counterbalance law must be zero_effective or ordinary.');
+    if(!['prescribed','free'].includes(config.mode))throw new Error('Counterbalance mode must be prescribed or free.');
+    for(const key of ['dt','duration'])if(config[key]!==undefined&&(typeof config[key]!=='number'||config[key]<=0))throw new Error(`Counterbalance ${key} must be positive seconds.`);
+    if(config.stiffness_auto!==undefined&&typeof config.stiffness_auto!=='boolean')throw new Error('Automatic counterbalance stiffness must be boolean.');
   }
   const kind = config ? (hasData ? 'run' : 'profile') : 'dataset';
   if (value.kind && !['profile', 'run', 'dataset'].includes(value.kind)) throw new Error('Unknown record kind.');

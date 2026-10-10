@@ -1,11 +1,18 @@
-/* Unified motion workspace: local solver results, append-only browser records,
- * portable JSON and the actual Pymunk viewer. No remote data upload.
+/* Unified motion workspace, loaded as an ES module by web/index.html.
+ * Inputs: backend SI configurations/results and explicit browser interactions.
+ * Outputs: append-only browser records, JSON, Plotly data, native desktop launches/status.
+ * Browser playback is recorded; native GUI physics runs on the simulation host desktop.
+ * Local loopback app only, no remote data upload or browser-to-host screen streaming.
  */
 import {saveRecord,downloadJSON} from './library.js';
 import {mountDataBrowser} from './data-browser.js';
 const $=id=>document.getElementById(id),frames=new Map(),pending=new Map(),ready=new Set(),configs={},runs={};
 let tab='home',mathModel='scipy',theme=document.documentElement.dataset.theme||'light',guiResult=null;
-const studies=[['gallery','All motion studies','/animations/'],['ratio','Wheel / link force & travel','/force-plots/'],['linear','Straight 2:1 leg','/animations/linear-leg/'],['coaxial','Independent coaxial wheel drive','/animations/coaxial-wheel-leg/'],['tilt','Tilted invertible leg','/animations/tilted-invertible-leg/'],['mirror','Mirrored left tilt','/animations/left-tilted-leg/'],['reindex','Historical reindexing alternative','/animations/two-position-left-leg/'],['fixed','Fixed 4:1 working strokes','/animations/fixed-ratio-left-leg/'],['paths','Mathematical path family','/animations/leg-path-family/'],['recorded','Recorded Pymunk playback','/recorded/']];
+let nativeSession=null,nativeConfig=null,nativePoll=0,nativeGeneration=0;
+const studies=[['gallery','All motion studies','/animations/'],['counterbalance','Constant-lift lever','/counterbalance/'],['ratio','Wheel / link force & travel','/force-plots/'],['linear','Straight 2:1 leg','/animations/linear-leg/'],['coaxial','Independent coaxial wheel drive','/animations/coaxial-wheel-leg/'],['tilt','Tilted invertible leg','/animations/tilted-invertible-leg/'],['mirror','Mirrored left tilt','/animations/left-tilted-leg/'],['reindex','Historical reindexing alternative','/animations/two-position-left-leg/'],['fixed','Fixed 4:1 working strokes','/animations/fixed-ratio-left-leg/'],['paths','Mathematical path family','/animations/leg-path-family/'],['recorded','Recorded Pymunk playback','/recorded/']];
+const counterbalanceBackend=backend=>['counterbalance_math','counterbalance_pymunk'].includes(backend);
+const activeCounterbalance=()=>tab==='math'&&mathModel==='counterbalance'||tab==='studies'&&$('study-select').value==='counterbalance';
+const nativeProfile=record=>counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
 function status(text){$('lab-status').textContent=text;}
 function error(cause){$('lab-error').hidden=false;$('lab-error').textContent=cause instanceof Error?cause.message:String(cause);}
 function clearError(){$('lab-error').hidden=true;}
@@ -19,12 +26,14 @@ function ensureFrame(key,host,url,title){
  $(host).append(frame);frames.set(key,frame);return frame;
 }
 function showMathModel(model){
- mathModel=model==='linkage'?'linkage':'scipy';
+ mathModel=['linkage','counterbalance'].includes(model)?model:'scipy';
  document.querySelectorAll('[data-math-model]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.mathModel===mathModel)));
- ensureFrame(mathModel==='scipy'?'math':'linkage','math-host',mathModel==='scipy'?'/mathematical/?embedded=1':'/linkage/?embedded=1',mathModel==='scipy'?'Independent SciPy mathematical simulation':'Detailed two-coordinate linkage model');
- for(const key of ['math','linkage'])if(frames.has(key))frames.get(key).hidden=key!==(mathModel==='scipy'?'math':'linkage');
- $('compare-models').hidden=mathModel==='linkage';
- $('math-caption').textContent=mathModel==='scipy'?'Independent Python / SciPy model · MATLAB ode45 companion':'Two-coordinate guide / wheel-drive mathematical bench';
+ const key=mathModel==='scipy'?'math':mathModel,url=mathModel==='scipy'?'/mathematical/?embedded=1':mathModel==='counterbalance'?'/counterbalance/?embedded=1':'/linkage/?embedded=1';
+ ensureFrame(key,'math-host',url,mathModel==='scipy'?'Independent SciPy mathematical simulation':mathModel==='counterbalance'?'Constant-lift counterbalance lever':'Detailed two-coordinate linkage model');
+ for(const item of ['math','linkage','counterbalance'])if(frames.has(item))frames.get(item).hidden=item!==key;
+ $('compare-models').hidden=mathModel!=='scipy';
+ $('math-caption').textContent=mathModel==='scipy'?'Independent Python / SciPy model · MATLAB legacy-tip ode45 companion':mathModel==='counterbalance'?'Vertical-anchor counterbalance · independent math and Pymunk lever models':'Two-coordinate guide / wheel-drive mathematical bench';
+ if(tab==='math'){const url=new URL(location.href);url.searchParams.set('model',mathModel);history.replaceState(null,'',url);}
 }
 function selectTab(next){
  if(!['home','math','physics','studies','data'].includes(next))next='home';tab=next;clearError();
@@ -36,16 +45,21 @@ function selectTab(next){
  if(tab==='data'){void dataBrowser.refresh();requestAnimationFrame(()=>$('data-panel').querySelectorAll('.js-plotly-plot').forEach(plot=>Plotly.Plots.resize(plot)));}
  const url=new URL(location.href);url.searchParams.set('tab',tab);if(tab==='math')url.searchParams.set('model',mathModel);else url.searchParams.delete('model');history.replaceState(null,'',url);
 }
-function openStudy(id){const study=studies.find(s=>s[0]===id)||studies[0];$('save-study').disabled=study[0]==='gallery';$('save-study-data').disabled=!['ratio','paths','recorded'].includes(study[0]);let frame=frames.get('studies');if(!frame)frame=ensureFrame('studies','studies-host',study[2]+'?embedded=1',study[1]);else{frame.src=study[2]+'?embedded=1';frame.title=study[1];ready.delete('studies');}}
+function openStudy(id){const study=studies.find(s=>s[0]===id)||studies[0];$('save-study').disabled=study[0]==='gallery';$('save-study-data').disabled=!['ratio','paths','recorded','counterbalance'].includes(study[0]);let frame=frames.get('studies');if(!frame)frame=ensureFrame('studies','studies-host',study[2]+'?embedded=1',study[1]);else{frame.src=study[2]+'?embedded=1';frame.title=study[1];ready.delete('studies');}}
 async function keepRun(backend,result){
  runs[backend]=result;if(result.config)configs[backend]=result.config;
+ if(counterbalanceBackend(backend)){runs.counterbalance=result;configs.counterbalance=result.config;}
  const record=await saveRecord({kind:'run',name:name(backend,result.config),backend,config:result.config,result});
- status(`${backend==='math'?'Mathematical':backend==='pymunk'?'Pymunk':'Detailed linkage'} run saved · ${record.result.rows?.length||record.result.samples?.length||0} samples · inspect/export in Profiles & data`);
+ status(`${counterbalanceBackend(backend)?'Counterbalance lever':backend==='math'?'Mathematical':backend==='pymunk'?'Pymunk':'Detailed linkage'} run saved · ${record.result.rows?.length||record.result.samples?.length||0} samples · inspect/export in Profiles & data`);
  await dataBrowser.refresh();return record;
 }
 async function keepProfile(backend,config,reference_inputs){const record=await saveRecord({kind:'profile',name:name(backend,config),backend,config,...(reference_inputs?{reference_inputs}:{})});status(`Saved profile: ${record.name}`);await dataBrowser.refresh();}
-function requestProfile(){const key=tab==='physics'?'physics':mathModel==='linkage'?'linkage':'math';if(!frames.has(key)){selectTab('math');status('Open a model, set its inputs, then save the profile.');return;}send(key,{type:'motion-lab-save-profile'});}
+function requestProfile(){const key=tab==='physics'?'physics':mathModel==='linkage'?'linkage':mathModel==='counterbalance'?'counterbalance':'math';if(!frames.has(key)){selectTab('math');status('Open a model, set its inputs, then save the profile.');return;}send(key,{type:'motion-lab-save-profile'});}
 function loadProfile(record,backend){
+ if(counterbalanceBackend(backend)){
+  ensureFrame('counterbalance','math-host','/counterbalance/?embedded=1&loadOnly=1','Constant-lift counterbalance lever');mathModel='counterbalance';selectTab('math');
+  send('counterbalance',{type:'motion-lab-load-profile',config:record.config,backend});configs[backend]=record.config;configs.counterbalance=record.config;status('Counterbalance profile loaded. Run its math or Pymunk lever model to generate new data.');return;
+ }
  if(backend==='math')ensureFrame('math','math-host','/mathematical/?embedded=1&loadOnly=1','Independent SciPy mathematical simulation');
  if(backend==='pymunk')ensureFrame('physics','physics-host','/physics/?embedded=1&loadOnly=1','Actual 2D Pymunk physical model');
  if(backend==='linkage'){mathModel='linkage';selectTab('math');send('linkage',{type:'motion-lab-load-profile',config:record.config});}
@@ -82,7 +96,7 @@ async function saveStudy(withData){
   await saveRecord({kind:'dataset',name:packet.name,result:{...packet,rows:rows.length?rows:[values]}});downloadJSON(packet,id+(withData?'-data':'-settings')+'.json');await dataBrowser.refresh();status('Study settings/data saved to the browser library and JSON.');
  }catch(cause){error(cause);}
 }
-const dataBrowser=mountDataBrowser($('data-panel'),{theme,onLoadProfile:loadProfile,onPymunk:record=>showGui(record.config,record.result),onLoadStudy:loadStudy});
+const dataBrowser=mountDataBrowser($('data-panel'),{theme,onLoadProfile:loadProfile,onPymunk:record=>showNativeGui(nativeProfile(record)),onPlayback:record=>showPlayback(nativeProfile(record),record.result),onLoadStudy:loadStudy});
 async function simulate(endpoint,config){
  for(let attempt=0;attempt<49;attempt++){
   const response=await fetch(endpoint,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),value=await response.json();
@@ -90,7 +104,13 @@ async function simulate(endpoint,config){
   if(!response.ok)throw Error(value.error||'Simulation failed.');return value;
  }
 }
-async function showGui(config=null,result=null){
+async function showPlayback(config=null,result=null){
+ if(config?.model==='counterbalance'||!config&&activeCounterbalance()){
+  const c=config?.config||configs.counterbalance,r=result||(!config?runs.counterbalance:null);
+  ensureFrame('counterbalance','math-host','/counterbalance/?embedded=1&loadOnly=1','Recorded counterbalance lever');mathModel='counterbalance';selectTab('math');
+  if(r)send('counterbalance',{type:'motion-lab-load-result',result:r});else if(c)send('counterbalance',{type:'motion-lab-load-profile',config:c,backend:'counterbalance_math'});
+  status('View the lever recording in its own tool; wheel-height playback is a separate model.');return;
+ }
  const separateLinkage=!config&&tab==='math'&&mathModel==='linkage';
  clearError();$('gui-error').hidden=true;if(!$('gui-dialog').open)$('gui-dialog').showModal();ensureFrame('gui','gui-host','/physics/?viewer=1','Pymunk engine visual GUI');
  try{
@@ -99,8 +119,65 @@ async function showGui(config=null,result=null){
   if(result&&JSON.stringify(result.config)===JSON.stringify(config)&&(result.backend==='pymunk'||(result.engine==='7.3.0'&&result.frames?.[0]?.debug_draw)))guiResult=result;
   else guiResult=await simulate('/api/pymunk/simulate',config);
   send('gui',{type:'motion-lab-load-result',result:guiResult});
-  $('gui-status').textContent=`Actual Pymunk ${guiResult.engine} · ${guiResult.rows.length.toLocaleString()} solver steps · ${separateLinkage?'separate wheel-height fixture; not the two-axis drive case':'play/scrub the engine shapes and constraints'}`;
+  $('gui-status').textContent=`Recorded Pymunk ${guiResult.engine} · ${guiResult.rows.length.toLocaleString()} solver steps · ${separateLinkage?'separate wheel-height fixture; not the two-axis drive case':'play/scrub saved engine shapes and constraints; this is browser playback'}`;
  }catch(cause){$('gui-error').hidden=false;$('gui-error').textContent=cause.message;}
+}
+async function nativeRequest(endpoint,options={}){
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),10000);
+ try{
+  const response=await fetch(endpoint,{...options,signal:controller.signal});let value;
+  try{value=await response.json();}catch{throw Error(`Native desktop GUI endpoint unavailable (HTTP ${response.status}). Restart Motion Lab with its project launcher.`);}
+  if(!response.ok){const failure=Error(value.error||`Native desktop GUI request failed (HTTP ${response.status}).`);failure.status=response.status;throw failure;}return value;
+ }catch(cause){if(cause.name==='AbortError')throw Error('Native desktop GUI request timed out after 10 seconds. Check the Motion Lab server and native GUI log on the simulation host.');throw cause;}finally{clearTimeout(timeout);}
+}
+function nativeStatus(value){
+ const node=$('native-status');node.hidden=false;node.dataset.state=value.status;node.dataset.session=value.id||'';
+ const state=value.paused?'paused':value.status;
+ node.textContent=`Pymunk desktop on the simulation host · ${state} · PID ${value.pid ?? 'pending'}${Number.isFinite(value.solver_steps)?' · '+value.solver_steps.toLocaleString()+' live solver steps':''}${Number.isFinite(value.loops)?' · '+value.loops+' loops':''}. ${value.status==='closed'?'Window closed.':value.status==='failed'?'Open failed; see the error below.':'Use its Run/Pause, Step and Reset controls; close the desktop window to stop it.'}`;
+}
+function monitorNative(session){
+ const generation=++nativeGeneration,started=Date.now();clearTimeout(nativePoll);
+ async function poll(){
+  if(generation!==nativeGeneration)return;
+  try{
+   const current=await nativeRequest('/api/native-gui/'+encodeURIComponent(session.id));if(generation!==nativeGeneration)return;
+   nativeSession=current;nativeStatus(current);
+   if(current.status==='failed')throw Error(current.error||'Pymunk desktop window failed to start. Inspect the native GUI log in the app .preview folder.');
+   if(current.status==='closed')return;
+   if(current.status==='starting'&&Date.now()-started>15000)throw Error('Pymunk desktop has not reported readiness after 15 seconds. Inspect the app .preview/native-gui log on the simulation host.');
+   nativePoll=setTimeout(poll,1200);
+  }catch(cause){error(cause);}
+ }
+ void poll();
+}
+async function showNativeGui(selectedConfig=null){
+ clearError();const launchButton=$('show-gui');launchButton.disabled=true;
+ try{
+  let config=selectedConfig;
+  if(!config){
+   if(activeCounterbalance())config={model:'counterbalance',config:configs.counterbalance||await (await fetch('/api/counterbalance/defaults')).json()};
+   else{
+   if(tab==='math'&&mathModel==='linkage')throw Error('The detailed two-axis linkage has a different configuration. Select the SciPy or 2D wheel-height model to launch its matching Pymunk desktop GUI.');
+   config=configs[tab==='math'?'math':'pymunk'];
+   if(!config)config=await (await fetch('/api/defaults')).json();
+   }
+  }
+  if(config?.model==='counterbalance'){if(!config.config||typeof config.config!=='object')throw Error('Select a valid counterbalance lever profile.');}
+  else if(!config||typeof config.length!=='number'||!Number.isFinite(config.length))throw Error('Select a valid wheel-height model profile before opening the desktop GUI.');
+  const sameConfig=nativeConfig===JSON.stringify(config);
+  if(sameConfig&&nativeSession&&['starting','ready','running'].includes(nativeSession.status)){
+   try{
+    const existing=await nativeRequest('/api/native-gui/'+encodeURIComponent(nativeSession.id)+'/show',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+    if(['starting','ready','running'].includes(existing.status)){nativeSession=existing;nativeStatus(existing);monitorNative(existing);status('This profile is already running in its Pymunk desktop window on the simulation host.');return;}
+   }catch(cause){if(cause.status!==404)throw cause;nativeSession=null;}
+  }
+  ++nativeGeneration;clearTimeout(nativePoll);
+  $('native-status').hidden=false;$('native-status').textContent='Opening a live Pymunk desktop window on the simulation host…';
+  const launched=await nativeRequest('/api/native-gui',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)});
+  if(typeof launched.id!=='string')throw Error('Native desktop launch did not return a session ID.');
+  nativeSession=launched;nativeConfig=JSON.stringify(config);nativeStatus(launched);status('Native Pymunk launched on the simulation host desktop. Browser playback is available separately.');
+  monitorNative(launched);
+ }catch(cause){error(cause);}finally{launchButton.disabled=false;}
 }
 function changeTheme(next){theme=next==='dark'?'dark':'light';document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;try{localStorage.setItem('motion-lab-theme',theme);}catch{}
  $('theme-toggle').textContent=theme==='dark'?'Light mode':'Dark mode';$('theme-toggle').setAttribute('aria-pressed',String(theme==='dark'));
@@ -116,16 +193,18 @@ window.addEventListener('message',event=>{
  const key=[...frames].find(([,frame])=>frame.contentWindow===event.source)?.[0];if(!key)return;const data=event.data;
  if(data.type==='motion-lab-height'&&Number.isFinite(data.height))frames.get(key).style.height=Math.min(18000,Math.max(key==='gui'?680:600,data.height))+'px';
  else if(data.type==='motion-lab-ready'||data.type==='motion-lab-viewer-ready')markReady(key);
- else if(data.type==='motion-lab-config'&&['math','pymunk','linkage'].includes(data.backend))configs[data.backend]=data.config;
+ else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk'].includes(data.backend)){configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
  else if(data.type==='motion-lab-run'&&key!=='gui'){markReady(key);void keepRun(data.backend,data.result).catch(error);}
  else if(data.type==='motion-lab-profile')void keepProfile(data.backend,data.config,data.reference_inputs).catch(error);
  else if(data.type==='motion-lab-save-run')void keepRun(data.backend,data.result).catch(error);
- else if(data.type==='motion-lab-show-gui')void showGui(data.config,data.result);
+ else if(data.type==='motion-lab-show-gui')void showNativeGui(data.config);
+ else if(data.type==='motion-lab-show-playback')void showPlayback(data.config,data.result);
  else if(data.type==='motion-lab-theme')changeTheme(data.theme);
 });
 document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>selectTab(button.dataset.tab));document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>selectTab(button.dataset.open));document.querySelectorAll('[data-math-model]').forEach(button=>button.onclick=()=>showMathModel(button.dataset.mathModel));
 for(const [id,title] of studies){const option=document.createElement('option');option.value=id;option.textContent=title;$('study-select').append(option);}
-$('study-select').onchange=()=>openStudy($('study-select').value);$('theme-toggle').onclick=()=>changeTheme(theme==='dark'?'light':'dark');$('show-gui').onclick=()=>showGui(null,tab==='physics'?runs.pymunk:null);$('close-gui').onclick=()=>$('gui-dialog').close();$('save-profile').onclick=requestProfile;$('physics-save-profile').onclick=requestProfile;$('open-data').onclick=()=>selectTab('data');
+$('study-select').onchange=()=>openStudy($('study-select').value);$('theme-toggle').onclick=()=>changeTheme(theme==='dark'?'light':'dark');$('show-gui').onclick=()=>showNativeGui();$('show-playback').onclick=()=>showPlayback(null,tab==='physics'?runs.pymunk:null);$('close-gui').onclick=()=>$('gui-dialog').close();$('save-profile').onclick=requestProfile;$('physics-save-profile').onclick=requestProfile;$('open-data').onclick=()=>selectTab('data');
 $('save-study').onclick=()=>saveStudy(false);$('save-study-data').onclick=()=>saveStudy(true);
-const query=new URLSearchParams(location.search);mathModel=query.get('model')==='linkage'?'linkage':'scipy';if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);selectTab(query.get('tab')||'home');
-if(query.get('gui')==='1'){let config=null;try{config=JSON.parse(sessionStorage.getItem('motion-lab-gui-profile')||'null');}catch{}void showGui(config);}
+const query=new URLSearchParams(location.search);mathModel=['linkage','counterbalance'].includes(query.get('model'))?query.get('model'):'scipy';if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);selectTab(query.get('tab')||'home');
+if(query.get('gui')==='1'){let config=null;try{config=JSON.parse(sessionStorage.getItem('motion-lab-gui-profile')||'null');}catch{}void showNativeGui(config);}
+window.addEventListener('pagehide',()=>{nativeGeneration++;clearTimeout(nativePoll);});

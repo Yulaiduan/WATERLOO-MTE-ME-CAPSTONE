@@ -22,6 +22,9 @@ import scipy
 from scipy.integrate import solve_ivp
 
 from motion_input import position_state
+from spring_mechanisms import (CATALOG, MECHANISM_DEFAULTS, apply_preset, equal_poses,
+                               geometry, geometry_from_bodies, mechanism_config,
+                               spring_law, calibrate_zero_effective_rate, mechanism_metadata)
 
 # Experimental defaults shared by value, independently resolved without importing
 # the Pymunk fixture. Non-mathematical fields remain in exported profiles so the
@@ -39,6 +42,7 @@ DEFAULTS = {
     'start': .5, 'period': 1.5, 'duty': .5, 'pulse_width': .7,
     'rise': .25, 'fall': .25, 'duration': 6., 'dt': .001, 'iterations': 80,
 }
+DEFAULTS.update(MECHANISM_DEFAULTS)
 
 
 def config(values=None):
@@ -51,6 +55,11 @@ def config(values=None):
         if unknown:
             raise ValueError('Unknown configuration fields: ' + ', '.join(sorted(unknown)))
         c.update(values)
+        if 'spring_topology' in values:
+            seeded = apply_preset(DEFAULTS, values['spring_topology'])
+            for key in MECHANISM_DEFAULTS:
+                if key not in values:
+                    c[key] = seeded[key]
     for key, default in DEFAULTS.items():
         value = c[key]
         if isinstance(default, bool):
@@ -97,6 +106,7 @@ def config(values=None):
     width = c['period']*c['duty'] if c['wave'] == 'square' else c['pulse_width']
     if c['wave'] != 'step' and c['rise']+c['fall'] > width+1e-12:
         raise ValueError('Rise + fall must fit within on-time / pulse width.')
+    mechanism_config(c)
     return c
 
 
@@ -108,16 +118,40 @@ def parameters(c):
     Iu = c['upper_mass']*L*L/12
     Il = c['lower_mass']*(L+e)**2/12
     Iw = .5*c['wheel_mass']*c['radius']**2
-    s0 = math.sqrt(L*L+e*e+2*L*e*math.cos(2*q0))
-    J0 = -2*L*e*math.sin(2*q0)/s0
+    initial = geometry(q0, c)
+    input_ref = initial['input_length']
+    J0 = initial['jacobian']
+    eta = 1. if c['spring_transmission'] == 'direct' else -1.
+    coil0 = input_ref if eta == 1. else c['spring_coil_ref']
     rest = c['rest_length']
-    if c['balance_spring']:
+    needed = S*c['gravity']*math.cos(q0)
+    if c['spring_force_law'] == 'zero_effective':
+        if c['balance_spring']:
+            calibrate_zero_effective_rate(c, needed, initial)
+        spring_law(input_ref, 0., c, input_ref)
+    elif c['balance_spring']:
         if c['stiffness'] <= 0:
             raise ValueError('Automatic spring balance requires positive spring stiffness.')
-        rest = s0 + S*c['gravity']*math.cos(q0)/(c['stiffness']*J0)
+        if abs(J0) < 1e-10:
+            if abs(needed) > 1e-9:
+                raise ValueError('Spring geometry is at a dead centre and cannot balance gravity; change the crank/mount or initial angle.')
+            required_tension = 0.
+        else:
+            required_tension = -needed/J0
+        coil_tension = eta*required_tension
+        if (c['spring_mode'] == 'compression' and coil_tension > 1e-9
+                or c['spring_mode'] == 'extension' and coil_tension < -1e-9
+                or c['spring_transmission'] == 'ideal_rope' and (required_tension < -1e-9
+                    or c['spring_mode'] == 'extension' and abs(required_tension) > 1e-9)):
+            raise ValueError('Selected spring mode/routing cannot supply the required preload direction; reverse payout or choose a compatible coil/transmission.')
+        rest = coil0-coil_tension/c['stiffness']
         if rest < .005:
             raise ValueError('Spring cannot balance this load; increase stiffness or choose a manual free length.')
-    return {'S': S, 'Iu': Iu, 'Il': Il, 'Iw': Iw, 'q0': q0, 'rest': rest}
+        check = spring_law(input_ref, 0., {**c, 'rest_length': rest}, input_ref)
+        if abs(-check['tension']*J0-needed) > 1e-7:
+            raise ValueError('Unilateral spring is slack at the requested automatic equilibrium; choose compatible preload geometry.')
+    return {'S': S, 'Iu': Iu, 'Il': Il, 'Iw': Iw, 'q0': q0, 'rest': rest,
+            'input_ref': input_ref, 'spring_config': {**c, 'rest_length': rest}}
 
 
 def terms(q, velocity, c, p):
@@ -128,10 +162,10 @@ def terms(q, velocity, c, p):
     M = inertia + mu*((L/2)**2*sn*sn+(1.5*L)**2*cs*cs)
     M += c['lower_mass']*((L+e)/2)**2 + 4*mh*L*L*cs*cs
     Mp = (mu*((L/2)**2-(1.5*L)**2)-4*mh*L*L)*math.sin(2*q)
-    length = math.sqrt(L*L+e*e+2*L*e*math.cos(2*q))
-    J = -2*L*e*math.sin(2*q)/length
-    elastic = c['stiffness']*(length-p['rest'])
-    damper = c['damping']*J*velocity
+    geom = geometry(q, c)
+    length, J = geom['input_length'], geom['jacobian']
+    law = spring_law(length, J*velocity, p['spring_config'], p['input_ref'])
+    elastic, damper = law['elastic_tension'], law['damper_tension']
     raw = c['knee_kp']*(2*p['q0']-2*q)-c['knee_kd']*2*velocity
     torque = max(-c['torque_limit'], min(c['torque_limit'], raw))
     return M, Mp, length, J, elastic, damper, torque, raw
@@ -172,15 +206,27 @@ def observe(t, q, velocity, c, p):
     U, vu, au = point(L/2, 1.5*L)
     D, vd, ad = point((L+e)/2, (L+e)/2)
     gravity = np.array([0., -g])
-    fs = -(elastic+damper)*(E-A)/length  # force on lower link
-    f1 = -(c['chassis_mass']*(aa-gravity)+fs)  # force on upper at J1
-    f2 = f1-c['upper_mass']*(au-gravity)      # force on lower at J2
-    f3 = f2+fs-c['lower_mass']*(ad-gravity)  # force on wheel at J3
+    spring_geom = geometry_from_bodies(equal_poses(q, c, theta_speed=velocity,
+                                                  base_height=z, base_speed=zv), c)
+    law = spring_law(length, J*velocity, p['spring_config'], p['input_ref'])
+    spring_forces = {'hip': np.zeros(2), 'upper': np.zeros(2), 'lower': np.zeros(2)}
+    spring_sites = []
+    for site in spring_geom['force_sites']:
+        force = (elastic+damper)*np.array(site['direction'])
+        spring_forces[site['body']] += force
+        spring_sites.append((site['body'], np.array(site['world']), force))
+    f1 = spring_forces['hip']-c['chassis_mass']*(aa-gravity)
+    f2 = f1+spring_forces['upper']-c['upper_mass']*(au-gravity)
+    f3 = f2+spring_forces['lower']-c['lower_mass']*(ad-gravity)
     external = np.array([c['bias_force_x'], c['bias_force']])
     driver = c['wheel_mass']*(ac-gravity)-external-f3
     wheel_reaction = -p['Iw']*accel if c['wheel_drive_locked'] else 0.
-    upper_moment = cross(A-U, f1)+cross(B-U, -f2)
-    lower_moment = cross(B-D, f2)+cross(C-D, -f3)+cross(E-D, fs)
+    upper_spring_moment = sum(cross(point-U, force) for body, point, force in spring_sites if body == 'upper')
+    lower_spring_moment = sum(cross(point-D, force) for body, point, force in spring_sites if body == 'lower')
+    upper_spring_about_hip = sum(cross(point-A, force) for body, point, force in spring_sites if body == 'upper')
+    lower_spring_about_knee = sum(cross(point-B, force) for body, point, force in spring_sites if body == 'lower')
+    upper_moment = cross(A-U, f1)+cross(B-U, -f2)+upper_spring_moment
+    lower_moment = cross(B-D, f2)+cross(C-D, -f3)+lower_spring_moment
     upper_guide = -p['Iu']*accel-upper_moment+torque
     lower_guide = p['Il']*accel-lower_moment-torque-wheel_reaction
     guide = .5*(upper_guide+lower_guide)
@@ -193,14 +239,14 @@ def observe(t, q, velocity, c, p):
     kinetic += .5*(p['Iu']+p['Il']+(p['Iw'] if c['wheel_drive_locked'] else 0.))*velocity**2
     potential = g*(c['chassis_mass']*A[1]+c['upper_mass']*U[1]
                    +c['lower_mass']*D[1]+c['wheel_mass']*C[1])
-    potential += .5*c['stiffness']*(length-p['rest'])**2
+    potential += law['energy']
     F, knee_load = -f3, -f2
     Min = L*(-F[1]*cs+F[0]*sn)
     Mact = L*(knee_load[1]*cs+knee_load[0]*sn)
     lower_cross, upper_cross = cross(C-B, F), cross(B-A, knee_load)
-    lower_total = lower_cross+cross(E-B, fs)+cross(D-B, c['lower_mass']*gravity)+torque+guide+wheel_reaction
+    lower_total = lower_cross+lower_spring_about_knee+cross(D-B, c['lower_mass']*gravity)+torque+guide+wheel_reaction
     lower_inertia = p['Il']*accel+cross(D-B, c['lower_mass']*ad)
-    upper_total = upper_cross+cross(U-A, c['upper_mass']*gravity)-torque+guide
+    upper_total = upper_cross+upper_spring_about_hip+cross(U-A, c['upper_mass']*gravity)-torque+guide
     upper_inertia = -p['Iu']*accel+cross(U-A, c['upper_mass']*au)
     row = {
         't': float(t), 'input': z, 'input_mm': z*1000,
@@ -216,14 +262,23 @@ def observe(t, q, velocity, c, p):
         'upper_accel': -accel, 'lower_accel': accel,
         'spring_tension': elastic+damper, 'spring_length': length,
         'spring_elastic_tension': elastic, 'spring_damper_tension': damper,
-        'spring_knee_moment': cross(E-B, fs),
+        'spring_knee_moment': lower_spring_about_knee,
+        'spring_coil_length': law['coil_length'], 'spring_coil_load': law['coil_load'],
+        'spring_coil_tension': law['coil_tension'], 'spring_energy_J': law['energy'],
+        'spring_engaged': float(law['engaged']), 'spring_slack': float(law['slack']),
+        'spring_input_speed': J*velocity, 'spring_generalized_force': -(elastic+damper)*J,
+        'spring_equivalent_lift_N': -(elastic+damper)*J/(2*L*cs),
+        'spring_elastic_equivalent_lift_N': -elastic*J/(2*L*cs),
+        'spring_gravity_equivalent_N': p['S']*g/(2*L),
+        'spring_balance_residual_N': -(elastic+damper)*J/(2*L*cs)-p['S']*g/(2*L),
         'actuator_torque': torque, 'actuator_command': raw,
         'guide_link_torque': guide, 'guide_hip_reaction': -2*guide,
         'stop_knee_torque': 0., 'wheel_external_moment': 0.,
         'wheel_drive_reaction': wheel_reaction, 'wheel_drive_check': 0.,
         'wheel_speed': velocity if c['wheel_drive_locked'] else 0.,
         'wheel_accel': accel if c['wheel_drive_locked'] else 0.,
-        'hip_mount_fx': float(-f1[0]-fs[0]), 'hip_mount_fy': float(-f1[1]-fs[1]),
+        'hip_mount_fx': float(-f1[0]+spring_forces['hip'][0]),
+        'hip_mount_fy': float(-f1[1]+spring_forces['hip'][1]),
         'pin_error': 0., 'phase_error': 0., 'reaction_check': 0., 'angular_check': angular_error,
         'position_command': z, 'position_actual': z, 'position_actual_mm': z*1000,
         'position_error': 0., 'position_velocity_command': zv, 'position_accel_command': za,
@@ -242,9 +297,12 @@ def observe(t, q, velocity, c, p):
         'mechanical_energy_J': float(kinetic+potential),
         'driver_power_W': float(driver@vc), 'bias_power_W': float(external@vc),
         'actuator_power_W': 2*torque*velocity,
-        'dissipation_power_W': c['damping']*(J*velocity)**2,
+        'dissipation_power_W': law['dissipation_rate'],
         'total_mass_kg': total_mass,
     }
+    for body, force in spring_forces.items():
+        row[f'spring_{body}_fx'] = float(force[0])
+        row[f'spring_{body}_fy'] = float(force[1])
     for index, (force, vel, acc) in enumerate(((f1, va, aa), (f2, vb, ab), (f3, vc, ac)), 1):
         row.update({f'j{index}_fx': float(force[0]), f'j{index}_fy': float(force[1]),
                     f'j{index}_force': float(np.linalg.norm(force)),
@@ -253,7 +311,8 @@ def observe(t, q, velocity, c, p):
     row = {key: float(value) for key, value in row.items()}
     frame = {'t': float(t), 'hip': A.tolist(), 'knee': B.tolist(),
              'hub': C.tolist(), 'tip': E.tolist(), 'upper_angle': -q,
-             'lower_angle': q-math.pi, 'position_target': C.tolist(), 'debug_draw': []}
+             'lower_angle': q-math.pi, 'position_target': C.tolist(), 'debug_draw': [],
+             'spring_geometry': spring_geom, 'spring_coil_length': law['coil_length']}
     return row, frame
 
 
@@ -297,6 +356,8 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
             frame['index'] = index
             frames.append(frame)
     warnings = []
+    spring_meta = mechanism_metadata({**c, 'rest_length': p['rest']}, p['input_ref'])
+    warnings.extend(spring_meta['notes'])
     stop_event = None
     if solution.status == 1:
         name = 'lower' if len(solution.t_events[0]) else 'upper'
@@ -307,6 +368,9 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
         warnings.append(f'Knee actuator clipped to its torque limit in {clipped} output samples.')
     if any(row['driver_force'] < -.1 for row in rows):
         warnings.append('Prescribed support requires downward/tensile wheel force during part of the run; unilateral ground contact could be lost.')
+    slack_samples = sum(row['spring_slack'] > .5 for row in rows)
+    if slack_samples:
+        warnings.append(f'One-sided spring/rope disengaged in {slack_samples} output samples; no spring or damper load is transmitted while slack.')
     keys = ['j1_force', 'j2_force', 'j3_force', 'spring_tension', 'actuator_torque',
             'guide_hip_reaction', 'stop_knee_torque', 'driver_force', 'hub_vy', 'hub_ay',
             'chassis_vy', 'chassis_ay', 'knee_speed', 'knee_accel']
@@ -330,9 +394,12 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
         'equation_reference': {'status': 'Independent scalar energy model; no explicit belt-span bearing forces.',
                               'visible_equations': [
                                   'h_chassis = z_wheel + 2 L sin(theta)',
-                                  's^2 = L^2 + e^2 + 2 L e cos(2 theta)',
-                                  'J = ds/dtheta = -2 L e sin(2 theta)/s',
-                                  'M theta_ddot + 0.5 M_prime theta_dot^2 + S cos(theta)(g + z_ddot) = -[k(s-s0)+c J theta_dot] J + 2 tau_knee',
+                                  'Spring input ell(theta): selected direct anchors/crank or ideal drum payout; J = dell/dtheta',
+                                  'Direct: coil_length=ell; pull-through: coil_length=coil_ref-(ell-input_ref)',
+                                  'Zero-effective emulation overrides ordinary coil mapping: coil_length=physical_free + eta*(ell-effective_input_free), eta=+1 direct / -1 pull-through; T_elastic=k*(ell-effective_input_free)',
+                                  'Gravity-balance vertical mount: ell^2=H^2+R^2-2HR sin(theta), J=-HR cos(theta)/ell; zero effective input free gives elastic lift=kHR/(2L)',
+                                  'T_input = dU/dell + passive unilateral damping; ideal rope T_input >= 0',
+                                  'M theta_ddot + 0.5 M_prime theta_dot^2 + S cos(theta)(g + z_ddot) = -T_input J + 2 tau_knee',
                                   'S = 1.5 m_upper L + 0.5 m_lower (L+e) + 2 m_chassis L',
                                   'M = I_upper + I_lower [+ I_wheel if locked] + m_upper[(L/2)^2 sin^2(theta)+(3L/2)^2 cos^2(theta)] + m_lower[(L+e)/2]^2 + 4 m_chassis L^2 cos^2(theta)',
                                   'Joint forces: individual body momentum balances; guide torque: independent upper/lower angular balances.']},
@@ -344,12 +411,14 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
                         'input_unit': 'm', 'input_integral_unit': 'm s',
                         'max_position_error_m': 0., 'stop_steps': 0, 'clipped_steps': clipped,
                         'energy_balance_error_J': energy_error,
+                        'spring_slack_samples': slack_samples,
                         'nfev': int(solution.nfev), 'actual_duration_s': end,
                         'zero_residual_note': 'Kinematics are imposed analytically; zeros are not rigid-body solver impulse checks.'},
         'solver': {'method': 'DOP853', 'rtol': rtol, 'atol': atol,
                    'max_step_s': max_step, 'output_step_s': c['dt'], 'stop_event': stop_event},
         'warnings': warnings,
-        'scope': 'Independent Python/SciPy scalar-energy model, exact equal-link 2:1 guide, lower-link extension spring, floating chassis with pitch held, and prescribed bilateral wheel height. Smooth C2 input only. Reactions are instantaneous Newton-Euler loads; mathematical support tracks exactly. Stops terminate the run before impact. No tire contact, belt elasticity, stress or hardware calibration. Legacy amplitude/impulse, fixed-hip preload and Pymunk iterations are preserved in profiles but do not drive this model.',
+        'spring_mechanism': spring_meta,
+        'scope': 'Independent Python/SciPy scalar-energy model, exact equal-link 2:1 guide, selected direct/crank/ideal-pulley spring topology, floating chassis with pitch held, and prescribed bilateral wheel height. Smooth C2 input only. Reactions are instantaneous Newton-Euler loads, including physical tangent/mount force pairs; mathematical support tracks exactly. Stops terminate the run before impact. No tire contact, rope stretch/friction, coil solid-height limit, stress or hardware calibration. Legacy amplitude/impulse, fixed-hip preload and Pymunk iterations are preserved in profiles but do not drive this model.',
     }
 
 

@@ -20,3 +20,16 @@ charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
 familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](unified-motion-lab.md).
+
+The shared Math/Physics controls now expose [eight suspension presets](suspension-presets.md),
+coil behavior and independent direct/rod/ideal-rope transmission. Demo dimensions
+are labeled editable, and drawings use the actual recorded force sites with
+coil travel/load/energy charts. A topology selection resets mechanism geometry;
+saved profiles preserve explicit edits. The native button opens a live desktop
+solver on the host, while recorded browser playback remains separately labeled.
+
+The [constant-lift study](constant-lift.md) appears in both mathematical tools
+and Miscellaneous studies. Its plots distinguish varying coil tension and
+moment from equivalent lift, and compare ideal compensation with an ordinary
+finite-free-length coil. Its wheel adaptation is the ninth suspension preset.
+Each model keeps its own runnable profiles and native solver geometry.

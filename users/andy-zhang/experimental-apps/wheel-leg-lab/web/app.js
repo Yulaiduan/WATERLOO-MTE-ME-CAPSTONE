@@ -6,7 +6,7 @@
 (() => {
   const $=id=>document.getElementById(id),D=window.d3;
   const backend=document.body.dataset.backend==='math'?'math':'pymunk',isMath=backend==='math',viewer=new URLSearchParams(location.search).get('viewer')==='1',loadOnly=new URLSearchParams(location.search).get('loadOnly')==='1';
-  let config={},defaults={},result=null,charts=[],time=0,playing=false,raf=0,last=0,dirty=false,runRevision=0,lastChartTime=-Infinity,pendingProfile=null;
+  let config={},defaults={},result=null,charts=[],time=0,playing=false,raf=0,last=0,dirty=false,runRevision=0,lastChartTime=-Infinity,pendingProfile=null,springCatalog={},mechanismDefaults={};
   const fmt=(v,n=2)=>Number.isFinite(Number(v))?Number(v).toFixed(n):'—',colors=['var(--blue)','var(--orange)','var(--accent)','var(--purple)','var(--red)','var(--muted)'];
   const cssColor=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const publish=(type,fields={})=>{if(parent!==window)parent.postMessage({type,backend,...fields},location.origin);};
@@ -17,12 +17,13 @@
   const field=(key,label,unit='',scale=1,min=0,max=1e6,step='any')=>`<label class="field">${label}${unit?` <em>${unit}</em>`:''}<input data-key="${key}" data-scale="${scale}" type="number" min="${min}" max="${max}" step="${step}" value="${config[key]*scale}"></label>`;
   const select=(key,label,choices)=>`<label class="field full">${label}<select data-key="${key}">${choices.map(([v,l])=>`<option value="${v}" ${config[key]===v?'selected':''}>${l}</option>`).join('')}</select></label>`;
   function controls(){
-    const position=config.target==='position';
+    const position=config.target==='position',gravityBalance=config.spring_topology==='gravity_balance',rateBalance=config.spring_force_law==='zero_effective';
     const waves=position?[['step','Position step'],['square','Position square wave'],['pulse','Position bump pulse']]:[['step','Diagnostic force/torque step'],['square','Diagnostic square wave'],['impulse','Diagnostic impulse area']];
     const fixtures=position?[['floating','Wheel height input · floating chassis'],['hip','Wheel height input · fixed hip'],['wheel','Chassis height input · fixed wheel']]:[['hip','Fixed hip · wheel force response'],['wheel','Fixed wheel · chassis force response']];
     const inputFields=position?field('position_amplitude','Step / pulse height','mm, up +',1000,-500,500):field('amplitude','Step / square amplitude',config.target==='force'?'N':'N·m',1,-10000,10000)+field('impulse','Impulse area',config.target==='force'?'N·s':'N·m·s',1,-1000,1000);
     $('controls').innerHTML=`<details open><summary>Geometry & masses</summary><div class="fields">${field('length','Each link','mm',1000,80,800)}${field('extension','r₂ past knee','mm',1000,5,150)}${field('radius','Wheel radius','mm',1000,50,400)}${field('theta','Initial θ','°',1,3,87)}${field('theta_min','Minimum θ','°',1,3,86)}${field('theta_max','Maximum θ','°',1,4,87)}${field('upper_mass','Upper link','kg',1,.01,20)}${field('lower_mass','Full lower link','kg',1,.01,20)}${field('wheel_mass','Wheel','kg',1,.01,30)}${field('chassis_mass','Chassis corner','kg',1,.01,100)}${select('fixture','Fixture',fixtures)}</div></details>
-    <details open><summary>Physical spring & static loading</summary><div class="fields">${field('stiffness','Spring k','N/m',1,0,100000)}${field('damping','Damper c','N·s/m',1,0,2000)}${field('rest_length','Manual free length','mm',1000,5,1000)}${field('bias_force','Optional static vertical force','N, up +',1,-5000,5000)}${field('bias_force_x','Optional static horizontal force','N, right +',1,-5000,5000)}${position&&config.fixture==='hip'?field('preload_force','Fixed-hip preload design load','N',1,-5000,5000):''}<label class="check"><input data-key="balance_spring" type="checkbox" ${config.balance_spring?'checked':''}>Set spring preload at initial pose</label></div><p class="hint">Hip J1 → r₂ extension tip. In the floating chassis test, preload supports the moving chassis/link weight. Forces are measured responses to the imposed wheel motion.</p></details>
+    ${springControls()}
+    <details open><summary>Spring rate, damping & static loading</summary><div class="fields">${field('stiffness','Spring k','N/m',1,0,100000)}${field('damping','Damper c','N·s/m',1,0,2000)}${field('rest_length','Manual free length','mm',1000,5,1000)}${field('bias_force','Optional static vertical force','N, up +',1,-5000,5000)}${field('bias_force_x','Optional static horizontal force','N, right +',1,-5000,5000)}${position&&config.fixture==='hip'?field('preload_force','Fixed-hip preload design load','N',1,-5000,5000):''}<label class="check"><input data-key="balance_spring" type="checkbox" ${config.balance_spring?'checked':''}>${rateBalance?'Calibrate spring rate for gravity balance':'Set spring preload at initial pose'}</label></div><p class="hint">${rateBalance?'Gravity balance sets spring rate, with finite physical free length and zero effective length via compensation routing.':'For the selected spring mechanism, preload is resolved at the initial pose.'} In the floating chassis test, preload supports the moving chassis/link weight. Forces are measured responses to the imposed wheel motion.</p></details>
     <details open><summary>Prescribed motion input</summary><div class="fields">${select('target','Input quantity',[['position','Position · prescribed height'],['force','Force · legacy diagnostic'],['knee','Knee torque · legacy diagnostic']])}${select('wave','Waveform',waves)}${inputFields}${position?select('ramp_shape','Ramp shape',[['quintic','Smooth C2 · zero end velocity/acceleration'],['linear','Linear · velocity jumps at joins']]):''}${field('start','Start time','s',1,0,20)}${field('period','Square period','s',1,.02,10)}${field('duty','Square on-time','%',100,1,99)}${field('pulse_width',position?'Position pulse width':'Impulse width','ms',1000,1,5000)}${field('rise','Rise time','ms',1000,0,5000)}${field('fall','Fall time','ms',1000,0,5000)}${select('load_point','Static wheel-force point',[['hub','Hub · no radius moment'],['contact','Tire bottom · Fx × radius']])}<label class="check"><input data-key="wheel_drive_locked" type="checkbox" ${config.wheel_drive_locked?'checked':''}>Lock wheel drive to lower link</label></div><p class="hint">Position mode moves a kinematic support; its reaction is an output, not a commanded force. This is a prescribed boundary, not automatically solved terrain contact.</p><p class="hint" id="slopes"></p></details>
     <details><summary>Optional knee impedance</summary><div class="fields">${field('knee_kp','Kp','N·m/rad',1,0,2000)}${field('knee_kd','Kd','N·m·s/rad',1,0,200)}${field('torque_limit','Torque limit','N·m',1,.01,2000)}</div></details>
     <details><summary>Solver</summary><div class="fields">${field('duration','Duration','s',1,.1,20)}${field('dt','Solver step','ms',1000,.25,4)}${field('iterations','Iterations','',1,20,300,1)}${field('gravity','Gravity','m/s²',1,0,20)}</div></details>`;
@@ -33,11 +34,18 @@
         if(config.target==='position'){config.fixture='floating';config.bias_force=0;config.wave='step';config.rise=config.fall=.25;config.pulse_width=.7;}
         else{config.fixture='hip';config.bias_force=80;config.wave='square';config.rise=config.fall=.05;config.pulse_width=.12;}
       }
+      if(key==='spring_direction')config[key]=Number(node.value);
+      if(key==='spring_topology'){Object.assign(config,mechanismDefaults,springCatalog[config.spring_topology]?.defaults||{},{spring_topology:node.value});}
       if(key==='fixture'&&config.fixture==='wheel'){config.bias_force=0;config.load_point='hub';config.wheel_drive_locked=false;}
       dirty=true;$('status').textContent='Inputs changed. Run simulation to update the saved traces.';
-      if(['fixture','target'].includes(key))controls();else updateControls();
+      if(['fixture','target','spring_topology','spring_transmission','spring_force_law'].includes(key))controls();else updateControls();
       publish('motion-lab-config',{config:{...config}});
     }));updateControls();
+  }
+  function springControls(){
+    if(!Object.keys(springCatalog).length)return '';
+    const entry=springCatalog[config.spring_topology]||springCatalog.legacy_tip,gravityBalance=config.spring_topology==='gravity_balance';
+    return `<details open class="spring-preset"><summary>Spring mechanism preset</summary><div class="fields">${select('spring_topology','Attachment / mechanism',Object.entries(springCatalog).map(([id,preset])=>[id,preset.label]))}${config.spring_force_law!==undefined?select('spring_force_law','Effective force law',[['hooke','Ordinary Hooke spring'],['zero_effective','Zero effective length · compensation route']]):''}${config.spring_effective_free_length!==undefined?field('spring_effective_free_length','Effective free length','mm · zero for exact balance',1000,0,500):''}${select('spring_mode','Coil law',[['compression','Compression only'],['extension','Extension only'],['captured','Captured · bilateral']])}${select('spring_transmission','Transmission',[['direct','Direct coil'],['pullrod','Rigid pull-through rod'],['ideal_rope','Ideal zero-stretch rope']])}${select('spring_direction','Pulley payout sign',[[1,'+1 · default tangent'],[-1,'−1 · opposite tangent']])}${field('spring_pulley_radius','Spring drum radius','mm',1000,1,250)}${field('spring_bellcrank_radius','Crank arm radius','mm',1000,1,250)}${field('spring_bellcrank_offset_deg','Crank offset','°',1,-360,360)}${gravityBalance?field('spring_upper_fraction','Upper arm anchor R','mm from hip',1000*config.length,1,1000*config.length):field('spring_upper_fraction','Upper attachment from hip','% of link',100,0,100)}${field('spring_lower_fraction','Lower attachment from knee','% of link',100,0,100)}${field('spring_chassis_x','Chassis mount x','mm, right +',1000,-500,500)}${gravityBalance?field('spring_chassis_y','Mount below hip H','mm, down +',-1000,1,500):field('spring_chassis_y','Chassis mount y','mm, up +',1000,-500,500)}${field('spring_input_ref','Initial drum payout','mm',1000,1,1500)}${field('spring_coil_ref','Pull-through coil reference','mm',1000,1,1500)}</div><p class="hint" id="spring-preset-description">${entry.description}</p><p class="hint">Illustrative editable dimensions. Selecting a preset resets its mechanism geometry; link geometry and mass stay as entered. Ideal transmission is massless and 100% efficient.</p></details>`;
   }
   function updateControls(){
     const position=config.target==='position',find=k=>$('controls').querySelector(`[data-key="${k}"]`);
@@ -46,7 +54,8 @@
     find('fall').disabled=config.wave==='step';
     if(find('amplitude'))find('amplitude').disabled=config.wave==='impulse';
     if(find('impulse'))find('impulse').disabled=config.wave!=='impulse';
-    find('rest_length').disabled=config.balance_spring;
+    find('rest_length').disabled=config.balance_spring&&config.spring_force_law!=='zero_effective';
+    find('stiffness').disabled=config.balance_spring&&config.spring_force_law==='zero_effective';
     find('load_point').disabled=config.fixture==='wheel';find('wheel_drive_locked').disabled=config.fixture==='wheel';
     if(isMath){
       for(const key of ['fixture','target','load_point','ramp_shape','iterations'])find(key).disabled=true;
@@ -54,7 +63,14 @@
       const engineOption=$('model-view').querySelector('option[value="engine"]');if(engineOption)engineOption.disabled=true;
       $('model-view').value='annotated';
       const hints=$('controls').querySelectorAll('.hint');
-      hints[1].textContent='The independent equations prescribe wheel height directly. Support reaction and chassis motion are outputs; travel-limit events end the run before impact.';
+      $('controls').querySelector('[data-key=target]').closest('details').querySelector('.hint').textContent='The independent equations prescribe wheel height directly. Support reaction and chassis motion are outputs; travel-limit events end the run before impact.';
+    }
+    if(find('spring_pulley_radius')){
+      const topology=config.spring_topology,pulley=springCatalog[topology]?.kind==='pulley';
+      for(const key of ['spring_pulley_radius','spring_direction','spring_input_ref'])find(key).disabled=!pulley;
+      for(const key of ['spring_bellcrank_radius','spring_bellcrank_offset_deg'])find(key).disabled=!topology.includes('bellcrank');
+      find('spring_coil_ref').disabled=config.spring_transmission==='direct';
+      if(find('spring_effective_free_length'))find('spring_effective_free_length').disabled=config.spring_force_law!=='zero_effective';
     }
     const width=config.wave==='square'?config.period*config.duty:config.pulse_width;
     const amplitude=position?config.position_amplitude*1000:config.wave==='impulse'?config.impulse/(width-(config.rise+config.fall)/2):config.amplitude;
@@ -74,10 +90,12 @@
       [probe.toUpperCase()+' pin acceleration','Acceleration (m/s²)',[[probe+'_ax','Horizontal'],[probe+'_ay','Vertical']]],
       ['Knee angular velocity','Opening velocity (rad/s)',[['knee_speed','Knee α̇']]],
       ['Knee angular acceleration','Opening acceleration (rad/s²)',[['knee_accel','Knee α̈']]],
+      ...(result.rows[0].spring_coil_length!==undefined?[['Coil length','Coil length (mm)',[['spring_coil_length','Coil',1000]]],['Coil load','Coil load (N)',[['spring_coil_load','Magnitude']]],['Spring energy','Stored energy (J)',[['spring_energy_J','Elastic energy']]]]:[]),
+      ...(c.spring_topology==='gravity_balance'&&Number.isFinite(result.rows[0].spring_equivalent_lift_N)?[['Equivalent vertical support vs angle','Equivalent lift (N)',[['spring_elastic_equivalent_lift_N','Elastic spring lift'],['spring_gravity_equivalent_N','Gravity requirement']],'theta_deg']]:[]),
     ];
     if(viewer){updatePlayback();return;}
     if(!window.Plotly)throw Error('Plotly could not load. Restart the app and reload this page.');
-    for(const [title,label,requested] of definitions){
+    for(const [title,label,requested,xKey='t'] of definitions){
       const series=requested.filter(([key])=>result.rows.some(r=>Number.isFinite(r[key])));
       const index=charts.length;
       let chart=previousCharts[index];
@@ -87,30 +105,31 @@
         const container=document.createElement('div');container.className='chart';container.setAttribute('aria-label',title+' versus time');panel.append(heading,container);$('plots').append(panel);
         chart={panel,container,series,revision:-1};
       }else chart.panel.querySelector('h3').textContent=title;
-      chart.series=series;
+      chart.series=series;chart.xKey=xKey;chart.container.setAttribute('aria-label',title+' versus '+(xKey==='t'?'time':'angle'));
       const palette=colors.map(value=>cssColor(value.slice(4,-1)));
-      const traces=series.map(([key,name],i)=>{
+      const traces=series.map(([key,name,multiplier=1],i)=>{
         const rows=decimate(result.rows,key);
-        return {type:'scatter',mode:'lines',name,x:rows.map(r=>r.t),y:rows.map(r=>r[key]),line:{color:palette[i%palette.length],width:1.8},hovertemplate:label.endsWith('(N)')?'%{x:.3f} s<br>'+name+': %{y:.3f} N<br>%{customdata:.3f} kgf<extra></extra>':'%{x:.3f} s<br>'+name+': %{y:.4g}<extra></extra>',customdata:rows.map(r=>r[key]/KGF)};
+        return {type:'scatter',mode:'lines',name,x:rows.map(r=>r[xKey]),y:rows.map(r=>r[key]*multiplier),line:{color:palette[i%palette.length],width:1.8},hovertemplate:label.endsWith('(N)')?'%{x:.3f} '+(xKey==='t'?'s':'°')+'<br>'+name+': %{y:.3f} N<br>%{customdata[0]:.3f} kgf<extra></extra>':'%{x:.3f} '+(xKey==='t'?'s':'°')+'<br>'+name+': %{y:.4g}<extra></extra>',customdata:rows.map(r=>[r[key]/KGF,r.t])};
       });
-      const cursor={type:'line',xref:'x',yref:'paper',x0:time,x1:time,y0:0,y1:1,line:{color:cssColor('--muted'),width:1,dash:'dot'}};
+      const cursor={type:'line',xref:'x',yref:'paper',x0:nearest(result.rows,time)[xKey],x1:nearest(result.rows,time)[xKey],y0:0,y1:1,line:{color:cssColor('--muted'),width:1,dash:'dot'}};
       const revision=backend+'-'+runRevision+'-'+title+'-'+series.map(([key])=>key).join('|');
       const preserveZoom=chart.viewRevision===revision&&chart.container._fullLayout;
-      const layout={height:300,margin:{l:75,r:18,t:16,b:78},paper_bgcolor:cssColor('--panel'),plot_bgcolor:cssColor('--panel'),font:{family:'system-ui,Segoe UI,sans-serif',color:cssColor('--text'),size:11},hovermode:'x unified',dragmode:'zoom',uirevision:revision,xaxis:{title:{text:'Time (s)'},gridcolor:cssColor('--line'),zerolinecolor:cssColor('--line'),range:preserveZoom?[...chart.container._fullLayout.xaxis.range]:[0,result.rows.at(-1).t],automargin:true},yaxis:{title:{text:label},gridcolor:cssColor('--line'),zerolinecolor:cssColor('--line'),...(preserveZoom&&!chart.container._fullLayout.yaxis.autorange?{range:[...chart.container._fullLayout.yaxis.range]}:{autorange:true}),automargin:true},legend:{orientation:'h',x:0,y:-.24,font:{size:10}},shapes:[cursor]};
+      const layout={height:300,margin:{l:75,r:18,t:16,b:78},paper_bgcolor:cssColor('--panel'),plot_bgcolor:cssColor('--panel'),font:{family:'system-ui,Segoe UI,sans-serif',color:cssColor('--text'),size:11},hovermode:'x unified',dragmode:'zoom',uirevision:revision,xaxis:{title:{text:xKey==='t'?'Time (s)':'Link angle θ (°)'},gridcolor:cssColor('--line'),zerolinecolor:cssColor('--line'),...(preserveZoom?{range:[...chart.container._fullLayout.xaxis.range]}:xKey==='t'?{range:[0,result.rows.at(-1).t]}:{autorange:true}),automargin:true},yaxis:{title:{text:label},gridcolor:cssColor('--line'),zerolinecolor:cssColor('--line'),...(preserveZoom&&!chart.container._fullLayout.yaxis.autorange?{range:[...chart.container._fullLayout.yaxis.range]}:{autorange:true}),automargin:true},legend:{orientation:'h',x:0,y:-.24,font:{size:10}},shapes:[cursor]};
       window.Plotly.react(chart.container,traces,layout,{responsive:true,scrollZoom:true,displaylogo:false,toImageButtonOptions:{format:'png',filename:backend+'-'+title.replaceAll(/[^a-z0-9]+/gi,'-')},modeBarButtonsToRemove:['lasso2d','select2d']}).then(()=>{
-        if(!chart.clickBound){chart.container.on('plotly_click',event=>{const t=event.points?.[0]?.x;if(Number.isFinite(t)){pause();time=t;updatePlayback();}});chart.clickBound=true;}
+        if(!chart.clickBound){chart.container.on('plotly_click',event=>{const t=event.points?.[0]?.customdata?.[1];if(Number.isFinite(t)){pause();time=t;updatePlayback();}});chart.clickBound=true;}
       });
       chart.revision=runRevision;chart.viewRevision=revision;charts.push(chart);
     }
+    for(const stale of previousCharts.slice(charts.length)){window.Plotly.purge(stale.container);stale.panel.remove();}
     lastChartTime=-Infinity;updatePlayback();
   }
   function drawMechanism(){
     if(!result)return;const svg=D.select($('mechanism')),W=$('mechanism').clientWidth,H=$('mechanism').clientHeight,c=result.config;
     const modelHeight=H-90;
-    const frame=nearest(result.frames,time),points=result.frames.flatMap(f=>[f.hip,f.knee,f.hub,f.tip,[f.hub[0]-c.radius,f.hub[1]-c.radius],[f.hub[0]+c.radius,f.hub[1]+c.radius]]);
+    const frame=nearest(result.frames,time),points=result.frames.flatMap(f=>[f.hip,f.knee,f.hub,f.tip,[f.hub[0]-c.radius,f.hub[1]-c.radius],[f.hub[0]+c.radius,f.hub[1]+c.radius],...Object.values(f.spring_geometry?.anchors||{}).map(a=>a.world)]);
     const xe=D.extent(points,p=>p[0]),ye=D.extent(points,p=>p[1]),scale=Math.min((W-100)/(xe[1]-xe[0]),(modelHeight-65)/(ye[1]-ye[0]));
     const x=v=>W/2+(v-(xe[0]+xe[1])/2)*scale,y=v=>modelHeight/2-(v-(ye[0]+ye[1])/2)*scale;
-    svg.attr('viewBox',`0 0 ${W} ${H}`);svg.selectAll('*').remove();svg.append('title').text((isMath?'Recorded mathematical-model geometry; ':'Actual recorded Pymunk poses; ')+'spring runs from hip to lower-link tip, '+fmt(c.extension*1000,0)+' mm past knee.');
+    svg.attr('viewBox',`0 0 ${W} ${H}`);svg.selectAll('*').remove();svg.append('title').text((isMath?'Recorded mathematical-model geometry; ':'Actual recorded Pymunk poses; ')+(springCatalog[c.spring_topology]?.label||'spring runs from hip to lower-link tip')+'.');
     const A=frame.hip,B=frame.knee,C=frame.hub,E=frame.tip,row=nearest(result.rows,time);
     const point=p=>[x(p[0]),y(p[1])];
     const path=p=>D.line()(p.map(point));
@@ -132,13 +151,17 @@
     for(const [p,r] of [[A,.028],[B,.014]])svg.append('circle').attr('cx',x(p[0])).attr('cy',y(p[1])).attr('r',r*scale).attr('fill','var(--panel)').attr('stroke','var(--muted)').attr('stroke-width',1.5);
     svg.append('circle').attr('cx',x(C[0])).attr('cy',y(C[1])).attr('r',c.radius*scale).attr('fill','none').attr('stroke','var(--text)').attr('stroke-width',2.5);
     svg.append('path').attr('d',`M${x(C[0])-c.radius*scale},${y(C[1])}h${2*c.radius*scale}M${x(C[0])},${y(C[1])-c.radius*scale}v${2*c.radius*scale}`).attr('stroke','var(--line)').attr('stroke-width',1);
+    if(!frame.spring_geometry){
     const a=point(A),b=point(E),dx=b[0]-a[0],dy=b[1]-a[1],length=Math.hypot(dx,dy),normal=[-dy/length,dx/length];
     const coil=Array.from({length:23},(_,i)=>{const f=i/22,offset=(i<3||i>19)?0:(i%2?5:-5);return[a[0]+dx*f+normal[0]*offset,a[1]+dy*f+normal[1]*offset];});
     svg.append('path').attr('d',D.line()(coil)).attr('stroke','var(--orange)').attr('stroke-width',2).attr('fill','none');
+
     }
+    }
+    if(frame.spring_geometry)drawSpringGeometry(svg,frame,row,point,scale,c);
     const fixed=c.fixture==='hip'?A:C,fp=point(fixed);
     if(c.fixture!=='floating')svg.append('path').attr('d',`M${fp[0]-24},${fp[1]-10}h48`).attr('stroke','var(--text)').attr('stroke-width',3);
-    for(const [p,name,offset] of [[A,'J1 · hip',[-14,-16]],[B,'J2 · knee',[13,-3]],[C,'J3 · wheel pin',[10,17]],[E,'Spring tip',[10,-12]]]){
+    for(const [p,name,offset] of [[A,'J1 · hip',[-14,-16]],[B,'J2 · knee',[13,-3]],[C,'J3 · wheel pin',[10,17]],[E,c.spring_topology&&c.spring_topology!=='legacy_tip'?'Lower-link tip':'Spring tip',[10,-12]]]){
       const pp=point(p);svg.append('circle').attr('cx',pp[0]).attr('cy',pp[1]).attr('r',4).attr('fill','var(--panel)').attr('stroke','var(--text)').attr('stroke-width',1.5);
       svg.append('text').attr('x',Math.min(W-105,Math.max(5,pp[0]+offset[0]))).attr('y',Math.min(H-8,Math.max(13,pp[1]+offset[1]))).text(name);
     }
@@ -151,6 +174,39 @@
     const inputPoint=point(c.target==='knee'?B:c.fixture==='wheel'?A:c.target==='position'?C:c.load_point==='contact'?[C[0],C[1]-c.radius]:C);
     const prescribed=c.target==='position'?{origin:point(result.position_origin||[0,0]),target:point(frame.position_target||C)}:null;
     drawDisturbance(svg,W,H,inputPoint,row,prescribed);
+  }
+  function drawSpringGeometry(svg,frame,row,point,scale,c){
+    const geometry=frame.spring_geometry,a=geometry.anchors?.a?.world,b=geometry.anchors?.b?.world;
+    if(!a||!b)return;
+    const group=svg.append('g').attr('class','spring-mechanism-overlay').attr('data-topology',geometry.topology);
+    const pa=point(a),pb=point(b),dx=pb[0]-pa[0],dy=pb[1]-pa[1],span=Math.max(Math.hypot(dx,dy),1),u=[dx/span,dy/span],n=[-u[1],u[0]];
+    const line=(start,end,color='var(--orange)',width=2)=>group.append('line').attr('x1',start[0]).attr('y1',start[1]).attr('x2',end[0]).attr('y2',end[1]).attr('stroke',color).attr('stroke-width',width);
+    const coil=(start,end)=>{const delta=[end[0]-start[0],end[1]-start[1]],length=Math.max(Math.hypot(...delta),1),normal=[-delta[1]/length,delta[0]/length];const points=Array.from({length:25},(_,i)=>{const t=i/24,w=i<3||i>21?0:(i%2?5:-5);return[start[0]+t*delta[0]+w*normal[0],start[1]+t*delta[1]+w*normal[1]];});group.append('path').attr('class','spring-coil').attr('d',D.line()(points)).attr('fill','none').attr('stroke','var(--orange)').attr('stroke-width',2);};
+    if(geometry.kind==='pulley'){
+      const center=point(geometry.topology==='hip_pulley'?frame.hip:frame.knee),radius=c.spring_pulley_radius*scale;
+      group.append('circle').attr('class','spring-drum').attr('cx',center[0]).attr('cy',center[1]).attr('r',radius).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',2);
+      line(center,pa,'var(--orange)',1);line(pa,pb,'var(--orange)',2);
+      group.append('text').attr('x',center[0]+radius+8).attr('y',center[1]+radius+15).text(`Drum r ${fmt(c.spring_pulley_radius*1000,0)} mm`);
+    }
+    if(geometry.topology.includes('bellcrank')){
+      const center=point(geometry.topology==='hip_bellcrank'?frame.hip:frame.knee);
+      line(center,pb,'var(--purple)',5);group.append('circle').attr('cx',center[0]).attr('cy',center[1]).attr('r',4).attr('fill','var(--purple)');
+    }
+    const pullThrough=c.spring_transmission!=='direct',zeroEffective=c.spring_force_law==='zero_effective'||(!c.spring_force_law&&c.spring_topology==='gravity_balance');
+    if(geometry.kind==='direct'&&!pullThrough&&!zeroEffective)coil(pa,pb);
+    else{
+      line(pa,pb,'var(--orange)',2).attr('stroke-dasharray',c.spring_transmission==='ideal_rope'?'4 3':null);
+      // Coil is a separate ideal transfer element; endpoints remain the real force sites.
+      const start=[pa[0]+n[0]*24,pa[1]+n[1]*24],coilPixels=Math.max(28,Math.min(150,(row.spring_coil_length||c.spring_coil_ref)*scale)),end=[start[0]+u[0]*coilPixels,start[1]+u[1]*coilPixels];
+      coil(start,end);
+      line([start[0]-u[0]*10,start[1]-u[1]*10],[end[0]+u[0]*20,end[1]+u[1]*20],'var(--muted)',1.3);
+      for(const p of [start,end])line([p[0]-n[0]*9,p[1]-n[1]*9],[p[0]+n[0]*9,p[1]+n[1]*9],'var(--muted)',3);
+      group.append('text').attr('x',zeroEffective?12:(start[0]+end[0])/2+n[0]*18).attr('y',zeroEffective?22:(start[1]+end[1])/2+n[1]*18).attr('class','spring-transfer-label').text(zeroEffective?`Compensated route · finite coil free length ${fmt(c.rest_length*1000,0)} mm`:pullThrough?'Ideal pull-through coil':'Ideal drum coil');
+    }
+    for(const site of geometry.force_sites||[]){
+      const p=point(site.world||site.point);group.append('circle').attr('class','spring-force-anchor').attr('cx',p[0]).attr('cy',p[1]).attr('r',4).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',1.5);
+      if($('forces').checked&&Math.abs(row.spring_tension)>1e-8){const length=28*Math.sign(row.spring_tension),end=[p[0]+site.direction[0]*length,p[1]-site.direction[1]*length],angle=Math.atan2(end[1]-p[1],end[0]-p[0]);line(p,end,'var(--orange)',2);group.append('path').attr('d',`M${end[0]-6*Math.cos(angle-.5)},${end[1]-6*Math.sin(angle-.5)}L${end[0]},${end[1]}L${end[0]-6*Math.cos(angle+.5)},${end[1]-6*Math.sin(angle+.5)}`).attr('stroke','var(--orange)').attr('fill','none');}
+    }
   }
   function drawDisturbance(svg,W,H,target,row,prescribed){
     const c=result.config,multiplier=c.target==='position'?1000:1,unit=c.target==='position'?'mm':c.target==='knee'?'N·m':'N',peak=Math.max(...result.rows.map(r=>Math.abs(r.input)*multiplier),.000001),value=row.input*multiplier;
@@ -191,14 +247,14 @@
   function updatePlayback(){
     if(!result)return;time=Math.max(0,Math.min(result.rows.at(-1).t,time));const row=nearest(result.rows,time),c=result.config;
     $('time').value=time;$('time-value').textContent=fmt(time,3)+' s';
-    $('pose-values').innerHTML=`<span>θ ${fmt(row.theta_deg,1)}°</span><span>Height ${fmt(row.height*1000,0)} mm</span><span>Spring ${fmt(row.spring_length*1000,1)} mm</span>`;
+    $('pose-values').innerHTML=`<span>θ ${fmt(row.theta_deg,1)}°</span><span>Height ${fmt(row.height*1000,0)} mm</span><span>Input span ${fmt(row.spring_length*1000,1)} mm</span>${Number.isFinite(row.spring_coil_length)?`<span>Coil ${fmt(row.spring_coil_length*1000,1)} mm · ${row.spring_slack?'slack':'engaged'}</span>`:''}`;
     $('joint-values').innerHTML=[1,2,3].map(j=>`<tr><td>J${j}</td><td>${forceCell(row['j'+j+'_fx'])}</td><td>${forceCell(row['j'+j+'_fy'])}</td><td>${forceCell(row['j'+j+'_force'])}</td></tr>`).join('');
     $('equation-values').innerHTML=[['L₂(−Fz cosθ + Fy sinθ): hub lever','ref_Min_wheel_moment','check_lower_moment_Nm','N·m'],['L₂(−Fz cosθ + Fy sinθ) + Fy r_w: contact lever','ref_Min_contact_moment','check_contact_moment_Nm','N·m'],['L₁(Bz cosθ + By sinθ)','ref_Mact_knee_moment','check_upper_moment_Nm','N·m'],['√(By² + Bz²)','ref_Br','check_Br_N','N']].map(([label,key,error,unit])=>`<tr><td>${label}</td><td>${fmt(row[key],3)} ${unit}</td><td>${Number.isFinite(row[error])?row[error].toExponential(2):'—'} ${unit}</td></tr>`).join('');
-    $('torque-values').innerHTML=[...(c.target==='position'?[['Motion fixture reaction','driver_force','N']]:[]),['Spring tension','spring_tension','N'],['Spring moment about knee','spring_knee_moment','N·m'],['Knee actuator','actuator_torque','N·m'],['Guide on lower link','guide_link_torque','N·m'],['Grounded guide at J1','guide_hip_reaction','N·m'],['Knee travel stop','stop_knee_torque','N·m'],['Wheel contact torque','wheel_external_moment','N·m'],['Wheel drive → lower link','wheel_drive_reaction','N·m'],['Wheel angular speed','wheel_speed','rad/s'],[c.fixture==='hip'?'Hub velocity':'Chassis velocity',(c.fixture==='hip'?'hub':'chassis')+'_vy','m/s'],[c.fixture==='hip'?'Hub acceleration':'Chassis acceleration',(c.fixture==='hip'?'hub':'chassis')+'_ay','m/s²']].map(([name,key,unit])=>`<dt>${name}</dt><dd>${unit==='N'?forceFmt(row[key]):fmt(row[key])+' '+unit}</dd>`).join('');
+    $('torque-values').innerHTML=[...(c.target==='position'?[['Motion fixture reaction','driver_force','N']]:[]),['Spring input tension','spring_tension','N'],...(Number.isFinite(row.spring_coil_load)?[['Coil load','spring_coil_load','N'],['Stored spring energy','spring_energy_J','J']]:[]),...(Number.isFinite(row.spring_equivalent_lift_N)?[['Spring + damper equivalent lift','spring_equivalent_lift_N','N'],['Elastic spring equivalent lift','spring_elastic_equivalent_lift_N','N'],['Gravity equivalent load','spring_gravity_equivalent_N','N'],['Balance residual','spring_balance_residual_N','N']]:[]),['Spring moment about knee','spring_knee_moment','N·m'],['Knee actuator','actuator_torque','N·m'],['Guide on lower link','guide_link_torque','N·m'],['Grounded guide at J1','guide_hip_reaction','N·m'],['Knee travel stop','stop_knee_torque','N·m'],['Wheel contact torque','wheel_external_moment','N·m'],['Wheel drive → lower link','wheel_drive_reaction','N·m'],['Wheel angular speed','wheel_speed','rad/s'],[c.fixture==='hip'?'Hub velocity':'Chassis velocity',(c.fixture==='hip'?'hub':'chassis')+'_vy','m/s'],[c.fixture==='hip'?'Hub acceleration':'Chassis acceleration',(c.fixture==='hip'?'hub':'chassis')+'_ay','m/s²']].map(([name,key,unit])=>`<dt>${name}</dt><dd>${unit==='N'?forceFmt(row[key]):fmt(row[key])+' '+unit}</dd>`).join('');
     // Throttle cursor relayout while the SVG/readouts remain at animation speed.
     if(!playing||Math.abs(time-lastChartTime)>=.1){
       lastChartTime=time;
-      for(const chart of charts)if(chart.container._fullLayout)window.Plotly.relayout(chart.container,{'shapes[0].x0':row.t,'shapes[0].x1':row.t});
+      for(const chart of charts)if(chart.container._fullLayout)window.Plotly.relayout(chart.container,{'shapes[0].x0':row[chart.xKey],'shapes[0].x1':row[chart.xKey]});
     }
     drawMechanism();
   }
@@ -211,12 +267,12 @@
     if(!data||!Array.isArray(data.rows)||!data.rows.length||!Array.isArray(data.frames)||!data.frames.length||!data.config)throw Error('This JSON does not contain a playable suspension run.');
     if(data.backend&&data.backend!==backend)throw Error('Open this run in its matching simulation tab. The Pymunk viewer requires a Pymunk result.');
     if(!data.rows.every(r=>Number.isFinite(r.t)))throw Error('Recorded time values must be finite.');
-    pause();result=data;config={...data.config};dirty=false;time=0;runRevision++;if(!viewer)controls();
+    pause();result=data;config={...data.config};dirty=false;time=0;runRevision++;if(Number.isFinite(data.spring_mechanism?.resolved_stiffness_N_m))config.stiffness=data.spring_mechanism.resolved_stiffness_N_m;if(!viewer)controls();
     $('error').hidden=true;
     $('engine').textContent=(isMath?'':'Pymunk ')+data.engine;
     $('model-objects').textContent=JSON.stringify(data.model||{renderer:'Mathematical kinematics'},null,2);
     $('snapshot').textContent=`${data.config.fixture==='floating'?'Floating chassis':data.config.fixture==='hip'?'Hip fixed':'Wheel fixed'} · ${data.config.radius*1000} mm wheel radius · ${fmt(data.config.extension*1000,0)} mm extension`;
-    $('status').textContent=`${data.config.target==='position'?'Prescribed position · ':''}Recorded ${data.rows.length.toLocaleString()} ${isMath?'output samples':'solver steps'} · dt ${data.config.dt*1000} ms · actual spring free length ${fmt(data.actual_rest_length*1000,1)} mm`;
+    $('status').textContent=`${data.config.target==='position'?'Prescribed position · ':''}Recorded ${data.rows.length.toLocaleString()} ${isMath?'output samples':'solver steps'} · dt ${data.config.dt*1000} ms · actual spring free length ${fmt(data.actual_rest_length*1000,1)} mm${data.spring_mechanism?.automatic_balance==='rate_calibration'?' · calibrated k '+fmt(config.stiffness,2)+' N/m':''}`;
     $('warnings').replaceChildren();
     for(const warning of data.warnings||[]){const node=document.createElement('div');node.className='warning';node.textContent=warning;$('warnings').append(node);}
     const reference=data.equation_reference||{};
@@ -256,10 +312,11 @@
     const incoming=value?.config||value;if(!incoming||Array.isArray(incoming)||typeof incoming!=='object')throw Error('Profile must contain a configuration object.');
     if(!Object.keys(defaults).length){pendingProfile=value;return;}
     const next={...defaults};
-    const choices={fixture:['floating','hip','wheel'],target:['position','force','knee'],wave:['step','square','pulse','impulse'],ramp_shape:['quintic','linear'],load_point:['hub','contact']};
+    const choices={fixture:['floating','hip','wheel'],target:['position','force','knee'],wave:['step','square','pulse','impulse'],ramp_shape:['quintic','linear'],load_point:['hub','contact'],spring_topology:Object.keys(springCatalog),spring_mode:['compression','extension','captured'],spring_transmission:['direct','pullrod','ideal_rope'],spring_force_law:['hooke','zero_effective']};
     for(const [key,value] of Object.entries(incoming)){
       if(!Object.hasOwn(defaults,key))throw Error('Unknown profile field: '+key);
       if(typeof value!==typeof defaults[key]||(typeof value==='number'&&!Number.isFinite(value)))throw Error('Invalid profile value for '+key);
+      if(key==='spring_direction'&&![1,-1].includes(value))throw Error('Spring payout sign must be +1 or −1.');
       if(choices[key]&&!choices[key].includes(value))throw Error('Unsupported choice for '+key);next[key]=value;
     }
     if(isMath&&(next.fixture!=='floating'||next.target!=='position'||next.ramp_shape!=='quintic'||next.load_point!=='hub'||!['step','square','pulse'].includes(next.wave)))throw Error('The mathematical tab requires a floating chassis, smooth position input and hub loads. Open other profiles in 2D Physics.');
@@ -270,12 +327,12 @@
   $('case').onclick=()=>{if(!result)return;download({engine:result.engine,config:result.config,actual_rest_length:result.actual_rest_length,diagnostics:result.diagnostics,equation_reference:result.equation_reference,equation_check_errors:result.equation_check_errors,reference_inputs:{T0_N:referenceT0N,T0_kgf:referenceT0N===null?null:referenceT0N/KGF,applied_to_solver:false},scope:result.scope},backend+'-linkage-run-config.json');};
   if($('profile'))$('profile').onclick=saveProfile;
   if($('save-data'))$('save-data').onclick=()=>{if(!result)return;const data={...result,backend,reference_inputs:referenceInputs()};publish('motion-lab-save-run',{result:data});download(data,backend+'-motion-run.json');};
-  if($('gui'))$('gui').onclick=()=>{
+  if($('gui'))$('gui').onclick=async()=>{
     if(parent!==window){publish('motion-lab-show-gui',{config:{...config},result:result?{...result,backend}:null});return;}
-    if(isMath){try{sessionStorage.setItem('motion-lab-gui-profile',JSON.stringify(config));}catch{}location.assign('/?gui=1');return;}
-    if(!result){showError(Error('Run a simulation or load a recorded result before opening the Pymunk viewer.'));return;}
-    document.body.classList.add('engine-viewer');$('model-view').value='engine';drawMechanism();
-    if(!document.getElementById('back-to-controls')){const back=document.createElement('button');back.id='back-to-controls';back.textContent='Back to simulation controls';back.onclick=()=>{document.body.classList.remove('engine-viewer');back.remove();};document.querySelector('.mechanism-panel').prepend(back);}
+    $('gui').disabled=true;$('error').hidden=true;$('status').textContent='Opening native Pymunk live GUI on the host computer…';
+    try{const response=await fetch('/api/native-gui',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),data=await response.json();if(!response.ok)throw Error(data.error||'Native GUI could not start.');$('status').textContent=data.message||'Native Pymunk GUI opened on the host computer. Browser playback remains available here.';}
+    catch(error){showError(error);$('status').textContent='Native GUI launch failed; browser playback remains available.';}
+    finally{$('gui').disabled=false;}
   };
   if($('profile-import'))$('profile-import').onchange=async event=>{try{const file=event.target.files[0];if(!file)return;if(file.size>80*1024*1024)throw Error('JSON exceeds the 80 MiB import limit.');applyProfile(JSON.parse(await file.text()));}catch(error){showError(error);}event.target.value='';};
   addEventListener('message',event=>{
@@ -310,7 +367,8 @@
   new ResizeObserver(()=>{cancelAnimationFrame(heightPending);heightPending=requestAnimationFrame(()=>{const height=Math.ceil(document.body.scrollHeight);if(height!==lastHeight){lastHeight=height;publish('motion-lab-height',{height});}});}).observe(document.body);
   new MutationObserver(()=>{if(result)makePlots();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
-  fetch('/api/defaults').then(r=>{if(!r.ok)throw Error('Backend unavailable.');return r.json();}).then(data=>{
+  Promise.all([fetch('/api/defaults').then(r=>{if(!r.ok)throw Error('Backend unavailable.');return r.json();}),fetch('/api/spring-presets').then(r=>r.ok?r.json():null)]).then(([data,presets])=>{
+    if(presets){springCatalog=presets.catalog||{};mechanismDefaults=presets.defaults||{};}
     defaults={...data};config={...data};
     if(isMath){config.fixture='floating';config.target='position';config.ramp_shape='quintic';config.load_point='hub';config.wave='step';}
     if(viewer){$('status').textContent='Waiting for a recorded Pymunk run from the main lab.';publish('motion-lab-viewer-ready');publish('motion-lab-ready');return;}

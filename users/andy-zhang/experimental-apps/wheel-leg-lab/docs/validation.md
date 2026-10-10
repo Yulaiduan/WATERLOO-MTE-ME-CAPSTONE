@@ -50,3 +50,105 @@ charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
 familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](unified-motion-lab.md).
+
+## Suspension presets and live desktop GUI, 2026-10-10
+
+The expanded suite passes **64 Python tests**: 27 original physical/reference/
+position cases, 15 independent SciPy cases, 12 mechanism-kernel cases and 10
+actual Pymunk preset cases. `npm test` retains all 32 passing JavaScript tests.
+Run the six Python test modules listed in the app README to reproduce them.
+
+All eight topologies satisfy physical point-force virtual work for both drum
+wrap directions. Pin/guide/stop/driver impulse checks and angular ledgers close
+near roundoff in the smooth 8 mm step. Static finite-step deviations at 1 ms are
+bounded by 0.005° / 0.5 N / 20 µm; measured maxima were 0.00179° / 0.2873 N /
+9.61 µm. Refining Pymunk from 1 to 0.5 to 0.25 ms decreases each preset's final
+angle error against independent SciPy. The largest finest-step error is 0.02636°
+in the hip pulley demo. A conservative actual-body case's energy drift falls
+0.00547 → 0.00273 → 0.00136 J from 0.4 J initial stored energy. These are finite
+integration checks, not exact agreement or peak-load convergence at rigid stops.
+
+`node scripts/verify_suspension_ui.cjs` checks all eight presets on both real
+backends, editable demo resets, 11 Plotly charts, actual attachment overlays,
+coil telemetry, profile JSON and mobile layout. `verify_motion_lab.cjs` passes
+the full shell/data/comparison workflow, separately labeled recorded playback,
+and mocked native launch/config/status/failure/query handling. The existing
+Pymunk, miscellaneous-study and force-calculator browser suites also pass.
+The first parallel browser run met the server's deliberate busy response;
+the Pymunk harness passes when run after the other API suite completes.
+
+`scripts/verify_native_gui.py` calls the actual native launch API and verifies
+a Windows desktop HWND owned by the returned PID, increasing `Space.step`
+counts, a completed loop, three real engine shapes and six real constraints
+for knee capture. It then posts Close only to that verified window and waits
+for a zero process exit. Cross-origin launch, incompatible preload and unknown
+session requests are rejected. All eight presets also pass headless official
+Pygame rendering; the original native spring has seven constraints. A first
+close check observed the GUI's final state before process exit; the harness now
+waits for both, and the repeat passes. Show restores only that verified window;
+Windows may decline foreground activation while still restoring its visibility.
+The test compares the live state's PID because Windows' venv launcher can spawn
+the actual GUI in a child process. Generated screenshots/logs stay ignored.
+
+The launcher passes start, reuse, scoped stop and restart from C:\Windows. A
+PowerShell 7 JSON date was decoded as DateTime, so string comparison refused
+the first stop safely; comparing UTC DateTime values preserves fractional ticks
+and also works with Windows PowerShell's string decoding. Previous state/log
+files are archived and no unrelated process or source file is removed.
+
+The hip-pulley demo's passive instability is explicitly tested and retained.
+Spring law and transmission are independent settings; increasing pull-through
+travel compresses the coil, while wrap/mount geometry selects the leg-loading
+direction. SciPy supports the full catalog; MATLAB's expanded-profile parsing
+was checked in R2025b for the original captured/direct tip spring and rejects
+other mechanisms explicitly. No hardware, coil-bind, cable friction/stretch,
+tire contact, whole vehicle or canonical robot validation is claimed.
+
+## Final constant-lift integration
+
+The final combined suite passes **82 Python tests** (71 wheel/kernel/reference
+plus 11 standalone-lever cases) and **33 JavaScript tests** (24 detailed model
+plus nine library contracts). All nine wheel presets pass real-backend browser
+checks, including calibrated constant elastic lift and the additional Plotly
+lift-versus-angle chart. The standalone lever browser suite passes independent
+math/Pymunk APIs, ideal/ordinary spring comparison, free/prescribed motion,
+portable profiles/full runs, saved-data playback, dark mode, zoom and mobile.
+The full unified shell suite also passes; lever records never use wheel APIs.
+
+Seven dedicated wheel-adaptation tests verify rate calibration, effective
+versus physical lengths, force/energy balances and refinement. The calibrated
+demo rate is 2260.043672222 N/m and elastic equivalent support 84.751637708 N.
+At 1 / 0.5 / 0.25 ms the final angle error against SciPy is approximately
+0.015813 / 0.006590 / 0.002969°. Actual-body elastic support drift decreases
+0.004108 / 0.001032 / 0.000259 N. Damping and dynamic inertial reactions are
+separate quantities and need not be constant.
+
+The lever's default rate is 215.7463 N/m, supporting an equivalent tip load of
+21.57463 N with the stated distributed lever weight. Its tension varies by
+more than 50 N over the ±80° sweep. Exact balance is neutral: angular velocity
+can persist in free mode without a hidden holding motor. Ordinary-coil free
+angle errors decrease 0.060354 / 0.030213 / 0.015115°, and actual conservative
+energy drift decreases 0.003478 / 0.001728 / 0.000861 J at the same timesteps.
+Prescribed Pymunk motor angle tracking refines from 0.225° at 1 ms to below
+0.06° at 0.25 ms; this is solved dynamics rather than pose teleportation.
+
+Actual native verification now covers knee capture, wheel gravity balance,
+prescribed lever and free lever. Each has three real engine shapes; constraint
+counts are respectively 6 / 6 / 2 / 1. HWND ownership, advancing solver steps,
+looping, visible restore and graceful zero-exit close all pass. Repeating a
+native launch for an identical resolved profile reuses its owned live window.
+The official lever renderer also passes headless checking. Source figures are
+retained; all generated snapshots, sessions and raw solver outputs stay ignored.
+
+The final server and original project-local CMD launcher preserve port 4186.
+Existing binary/source/archive files remain intact; no boot automation or
+canonical robot changes are introduced. MATLAB remains the explicitly labeled
+legacy tip-spring companion. Hardware, real routing/coil packaging, contact,
+other desktop operating systems and restoring-suspension design are unverified.
+
+The final exported profile's new force-law/effective-length fields also pass
+MATLAB R2025b parsing. Its legacy step differs from SciPy by at most
+1.041e-8 degrees in the checked 1.2 s case; requesting zero-effective law is
+explicitly rejected. The initial local probe used MATLAB run's changed working
+directory; resolving the app root from the script path then passed without
+warnings. No new mechanism is silently evaluated with the old MATLAB law.

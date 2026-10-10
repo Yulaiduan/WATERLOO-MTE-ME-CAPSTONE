@@ -13,6 +13,9 @@ from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 from physics import DEFAULTS, simulate
 from math_model import simulate_math
+from native_viewer import launch as launch_native, status as native_status, show as show_native
+from spring_mechanisms import CATALOG, MECHANISM_DEFAULTS
+import counterbalance
 import pymunk
 
 ROOT=Path(__file__).resolve().parent
@@ -37,6 +40,11 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path=='/api/health':
             return self.json({'app':'capstone-wheel-leg-lab','root':str(ROOT),'engine':pymunk.version})
         if self.path=='/api/defaults': return self.json(DEFAULTS)
+        if self.path=='/api/counterbalance/defaults':return self.json(counterbalance.DEFAULTS)
+        if self.path=='/api/spring-presets': return self.json({'catalog':CATALOG,'defaults':MECHANISM_DEFAULTS})
+        if self.path.startswith('/api/native-gui/'):
+            try:return self.json(native_status(self.path.rsplit('/',1)[1]))
+            except ValueError as error:return self.json({'error':str(error)},404)
         if self.path=='/math/wheel_leg_ode45.m':
             payload=(ROOT/'math/wheel_leg_ode45.m').read_bytes()
             self.send_response(200)
@@ -46,16 +54,25 @@ class Handler(SimpleHTTPRequestHandler):
             self.end_headers();self.wfile.write(payload);return
         super().do_GET()
     def do_POST(self):
-        if self.path not in ['/api/simulate','/api/pymunk/simulate','/api/math/simulate']:
+        native_show=self.path.startswith('/api/native-gui/') and self.path.endswith('/show')
+        if self.path not in ['/api/simulate','/api/pymunk/simulate','/api/math/simulate','/api/counterbalance/math','/api/counterbalance/pymunk','/api/native-gui'] and not native_show:
             return self.json({'error':'Unknown endpoint.'},404)
         try:
             count=int(self.headers.get('Content-Length','0'))
             if count<=0 or count>50000: return self.json({'error':'Invalid request size.'},413)
             value=json.loads(self.rfile.read(count))
-            lock=MATH_LOCK if self.path=='/api/math/simulate' else RUN_LOCK
+            if self.path=='/api/native-gui' or native_show:
+                origin=self.headers.get('Origin');allowed={f'http://127.0.0.1:{self.server.server_port}',f'http://localhost:{self.server.server_port}'}
+                if (origin and origin not in allowed) or self.headers.get('Sec-Fetch-Site')=='cross-site':return self.json({'error':'Native launch requires this local application.'},403)
+                if native_show:return self.json(show_native(self.path.split('/')[3]))
+                return self.json(launch_native(value),202)
+            mathematical=self.path in ('/api/math/simulate','/api/counterbalance/math')
+            lock=MATH_LOCK if mathematical else RUN_LOCK
             if not lock.acquire(blocking=False): return self.json({'error':'This solver is already running. Retry when it finishes.'},409)
             try:
-                result=simulate_math(value) if self.path=='/api/math/simulate' else simulate(value)
+                if self.path.startswith('/api/counterbalance/'):
+                    result=counterbalance.simulate(value,backend='math' if mathematical else 'pymunk')
+                else:result=simulate_math(value) if mathematical else simulate(value)
                 result.setdefault('backend','pymunk')
             finally: lock.release()
             self.json(result)

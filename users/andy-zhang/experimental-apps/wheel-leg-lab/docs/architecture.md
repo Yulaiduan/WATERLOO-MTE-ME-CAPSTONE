@@ -22,3 +22,23 @@ charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
 familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](unified-motion-lab.md).
+
+`spring_mechanisms.py` owns editable preset geometry and passive coil laws;
+`suspension_runtime.py` applies their point forces to actual Pymunk bodies.
+The legacy captured/direct tip spring retains its native DampedSpring. New
+massless mechanisms have force/torque ledgers and require timestep refinement.
+`math_model.py` integrates the independent SciPy equations with the same
+specified geometry. See [suspension presets](suspension-presets.md).
+
+`native_viewer.py` validates/builds the selected config, launches the installed
+app-local Python/`debug_gui.py` process and monitors owned status files. It
+opens a visible live Pygame window; no requested executable/path is accepted.
+`native_suspension.py` adds schematic ideal routing/coil overlays to the actual
+engine debug drawing. Recorded `/physics/?viewer=1` remains separate playback.
+
+`counterbalance.py` owns the independent energy equation and actual Pymunk
+single-lever experiment. `/counterbalance/` uses its own math/physical APIs;
+versioned library backend IDs distinguish these configs from wheel fixtures.
+The native launcher accepts a fixed `model: counterbalance` envelope to select
+`debug_counterbalance_gui.py`; users cannot choose an arbitrary executable.
+The main menu, theme, data library, port and manual restart launcher are shared.

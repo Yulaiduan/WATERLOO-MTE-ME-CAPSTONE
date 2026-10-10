@@ -22,7 +22,7 @@ function csvDownload(rows, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = () => {}, onLoadStudy=()=>{}, theme = 'light' } = {}) {
+export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = () => {}, onPlayback=()=>{}, onLoadStudy=()=>{}, theme = 'light' } = {}) {
   let summaries = [], selected = null, tableIndex = 0, normalizedRows = [], channels = [], selectedChannels = [], xChannel = 't', currentTheme = theme, plotRevision = 0;
   let selectionGeneration = 0;
   root.replaceChildren();
@@ -88,8 +88,13 @@ export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = ()
     const pre = element('pre', JSON.stringify({ config: record.config, reference_inputs: record.reference_inputs, engine:record.result?.engine, units:record.result?.units, solver:record.result?.solver, scope:record.result?.scope, source_created_at: record.source_created_at }, null, 2));
     configPanel.append(summary, pre); metadata.append(configPanel);
     actions.replaceChildren(); actions.hidden = false;
-    if (record.config && record.backend) actions.append(button(`Load ${record.backend === 'math' ? 'mathematical' : record.backend === 'pymunk' ? '2D physics' : 'detailed linkage'} profile`, () => safe(() => onLoadProfile(record, record.backend))));
-    if (record.config && ['pymunk','math'].includes(record.backend)) actions.append(button('Show Pymunk visual GUI', () => safe(() => onPymunk(record))));
+    const lever=['counterbalance_math','counterbalance_pymunk'].includes(record.backend);
+    if (record.config && record.backend) actions.append(button(`Load ${lever?'counterbalance lever':record.backend === 'math' ? 'mathematical' : record.backend === 'pymunk' ? '2D physics' : 'detailed linkage'} profile`, () => safe(() => onLoadProfile(record, record.backend))));
+    if (record.config && ['pymunk','math','counterbalance_math','counterbalance_pymunk'].includes(record.backend)) {
+      const native=button('Show Pymunk desktop GUI', () => safe(() => onPymunk(record)));
+      native.title='Launch live physics on the simulation host desktop using this saved configuration.';
+      actions.append(native,button(lever?'View lever recording in tool':'Recorded browser playback',()=>safe(()=>onPlayback(record))));
+    }
     if(record.result?.study_settings)actions.append(button('Restore motion study settings',()=>safe(()=>onLoadStudy(record))));
     actions.append(button('Download JSON', () => downloadJSON(record, record.name + '.json')));
     const tables = record.result ? extractTables(record.result) : [];
@@ -108,7 +113,7 @@ export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = ()
     channels = [...new Set(normalizedRows.flatMap(row => Object.keys(row)))];
     xChannel = channels.includes('t') ? 't' : channels.includes('time') ? 'time' : '$sample';
     const available = channels.filter(key => key !== xChannel);
-    const preferred = ['input_mm', 'position_actual_mm', 'chassis_displacement_mm', 'theta_deg', 'q', 'driver_force'];
+    const preferred = ['input_mm', 'position_actual_mm', 'chassis_displacement_mm', 'theta_deg', 'equivalent_support_N', 'driver_torque_Nm', 'q', 'driver_force'];
     selectedChannels = preferred.filter(key => available.includes(key)).slice(0, 3);
     if (!selectedChannels.length) selectedChannels = available.slice(0, 2);
     channelBox.replaceChildren(element('legend', 'Plot channels · units retained from source data'));

@@ -15,6 +15,7 @@ import unittest
 import numpy as np
 
 from math_model import config, parameters, simulate_math
+from spring_mechanisms import CATALOG, apply_preset
 
 
 class MathModelTests(unittest.TestCase):
@@ -129,6 +130,69 @@ class MathModelTests(unittest.TestCase):
                        {'stiffness': 0., 'balance_spring': True}):
             with self.subTest(values=values), self.assertRaises(ValueError):
                 simulate_math(values)
+
+    def test_all_topologies_balance_and_preserve_full_force_ledgers(self):
+        expected = sum(config()[key] for key in
+                       ('upper_mass', 'lower_mass', 'wheel_mass', 'chassis_mass'))*config()['gravity']
+        for name in CATALOG:
+            with self.subTest(topology=name):
+                result = simulate_math(apply_preset({'duration': .3}, name))
+                row = result['rows'][-1]
+                self.assertAlmostEqual(row['theta_deg'], 45., places=9)
+                self.assertAlmostEqual(row['driver_force'], expected, places=8)
+                self.assertLess(result['diagnostics']['max_torque_check_Nm'], 1e-9)
+                self.assertTrue(all(value < 1e-9 for value in result['equation_check_errors'].values()))
+                self.assertAlmostEqual(row['spring_hip_fx']+row['spring_upper_fx']+row['spring_lower_fx'], 0., places=10)
+                self.assertAlmostEqual(row['spring_hip_fy']+row['spring_upper_fy']+row['spring_lower_fy'], 0., places=10)
+                if name == 'hip_pulley':
+                    self.assertGreater(abs(row['spring_upper_fx']), 100.)
+                    self.assertEqual(row['spring_lower_fx'], 0.)
+                if name in ('knee_pulley', 'knee_capture', 'direct_scissor', 'knee_bellcrank'):
+                    self.assertEqual(row['spring_hip_fx'], 0.)
+                    self.assertGreater(abs(row['spring_upper_fx'])+abs(row['spring_upper_fy']), 1.)
+                json.dumps(result, allow_nan=False)
+
+    def test_topology_only_profiles_resolve_the_same_preset_defaults(self):
+        for name in CATALOG:
+            resolved = config({'spring_topology': name})
+            explicit = config(apply_preset({}, name))
+            self.assertEqual(resolved, explicit)
+        override = config({'spring_topology': 'knee_bellcrank', 'spring_bellcrank_offset_deg': 150.})
+        self.assertEqual(override['spring_bellcrank_offset_deg'], 150.)
+
+    def test_all_topologies_live_energy_and_newton_euler_closure(self):
+        for name in CATALOG:
+            with self.subTest(topology=name):
+                result = simulate_math(apply_preset({'duration': .9, 'position_amplitude': .008}, name))
+                self.assertIsNone(result['solver']['stop_event'])
+                self.assertGreater(abs(result['rows'][-1]['chassis_displacement']), .0001)
+                self.assertLess(abs(result['diagnostics']['energy_balance_error_J']), 2e-6)
+                self.assertLess(result['diagnostics']['max_torque_check_Nm'], 1e-9)
+                self.assertTrue(all(value < 1e-9 for value in result['equation_check_errors'].values()))
+                self.assertTrue(all(row['dissipation_power_W'] >= -1e-10 for row in result['rows']))
+
+    def test_auto_preload_rejects_dead_centres_and_wrong_unilateral_direction(self):
+        invalid = [
+            {**apply_preset({}, 'hip_pulley'), 'spring_direction': -1.},
+            {**apply_preset({}, 'direct_scissor'), 'spring_mode': 'extension'},
+            {**apply_preset({}, 'knee_capture'), 'spring_direction': -1., 'spring_transmission': 'ideal_rope'},
+            {**apply_preset({}, 'hip_bellcrank'), 'spring_bellcrank_offset_deg': 45., 'spring_chassis_y': 0.},
+        ]
+        for values in invalid:
+            with self.subTest(values=values), self.assertRaises(ValueError):
+                simulate_math(values)
+
+    def test_captured_knee_pullthrough_and_extension_payout_have_equal_external_dynamics(self):
+        values = {'duration': .9, 'position_amplitude': .008}
+        extension = simulate_math(apply_preset(values, 'knee_pulley'))
+        capture = simulate_math(apply_preset(values, 'knee_capture'))
+        for key in ('theta_deg', 'driver_force', 'j2_force', 'guide_hip_reaction'):
+            self.assertAlmostEqual(extension['rows'][-1][key], capture['rows'][-1][key], places=9)
+        # Equal external compliance does not mean the internal coil travels in
+        # the same direction: captured pull-through reverses coil travel.
+        e0, e1 = extension['rows'][0]['spring_coil_length'], extension['rows'][-1]['spring_coil_length']
+        c0, c1 = capture['rows'][0]['spring_coil_length'], capture['rows'][-1]['spring_coil_length']
+        self.assertAlmostEqual(e1-e0, -(c1-c0), places=10)
 
 
 if __name__ == '__main__':

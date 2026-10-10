@@ -1196,3 +1196,86 @@ Plotly provides data inspection while JSON exports preserve full runs or explici
 Continue from the unified workspace/model/validation docs, retain the historical sources and archive, and confirm physical inputs/contact/belt/hardware before any canonical promotion.
 
 ---
+
+## Entry: 2026-10-10 — Andy Zhang — suspension presets, constant-lift studies and live desktop GUI
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's isolated Wheel Leg Lab / Motion Lab app and design context.
+- **Associated Issue/Task:** User requested the actual live Pymunk desktop GUI, eight spring mechanisms based on supplied sketches, selectable compression/extension/captured coils and direct/rod/ideal-rope transmission. User then requested both the pictured constant-lift lever and its wheel-leg adaptation, continuing the authorized GitHub publication and unified UI work.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no tracked source file deleted.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/counterbalance.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_counterbalance_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_view.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/constant-lift.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/decisions.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/design.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/equation_checks.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/wheel_leg_ode45.m`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_suspension.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_viewer.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/references/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/references/constant-lift-lever.png`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/references/pull-through-capture.png`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/references/suspension-layouts.png`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_counterbalance_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_motion_lab.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_native_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_pymunk.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suspension_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/suspension_runtime.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_counterbalance.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_gravity_balance.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_suspension_physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/data-browser.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/mathematical/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/physics/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/style.css`
+- **API/Interface Changes:** Add nine editable suspension presets and common SI geometry/passive force laws. Preserve native legacy DampedSpring; new presets apply actual point forces with measured force/torque ledgers. Add positive physical coil lengths, unilateral engagement, ideal lossless/inextensible tension-only rope and pull-through direction mapping. Add zero-effective-length gravity compensation, explicit automatic rate calibration, elastic/total equivalent support and residuals. Add independent SciPy and actual Pymunk standalone lever study, prescribed angular position/free dynamics, Plotly ideal-versus-ordinary comparisons and model-specific JSON/library backend IDs. Add /api/spring-presets, /api/counterbalance/defaults, /api/counterbalance/math and /api/counterbalance/pymunk. Add owned native launch/status/show APIs; wheel or counterbalance envelopes select fixed installed desktop viewers, solve live, restore/reuse an identical live profile and report failures. Recorded browser playback remains separately named. Keep the original port-4186 manual CMD launcher; fix its scoped stop's DateTime comparison. Retain supplied design images and update model/design/validation/handoff documents. MATLAB accepts expanded legacy profiles but explicitly rejects unsupported new mechanisms. No shared engineering runtime, assets or gate changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All 82 Python tests pass: 27 original physical/reference/position, 15 independent SciPy, 12 kernel, 10 preset-physics, seven wheel gravity-balance and 11 standalone-lever cases. All 33 JavaScript tests pass. Actual force/torque impulse balances, virtual work, unilateral passivity, neutral gravity balance, genuine hip-pulley passive instability, shape geometry and timestep/energy refinement pass. All nine wheel presets converge toward independent SciPy; the constant-lift final-angle errors decrease 0.015813/0.006590/0.002969 degrees at 1/.5/.25 ms, and elastic-lift drift decreases 0.004108/.001032/.000259 N. Standalone ordinary-coil free-angle errors decrease .060354/.030213/.015115 degrees; conservative energy drift decreases .003478/.001728/.000861 J. Prescribed lever tracking refines from .225 degrees at 1 ms to below .06 degrees at .25 ms. Actual browser suites pass all nine wheel presets and both lever backends, calibrated/static plots, JSON profiles/full runs, library/model-specific load/playback, zoom/theme/mobile and the existing motion/calculator/Pymunk workflows. Actual native API tests pass knee capture, wheel compensation, prescribed lever and free lever: verified Windows HWND ownership, real advancing steps, loops, three engine shapes, respective 6/6/2/1 constraints, visible restore, exact-profile reuse and graceful zero-exit close. Official headless native renderers pass; generated logs/frames stay ignored. Actual project-local CMD launcher passes fresh start/reuse/scoped-stop/restart from C:\Windows and preserves 127.0.0.1:4186. Markdown links/fences, diff hygiene and repository working/staged scoped gates run before publication. Earlier MATLAB R2025b comparisons remain legacy-only; expanded legacy-profile parsing was checked in this turn. Authorized reused child workers were marked done after completion.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member-app contribution. No hardware, real cable/coil packaging or limits, tire contact, stress/buckling, whole vehicle, GPU or other desktop OS validation is claimed. Exact constant elastic support is gravity compensation with neutral static stiffness, not restoring suspension. Initial parallel browser traffic produced the expected solver-busy response and the standalone harness passed when rerun sequentially. Stop safely refused a DateTime-as-string comparison; UTC DateTime values now preserve fractional creation ticks. Native checks first observed a closing state before process exit and compared a venv wrapper PID with the actual GUI PID; they now wait for zero exit and verify the live window's actual PID. A native lever readout key was reconciled with its schema and rerendered. A central-difference rounding threshold was corrected to the declared 1e-8 tolerance; all final checks pass. No failed check was represented as a hardware/canonical pass, no historical file was deleted and no hook was bypassed.
+
+## 4. Compute Saving Handoff State
+
+Motion Lab now hosts nine wheel suspension presets and the exact constant-lift lever, with independent equations, actual Pymunk solving, Plotly data and portable model-specific JSON.
+Its GUI buttons launch, restore and reuse live desktop solvers on the host while recorded browser playback stays explicit, and the durable project-local launcher preserves port 4186.
+Continue from the constant-lift/preset/model/validation docs, preserve the original archives and confirm real hardware/contact/routing and required restoring stiffness before canonical promotion.
+
+---

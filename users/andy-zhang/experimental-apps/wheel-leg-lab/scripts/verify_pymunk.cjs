@@ -10,7 +10,7 @@ const path = require('node:path');
     await page.route('**/*',route=>{if(route.request().url().startsWith('http://127.0.0.1:4186/'))return route.continue();external.push(route.request().url());return route.abort();});
     await page.goto('http://127.0.0.1:4186/physics/');
     await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('Recorded'),null,{timeout:30000});
-    assert.equal(await page.locator('.plot').count(),8);assert.equal(await page.locator('[data-key="target"]').inputValue(),'position');assert.equal(await page.locator('[data-key="fixture"]').inputValue(),'floating');assert.ok((await page.locator('.plot h3').allTextContents()).some(s=>s.includes('Prescribed height')));
+    assert.equal(await page.locator('.plot').count(),11);assert.equal(await page.locator('[data-key="target"]').inputValue(),'position');assert.equal(await page.locator('[data-key="fixture"]').inputValue(),'floating');assert.ok((await page.locator('.plot h3').allTextContents()).some(s=>s.includes('Prescribed height')));
     assert.equal(await page.locator('#model-view').inputValue(),'engine');
     assert.equal(await page.locator('.engine-shape').count(),3);
     assert.ok((await page.locator('#model-objects').textContent()).includes('DampedSpring'));

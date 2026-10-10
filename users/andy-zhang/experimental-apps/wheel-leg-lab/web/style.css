@@ -18,3 +18,5 @@
 @media(max-width:760px){.engine-viewer .mechanism-layout{grid-template-columns:1fr}.engine-viewer #mechanism{height:390px}.chart{height:300px}header .actions{width:100%}.actions button{font-size:12px}}
 
 :root[data-embedded=true] header>div:first-child{display:none}:root[data-embedded=true] header{padding:12px 18px;justify-content:flex-end}.import-label{font-size:12px;display:flex;gap:6px;align-items:center}.import-label input{max-width:180px}
+
+.spring-preset summary{color:var(--accent)}.spring-preset .fields{gap:9px}.spring-preset .hint{font-size:11px}.spring-mechanism-overlay text{font-size:10px;paint-order:stroke;stroke:var(--panel);stroke-width:3px;stroke-linejoin:round}.spring-mechanism-overlay .spring-transfer-label{font-size:9px}#pose-values span{line-height:1.5}

@@ -20,7 +20,7 @@ Rough-path displays use positive y down and angles from downward vertical. Detai
 
 ## Actual verification and open work
 
-The unified app rebuilds and runs with app-local Python/Node dependencies and no machine-specific runtime paths. Its 32 JavaScript and 37 Python tests pass. The independent MATLAB companion also agrees with SciPy in verified batch cases. App-local browser and launcher results are recorded in [validation](../docs/validation.md); canonical robot physics is not applicable to this member toolkit. The shared manifest remains empty and unchanged.
+The unified app uses app-local Python/Node dependencies and no machine-specific runtime paths. Current verification passes 82 Python tests (71 wheel-leg and 11 lever) and 33 JavaScript tests. Both actual backends, nine-preset and lever browser checks, JSON/library integration, actual native launch/window restore and durable restart evidence are retained in [validation](../docs/validation.md). MATLAB comparisons apply to the original captured/direct tip spring, not the new presets or lever. Canonical robot physics is not applicable to this member toolkit; the shared manifest remains unchanged.
 
 Continue by confirming pulley radii and T₀ value/role, actuator hardware, spring preload/characterization, clearance through inversion and real wheel contact. Do not treat derived torque agreement or a collision-free drawing as hardware validation. The immutable assumptions and decisions are summarized in [decisions](../docs/decisions.md); accepted shared requirements remain in the existing repository records.
 
@@ -32,3 +32,43 @@ charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
 familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](../docs/unified-motion-lab.md).
+
+## Spring sketches and live GUI clarification, 2026-10-10
+
+The current catalog retains the original spring and adds hip/knee pulley,
+direct scissor, hip/knee bellcrank, direct-to-chassis and internal knee capture
+mechanisms. Their [editable dimensions and laws](../docs/suspension-presets.md)
+are experimental interpretations of the sketches. Compression, extension and
+bilateral captured coil laws remain separate from direct/pullrod/ideal-rope
+transmission. Pull-through input span growth compresses the coil; wrap or mount
+direction determines the corresponding leg motion. Ideal rope has zero stretch,
+100% efficiency and tension-only loading.
+
+The browser GUI button now launches a live native Pygame/Pymunk window on the
+simulation host desktop, stepping a newly built Space with the chosen profile.
+Recorded browser engine playback remains explicitly separate and can be used
+from a remote browser. Python/SciPy supports the spring catalog; MATLAB supports
+only the original `legacy_tip` captured/direct combination. New Pymunk presets
+apply actual point forces explicitly each timestep, while the original captured
+tip spring keeps its native DampedSpring.
+
+## Constant-lift lever and wheel adaptation, 2026-10-10
+
+The user requested both the exact reference lever and a wheel-leg preset.
+The standalone [constant-lift study](../docs/constant-lift.md) is available in
+the Mathematical selector, Miscellaneous studies and `/counterbalance/`; it
+has independent math/free dynamics, actual Pymunk angle/free runs, profile/run
+JSON, data-library records and a model-specific live native GUI.
+
+The ninth suspension preset, `gravity_balance`, attaches an upper-link point
+to a downward vertical chassis mount. Zero-effective-span tension gives
+constant generalized chassis support, with distributed link weight included.
+Auto balance calibrates spring rate explicitly while retaining positive
+physical coil free length. Ordinary Hooke preload remains a separate method.
+Offset mounts or a finite effective free length break exact constant lift;
+neutral gravity compensation alone provides no restoring ride-height stiffness.
+The [retained reference sketch](../references/constant-lift-lever.png) and
+derived equations describe an ideal study, not confirmed hardware packaging.
+The combined 82 Python/33 JavaScript checks, real-backend browser workflows,
+four live native model cases and durable launcher lifecycle pass. Complete
+evidence and numerical limits are recorded in [validation](../docs/validation.md).

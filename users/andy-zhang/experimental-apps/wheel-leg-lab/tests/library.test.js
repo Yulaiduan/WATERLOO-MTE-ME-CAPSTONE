@@ -18,6 +18,17 @@ test('full suspension run retains source data through record JSON',()=>{
  const data={backend:'math',config,rows:[{t:0,chassis_displacement_mm:0},{t:1,chassis_displacement_mm:30}],scope:'Independent model'};
  const record=normalizeImport(data);assert.equal(record.kind,'run');assert.deepEqual(record.result,data);assert.deepEqual(normalizeImport(record),record);
 });
+
+test('constant-lift lever profiles and runs roundtrip without becoming wheel-leg configs',()=>{
+ const lever={length:.4,spring_radius:.2,anchor_height:.2,law:'zero_effective',mode:'prescribed',stiffness_auto:true,dt:.001,duration:2};
+ for(const backend of ['counterbalance_math','counterbalance_pymunk']){
+  const profile=normalizeImport({backend,config:lever});assert.equal(profile.backend,backend);assert.equal(profile.kind,'profile');assert.deepEqual(normalizeImport(JSON.parse(JSON.stringify(profile))),profile);
+  const run=normalizeImport({backend,config:lever,rows:[{t:0,theta_deg:30,equivalent_support_N:21.57463,spring_force_N:43.14926}]});assert.equal(run.backend,backend);assert.equal(run.kind,'run');assert.deepEqual(normalizeImport(JSON.parse(JSON.stringify(run))),run);
+ }
+ assert.equal(normalizeImport({config:lever}).backend,'counterbalance_math');
+ for(const config of [{...lever,spring_radius:.6},{...lever,anchor_height:0},{...lever,law:'unknown'},{...lever,mode:'mystery'},{...lever,stiffness_auto:1}])assert.throws(()=>normalizeImport({backend:'counterbalance_math',config}));
+ assert.throws(()=>normalizeImport({backend:'counterbalance_pymunk',config:lever,rows:[{t:0,equivalent_support_N:Infinity}]}));
+});
 test('detailed linkage exports keep comparison modes in distinct tables',()=>{
  const run={schema:'motion-lab-linkage-run',version:1,backend:'linkage',config:defaultConfig(),samples:[{t:0,q:1,mode:'passive'},{t:1,q:2,mode:'passive'},{t:0,q:3,mode:'finite'}]};
  const record=normalizeImport(run);assert.equal(record.backend,'linkage');assert.deepEqual(extractTables(record.result).map(t=>[t.name,t.rows.length]),[['passive',2],['finite',1]]);

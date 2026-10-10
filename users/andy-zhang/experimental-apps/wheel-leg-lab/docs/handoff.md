@@ -45,3 +45,37 @@ charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
 familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](unified-motion-lab.md).
+
+## Suspension and desktop-GUI continuation
+
+The user's latest clarification defines pull-through by increasing rod/cable
+travel compressing the coil, with editable demo dimensions and selectable coil
+law. Eight presets now run through a common geometry/force kernel in independent
+SciPy and actual Pymunk. Read [presets](suspension-presets.md) and the expanded
+[validation](validation.md) before changing their signs or force sites.
+
+The GUI button launches the actual live Pygame desktop solver on the host;
+recorded browser playback is separate. Close that desktop window to stop it.
+Native launch sessions/configs/logs/screenshots remain in ignored .preview.
+The browser library/profile exports preserve the selected mechanism settings.
+
+All 64 Python and 32 JavaScript tests pass. Preset browser and actual desktop API
+checks pass; the MATLAB companion is explicitly limited to the original
+captured/direct tip spring. A 40 mm hip drum with an 8 kN/m coil is passively
+unstable around the demo ride pose, even with balanced initial preload.
+Confirm real mounts, routing, travel, rates and component limits before
+interpreting the demo as a selected suspension design.
+
+## Constant-lift continuation
+
+The user requested both the pictured lever and a wheel-leg adaptation. Both
+now run independently in SciPy and actual Pymunk with JSON/library support,
+Plotly charts and live desktop launch. Read [constant lift](constant-lift.md):
+the coil tension varies, while ideal equivalent elastic lift is constant.
+The default lever is 21.57463 N; the wheel shape support is 84.751637708 N,
+including the stated chassis/link gravity contributions. These are demo values.
+
+Automatic rate calibration preserves zero effective free length and a positive
+physical coil length. This produces neutral gravity compensation rather than
+a restoring ride-height spring. The complete 82 Python and 33 JavaScript tests,
+both browser tools and four native cases pass; use the latest validation record.

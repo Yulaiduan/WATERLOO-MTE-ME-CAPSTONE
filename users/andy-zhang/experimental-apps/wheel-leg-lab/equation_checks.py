@@ -80,7 +80,10 @@ def moment_checks(model,c,f1,f2,f3,fs,au,al,angular_u,angular_l,torque,guide,sto
     u,l=model['upper'],model['lower'];L=c['length']
     A=u.local_to_world(model['j1'].anchor_b);Bu=u.local_to_world(model['j2'].anchor_a)
     Bl=l.local_to_world(model['j2'].anchor_b);C=l.local_to_world(model['j3'].anchor_a)
-    E=l.local_to_world(model['spring'].anchor_b)
+    loads=model.get('spring_loads');moments=model.get('spring_torques')
+    E=l.local_to_world(model['spring'].anchor_b) if model.get('spring') else Bl
+    lower_spring=moments['lower']+(l.position-Bl).cross(loads['lower']) if loads else (E-Bl).cross(fs)
+    upper_spring=moments['upper']+(u.position-A).cross(loads['upper']) if loads else 0.
     F=-f3;B=-f2
     tl=l.angle+math.pi;tu=-u.angle
     Min=L*(-F.y*math.cos(tl)+F.x*math.sin(tl))
@@ -89,9 +92,9 @@ def moment_checks(model,c,f1,f2,f3,fs,au,al,angular_u,angular_l,torque,guide,sto
     gravity_u=Vec2d(0,-u.mass*c['gravity']);gravity_l=Vec2d(0,-l.mass*c['gravity'])
     contact_ref=Min+F.x*c['radius']
     contact_cross=(C-Bl+Vec2d(0,-c['radius'])).cross(F)
-    lower_total=lower_cross+(E-Bl).cross(fs)+(l.position-Bl).cross(gravity_l)+torque+guide+stop+wheel_drive
+    lower_total=lower_cross+lower_spring+(l.position-Bl).cross(gravity_l)+torque+guide+stop+wheel_drive
     lower_inertia=l.moment*angular_l+(l.position-Bl).cross(l.mass*al)
-    upper_total=upper_cross+(u.position-A).cross(gravity_u)-torque+guide-stop
+    upper_total=upper_cross+upper_spring+(u.position-A).cross(gravity_u)-torque+guide-stop
     upper_inertia=u.moment*angular_u+(u.position-A).cross(u.mass*au)
     return {'ref_Fy_horizontal':F.x,'ref_Fz_vertical':F.y,'ref_By_horizontal':B.x,'ref_Bz_vertical':B.y,
             'ref_Min_wheel_moment':Min,'ref_Mact_knee_moment':Mact,'ref_Br':math.hypot(B.x,B.y),

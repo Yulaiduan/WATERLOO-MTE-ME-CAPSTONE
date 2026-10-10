@@ -14,6 +14,8 @@ from pymunk import Vec2d
 from debug_view import capture, describe
 from equation_checks import SCREENSHOT, moment_checks
 from motion_input import position_state
+from spring_mechanisms import MECHANISM_DEFAULTS,apply_preset,mechanism_config,geometry_from_bodies,mechanism_metadata
+import suspension_runtime as suspension
 
 DEFAULTS = {
     "length": .273, "extension": .05, "radius": .2, "theta": 45.,
@@ -29,12 +31,18 @@ DEFAULTS = {
     "duration": 6., "dt": .001, "iterations": 80,
 }
 
+DEFAULTS.update(MECHANISM_DEFAULTS)
+
 def config(values=None):
     c = deepcopy(DEFAULTS)
     if values:
         if not isinstance(values, dict): raise ValueError("Configuration must be an object.")
         if set(values) - set(c): raise ValueError("Unknown configuration field.")
         c.update(values)
+        if 'spring_topology' in values:
+            seeded=apply_preset(DEFAULTS,values['spring_topology'])
+            for key in MECHANISM_DEFAULTS:
+                if key not in values:c[key]=seeded[key]
     if c['target']!='position':
         # Preserve the explicit historical force/torque case defaults.
         for key,value in {'bias_force':80.,'wave':'square','rise':.05,'fall':.05,'pulse_width':.12}.items():
@@ -81,6 +89,7 @@ def config(values=None):
     width = c["period"]*c["duty"] if c["wave"] == "square" else c["pulse_width"]
     if c['wave']!='step' and c["rise"] + c["fall"] > width + 1e-12:
         raise ValueError("Rise + fall must fit within on-time / pulse width.")
+    mechanism_config(c)
     return c
 
 def trapezoid_area(t, width, rise, fall):
@@ -153,9 +162,9 @@ def build(c):
     guide=pymunk.GearJoint(upper,lower,math.pi,-1.)
     stop=pymunk.RotaryLimitJoint(upper,lower,2*math.radians(c["theta_min"])-math.pi,2*math.radians(c["theta_max"])-math.pi)
     E=lower.local_to_world((-(L+e)/2,0)); s=(E-A).length
-    rest=c["rest_length"]
+    rest=c["rest_length"];manual_spring=suspension.manual(c);needed=0.
     if c["balance_spring"]:
-        if c["stiffness"]<=0: raise ValueError("Automatic spring balance requires positive spring stiffness.")
+        if c["stiffness"]<=0 and c['spring_force_law']=='hooke': raise ValueError("Automatic spring balance requires positive spring stiffness.")
         if c["fixture"]=="hip":
             gravity_arm=c["gravity"]*(c["upper_mass"]*L/2+c["lower_mass"]*(3*L-e)/2+c["wheel_mass"]*2*L)
             support=c['preload_force'] if c['target']=='position' else c['bias_force']
@@ -169,18 +178,21 @@ def build(c):
         leverage=2*L*e*math.sin(2*theta)/s
         if c['fixture'] in ['hip','floating'] and c['load_point']=='contact' and c['wheel_drive_locked']:
             needed-=c['bias_force_x']*c['radius']
-        rest=s-needed/(c["stiffness"]*leverage)
+        if not manual_spring:rest=s-needed/(c["stiffness"]*leverage)
         if rest<.005: raise ValueError("Spring cannot balance this load with the selected stiffness and geometry; increase stiffness or use manual free length.")
-    spring=pymunk.DampedSpring(hip,lower,hip.world_to_local(A),(-(L+e)/2,0),rest,c["stiffness"],c["damping"])
-    cache={}
-    def spring_force(spring, distance):
-        a=spring.a.local_to_world(spring.anchor_a); b=spring.b.local_to_world(spring.anchor_b)
-        cache["n"]=(b-a).normalized();cache["distance"]=distance
-        return (spring.rest_length-distance)*spring.stiffness
-    spring.force_func=spring_force
-    for joint in (j1,j2,j3,guide,stop,spring):
-        joint.collide_bodies=False
-    space.add(j1,j2,j3,guide,stop,spring)
+    cache={};spring=None;input_reference=s
+    if manual_spring:
+        rest,input_reference=suspension.free_length(c,needed)
+    else:
+        spring=pymunk.DampedSpring(hip,lower,hip.world_to_local(A),(-(L+e)/2,0),rest,c['stiffness'],c['damping'])
+        def spring_force(spring,distance):
+            a=spring.a.local_to_world(spring.anchor_a);b=spring.b.local_to_world(spring.anchor_b)
+            cache['n']=(b-a).normalized();cache['distance']=distance
+            return (spring.rest_length-distance)*spring.stiffness
+        spring.force_func=spring_force
+    constraints=(j1,j2,j3,guide,stop)+((spring,) if spring else ())
+    for joint in constraints:joint.collide_bodies=False
+    space.add(*constraints)
     wheel_drive=None
     if c['wheel_drive_locked']:
         wheel_drive=pymunk.GearJoint(lower,wheel,wheel.angle-lower.angle,1.)
@@ -194,7 +206,7 @@ def build(c):
         driver.collide_bodies=False;space.add(carriage,driver)
     return {"space":space,"hip":hip,"upper":upper,"lower":lower,"wheel":wheel,"moving":moving,
             "j1":j1,"j2":j2,"j3":j3,"guide":guide,"stop":stop,"spring":spring,"wheel_drive":wheel_drive,"cache":cache,"rest":rest,"shapes":shapes,
-            "driver":driver,"carriage":carriage,"driver_origin":origin}
+            "driver":driver,"carriage":carriage,"driver_origin":origin,"manual_spring":manual_spring,"spring_input_reference":input_reference}
 
 def drive(model, c, t, dt):
     """Shared prescribed motion / diagnostic load for traces and native viewer."""
@@ -215,6 +227,7 @@ def drive(model, c, t, dt):
     if c['fixture'] in ['hip','floating'] and c['load_point']=='contact':point+=Vec2d(0,-c['radius'])
     moving.apply_force_at_world_point(external,point)
     model['wheel_external_moment']=external.x*c['radius'] if c['fixture'] in ['hip','floating'] and c['load_point']=='contact' else 0.
+    if model['manual_spring']:suspension.update(model,c)
     return command,torque,torque_raw,external
 
 def simulate(values=None):
@@ -242,19 +255,26 @@ def simulate(values=None):
         wheel_drive_on_wheel=w.moment*angular_w-m['wheel_external_moment'] if c['wheel_drive_locked'] else 0.
         wheel_drive_reaction=-wheel_drive_on_wheel
         wheel_drive_check=abs(abs(wheel_drive_on_wheel)-m['wheel_drive'].impulse/dt) if m['wheel_drive'] else 0.
-        fs=m["cache"]["n"]*(m["spring"].impulse/dt)
+        if m['manual_spring']:
+            sf=m['spring_loads'];sm=m['spring_torques'];state=m['spring_state'];fs=sf['lower'];spring_tension=state['tension'];spring_elastic=state['elastic_tension']
+        else:
+            fs=m['cache']['n']*(m['spring'].impulse/dt);sf={'hip':-fs,'upper':Vec2d(0,0),'lower':fs}
+            ep=l.local_to_world(m['spring'].anchor_b);sm={'hip':0.,'upper':0.,'lower':(ep-l.position).cross(fs)}
+            spring_tension=-m['spring'].impulse/dt;spring_elastic=c['stiffness']*(m['cache']['distance']-m['rest'])
+            state={'coil_length':m['cache']['distance'],'coil_load':abs(spring_tension),'energy':.5*c['stiffness']*(m['cache']['distance']-m['rest'])**2,'engaged':True,'slack':False,'jacobian':0.}
+        m['spring_loads']=sf;m['spring_torques']=sm
         def reactions(driver_force):
             if c['fixture']=='hip':
                 f3=w.mass*(am-g)-external-driver_force
-                f2=l.mass*(al-g)-fs+f3;f1=u.mass*(au-g)+f2
+                f2=l.mass*(al-g)-sf['lower']+f3;f1=u.mass*(au-g)-sf['upper']+f2
             else:
-                f1=-(h.mass*(am-g)-external-driver_force+fs)
-                f2=f1-u.mass*(au-g);f3=f2+fs-l.mass*(al-g)
+                f1=sf['hip']+external+driver_force-h.mass*(am-g)
+                f2=f1+sf['upper']-u.mass*(au-g);f3=f2+sf['lower']-l.mass*(al-g)
             return f1,f2,f3
         driver_y=0.
         if c['fixture']=='floating':
-            f1=-(h.mass*(ah-g)+fs)
-            f2=f1-u.mass*(au-g);f3=f2+fs-l.mass*(al-g)
+            f1=sf['hip']-h.mass*(ah-g)
+            f2=f1+sf['upper']-u.mass*(au-g);f3=f2+sf['lower']-l.mass*(al-g)
             driver_vector=w.mass*(am-g)-external-f3
             driver_y=driver_vector.y
         elif m['driver']:
@@ -267,9 +287,9 @@ def simulate(values=None):
             _,driver_y,(f1,f2,f3)=min(options,key=lambda option:option[0])
         else:f1,f2,f3=reactions(Vec2d(0,0))
         A=h.local_to_world(m["j1"].anchor_a);B=u.local_to_world(m["j2"].anchor_a)
-        C=w.local_to_world(m["j3"].anchor_b);E=l.local_to_world(m["spring"].anchor_b)
-        u_mom=(u.local_to_world(m["j1"].anchor_b)-u.position).cross(f1)+(u.local_to_world(m["j2"].anchor_a)-u.position).cross(-f2)
-        l_mom=(l.local_to_world(m["j2"].anchor_b)-l.position).cross(f2)+(l.local_to_world(m["j3"].anchor_a)-l.position).cross(-f3)+(E-l.position).cross(fs)
+        C=w.local_to_world(m["j3"].anchor_b);E=l.local_to_world((-(L+e)/2,0))
+        u_mom=(u.local_to_world(m["j1"].anchor_b)-u.position).cross(f1)+(u.local_to_world(m["j2"].anchor_a)-u.position).cross(-f2)+sm['upper']
+        l_mom=(l.local_to_world(m["j2"].anchor_b)-l.position).cross(f2)+(l.local_to_world(m["j3"].anchor_a)-l.position).cross(-f3)+sm['lower']
         residual_u=u.moment*angular_u-u_mom+torque
         residual_l=l.moment*angular_l-l_mom-torque-wheel_drive_reaction
         guide_torque=(residual_u+residual_l)/2
@@ -299,17 +319,26 @@ def simulate(values=None):
              "j1_fx":f1.x,"j1_fy":f1.y,"j1_force":m["j1"].impulse/dt,
              "j2_fx":f2.x,"j2_fy":f2.y,"j2_force":m["j2"].impulse/dt,
              "j3_fx":f3.x,"j3_fy":f3.y,"j3_force":m["j3"].impulse/dt,
-             "spring_tension":-m["spring"].impulse/dt,"spring_length":m["cache"]["distance"],
-             "spring_elastic_tension":c["stiffness"]*(m["cache"]["distance"]-m["rest"]),
-             "spring_damper_tension":-m["spring"].impulse/dt-c["stiffness"]*(m["cache"]["distance"]-m["rest"]),
-             "spring_knee_moment":(E-l.local_to_world(m["j2"].anchor_b)).cross(fs),
+             "spring_tension":spring_tension,"spring_length":m["cache"]["distance"],
+             "spring_elastic_tension":spring_elastic,
+             "spring_damper_tension":spring_tension-spring_elastic,
+             "spring_knee_moment":sm['lower']+(l.position-B).cross(sf['lower']),
+             'spring_coil_length':state['coil_length'],'spring_coil_load':state['coil_load'],'spring_energy_J':state['energy'],'spring_engaged':float(state['engaged']),'spring_slack':float(state['slack']),
              "actuator_torque":torque,"actuator_command":torque_raw,"guide_link_torque":guide_torque,
              "wheel_external_moment":m['wheel_external_moment'],"wheel_drive_reaction":wheel_drive_reaction,
              "wheel_speed":w.angular_velocity,"wheel_accel":angular_w,"wheel_drive_check":wheel_drive_check,
              "guide_hip_reaction":-2*guide_torque,"stop_knee_torque":stop_torque,
-             "hip_mount_fx":-f1.x-fs.x,"hip_mount_fy":-f1.y-fs.y,
+             "hip_mount_fx":-f1.x+sf['hip'].x,"hip_mount_fy":-f1.y+sf['hip'].y,
              "pin_error":pin_error,"phase_error":phase,"reaction_check":magnitude_error,
              "angular_check":angular_error}
+        spring_geom=state.get('geometry') if m['manual_spring'] else geometry_from_bodies({key:m[key] for key in ['hip','upper','lower']},c)
+        spring_angle=spring_geom['theta_rad'];height_J=2*L*math.cos(spring_angle)
+        Qspring=-spring_tension*spring_geom['jacobian'];Qelastic=-spring_elastic*spring_geom['jacobian']
+        gravity_equivalent=c['gravity']*(c['chassis_mass']+.75*c['upper_mass']+(L+e)/(4*L)*c['lower_mass'])
+        row.update(spring_generalized_force=Qspring,spring_equivalent_lift_N=Qspring/height_J,
+                   spring_elastic_equivalent_lift_N=Qelastic/height_J,
+                   spring_gravity_equivalent_N=gravity_equivalent,
+                   spring_balance_residual_N=Qspring/height_J-gravity_equivalent)
         if m['driver']:
             z,v,a=m['position_command'];actual=m['moving'].position.y-m['driver_origin'].y
             row.update(position_command=z,position_actual=actual,position_actual_mm=actual*1000,position_error=actual-z,position_velocity_command=v,position_accel_command=a)
@@ -327,8 +356,13 @@ def simulate(values=None):
         if i%frame_stride==0 or i==n-1:
             frame={"index":i,"t":row["t"],"hip":[A.x,A.y],"knee":[B.x,B.y],"hub":[C.x,C.y],"tip":[E.x,E.y],"upper_angle":u.angle,"lower_angle":l.angle,"debug_draw":capture(s)}
             if m['driver']:frame['position_target']=[m['driver_origin'].x,m['driver_origin'].y+row['position_command']]
+            if m['manual_spring']:
+                frame['spring_geometry']=geometry_from_bodies({key:m[key] for key in ['hip','upper','lower']},c);frame['spring_coil_length']=state['coil_length']
             frames.append(frame)
     warnings=[]
+    spring_meta=mechanism_metadata(dict(c,rest_length=m['rest']),m['spring_input_reference'])
+    warnings.extend(spring_meta['notes'])
+    if m['manual_spring']:warnings.append('Preset spring forces are integrated explicitly; refine dt before interpreting sharp/high-stiffness peak loads. Cranks/cable are massless and rope is ideal, lossless and inextensible.')
     if c['target']=='position' and c['ramp_shape']=='linear':warnings.append('Linear position ramps have velocity jumps at their joins; acceleration/reaction peaks depend on dt. Use quintic ramps for finite C2 motion.')
     tracking=max(abs(r['position_error']) for r in rows)
     if c['target']=='position' and tracking>.0005:warnings.append('Position tracking error exceeds 0.5 mm; refine dt/iterations or slow the ramp before interpreting loads.')
@@ -339,7 +373,7 @@ def simulate(values=None):
     if max_impulse_error>.01 or max_angular_error>.01: warnings.append("Reaction reconstruction differs from solver impulse readings; review diagnostics before using directional loads.")
     equation_errors={key:max(abs(row[key]) for row in rows) for key in ['check_lower_moment_Nm','check_contact_moment_Nm','check_upper_moment_Nm','check_lower_balance_Nm','check_upper_balance_Nm','check_Br_N','wheel_drive_check','driver_check']}
     peaks['driver_force']=max(({'value':r['driver_force'],'t':r['t']} for r in rows),key=lambda p:abs(p['value']))
-    return {"config":c,"engine":pymunk.version,"model":model_info,"position_origin":list(m['driver_origin']),"equation_reference":SCREENSHOT,"equation_check_errors":equation_errors,"actual_rest_length":m["rest"],"rows":rows,"frames":frames,"peaks":peaks,
+    return {"config":c,"engine":pymunk.version,"model":model_info,"position_origin":list(m['driver_origin']),"equation_reference":SCREENSHOT,"equation_check_errors":equation_errors,"actual_rest_length":m["rest"],"spring_mechanism":spring_meta,"rows":rows,"frames":frames,"peaks":peaks,
             "diagnostics":{"max_pin_error_m":max_pin_error,"max_guide_error_rad":max_phase_error,
                            "max_force_check_N":max_impulse_error,"max_torque_check_Nm":max_angular_error,
                            "input_integral":input_integral,'input_unit':'m' if c['target']=='position' else 'N' if c['target']=='force' else 'N m',
