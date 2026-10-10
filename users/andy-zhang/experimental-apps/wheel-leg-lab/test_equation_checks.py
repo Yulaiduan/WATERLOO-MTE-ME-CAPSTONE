@@ -8,7 +8,9 @@ Limitations: numerical/analytical checks, not canonical robot or hardware valida
 import math
 import unittest
 from equation_checks import screenshot_reference
-from physics import simulate
+from physics import simulate as actual_simulate
+
+def simulate(values=None): return actual_simulate({"target":"force",**(values or {})})
 
 class EquationChecks(unittest.TestCase):
     def test_reported_torques_match_inferred_400_mm_links(self):

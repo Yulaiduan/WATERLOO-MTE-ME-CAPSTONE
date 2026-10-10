@@ -7,7 +7,10 @@ Limitations: numerical/analytical checks, not canonical robot or hardware valida
 """
 import math
 import unittest
-from physics import config, build, simulate, excitation_area, input_average
+from physics import config as actual_config, build, simulate as actual_simulate, excitation_area, input_average
+
+def config(values=None): return actual_config({"target":"force",**(values or {})})
+def simulate(values=None): return actual_simulate({"target":"force",**(values or {})})
 
 
 def reference(values):

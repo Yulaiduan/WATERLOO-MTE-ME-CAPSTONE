@@ -36,12 +36,12 @@ def capture(space):
 def describe(model):
     def number(x): return x if math.isfinite(x) else 'fixed / infinite'
     bodies=[]
-    for key in ['hip','upper','lower','wheel']:
+    for key in ['hip','upper','lower','wheel']+(['carriage'] if model.get('carriage') else []):
         b=model[key]
-        bodies.append({'name':key,'class':type(b).__name__,'type':'static' if b.body_type==pymunk.Body.STATIC else 'dynamic',
+        bodies.append({'name':key,'class':type(b).__name__,'type':{pymunk.Body.STATIC:'static',pymunk.Body.KINEMATIC:'kinematic',pymunk.Body.DYNAMIC:'dynamic'}[b.body_type],
                        'mass_kg':number(b.mass),'inertia_kg_m2':number(b.moment),'position_m':vector(b.position),'angle_rad':b.angle})
     joints=[]
-    names=['j1','j2','j3','guide','spring','stop']+(['wheel_drive'] if model.get('wheel_drive') else [])
+    names=['j1','j2','j3','guide','spring','stop']+(['wheel_drive'] if model.get('wheel_drive') else [])+(['driver'] if model.get('driver') else [])
     for key in names:
         j=model[key];info={'name':key,'class':type(j).__name__}
         if isinstance(j,pymunk.PivotJoint): info.update(anchor_a_m=vector(j.anchor_a),anchor_b_m=vector(j.anchor_b))
@@ -50,6 +50,7 @@ def describe(model):
             if key=='guide':info['physical_guide_ratio']=2
         elif isinstance(j,pymunk.DampedSpring):info.update(anchor_a_m=vector(j.anchor_a),anchor_b_m=vector(j.anchor_b),rest_length_m=j.rest_length,stiffness_N_m=j.stiffness,damping_N_s_m=j.damping)
         elif isinstance(j,pymunk.RotaryLimitJoint):info.update(min_relative_rad=j.min,max_relative_rad=j.max)
+        elif isinstance(j,pymunk.GrooveJoint):info.update(axis='horizontal groove; vertical prescribed-position reaction',anchor_b_m=vector(j.anchor_b))
         joints.append(info)
     return {'bodies':bodies,'constraints':joints,'shapes':[{'name':key,'class':type(shape).__name__,'sensor':shape.sensor} for key,shape in model['shapes'].items()],
             'renderer':'pymunk.Space.debug_draw callbacks','debug_scale':DEBUG_SCALE}

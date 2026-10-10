@@ -1,8 +1,10 @@
 # Toolkit architecture
 
-Author: Andy Zhang with Codex. Updated: 2026-10-09. Status: member experiment.
+Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: member experiment.
 
-One loopback-only Python server serves the Pymunk API and all web routes. `physics.py` builds the actual space and records solver states; `debug_view.py` captures engine draw callbacks and object descriptions. `debug_gui.py` calls the same builder/input helper in a live Pygame viewer. Browser Pymunk motion is recorded playback, not a second physical model.
+One loopback-only Python server serves the Pymunk API and all web routes. `motion_input.py` computes displacement/velocity/acceleration trajectories in SI. `physics.py` builds the actual space and records solver states; `debug_view.py` captures engine draw callbacks and object descriptions. `debug_gui.py` calls the same builder/input helper in a live Pygame viewer. Browser Pymunk motion is recorded playback, not a second physical model.
+
+`scripts/record_position_preview.py` regenerates the embedded floating-chassis step/square traces and actual debug primitives. It decimates display frames and retains trace-bucket extrema; full solver exports remain available in the main bench.
 
 The seven rough-motion HTML fragments and retained remote playback live under `animations/`. `scripts/build_animations.py` wraps them using local app-owned styles and a standalone state adapter, replacing D3's CDN reference with the local library. Generated `web/animations/` and `web/recorded/` remain ignored. The gallery links them to `/force-plots/`, the editable static calculator source.
 

@@ -34,3 +34,9 @@ _Avoid_: suspension spring tension
 **kgf**: Kilograms-force, equal to 9.80665 newtons; it is a force unit, distinct from mass in kg.
 
 **Recorded playback**: A display of retained solver states; changing playback controls does not rerun the physics model.
+
+**Prescribed height**: The moving fixture's commanded vertical displacement relative to its initial position; mm on screen, metres internally. It is the disturbance input.
+
+**Fixture reaction**: The force required to impose the prescribed position, measured as a solver output. Vertical sign is positive upward on the driven body. This bilateral support may pull downward, unlike unilateral ground contact.
+
+**Floating chassis fixture**: A wheel-height-driven suspension with dynamic chassis heave and pitch held. It isolates one corner's response and does not model a complete vehicle.

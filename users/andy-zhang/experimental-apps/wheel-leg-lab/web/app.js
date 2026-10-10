@@ -8,39 +8,49 @@
   const field=(key,label,unit='',scale=1,min=0,max=1e6,step='any')=>`<label class="field">${label}${unit?` <em>${unit}</em>`:''}<input data-key="${key}" data-scale="${scale}" type="number" min="${min}" max="${max}" step="${step}" value="${config[key]*scale}"></label>`;
   const select=(key,label,choices)=>`<label class="field full">${label}<select data-key="${key}">${choices.map(([v,l])=>`<option value="${v}" ${config[key]===v?'selected':''}>${l}</option>`).join('')}</select></label>`;
   function controls(){
-    $('controls').innerHTML=`<details open><summary>Geometry & masses</summary><div class="fields">${field('length','Each link','mm',1000,80,800)}${field('extension','r₂ past knee','mm',1000,5,150)}${field('radius','Wheel radius','mm',1000,50,400)}${field('theta','Initial θ','°',1,3,87)}${field('theta_min','Minimum θ','°',1,3,86)}${field('theta_max','Maximum θ','°',1,4,87)}${field('upper_mass','Upper link','kg',1,.01,20)}${field('lower_mass','Full lower link','kg',1,.01,20)}${field('wheel_mass','Wheel','kg',1,.01,30)}${field('chassis_mass','Chassis corner','kg',1,.01,100)}${select('fixture','Fixture',[['hip','Fixed hip · wheel response'],['wheel','Fixed wheel · chassis response']])}</div></details>
-    <details open><summary>Physical spring & damper</summary><div class="fields">${field('stiffness','Spring k','N/m',1,0,100000)}${field('damping','Damper c','N·s/m',1,0,2000)}${field('rest_length','Manual free length','mm',1000,5,1000)}${field('bias_force','Vertical load bias','N, up +',1,-5000,5000)}${field('bias_force_x','Horizontal load bias','N, right +',1,-5000,5000)}<label class="check"><input data-key="balance_spring" type="checkbox" ${config.balance_spring?'checked':''}>Balance spring at initial pose</label></div><p class="hint">Hip J1 → tip of r₂ extension. Bilateral linear spring + damper; initial balance sets free length, not a controller.</p></details>
-    <details open><summary>Disturbance input</summary><div class="fields">${select('target','Apply input',[['force','Vertical force at moving endpoint'],['knee','Opening torque at knee']])}${select('load_point','Wheel force point',[['hub','Wheel hub · no radius moment'],['contact','Tire bottom · includes Fx × radius']])}<label class="check"><input data-key="wheel_drive_locked" type="checkbox" ${config.wheel_drive_locked?'checked':''}>Lock wheel drive to lower link</label>${select('wave','Waveform',[['square','Square wave with linear edges'],['impulse','Impulse area · finite pulse']])}${field('amplitude','Square amplitude',config.target==='force'?'N':'N·m',1,-10000,10000)}${field('impulse','Impulse area',config.target==='force'?'N·s':'N·m·s',1,-1000,1000)}${field('start','Start time','s',1,0,20)}${field('period','Square period','s',1,.02,10)}${field('duty','On-time','%',100,1,99)}${field('pulse_width','Impulse width','ms',1000,1,5000)}${field('rise','Rise time','ms',1000,0,5000)}${field('fall','Fall time','ms',1000,0,5000)}</div><p class="hint">Tire-bottom horizontal force spins a free wheel. A locked drive transmits its reaction into the leg and adds wheel rotational inertia. No tire/ground collision is simulated.</p><p class="hint" id="slopes"></p></details>
-    <details><summary>Optional knee impedance</summary><div class="fields">${field('knee_kp','Kp','N·m/rad',1,0,2000)}${field('knee_kd','Kd','N·m·s/rad',1,0,200)}${field('torque_limit','Torque limit','N·m',1,.01,2000)}</div><p class="hint">Acts across the actual knee opening angle α = 2θ. Reference is the initial pose; physical spring remains separate.</p></details>
+    const position=config.target==='position';
+    const waves=position?[['step','Position step'],['square','Position square wave'],['pulse','Position bump pulse']]:[['step','Diagnostic force/torque step'],['square','Diagnostic square wave'],['impulse','Diagnostic impulse area']];
+    const fixtures=position?[['floating','Wheel height input · floating chassis'],['hip','Wheel height input · fixed hip'],['wheel','Chassis height input · fixed wheel']]:[['hip','Fixed hip · wheel force response'],['wheel','Fixed wheel · chassis force response']];
+    const inputFields=position?field('position_amplitude','Step / pulse height','mm, up +',1000,-500,500):field('amplitude','Step / square amplitude',config.target==='force'?'N':'N·m',1,-10000,10000)+field('impulse','Impulse area',config.target==='force'?'N·s':'N·m·s',1,-1000,1000);
+    $('controls').innerHTML=`<details open><summary>Geometry & masses</summary><div class="fields">${field('length','Each link','mm',1000,80,800)}${field('extension','r₂ past knee','mm',1000,5,150)}${field('radius','Wheel radius','mm',1000,50,400)}${field('theta','Initial θ','°',1,3,87)}${field('theta_min','Minimum θ','°',1,3,86)}${field('theta_max','Maximum θ','°',1,4,87)}${field('upper_mass','Upper link','kg',1,.01,20)}${field('lower_mass','Full lower link','kg',1,.01,20)}${field('wheel_mass','Wheel','kg',1,.01,30)}${field('chassis_mass','Chassis corner','kg',1,.01,100)}${select('fixture','Fixture',fixtures)}</div></details>
+    <details open><summary>Physical spring & static loading</summary><div class="fields">${field('stiffness','Spring k','N/m',1,0,100000)}${field('damping','Damper c','N·s/m',1,0,2000)}${field('rest_length','Manual free length','mm',1000,5,1000)}${field('bias_force','Optional static vertical force','N, up +',1,-5000,5000)}${field('bias_force_x','Optional static horizontal force','N, right +',1,-5000,5000)}${position&&config.fixture==='hip'?field('preload_force','Fixed-hip preload design load','N',1,-5000,5000):''}<label class="check"><input data-key="balance_spring" type="checkbox" ${config.balance_spring?'checked':''}>Set spring preload at initial pose</label></div><p class="hint">Hip J1 → r₂ extension tip. In the floating chassis test, preload supports the moving chassis/link weight. Forces are measured responses to the imposed wheel motion.</p></details>
+    <details open><summary>Prescribed motion input</summary><div class="fields">${select('target','Input quantity',[['position','Position · prescribed height'],['force','Force · legacy diagnostic'],['knee','Knee torque · legacy diagnostic']])}${select('wave','Waveform',waves)}${inputFields}${position?select('ramp_shape','Ramp shape',[['quintic','Smooth C2 · zero end velocity/acceleration'],['linear','Linear · velocity jumps at joins']]):''}${field('start','Start time','s',1,0,20)}${field('period','Square period','s',1,.02,10)}${field('duty','Square on-time','%',100,1,99)}${field('pulse_width',position?'Position pulse width':'Impulse width','ms',1000,1,5000)}${field('rise','Rise time','ms',1000,0,5000)}${field('fall','Fall time','ms',1000,0,5000)}${select('load_point','Static wheel-force point',[['hub','Hub · no radius moment'],['contact','Tire bottom · Fx × radius']])}<label class="check"><input data-key="wheel_drive_locked" type="checkbox" ${config.wheel_drive_locked?'checked':''}>Lock wheel drive to lower link</label></div><p class="hint">Position mode moves a kinematic support; its reaction is an output, not a commanded force. This is a prescribed boundary, not automatically solved terrain contact.</p><p class="hint" id="slopes"></p></details>
+    <details><summary>Optional knee impedance</summary><div class="fields">${field('knee_kp','Kp','N·m/rad',1,0,2000)}${field('knee_kd','Kd','N·m·s/rad',1,0,200)}${field('torque_limit','Torque limit','N·m',1,.01,2000)}</div></details>
     <details><summary>Solver</summary><div class="fields">${field('duration','Duration','s',1,.1,20)}${field('dt','Solver step','ms',1000,.25,4)}${field('iterations','Iterations','',1,20,300,1)}${field('gravity','Gravity','m/s²',1,0,20)}</div></details>`;
     $('controls').querySelectorAll('[data-key]').forEach(node=>node.addEventListener('change',()=>{
       const key=node.dataset.key;
       config[key]=node.type==='checkbox'?node.checked:node.tagName==='SELECT'?node.value:Number(node.value)/Number(node.dataset.scale||1);
-      if(key==='fixture'){config.bias_force=config.fixture==='hip'?80:0;if(config.fixture==='wheel'){config.load_point='hub';config.wheel_drive_locked=false;}}
+      if(key==='target'){
+        if(config.target==='position'){config.fixture='floating';config.bias_force=0;config.wave='step';config.rise=config.fall=.25;config.pulse_width=.7;}
+        else{config.fixture='hip';config.bias_force=80;config.wave='square';config.rise=config.fall=.05;config.pulse_width=.12;}
+      }
+      if(key==='fixture'&&config.fixture==='wheel'){config.bias_force=0;config.load_point='hub';config.wheel_drive_locked=false;}
       dirty=true;$('status').textContent='Inputs changed. Run simulation to update the saved traces.';
       if(['fixture','target'].includes(key))controls();else updateControls();
     }));updateControls();
   }
   function updateControls(){
-    for(const key of ['amplitude','period','duty'])$('controls').querySelector(`[data-key="${key}"]`).disabled=config.wave!=='square';
-    for(const key of ['impulse','pulse_width'])$('controls').querySelector(`[data-key="${key}"]`).disabled=config.wave!=='impulse';
-    $('controls').querySelector('[data-key="rest_length"]').disabled=config.balance_spring;
-    $('controls').querySelector('[data-key="load_point"]').disabled=config.fixture==='wheel';
-    $('controls').querySelector('[data-key="wheel_drive_locked"]').disabled=config.fixture==='wheel';
+    const position=config.target==='position',find=k=>$('controls').querySelector(`[data-key="${k}"]`);
+    for(const key of ['period','duty'])find(key).disabled=config.wave!=='square';
+    find('pulse_width').disabled=!['pulse','impulse'].includes(config.wave);
+    find('fall').disabled=config.wave==='step';
+    if(find('amplitude'))find('amplitude').disabled=config.wave==='impulse';
+    if(find('impulse'))find('impulse').disabled=config.wave!=='impulse';
+    find('rest_length').disabled=config.balance_spring;
+    find('load_point').disabled=config.fixture==='wheel';find('wheel_drive_locked').disabled=config.fixture==='wheel';
     const width=config.wave==='square'?config.period*config.duty:config.pulse_width;
-    const area=width-(config.rise+config.fall)/2;
-    const amplitude=config.wave==='square'?config.amplitude:config.impulse/area;
-    const units=config.target==='force'?'N/s':'N·m/s';
-    $('slopes').textContent=`Rise slope: ${config.rise?fmt(amplitude/config.rise,0)+' '+units:'instant edge'} · fall slope: ${config.fall?fmt(-amplitude/config.fall,0)+' '+units:'instant edge'}. Positive vertical input is upward.`;
+    const amplitude=position?config.position_amplitude*1000:config.wave==='impulse'?config.impulse/(width-(config.rise+config.fall)/2):config.amplitude;
+    const units=position?'mm/s':config.target==='force'?'N/s':'N·m/s';
+    $('slopes').textContent=position?`Mean rise speed ${fmt(amplitude/config.rise,1)} mm/s${config.ramp_shape==='quintic'?' · peak rise speed '+fmt(1.875*amplitude/config.rise,1)+' mm/s':''}. Positive height is upward.`:`Rise slope: ${config.rise?fmt(amplitude/config.rise,0)+' '+units:'instant edge'}; constant force bias is separate.`;
   }
   function nearest(rows,t){const i=D.bisector(r=>r.t).center(rows,t);return rows[Math.max(0,Math.min(rows.length-1,i))];}
   function decimate(rows,key){if(rows.length<=1800)return rows;const out=[],stride=Math.ceil(rows.length/700);for(let i=0;i<rows.length;i+=stride){const chunk=rows.slice(i,i+stride),lo=chunk.reduce((a,b)=>a[key]<b[key]?a:b),hi=chunk.reduce((a,b)=>a[key]>b[key]?a:b);out.push(chunk[0],lo,hi,chunk.at(-1));}return [...new Map(out.map(r=>[r.t,r])).values()].sort((a,b)=>a.t-b.t);}
   function makePlots(){
     if(!result)return;charts=[];$('plots').innerHTML='';const c=result.config,moving=c.fixture==='hip'?'hub':'chassis',view=$('force-view').value,probe=$('probe').value;
     const definitions=[
-      ['Disturbance input',c.target==='force'?'Input force (N)':'Input torque (N·m)',[['input','Disturbance']]],
-      ['Link angle & travel','θ from horizontal (°)',[['theta_deg','Link angle']]],
-      ['Joint reactions',view==='force'?'Joint resultant (N)':`Joint ${view.toUpperCase()} (N)`,[1,2,3].map(j=>['j'+j+'_'+view,'J'+j])],
+      [c.target==='position'?'Prescribed height · command vs achieved':'Diagnostic disturbance',c.target==='position'?'Displacement (mm)':c.target==='force'?'Input force (N)':'Input torque (N·m)',c.target==='position'?[['input_mm','Command'],['position_actual_mm','Achieved']]:[['input','Disturbance']]],
+      [c.fixture==='floating'?'Chassis response':'Link angle',c.fixture==='floating'?'Chassis displacement (mm)':'θ from horizontal (°)',c.fixture==='floating'?[['chassis_displacement_mm','Chassis']]:[['theta_deg','Link angle']]],
+      ['Joint reactions',view==='force'?(c.target==='position'?'Pin resultant / fixture Fy (N)':'Joint resultant (N)'):`Joint ${view.toUpperCase()} (N)`,[...[1,2,3].map(j=>['j'+j+'_'+view,'J'+j]),...(c.target==='position'&&view!=='fx'?[['driver_force','Fixture vertical']]:[])]],
       ['Torque channels','Torque (N·m)',[['actuator_torque','Knee actuator'],['spring_knee_moment','Spring about knee'],['guide_link_torque','Guide on lower link'],['stop_knee_torque','Knee travel stop'],['guide_hip_reaction','Grounded guide / J1'],['wheel_drive_reaction','Wheel drive → lower link']]],
       [probe.toUpperCase()+' pin velocity','Velocity (m/s)',[[probe+'_vx','Horizontal'],[probe+'_vy','Vertical']]],
       [probe.toUpperCase()+' pin acceleration','Acceleration (m/s²)',[[probe+'_ax','Horizontal'],[probe+'_ay','Vertical']]],
@@ -102,7 +112,7 @@
     svg.append('path').attr('d',D.line()(coil)).attr('stroke','var(--orange)').attr('stroke-width',2).attr('fill','none');
     }
     const fixed=c.fixture==='hip'?A:C,fp=point(fixed);
-    svg.append('path').attr('d',`M${fp[0]-24},${fp[1]-10}h48`).attr('stroke','var(--text)').attr('stroke-width',3);
+    if(c.fixture!=='floating')svg.append('path').attr('d',`M${fp[0]-24},${fp[1]-10}h48`).attr('stroke','var(--text)').attr('stroke-width',3);
     for(const [p,name,offset] of [[A,'J1 · hip',[-14,-16]],[B,'J2 · knee',[13,-3]],[C,'J3 · wheel pin',[10,17]],[E,'Spring tip',[10,-12]]]){
       const pp=point(p);svg.append('circle').attr('cx',pp[0]).attr('cy',pp[1]).attr('r',4).attr('fill','var(--panel)').attr('stroke','var(--text)').attr('stroke-width',1.5);
       svg.append('text').attr('x',Math.min(W-105,Math.max(5,pp[0]+offset[0]))).attr('y',Math.min(H-8,Math.max(13,pp[1]+offset[1]))).text(name);
@@ -113,21 +123,32 @@
         svg.append('path').attr('d',`M${pp[0]},${pp[1]}L${tx},${ty}M${tx-6*Math.cos(angle-.5)},${ty-6*Math.sin(angle-.5)}L${tx},${ty}L${tx-6*Math.cos(angle+.5)},${ty-6*Math.sin(angle+.5)}`).attr('stroke',colors[j-1]).attr('stroke-width',2).attr('fill','none');
       }
     }
-    drawDisturbance(svg,W,H,point(c.target==='knee'?B:c.fixture==='wheel'?A:c.load_point==='contact'?[C[0],C[1]-c.radius]:C),row);
+    const inputPoint=point(c.target==='knee'?B:c.fixture==='wheel'?A:c.target==='position'?C:c.load_point==='contact'?[C[0],C[1]-c.radius]:C);
+    const prescribed=c.target==='position'?{origin:point(result.position_origin),target:point(frame.position_target)}:null;
+    drawDisturbance(svg,W,H,inputPoint,row,prescribed);
   }
-  function drawDisturbance(svg,W,H,target,row){
-    const c=result.config,unit=c.target==='knee'?'N·m':'N',peak=Math.max(...result.rows.map(r=>Math.abs(r.input)),.000001),value=row.input;
+  function drawDisturbance(svg,W,H,target,row,prescribed){
+    const c=result.config,multiplier=c.target==='position'?1000:1,unit=c.target==='position'?'mm':c.target==='knee'?'N·m':'N',peak=Math.max(...result.rows.map(r=>Math.abs(r.input)*multiplier),.000001),value=row.input*multiplier;
     const base=H-38,pps=(W-32)/3,amp=18,x=t=>target[0]+(t-time)*pps,y=v=>base-v/peak*amp;
     const lane=svg.append('g').attr('class','disturbance-lane').attr('data-input',value);
-    lane.append('text').attr('x',16).attr('y',H-80).text(`Moving input (${unit})`);
+    lane.append('text').attr('x',16).attr('y',H-80).text(`${c.target==='position'?'Moving height':'Moving input'} (${unit})`);
     lane.append('text').attr('class','disturbance-label').attr('x',W-16).attr('y',H-80).attr('text-anchor','end').text(`Δ ${value>=0?'+':''}${fmt(value,2)} ${unit}`);
     const clip='disturbance-clip';lane.append('defs').append('clipPath').attr('id',clip).append('rect').attr('x',16).attr('y',H-73).attr('width',W-32).attr('height',57);
     const marks=lane.append('g').attr('clip-path',`url(#${clip})`);
     marks.append('line').attr('x1',16).attr('x2',W-16).attr('y1',base).attr('y2',base).attr('stroke','var(--line)');
-    marks.append('path').datum(decimate(result.rows,'input')).attr('class','disturbance-profile').attr('d',D.line().x(r=>x(r.t)).y(r=>y(r.input))).attr('fill','none').attr('stroke','var(--blue)').attr('stroke-width',2.5);
+    marks.append('path').datum(decimate(result.rows,'input')).attr('class','disturbance-profile').attr('d',D.line().x(r=>x(r.t)).y(r=>y(r.input*multiplier))).attr('fill','none').attr('stroke','var(--blue)').attr('stroke-width',2.5);
     marks.append('line').attr('x1',target[0]).attr('x2',target[0]).attr('y1',H-73).attr('y2',H-16).attr('stroke','var(--orange)').attr('stroke-width',1);
     marks.append('circle').attr('class','disturbance-marker').attr('cx',target[0]).attr('cy',y(value)).attr('r',4).attr('fill','var(--orange)');
-    lane.append('text').attr('x',16).attr('y',H-2).text(W<420?'← Applied input · bias separate':'Force / torque profile travels right → left; bias is separate.');
+    lane.append('text').attr('x',16).attr('y',H-2).text(c.target==='position'?(W<420?'← Height input · force measured':'← Prescribed height · reaction force is an output'):W<420?'← Applied input · bias separate':'Force / torque profile travels right → left; bias is separate.');
+    if(prescribed){
+      svg.append('line').attr('class','position-reference').attr('x1',prescribed.target[0]-17).attr('x2',prescribed.target[0]+17).attr('y1',prescribed.target[1]).attr('y2',prescribed.target[1]).attr('stroke','var(--orange)').attr('stroke-width',2);
+      if(Math.abs(value)>1e-8){
+        const px=target[0]-15,sy=prescribed.origin[1],ey=prescribed.target[1],sign=Math.sign(sy-ey);
+        const arrow=svg.append('g').attr('class','disturbance-arrow').attr('data-kind','position').attr('data-value',value).attr('stroke','var(--orange)').attr('stroke-width',2).attr('fill','none');
+        arrow.append('path').attr('d',`M${px},${sy}V${ey}M${px-4},${ey+sign*5}L${px},${ey}L${px+4},${ey+sign*5}M${px-4},${sy-sign*5}L${px},${sy}L${px+4},${sy-sign*5}`);
+      }
+      return;
+    }
     if(Math.abs(value)<1e-8)return;
     const arrow=svg.append('g').attr('class','disturbance-arrow').attr('data-value',value).attr('stroke','var(--orange)').attr('stroke-width',2.5).attr('fill','none');
     let end,direction;
@@ -148,7 +169,7 @@
     $('pose-values').innerHTML=`<span>θ ${fmt(row.theta_deg,1)}°</span><span>Height ${fmt(row.height*1000,0)} mm</span><span>Spring ${fmt(row.spring_length*1000,1)} mm</span>`;
     $('joint-values').innerHTML=[1,2,3].map(j=>`<tr><td>J${j}</td><td>${forceCell(row['j'+j+'_fx'])}</td><td>${forceCell(row['j'+j+'_fy'])}</td><td>${forceCell(row['j'+j+'_force'])}</td></tr>`).join('');
     $('equation-values').innerHTML=[['L₂(−Fz cosθ + Fy sinθ): hub lever','ref_Min_wheel_moment','check_lower_moment_Nm','N·m'],['L₂(−Fz cosθ + Fy sinθ) + Fy r_w: contact lever','ref_Min_contact_moment','check_contact_moment_Nm','N·m'],['L₁(Bz cosθ + By sinθ)','ref_Mact_knee_moment','check_upper_moment_Nm','N·m'],['√(By² + Bz²)','ref_Br','check_Br_N','N']].map(([label,key,error,unit])=>`<tr><td>${label}</td><td>${fmt(row[key],3)} ${unit}</td><td>${row[error].toExponential(2)} ${unit}</td></tr>`).join('');
-    $('torque-values').innerHTML=[['Spring tension','spring_tension','N'],['Spring moment about knee','spring_knee_moment','N·m'],['Knee actuator','actuator_torque','N·m'],['Guide on lower link','guide_link_torque','N·m'],['Grounded guide at J1','guide_hip_reaction','N·m'],['Knee travel stop','stop_knee_torque','N·m'],['Wheel contact torque','wheel_external_moment','N·m'],['Wheel drive → lower link','wheel_drive_reaction','N·m'],['Wheel angular speed','wheel_speed','rad/s'],[c.fixture==='hip'?'Hub velocity':'Chassis velocity',(c.fixture==='hip'?'hub':'chassis')+'_vy','m/s'],[c.fixture==='hip'?'Hub acceleration':'Chassis acceleration',(c.fixture==='hip'?'hub':'chassis')+'_ay','m/s²']].map(([name,key,unit])=>`<dt>${name}</dt><dd>${unit==='N'?forceFmt(row[key]):fmt(row[key])+' '+unit}</dd>`).join('');
+    $('torque-values').innerHTML=[...(c.target==='position'?[['Motion fixture reaction','driver_force','N']]:[]),['Spring tension','spring_tension','N'],['Spring moment about knee','spring_knee_moment','N·m'],['Knee actuator','actuator_torque','N·m'],['Guide on lower link','guide_link_torque','N·m'],['Grounded guide at J1','guide_hip_reaction','N·m'],['Knee travel stop','stop_knee_torque','N·m'],['Wheel contact torque','wheel_external_moment','N·m'],['Wheel drive → lower link','wheel_drive_reaction','N·m'],['Wheel angular speed','wheel_speed','rad/s'],[c.fixture==='hip'?'Hub velocity':'Chassis velocity',(c.fixture==='hip'?'hub':'chassis')+'_vy','m/s'],[c.fixture==='hip'?'Hub acceleration':'Chassis acceleration',(c.fixture==='hip'?'hub':'chassis')+'_ay','m/s²']].map(([name,key,unit])=>`<dt>${name}</dt><dd>${unit==='N'?forceFmt(row[key]):fmt(row[key])+' '+unit}</dd>`).join('');
     for(const chart of charts){chart.cursor.attr('x1',chart.x(row.t)).attr('x2',chart.x(row.t));chart.dots.selectAll('*').remove();chart.series.forEach(([key],i)=>chart.dots.append('circle').attr('cx',chart.x(row.t)).attr('cy',chart.y(row[key])).attr('r',3.5).attr('fill',colors[i]));}
     drawMechanism();
   }
@@ -160,8 +181,8 @@
   async function run(){
     pause();$('run').disabled=true;$('error').hidden=true;$('status').textContent='Running Pymunk rigid-body solver…';
     try{const response=await fetch('/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),data=await response.json();if(!response.ok)throw Error(data.error||'Simulation failed.');result=data;dirty=false;time=0;
-      $('engine').textContent='Pymunk '+data.engine;$('model-objects').textContent=JSON.stringify(data.model,null,2);$('snapshot').textContent=`${data.config.fixture==='hip'?'Hip fixed':'Wheel fixed'} · ${data.config.radius*1000} mm wheel radius · ${fmt(data.config.extension*1000,0)} mm extension`;
-      $('status').textContent=`Recorded ${data.rows.length.toLocaleString()} solver steps · dt ${data.config.dt*1000} ms · actual spring free length ${fmt(data.actual_rest_length*1000,1)} mm`;
+      $('engine').textContent='Pymunk '+data.engine;$('model-objects').textContent=JSON.stringify(data.model,null,2);$('snapshot').textContent=`${data.config.fixture==='floating'?'Floating chassis':data.config.fixture==='hip'?'Hip fixed':'Wheel fixed'} · ${data.config.radius*1000} mm wheel radius · ${fmt(data.config.extension*1000,0)} mm extension`;
+      $('status').textContent=`${data.config.target==='position'?'Prescribed position · ':''}Recorded ${data.rows.length.toLocaleString()} solver steps · dt ${data.config.dt*1000} ms · actual spring free length ${fmt(data.actual_rest_length*1000,1)} mm`;
       $('warnings').innerHTML=data.warnings.map(w=>`<div class="warning">${w}</div>`).join('');
       $('equation-formulas').textContent=data.equation_reference.visible_equations.join('\n')+'\n\nDerived identity: '+data.equation_reference.derived_identity;
       $('equation-errors').textContent='Maximum residuals across saved run:\n'+JSON.stringify(data.equation_check_errors,null,2);

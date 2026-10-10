@@ -3,7 +3,7 @@
 Run: python debug_gui.py [--config FILE] or --headless-check.
 Inputs: saved config in SI, native pause/step/reset and body-selection controls.
 Outputs: live desktop inspection, or ignored artifacts/native-debug.png in check mode.
-Requires Pymunk and pygame-ce; prescribed-load fixture, not a CAD or tire-contact editor.
+Requires Pymunk and pygame-ce; prescribed-height fixture, not a CAD or tire-contact editor.
 """
 import argparse
 import json
@@ -29,7 +29,7 @@ def main():
     args=parser.parse_args()
     values=json.loads(args.config.read_text()) if args.config else None
     c=config(values.get('config',values) if values else None)
-    pygame.init();screen=pygame.display.set_mode((1180,780),pygame.RESIZABLE)
+    pygame.init();screen=pygame.display.set_mode((1180,940),pygame.RESIZABLE)
     pygame.display.set_caption('Pymunk live model - Capstone suspension')
     font=pygame.font.SysFont('Segoe UI',16);small=pygame.font.SysFont('Segoe UI',14);title=pygame.font.SysFont('Segoe UI',23)
     clock=pygame.time.Clock();model=build(c);t=0.;paused=True;accumulator=0.;selected='lower';command=0.
@@ -62,7 +62,7 @@ def main():
             pygame.draw.line(screen,(220,105,168),(p[0]-4,p[1]),(p[0]+4,p[1]),1)
             pygame.draw.line(screen,(220,105,168),(p[0],p[1]-4),(p[0],p[1]+4),1)
         text(f'{c["radius"]*1000:.0f} mm wheel radius | {c["extension"]*1000:.0f} mm extension | pink crosses: centres',24,H-45,small,(166,190,173))
-        text(f't = {t:.3f} s | input = {command:.2f}',24,H-23,small)
+        text(f't = {t:.3f} s | '+(f'height command = {command*1000:.1f} mm' if c['target']=='position' else f'diagnostic input = {command:.2f}'),24,H-23,small)
         x=side+18;y=22;text('Engine object inspector',x,y,title);y+=42
         for key in ['upper','lower','wheel','hip']:
             b=model[key];text(f'{key}: {"static" if b.body_type==pymunk.Body.STATIC else "dynamic"}',x,y);y+=25
@@ -70,7 +70,7 @@ def main():
         for value in [f'Mass: {b.mass:.3g} kg',f'Inertia: {b.moment:.5g} kg m2',f'Angle: {math.degrees(b.angle):.2f} deg',f'Velocity: ({b.velocity.x:.3f}, {b.velocity.y:.3f}) m/s',f'Angular speed: {b.angular_velocity:.3f} rad/s']:
             text(value,x,y,small);y+=23
         y+=14;text('Actual constraints',x,y);y+=29
-        for key in ['j1','j2','j3','guide','spring','stop']+(['wheel_drive'] if model.get('wheel_drive') else []):
+        for key in ['j1','j2','j3','guide','spring','stop']+(['wheel_drive'] if model.get('wheel_drive') else [])+(['driver'] if model.get('driver') else []):
             text(f'{key}: {type(model[key]).__name__}',x,y,small);y+=23
         y+=10;text('Physical guide: 2:1 carrier',x,y,small);y+=23
         text('Absolute GearJoint ratio: -1',x,y,small);y+=23
@@ -85,7 +85,7 @@ def main():
     if args.headless_check:
         for _ in range(1200):step()
         paint();args.screenshot.parent.mkdir(parents=True,exist_ok=True);pygame.image.save(screen,str(args.screenshot))
-        assert len(model['space'].shapes)==3 and len(model['space'].constraints)==6+int(c['wheel_drive_locked'])
+        assert len(model['space'].shapes)==3 and len(model['space'].constraints)==6+int(c['wheel_drive_locked'])+int(c['target']=='position')
         assert math.isfinite(model['lower'].angle)
         print(f"PASS: live Pymunk stepped, official pygame debug_draw rendered 3 shapes and {len(model['space'].constraints)} constraints.")
         pygame.quit();return

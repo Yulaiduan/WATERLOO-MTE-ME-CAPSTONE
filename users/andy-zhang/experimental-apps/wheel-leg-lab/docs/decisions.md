@@ -1,6 +1,6 @@
 # Design decisions and superseded alternatives
 
-Author: Andy Zhang with Codex. Updated: 2026-10-09. Status: prototype decisions and user constraints; no team hardware selection.
+Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: prototype decisions and user constraints; no team hardware selection.
 
 | Decision | Reason and consequence | Status |
 | --- | --- | --- |
@@ -12,7 +12,10 @@ Author: Andy Zhang with Codex. Updated: 2026-10-09. Status: prototype decisions 
 | Optimize travel, stiffness/damping and motor constraints together | Average static force alone rewards near-singular leverage and cannot select a useful suspension | Derived model boundary |
 | Radius 200 mm and lower-link extension 50 mm in the Pymunk fixture | These are explicit user inputs; larger 150–250 mm radius sweep remains a separate study | User prototype inputs |
 | Use real DampedSpring geometry and separate knee impedance | Physical attachment leverage/preload and virtual gains are different quantities | Implemented |
-| Keep prescribed-load fixture separate from terrain/contact simulation | Makes joint/momentum checks reproducible; it does not establish obstacle climbing or tire behavior | Implemented scope |
+| Prescribe wheel height rather than applied disturbance force | User corrected the input quantity on 2026-10-10; measure support reaction and suspension response instead | User correction, implemented |
+| Default to floating chassis with fixed pitch | Allows spring-dependent chassis heave; fixed hip remains a constrained joint-load test and fixed wheel permits chassis-height input | Prototype fixture choice, not confirmed hardware boundary |
+| Use finite smooth C2 position ramps | An instantaneous height jump gives unbounded ideal velocity/acceleration; linear joins remain timestep dependent | Implemented |
+| Keep prescribed bilateral fixture separate from terrain/contact simulation | Negative reaction flags that real ground may detach; does not establish obstacle climbing or tire behavior | Implemented scope |
 | Expose bottom loading and relative wheel-drive lock separately | The reference Fy r_w torque spins a free wheel or loads the leg through a constrained drive; reflected wheel inertia matters | Implemented selectable assumption |
 | Preserve T₀ separately, with N/kgf conversion | User confirms belt tension but its value/span interpretation is unresolved; do not replace it with spring force or guessed zero | Confirmed term, unresolved magnitude |
 | Publish portable source and rebuild generated pages | Source stays under Andy's member folder; no environments, raw runs or author-specific runtime paths enter Git | Publication decision |

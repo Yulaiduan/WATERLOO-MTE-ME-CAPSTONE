@@ -1,12 +1,12 @@
 # Wheel Leg Lab
 
-Owner: Andy Zhang. Updated: 2026-10-09. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
+Owner: Andy Zhang. Updated: 2026-10-10. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
 
 ## Included tools
 
 | Tool | Route | Content |
 | --- | --- | --- |
-| Pymunk spring bench | `/` | Actual rigid-body engine, 200 mm-radius wheel, 50 mm lower-link extension spring, impulse/square inputs, joint forces/torques, velocity/acceleration and native debug draw |
+| Pymunk spring bench | `/` | Actual rigid-body engine, 200 mm-radius wheel, 50 mm lower-link extension spring, prescribed-height step/square/pulse inputs and floating chassis, joint forces/torques, velocity/acceleration and native debug draw |
 | Seven rough motion studies | `/animations/` | Moving-belt straight leg, independent coaxial drive, tilted/mirrored inversion, historical reindexing alternative, fixed 4:1 near-linear strokes and mathematical path family |
 | Wheel/link calculator | `/force-plots/` | Radius 150–250 mm, independently adjustable travel, equal-link lengths, force curves and synchronized motion |
 | Detailed linkage bench | `/linkage/` | Two-coordinate guide/drive kinematics, mass matrix, physical spring, MIT-style control, finite actuator response and local dynamics |
@@ -30,6 +30,10 @@ On Windows, **Setup Pymunk.cmd** performs these steps. Then double-click **Start
 
 The launchers resolve their own folder and use its `.venv`; no author-specific filesystem paths are needed. A missing generated gallery/linkage build requires `npm run build`. Generated pages/bundles, environments, logs and test captures are intentionally ignored; source, pinned dependencies and lockfile are retained.
 
+## Position input correction
+
+The user clarified on 2026-10-10 that the disturbance is **position**, not force. Default: an illustrative 30 mm upward wheel-hub step, starting at 0.5 s with a 250 ms smooth C2 rise; these values are editable, not confirmed hardware inputs. The floating chassis has an 8 kg corner mass with pitch held and heave free. Its displacement, velocity and acceleration are outputs, alongside pin forces, spring/guide torques and the signed vertical reaction needed to impose the wheel motion. Fixed-hip wheel motion and fixed-wheel chassis motion are alternative fixture tests. Position square waves and finite bump pulses have independent rise/fall times. A zero-duration position jump is rejected; linear joins still give timestep-dependent acceleration/load peaks.
+
 ## Model, decisions and continuation
 
 Read [app instructions](AGENTS.md), [context](context/README.md), [model and coordinates](docs/model.md), [design](docs/design.md), [decisions](docs/decisions.md), [architecture](docs/architecture.md), [validation](docs/validation.md), [handoff](docs/handoff.md) and [glossary](GLOSSARY.md). The detailed bench retains its [full mechanics](docs/linkage-model.md). The [reference equation cross-check](docs/equation-cross-check.md) distinguishes belt forces from ideal constraint reactions.
@@ -40,12 +44,12 @@ Shared requirements remain in the [repository research record](../../../../datab
 
 ```sh
 npm test
-.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks
+.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input
 npm run test:browser
 node scripts/verify_pymunk.cjs
 node scripts/verify-force-plots.cjs
 ```
 
-There are 24 detailed-model tests and 19 Pymunk/reference tests. Browser checks cover the seven offline studies, fixed-ratio geometry, force calculator, detailed bench, recorded preview and Pymunk controls/exports. The native renderer can be checked with `Open Pymunk GUI.cmd --headless-check`. See the validation record for results and remaining checks.
+There are 24 detailed-model tests and 27 Pymunk/reference/position tests. Browser checks cover the seven offline studies, fixed-ratio geometry, force calculator, detailed bench, recorded preview and Pymunk controls/exports. The native renderer can be checked with `Open Pymunk GUI.cmd --headless-check`. See the validation record for results and remaining checks.
 
-The seven animation fragments are retained as editable source under `animations/`. The old high-resolution GIFs, raw frame directories and full traces are not committed; interactive pages retain the motion content and can be rebuilt. The Pymunk bench uses prescribed loads and sensor geometry, with no automatically solved tire contact, soil, belt elasticity or structural stress. The fixed 4:1 approximation is not an exact straight full inversion. Missing belt radii/T₀ value, real actuator limits, spring characterization, collision clearance and hardware validation remain open.
+The seven animation fragments are retained as editable source under `animations/`. The old high-resolution GIFs, raw frame directories and full traces are not committed; interactive pages retain the motion content and can be rebuilt. The Pymunk bench defaults to a prescribed vertical wheel-height step and floating chassis, with force/torque modes retained as legacy diagnostics. It uses sensor geometry, with no automatically solved tire contact, soil, belt elasticity or structural stress. The fixed 4:1 approximation is not an exact straight full inversion. Missing belt radii/T₀ value, real actuator limits, spring characterization, collision clearance and hardware validation remain open.

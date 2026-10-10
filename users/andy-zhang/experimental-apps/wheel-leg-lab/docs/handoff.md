@@ -1,6 +1,6 @@
 # Continuing both chats' work
 
-Author: Andy Zhang with Codex. Updated: 2026-10-09. Status: experimental. Import base: `0b55ff6`; current revision is in Git history.
+Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: experimental. Import base: `0b55ff6`; current revision is in Git history.
 
 ## Rough-animation chat
 
@@ -13,6 +13,12 @@ The exact equal-link straight path, ellipse for unequal 2:1 links, timing-offset
 Retained current outputs: adjustable force/motion calculator, actual Pymunk spring fixture, native/debug object inspector, recorded remote preview with traveling disturbance, dual N/kgf displays and the reference equation cross-check. The model separates force capacity from required support torque and from effective suspension stiffness/damping. Required travel equal to wheel radius is provisional.
 
 The clear reference image includes Fy r_w and distinct T₀/T force terms. Its two reported motor moments are conditionally reproduced with equal 400 mm links and a 200 mm radius; the implemented fixture defaults remain 273 mm links. T₀ is belt tension but its magnitude/span role and r_B remain unavailable. The ideal angular guide cannot supply detailed belt-bearing loads. Free hub loading and bottom loading with locked drive are selectable different models.
+
+## Position-input correction, 2026-10-10
+
+The user clarified that the disturbance is position, not force. The Pymunk default is now a prescribed wheel-height step and dynamic floating chassis with pitch held. Height command/achievement and chassis response are separate traces; driver force, pins, torques and acceleration are measured outputs. The editable 30 mm / 250 ms smooth-rise demo values are assumptions. Alternatives fix the hip or wheel; force/torque inputs remain labeled diagnostic. Recorded remote cases are regenerated from this solver and can be reproduced with `scripts/record_position_preview.py` before the build.
+
+All 27 Python tests pass, including an independent energy-model response and timestep refinement. Continue from the updated validation/model docs. The previous force runs remain valid legacy tests; they do not represent the user's corrected excitation.
 
 ## How to continue
 

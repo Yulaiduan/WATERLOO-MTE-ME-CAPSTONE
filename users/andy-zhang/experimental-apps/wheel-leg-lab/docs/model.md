@@ -1,6 +1,6 @@
 # Model and coordinate map
 
-Author: Andy Zhang with Codex. Updated: 2026-10-09. Status: experimental models and derived equations, not selected hardware.
+Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: experimental models and derived equations, not selected hardware.
 
 ## Three related models
 
@@ -54,7 +54,15 @@ Kz = k_alpha/J² − tau_s L sin(theta)/(2 J³).
 
 At the same link lengths, lower angles need more holding torque but less knee speed per vertical speed. Higher angles provide more compression reserve and less extension reserve; they increase motion sensitivity near straightening. At the same supported load, more upright links carry more axial compression and less transverse force/bending. These statements are scoped mechanics, not a blanket claim that a lower or higher angle is best.
 
-## Pymunk spring and disturbances
+## Pymunk spring and prescribed motion
+
+The disturbance is **wheel-hub vertical position relative to its initial height**, corrected by the user on 2026-10-10. In the default floating fixture, a kinematic carriage drives a PivotJoint at the wheel COM (x held, y prescribed). The dynamic chassis has infinite rotational inertia to hold pitch while allowing heave. A 30 mm step with a 250 ms quintic rise is an illustrative default. For ramp fraction u, displacement fraction is `10u³−15u⁴+6u⁵`; velocity and acceleration are its first and second time derivatives, zero at both ends. Repeating square and single bump pulse inputs also support finite fall time. Linear ramps are selectable but have velocity jumps at joins. Instantaneous position jumps are rejected because they cannot yield finite velocity, acceleration or reaction loads.
+
+The carriage is integrated with interval-average prescribed velocity rather than teleporting the dynamic body. Record both commanded/achieved height and tracking error. `driver_force` is the signed vertical force on the moving body (up positive), obtained from momentum balance and checked against the public constraint impulse magnitude. Negative support means this bilateral fixture would pull downward; real ground may lose contact. Changing spring stiffness changes chassis response, not the prescribed input. Input displacement is in metres internally and mm on screen; its time integral is m·s, not a force impulse.
+
+Fixed-hip wheel motion and fixed-wheel chassis motion use a horizontal GrooveJoint that only imposes height, avoiding a redundant x constraint. The fixed-hip auto-preload design load (default 80 N) sets spring free length; it is not an additional applied force. Floating auto-preload supports the chassis/link weight. A constant wheel vertical bias is absorbed by the motion fixture and does not change floating-chassis spring preload. Constant external force biases remain separate optional loads; force and knee-torque excitation remain explicit legacy diagnostic modes.
+
+### Physical spring and loads
 
 The lower rod extends e = 50 mm beyond the knee away from the wheel, and the DampedSpring joins the hip to that tip. With equal L, its anchor distance is `sqrt(L²+e²+2Le cos(2θ))`; forces and moments use the actual anchor geometry. Default masses/inertias and spring values are explicit assumptions. Spring auto-balance chooses a free length for the initial load and pose; it is not an invisible holding controller.
 

@@ -778,3 +778,55 @@ The gallery preserves historical alternatives while the current fixed-pulley con
 Continue from the app README and validation record, confirming missing belt/component inputs and hardware/contact behavior before promotion into canonical code.
 
 ---
+## Entry: 2026-10-10 — Andy Zhang — correct Pymunk excitation to position
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's Wheel Leg Lab member experiment.
+- **Associated Issue/Task:** User correction: input is a position step, not applied force; retain both chats' published studies and update mechanics/design context.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/GLOSSARY.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/pymunk-remote-preview.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_view.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/decisions.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/design.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/equation-cross-check.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/motion_input.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/record_position_preview.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_pymunk.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_equation_checks.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_position_input.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- **API/Interface Changes:** Default target is position with a floating chassis and kinematic wheel-height carriage. Add metre amplitude, ramp shape, fixed-hip preload design load, signed driver force, command/achieved height, tracking, chassis displacement and explicit integral units. Step/square/bump trajectories use finite smooth or linear ramps; force/torque modes remain explicit legacy diagnostics. The native viewer uses the same driver; recorded step/square cases and their reproduction script replace the old force recordings. Existing geometry/calculator/JavaScript model interfaces remain intact. Correct floating preload so a prescribed-wheel force bias changes fixture reaction rather than spring equilibrium.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 27 Python tests pass, including independent RK4 energy-response and timestep refinement; historical force/reference tests explicitly select force mode. At 1/0.5/0.25 ms, position tracking errors decrease 0.15887/0.07931/0.03963 mm and angle errors decrease 0.19835/0.09011/0.04298 degrees against the independent 48.02864444 degree reference. Tested momentum/torque residuals are below 1e-7. Build, Pymunk browser controls/exports, seven-study/offline/mobile playback browser suite and official native renderer (three shapes/seven constraints) pass. Recorded playback stays below 1 MB and source is reproducible. Manual 4186 launcher passes scoped stop/restart/reuse from C:\Windows; actual backend and routes respond. All 281 Markdown links resolve and fences balance. Repository structure/log and staged workspace gates are run before publication; no canonical app or gate-regression execution is required for this isolated scope.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member-app-only correction; canonical assets/shared runtime remain unchanged. The floating chassis boundary and illustrative 30 mm / 250 ms input are documented assumptions. The initial browser fixture-switch preset failed its expected zero bias and was corrected; a new force-bias invariance comparison differed by 0.8 nm at the original sub-nanometre tolerance, then passed with declared solver-appropriate 0.1 micrometre / 1e-5 N tolerances. Linear ramp joins, stops, real unilateral tire contact, belt bearing loads and hardware performance remain limited or unverified.
+
+## 4. Compute Saving Handoff State
+
+Pymunk now treats the user's disturbance as wheel position and measures chassis response and fixture/pin loads.
+The default floating chassis, finite ramps and regenerated remote recordings distinguish input motion from suspension outputs while retaining the earlier studies and diagnostic load modes.
+Continue from the member app README/model/validation notes, refine timestep for peak loads and confirm real contact/belt/hardware inputs before canonical promotion.
+
+---

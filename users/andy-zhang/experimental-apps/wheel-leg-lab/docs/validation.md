@@ -1,6 +1,14 @@
 # Validation record
 
-Author: Andy Zhang with Codex. Updated: 2026-10-09. Status: locally checked member experiment, not canonical robot or hardware validation.
+Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: locally checked member experiment, not canonical robot or hardware validation.
+
+## Position-input correction, 2026-10-10
+
+The user corrected force excitation to prescribed displacement. All **27** Python checks pass: the 19 historical force/reference checks now explicitly select diagnostic force mode, and eight position checks cover ramp derivatives, trajectories, driver type, tracking, force-versus-position separation, spring sensitivity, independent energy response/refinement and fixed-hip range rejection. Build and browser suites pass after regenerating step/square recordings. Actual backend checks cover default position/floating controls, a 30 mm moving-height arrow, full CSV/config, N/kgf and retained diagnostic modes; offline mobile recorded playback passes. The native live renderer advances the default position model and draws three shapes/seven constraints.
+
+For the 30 mm C2 step at 1.2 s, independent scalar-energy RK4 gives θ = 48.02864444°. At 1/0.5/0.25 ms, engine angle error decreases **0.19835/0.09011/0.04298°**, and maximum wheel tracking error decreases **0.15887/0.07931/0.03963 mm**. Momentum/torque residuals stay below 1e-7 in the tested runs. This is convergence evidence for the ideal bilateral fixture, not hardware or unilateral contact validation. Linear joins and rigid-stop peak loads remain timestep dependent.
+
+This follow-up is confined to the member app and contribution log: workspace scope, canonical physics NOT APPLICABLE. The earlier shared-index import used preliminary scope; that historical result remains below.
 
 ## Rebuilt import
 
