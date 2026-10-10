@@ -11,3 +11,12 @@ Position steps, square waves and bump pulses use mm amplitude and finite rise/fa
 The historical timing-switch animation remains visible but labeled as incompatible with the later permanently fixed-pulley constraint. The fixed 4:1 example shows both short working strokes and the full transition so the path approximation does not conceal large excursion and knee travel.
 
 Desktop and mobile layouts, native GUI inspection, offline resources and repeatable startup are checked locally. The styles are app-owned; pages need no private chat session or external account. See [validation](validation.md) and [decisions](decisions.md).
+
+## Unified Motion Lab, 2026-10-10
+
+The shared browser menu now separates independent mathematical simulation,
+2D Pymunk physics and miscellaneous motion studies, with dark mode, Plotly
+charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
+familiar browser launchers are aliases and the native debugger is preserved
+separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
+verification are in the [unified workspace record](unified-motion-lab.md).

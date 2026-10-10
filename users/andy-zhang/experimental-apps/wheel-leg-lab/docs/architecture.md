@@ -13,3 +13,12 @@ The detailed continuous-mechanics solver is isolated under `src/linkage/`, with 
 Python and Node dependencies are pinned in requirements/package manifests and npm's lockfile. The server and Windows launchers resolve paths from their own files. Port-specific PID/creation-time records prevent stopping a different app; 4186 is the unified toolkit, and 4175 preserves legacy geometry routes. No code in canonical simulation imports this member toolkit.
 
 Experiments and all runtime exports go under ignored `artifacts/` or `.preview/`. The selected screenshot equations are compact reference sources, not canonical physical data. Private transcripts, environment binaries, node_modules and frame dumps are excluded from publication.
+
+## Unified Motion Lab, 2026-10-10
+
+The shared browser menu now separates independent mathematical simulation,
+2D Pymunk physics and miscellaneous motion studies, with dark mode, Plotly
+charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
+familiar browser launchers are aliases and the native debugger is preserved
+separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
+verification are in the [unified workspace record](unified-motion-lab.md).

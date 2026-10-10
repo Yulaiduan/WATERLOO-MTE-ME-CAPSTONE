@@ -12,10 +12,12 @@ import threading
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 from physics import DEFAULTS, simulate
+from math_model import simulate_math
 import pymunk
 
 ROOT=Path(__file__).resolve().parent
 RUN_LOCK=threading.Lock()
+MATH_LOCK=threading.Lock()
 
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self,*args,**kwargs):
@@ -30,19 +32,32 @@ class Handler(SimpleHTTPRequestHandler):
         if compress: self.send_header('Content-Encoding','gzip')
         self.send_header('Content-Length',str(len(payload)));self.end_headers();self.wfile.write(payload)
     def do_GET(self):
+        if self.path.split('?',1)[0] in ['/','/index.html']:
+            self.path='/index.html'
         if self.path=='/api/health':
             return self.json({'app':'capstone-wheel-leg-lab','root':str(ROOT),'engine':pymunk.version})
         if self.path=='/api/defaults': return self.json(DEFAULTS)
+        if self.path=='/math/wheel_leg_ode45.m':
+            payload=(ROOT/'math/wheel_leg_ode45.m').read_bytes()
+            self.send_response(200)
+            self.send_header('Content-Type','text/plain; charset=utf-8')
+            self.send_header('Content-Disposition','attachment; filename="wheel_leg_ode45.m"')
+            self.send_header('Content-Length',str(len(payload)))
+            self.end_headers();self.wfile.write(payload);return
         super().do_GET()
     def do_POST(self):
-        if self.path!='/api/simulate': return self.json({'error':'Unknown endpoint.'},404)
+        if self.path not in ['/api/simulate','/api/pymunk/simulate','/api/math/simulate']:
+            return self.json({'error':'Unknown endpoint.'},404)
         try:
             count=int(self.headers.get('Content-Length','0'))
             if count<=0 or count>50000: return self.json({'error':'Invalid request size.'},413)
             value=json.loads(self.rfile.read(count))
-            if not RUN_LOCK.acquire(blocking=False): return self.json({'error':'A simulation is already running. Retry when it finishes.'},409)
-            try: result=simulate(value)
-            finally: RUN_LOCK.release()
+            lock=MATH_LOCK if self.path=='/api/math/simulate' else RUN_LOCK
+            if not lock.acquire(blocking=False): return self.json({'error':'This solver is already running. Retry when it finishes.'},409)
+            try:
+                result=simulate_math(value) if self.path=='/api/math/simulate' else simulate(value)
+                result.setdefault('backend','pymunk')
+            finally: lock.release()
             self.json(result)
         except (ValueError,TypeError,KeyError) as error:
             self.json({'error':str(error)},400)

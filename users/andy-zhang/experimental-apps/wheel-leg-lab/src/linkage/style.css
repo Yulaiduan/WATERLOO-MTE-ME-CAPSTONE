@@ -2,3 +2,39 @@
 @media(max-width:1100px){.layout{grid-template-columns:265px minmax(0,1fr);gap:15px}.plots{grid-template-columns:1fr}.page{padding:18px 20px}.mechanism{height:430px}.stats{grid-template-columns:1fr 1fr}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid #d8dece}}
 @media(max-width:760px){header{padding:15px 16px;align-items:start}header p{max-width:220px}.header-links{gap:8px;justify-content:end}nav{padding:0 6px;justify-content:space-between}nav button{padding:12px 10px;font-size:12px}.page{padding:16px 12px}.layout{grid-template-columns:1fr}.controls{padding:14px}.mechanism{height:390px}.card{padding:13px}.model-flow{grid-template-columns:1fr}.toolbar{font-size:11px}.card-head{flex-wrap:wrap}footer{padding:14px}.stats{margin-bottom:14px}.stat{padding:11px}.stat strong{font-size:18px}.plots{gap:14px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+
+/* Shared Motion Lab theme, including controls and native mechanism primitives. */
+:root{color-scheme:light}
+.plot{min-height:320px;overflow:hidden}
+.plot-tooltip{margin-top:5px;color:var(--muted)}
+.plot .modebar{z-index:2}
+:root[data-theme=dark]{color-scheme:dark;color:#e8ede2;background:#171d15;--muted:#b2bba6;--border:#46513e;--amber:#ffc663;--olive:#b3cd86;--blue:#70b9db;--purple:#d59dca}
+[data-theme=dark] button,[data-theme=dark] .file-label{background:#2c3526}
+[data-theme=dark] button:hover{background:#38442f}
+[data-theme=dark] button.primary{background:var(--amber);color:#262014;border-color:#d8a345}
+[data-theme=dark] nav,[data-theme=dark] .controls,[data-theme=dark] .stats{background:#20281b}
+[data-theme=dark] nav button{background:none}
+[data-theme=dark] nav button[aria-selected=true]{color:#ffc663;border-bottom-color:#ffc663}
+[data-theme=dark] input,[data-theme=dark] select{background:#171e14}
+[data-theme=dark] input[type=range],[data-theme=dark] input[type=checkbox]{accent-color:#ffc663}
+[data-theme=dark] summary{color:#c4d4ac}
+[data-theme=dark] .controls h3,[data-theme=dark] .stat,[data-theme=dark] td,[data-theme=dark] th{border-color:#394333}
+[data-theme=dark] .card{background:#22291e}
+[data-theme=dark] th,[data-theme=dark] .equation,[data-theme=dark] .response-source,[data-theme=dark] .model-node{background:#283121;color:#d5e1c5}
+[data-theme=dark] .response-source{border-color:#46513e}
+[data-theme=dark] .mechanism{background:#1b2317}
+[data-theme=dark] .mechanism text{fill:#cbd5be}
+[data-theme=dark] .mechanism circle[fill="#fff"]{fill:#22291e}
+[data-theme=dark] .mechanism [stroke="#45513a"]{stroke:#a5b48e}
+[data-theme=dark] .mechanism [stroke="#d4dcc9"]{stroke:#46513e}
+[data-theme=dark] .mechanism circle[fill="#343f29"]{fill:#d4e2bd}
+[data-theme=dark] .notice{background:#3b321a;border-color:#d3a955;color:#f1e3be}
+[data-theme=dark] .notice.error{background:#39251f;border-color:#db8a70;color:#f0bbaa}
+[data-theme=dark] .mini-readout{color:#bfceb0}
+[data-theme=dark] .danger{color:#f0a48d}
+[data-theme=dark] .ok{color:#b3cd86}
+[data-theme=dark] .model-node small{color:#ffc663}
+
+/* The outer Motion Lab shell owns branding and theme for embedded benches. */
+body.embedded header>div:first-child,body.embedded [data-action=theme]{display:none}
+body.embedded header{padding:10px 20px;justify-content:flex-end}

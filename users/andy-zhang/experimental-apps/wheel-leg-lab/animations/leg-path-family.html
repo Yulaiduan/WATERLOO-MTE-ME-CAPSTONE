@@ -24,20 +24,20 @@
   <div class="text-small text-muted" style="margin-top:8px">Upper link: 250 mm · Fixed timing: 0° · Curves: one 360° upper-link revolution · Positive y: down</div>
   <div class="legend text-small"><span><i class="swatch" style="background:var(--viz-series-1)"></i>Wheel-center path</span><span><i class="swatch" style="background:var(--foreground)"></i>Hip A</span><span class="text-muted">Dashed · desired 12° rays</span></div>
   <div class="plots">
-    <div class="plot-panel" data-panel="reference"><div class="text-small" data-caption>2:1 · Equal-link reference</div><svg class="family-chart" role="img" aria-label="Exact straight-line reference, equal links and a 2:1 ratio"></svg></div>
-    <div class="plot-panel" data-panel="two"><div class="text-small" data-caption>2:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="Two-to-one ratio with current link lengths"></svg></div>
-    <div class="plot-panel" data-panel="one-half"><div class="text-small" data-caption>1.5:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="One-and-a-half-to-one ratio with current link lengths"></svg></div>
-    <div class="plot-panel" data-panel="three"><div class="text-small" data-caption>3:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="Three-to-one ratio with current link lengths"></svg></div>
-    <div class="plot-panel" data-panel="four"><div class="text-small" data-caption>4:1 · Current link lengths</div><svg class="family-chart" role="img" aria-label="Four-to-one ratio with current link lengths"></svg></div>
-    <div class="plot-panel" data-panel="custom"><div class="text-small" data-caption>Custom · 2.10:1</div><svg class="family-chart" role="img" aria-label="Custom pulley ratio with current link lengths"></svg></div>
+    <div class="plot-panel" data-panel="reference"><div class="text-small" data-caption>2:1 · Equal-link reference</div><div class="family-chart" role="img" aria-label="Exact straight-line reference, equal links and a 2:1 ratio"></div></div>
+    <div class="plot-panel" data-panel="two"><div class="text-small" data-caption>2:1 · Current link lengths</div><div class="family-chart" role="img" aria-label="Two-to-one ratio with current link lengths"></div></div>
+    <div class="plot-panel" data-panel="one-half"><div class="text-small" data-caption>1.5:1 · Current link lengths</div><div class="family-chart" role="img" aria-label="One-and-a-half-to-one ratio with current link lengths"></div></div>
+    <div class="plot-panel" data-panel="three"><div class="text-small" data-caption>3:1 · Current link lengths</div><div class="family-chart" role="img" aria-label="Three-to-one ratio with current link lengths"></div></div>
+    <div class="plot-panel" data-panel="four"><div class="text-small" data-caption>4:1 · Current link lengths</div><div class="family-chart" role="img" aria-label="Four-to-one ratio with current link lengths"></div></div>
+    <div class="plot-panel" data-panel="custom"><div class="text-small" data-caption>Custom · 2.10:1</div><div class="family-chart" role="img" aria-label="Custom pulley ratio with current link lengths"></div></div>
   </div>
   <div data-detail class="text-small tabular-nums" aria-live="polite" style="margin-top:8px"></div>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.1.0/plotly.min.js"></script>
   <script>
     (()=>{
       const root=document.getElementById('leg-path-family');
-      if(!window.d3){const detail=root.querySelector('[data-detail]');detail.setAttribute('role','alert');detail.textContent='The plotting library could not load.';return;}
-      const d=window.d3,el=key=>root.querySelector('[data-'+key+']');
+      if(!window.Plotly){const detail=root.querySelector('[data-detail]');detail.setAttribute('role','alert');detail.textContent='The plotting library could not load.';return;}
+      const el=key=>root.querySelector('[data-'+key+']');
       const lengthInput=root.querySelector('#family-length'),ratioInput=root.querySelector('#family-ratio'),angleInput=root.querySelector('#family-angle');
       let lambda=168.44901684471338/250,custom=2.1,theta=26.4;
       let previousWidth=0,initialized=false;
@@ -51,47 +51,32 @@
       }
       restore(window.openai?.widgetState);
       const save=()=>window.openai?.setWidgetState?.({modelContent:{view:'leg-path-family',lengthRatio:lambda,pulleyRatio:custom,upperAngle:theta},privateContent:null})?.catch(()=>{});
-      const panels=Array.from(root.querySelectorAll('[data-panel]')).map(node=>({node,svg:d.select(node.querySelector('svg')),key:node.dataset.panel}));
+      const panels=Array.from(root.querySelectorAll('[data-panel]')).map(node=>({node,chart:node.querySelector('.family-chart'),key:node.dataset.panel}));
       const config=key=>({ratio:key==='reference'||key==='two'?2:key==='one-half'?1.5:key==='three'?3:key==='four'?4:custom,linkRatio:key==='reference'?1:lambda});
       const position=(R,l,degrees)=>{const t=degrees*Math.PI/180,b=-(R-1)*t;return {x:250*(Math.sin(t)+l*Math.sin(b)),y:250*(Math.cos(t)+l*Math.cos(b)),theta:degrees,beta:b*180/Math.PI};};
+      function resolved(token){const p=document.createElement('span');p.style.color=token;p.hidden=true;root.append(p);const c=getComputedStyle(p).color;p.remove();return c;}
+      const plotConfig={responsive:true,scrollZoom:true,displayModeBar:true,displaylogo:false,toImageButtonOptions:{format:'png',scale:2},modeBarButtonsToRemove:['lasso2d','select2d']};
+      function applyTheme(theme){if(!['dark','light'].includes(theme))return;document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;draw(false);}
+      window.addEventListener('message',e=>{if(e.data?.type==='motion-lab-theme')applyTheme(e.data.theme);});
+      window.addEventListener('storage',e=>{if(e.key==='motion-lab-theme')applyTheme(e.newValue);});
+      try{const theme=localStorage.getItem('motion-lab-theme');if(['dark','light'].includes(theme)){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;}}catch{}
       function draw(animate=false){
         const all=[];
-        panels.forEach(panel=>{
-          const cfg=config(panel.key);panel.cfg=cfg;
-          panel.data=Array.from({length:721},(_,i)=>position(cfg.ratio,cfg.linkRatio,i/2));
-          all.push(...panel.data);
-        });
-        const ex=d.extent(all,p=>p.x),ey=d.extent(all,p=>p.y);
-        const largest=Math.max(...ex.map(Math.abs),...ey.map(Math.abs));
-        const bound=largest*1.08;
+        panels.forEach(panel=>{panel.cfg=config(panel.key);panel.data=Array.from({length:721},(_,i)=>position(panel.cfg.ratio,panel.cfg.linkRatio,i/2));all.push(...panel.data);});
+        const bound=Math.max(...all.flatMap(p=>[Math.abs(p.x),Math.abs(p.y)]))*1.08;
         const ray=bound*.88,tilt=Math.tan(12*Math.PI/180);
         const reference=[{x:-ray*tilt,y:-ray},{x:0,y:0},{x:-ray*tilt,y:ray}];
         panels.forEach(panel=>{
-          const width=Math.max(260,panel.node.getBoundingClientRect().width),left=64,right=16,top=16,bottom=52;
-          const side=width-left-right,height=side+top+bottom;
-          const x=d.scaleLinear().domain([-bound,bound]).range([left+5,width-right-5]);
-          const y=d.scaleLinear().domain([-bound,bound]).range([top+5,height-bottom-5]);
-          const svg=panel.svg.attr('viewBox',`0 0 ${width} ${height}`).attr('height',height);
-          const clipId='family-clip-'+panel.key;
-          svg.selectAll('defs').data([0]).join('defs').selectAll('clipPath').data([0]).join('clipPath').attr('id',clipId).selectAll('rect').data([0]).join('rect').attr('x',left).attr('y',top).attr('width',side).attr('height',side);
-          svg.selectAll('rect[data-chart-frame]').data([0]).join('rect').attr('data-chart-frame','').attr('x',left).attr('y',top).attr('width',side).attr('height',side).attr('fill','none').attr('stroke','var(--border)').attr('stroke-width',1);
-          svg.selectAll('line.origin-x').data([0]).join('line').attr('class','origin-x').attr('x1',left).attr('x2',width-right).attr('y1',y(0)).attr('y2',y(0)).attr('stroke','var(--border)').attr('stroke-width',1);
-          svg.selectAll('line.origin-y').data([0]).join('line').attr('class','origin-y').attr('x1',x(0)).attr('x2',x(0)).attr('y1',top).attr('y2',height-bottom).attr('stroke','var(--border)').attr('stroke-width',1);
-          svg.selectAll('g.axis-x').data([0]).join('g').attr('class','axis-x').attr('transform',`translate(0,${height-bottom})`).call(d.axisBottom(x).ticks(3).tickSize(3).tickPadding(7));
-          svg.selectAll('g.axis-y').data([0]).join('g').attr('class','axis-y').attr('transform',`translate(${left},0)`).call(d.axisLeft(y).ticks(3).tickSize(3).tickPadding(7));
-          svg.selectAll('text.axis-title[data-axis="x"]').data([0]).join('text').attr('class','axis-title').attr('data-axis','x').attr('text-anchor','middle').attr('x',left+side/2).attr('y',height-9).text('x (mm)');
-          svg.selectAll('text.axis-title[data-axis="y"]').data([0]).join('text').attr('class','axis-title').attr('data-axis','y').attr('text-anchor','middle').attr('transform',`translate(14,${top+side/2}) rotate(-90)`).text('y (mm)');
-          const line=d.line().x(p=>x(p.x)).y(p=>y(p.y));
-          svg.selectAll('path.target').data([reference]).join('path').attr('class','target').attr('d',line).attr('fill','none').attr('stroke','var(--muted-foreground)').attr('stroke-width',1).attr('stroke-dasharray','5 5').attr('opacity',.55).attr('clip-path',`url(#${clipId})`);
-          const trace=svg.selectAll('path.wheel-path').data([panel.data]).join('path').attr('class','wheel-path').attr('fill','none').attr('stroke','var(--viz-series-1)').attr('stroke-width',2).attr('clip-path',`url(#${clipId})`);
-          if(animate&&!reduced&&initialized)trace.interrupt().transition().duration(220).attr('d',line);else trace.interrupt().attr('d',line);
-          svg.selectAll('circle.hip').data([0]).join('circle').attr('class','hip').attr('cx',x(0)).attr('cy',y(0)).attr('r',3).attr('fill','var(--foreground)');
-          const p=position(panel.cfg.ratio,panel.cfg.linkRatio,theta);
-          const mark=svg.selectAll('circle.current').data([p]).join('circle').attr('class','current').attr('r',5).attr('fill','var(--viz-series-1)').attr('stroke','var(--background)').attr('stroke-width',1.5).attr('clip-path',`url(#${clipId})`).attr('data-tooltip',`θ ${theta.toFixed(1)}° · x ${p.x.toFixed(1)} mm · y ${p.y.toFixed(1)} mm`);
-          mark.interrupt().attr('cx',x(p.x)).attr('cy',y(p.y));
-          svg.attr('data-ratio',panel.cfg.ratio).attr('data-length-ratio',panel.cfg.linkRatio).attr('data-current-x',p.x).attr('data-current-y',p.y).attr('data-bound',bound);
-          const labels=svg.selectAll('.axis-x .tick text').nodes();
-          labels.forEach((text,index)=>{if(index===0)text.setAttribute('text-anchor','start');if(index===labels.length-1)text.setAttribute('text-anchor','end');});
+          const chart=panel.chart,width=panel.node.clientWidth,height=Math.max(285,width+30),p=position(panel.cfg.ratio,panel.cfg.linkRatio,theta);
+          const traces=[
+            {type:'scatter',mode:'lines',name:'Wheel-center path',x:panel.data.map(p=>p.x),y:panel.data.map(p=>p.y),customdata:panel.data.map(p=>p.theta),line:{color:resolved('var(--viz-series-1)'),width:2},hovertemplate:'θ %{customdata:.1f}°<br>x %{x:.2f} mm<br>y %{y:.2f} mm<extra>Wheel path</extra>'},
+            {type:'scatter',mode:'lines',name:'Desired 12° rays',x:reference.map(p=>p.x),y:reference.map(p=>p.y),line:{color:resolved('var(--muted-foreground)'),width:1,dash:'dash'},hoverinfo:'skip'},
+            {type:'scatter',mode:'markers',name:'Hip A',x:[0],y:[0],marker:{color:resolved('var(--foreground)'),size:6},hovertemplate:'Hip A · origin<extra></extra>'},
+            {type:'scatter',mode:'markers',name:'Current pose',x:[p.x],y:[p.y],marker:{color:resolved('var(--viz-series-1)'),size:10,line:{color:resolved('var(--background)'),width:1.5}},hovertemplate:'θ '+theta.toFixed(1)+'°<br>x %{x:.2f} mm<br>y %{y:.2f} mm<extra>Current pose</extra>'}
+          ];
+          const axis={gridcolor:resolved('var(--border)'),zerolinecolor:resolved('var(--border)'),automargin:true,nticks:4};
+          Plotly.react(chart,traces,{height,margin:{l:64,r:15,t:26,b:50},paper_bgcolor:'transparent',plot_bgcolor:'transparent',font:{family:'Inter, Segoe UI, sans-serif',size:12,color:resolved('var(--foreground)')},showlegend:false,dragmode:'zoom',uirevision:panel.key+':'+lambda+':'+custom,xaxis:{...axis,title:{text:'x (mm)'},range:[-bound,bound],constrain:'domain'},yaxis:{...axis,title:{text:'y down (mm)'},range:[bound,-bound],scaleanchor:'x',scaleratio:1},transition:{duration:animate&&!reduced&&initialized?220:0}},plotConfig);
+          chart.dataset.ratio=panel.cfg.ratio;chart.dataset.lengthRatio=panel.cfg.linkRatio;chart.dataset.currentX=p.x;chart.dataset.currentY=p.y;chart.dataset.bound=bound;
         });
         root.querySelector('[data-panel="custom"] [data-caption]').textContent=`Custom · ${custom.toFixed(2)}:1`;
         lengthInput.value=String(lambda);ratioInput.value=String(custom);angleInput.value=String(theta);

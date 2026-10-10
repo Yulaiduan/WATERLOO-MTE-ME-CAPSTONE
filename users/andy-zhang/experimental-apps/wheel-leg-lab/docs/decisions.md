@@ -21,3 +21,12 @@ Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: prototype decisions 
 | Publish portable source and rebuild generated pages | Source stays under Andy's member folder; no environments, raw runs or author-specific runtime paths enter Git | Publication decision |
 
 These are reversible experimental choices unless promoted through the repository's shared-engineering workflow. The [model](model.md) records the mathematical derivations and the [handoff](handoff.md) records unresolved physical inputs.
+
+## Unified Motion Lab, 2026-10-10
+
+The shared browser menu now separates independent mathematical simulation,
+2D Pymunk physics and miscellaneous motion studies, with dark mode, Plotly
+charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
+familiar browser launchers are aliases and the native debugger is preserved
+separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
+verification are in the [unified workspace record](unified-motion-lab.md).

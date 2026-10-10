@@ -2,18 +2,23 @@
 
 Owner: Andy Zhang. Imported: 2026-10-10. Status: member experimental app.
 
-This is the former loose Capstone app, now kept inside the GitHub member
-workspace. The original atlas, terrain workbench, historical linkage and force
-plots retain their routes at **http://127.0.0.1:4175/**. Use **Start Capstone.cmd**
-in this folder after `npm ci` and `npm run build`; wait for Ready. After shutdown
-or reboot, double-click it again; **Stop Capstone.cmd** stops its tracked process
-and archives its state record. The launcher works independently of Codex.
+This is the former loose Capstone app, preserved inside the GitHub member
+workspace. Normal browser command names now forward to the unified
+[Motion Lab](../wheel-leg-lab/README.md) menu at **http://127.0.0.1:4186/**.
+Set up that app with Setup Motion Lab.cmd; Start Capstone.cmd and Start Force
+Plots.cmd are compatibility aliases. Stop Capstone.cmd stops the Motion Lab.
+Its mathematical/physical/study/data UI is documented in the
+[unified workflow](../wheel-leg-lab/docs/unified-motion-lab.md).
+
+The original standalone atlas/workbench source and port-4175 routes remain
+available through Start-Capstone.ps1 / Stop-Capstone.ps1 after this folder's
+`npm ci` and `npm run build`. These preserved legacy helpers operate that
+separate service; the familiar browser .cmd names open the unified menu.
 
 Read [app instructions](AGENTS.md), [context](context/README.md) and the
 [import verification](docs/IMPORT-2026-10-10.md). The current Pymunk bench is
-[Wheel Leg Lab](../wheel-leg-lab/README.md), using port 4186. Its optional 4175
-geometry launcher and this app cannot run on that same port simultaneously;
-startup reports a conflict rather than terminating another app.
+[Motion Lab](../wheel-leg-lab/README.md), using port 4186. Its common browser
+entry requires one launcher; standalone services reject unrelated port owners.
 
 All original loose files remain in the sibling local Capstone_Old archive.
 The [GitHub archive package](../capstone-archive/README.md) also preserves full

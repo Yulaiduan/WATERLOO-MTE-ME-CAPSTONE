@@ -20,6 +20,15 @@ Rough-path displays use positive y down and angles from downward vertical. Detai
 
 ## Actual verification and open work
 
-The import rebuilds and runs with app-local Python/Node dependencies and no machine-specific runtime paths. Its 24 JavaScript and 27 Python tests pass. App-local browser and launcher results are recorded in [validation](../docs/validation.md); canonical robot physics is not applicable to this member toolkit. The shared manifest remains empty and unchanged.
+The unified app rebuilds and runs with app-local Python/Node dependencies and no machine-specific runtime paths. Its 32 JavaScript and 37 Python tests pass. The independent MATLAB companion also agrees with SciPy in verified batch cases. App-local browser and launcher results are recorded in [validation](../docs/validation.md); canonical robot physics is not applicable to this member toolkit. The shared manifest remains empty and unchanged.
 
 Continue by confirming pulley radii and T₀ value/role, actuator hardware, spring preload/characterization, clearance through inversion and real wheel contact. Do not treat derived torque agreement or a collision-free drawing as hardware validation. The immutable assumptions and decisions are summarized in [decisions](../docs/decisions.md); accepted shared requirements remain in the existing repository records.
+
+## Unified Motion Lab, 2026-10-10
+
+The shared browser menu now separates independent mathematical simulation,
+2D Pymunk physics and miscellaneous motion studies, with dark mode, Plotly
+charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
+familiar browser launchers are aliases and the native debugger is preserved
+separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
+verification are in the [unified workspace record](../docs/unified-motion-lab.md).

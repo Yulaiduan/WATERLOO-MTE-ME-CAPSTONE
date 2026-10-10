@@ -36,3 +36,12 @@ The [atlas/workbench](../../terrain-mobility-atlas/README.md) runs on port 4175,
 sharing that port with this app's optional legacy geometry launcher. Both
 relocated apps pass actual start/reuse/scoped-stop/restart; helpers archive state
 and previous logs instead of deleting them.
+
+## Unified Motion Lab, 2026-10-10
+
+The shared browser menu now separates independent mathematical simulation,
+2D Pymunk physics and miscellaneous motion studies, with dark mode, Plotly
+charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
+familiar browser launchers are aliases and the native debugger is preserved
+separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
+verification are in the [unified workspace record](unified-motion-lab.md).

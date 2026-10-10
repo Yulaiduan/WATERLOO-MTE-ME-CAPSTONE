@@ -75,3 +75,13 @@ Joint resultants are Pymunk impulse/dt. Signed vectors are reconstructed from CO
 The [equation cross-check](equation-cross-check.md) preserves distinct T₀ and T terms and `Fy r_w`. Its reported torques at 0°/42° are reproduced with conditionally inferred equal 400 mm links and a 200 mm wheel, not the default 273 mm fixture. T₀ affects reference bearing loads but cancels from the visible upper-link moment. Its numeric value, tight/slack role and pulley radius remain unknown; the ideal guide does not resolve explicit belt-span bearing loads.
 
 Internal units are m, kg, s, rad, N and N·m. Force displays also show kgf with `1 kgf = 9.80665 N`, independent of the configured gravity value. A user-entered T₀ starts unspecified and is saved as a reference-only quantity, not silently applied to the physics solver.
+
+## Independent mathematical suspension model
+
+The [Python/SciPy and MATLAB model](../math/README.md) derives the scalar
+equal-link energy equation independently of Pymunk and reconstructs
+instantaneous Newton–Euler forces. It is distinct from solver impulse/dt loads
+and from the two-coordinate JavaScript drive model. Adaptive integration,
+exact imposed kinematics and pre-impact stop termination have their own
+interpretation; [the unified workflow](unified-motion-lab.md) keeps these
+boundaries visible in browser comparison/data exports.

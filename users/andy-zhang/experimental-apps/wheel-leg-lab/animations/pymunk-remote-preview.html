@@ -39,10 +39,11 @@
   @media(max-width:620px){#pm-remote .pm-grid{grid-template-columns:1fr}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/plotly.js-dist-min@3.1.0/plotly.min.js"></script>
 <script>
 (() => {
   const root=document.getElementById('pm-remote'),el=id=>root.querySelector('#pm-'+id),D=window.d3;
-  if(!D){el('state').textContent='Chart library could not load. Reopen this preview with an internet connection.';return;}
+  if(!D||!window.Plotly){el('state').textContent='Chart library could not load. Reopen this preview with an internet connection.';return;}
   const data=JSON.parse(el('data').textContent),colors=['var(--viz-series-1)','var(--viz-series-2)','var(--viz-series-3)'];
   const keys=data.keys,ki=Object.fromEntries(keys.map((k,i)=>[k,i]));
   let state={case:'step',time:.25,force:'all'},plots=[],playing=false,raf=0,last=0;
@@ -107,41 +108,44 @@
     arrow.append('path').attr('d',`M${hub[0]},${hub[1]}V${tip}M${hub[0]-5},${tip+sign*7}L${hub[0]},${tip}L${hub[0]+5},${tip+sign*7}M${hub[0]-5},${hub[1]-sign*7}L${hub[0]},${hub[1]}L${hub[0]+5},${hub[1]-sign*7}`);
     svg.append('circle').attr('cx',hub[0]).attr('cy',hub[1]).attr('r',5).attr('fill',colors[1]);
   }
+
+  function resolved(token){const probe=document.createElement('span');probe.style.color=token;probe.hidden=true;root.append(probe);const color=getComputedStyle(probe).color;probe.remove();return color;}
+  function chartStyle(){return {paper_bgcolor:'transparent',plot_bgcolor:'transparent',font:{family:'Inter, Segoe UI, sans-serif',size:12,color:resolved('var(--foreground)')}};}
+  const plotConfig={responsive:true,scrollZoom:true,displayModeBar:true,displaylogo:false,toImageButtonOptions:{format:'png',scale:2},modeBarButtonsToRemove:['lasso2d','select2d']};
+  function applyTheme(theme){if(!['light','dark'].includes(theme))return;document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;renderPlotsForTheme();}
+  window.addEventListener('message',e=>{if(e.data?.type==='motion-lab-theme')applyTheme(e.data.theme);});
+  window.addEventListener('storage',e=>{if(e.key==='motion-lab-theme')applyTheme(e.newValue);});
+  try{const theme=localStorage.getItem('motion-lab-theme');if(['light','dark'].includes(theme)){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;}}catch{}
+
+  function renderPlotsForTheme(){drawCharts();update(false);}
+  let lastPlotUpdate=0;
   function drawCharts(){
     plots=[];el('tip').hidden=true;const rows=active().rows;
     const forceSeries=[1,2,3].filter(j=>state.force==='all'||state.force===String(j)).map(j=>['j'+j+'_force','J'+j,colors[j-1]]);
     forceSeries.push(['driver_force','Fixture vertical','var(--viz-series-4)']);
     const definitions=[['height-chart','Displacement (mm)',[['input_mm','Wheel command',colors[0]],['position_actual_mm','Wheel achieved',colors[2]],['chassis_displacement_mm','Chassis response',colors[1]]]],['forces-chart','Force (N)',forceSeries],['torque-chart','Torque (N·m)',[['spring_knee_moment','Spring about knee',colors[1]],['guide_hip_reaction','Guide at hip',colors[2]]]],['velocity-chart','Velocity (m/s)',[['chassis_vy','Chassis response',colors[0]]]],['acceleration-chart','Acceleration (m/s²)',[['chassis_ay','Chassis response',colors[0]]]]];
     for(const [id,label,series] of definitions){
-      const container=el(id),W=container.clientWidth,H=230,left=68,right=16,top=14,bottom=44;
-      container.innerHTML='';const legend=D.select(container).append('div').attr('class','pm-legend');
-      series.forEach(([key,name,color])=>{if(visible[key]===undefined)visible[key]=true;const button=legend.append('button').attr('type','button').attr('class','cursor-interaction').attr('aria-pressed',visible[key]).html(`<span class="pm-swatch" style="--series:${color}"></span>${name}`);button.on('click',()=>{visible[key]=!visible[key];drawCharts();update(false);});});
-      const show=series.filter(([key])=>visible[key]),all=(show.length?show:series).flatMap(([key])=>rows.map(r=>r[ki[key]])),extent=D.extent(all),pad=Math.max((extent[1]-extent[0])*.06,Math.max(Math.abs(extent[0]),Math.abs(extent[1]))*.03,.001);
-      const x=D.scaleLinear().domain(D.extent(rows,r=>r[0])).range([left+4,W-right-4]),y=D.scaleLinear().domain([extent[0]-pad,extent[1]+pad]).nice().range([H-bottom-4,top+4]);
-      const svg=D.select(container).append('svg').attr('class','pm-svg').attr('viewBox',`0 0 ${W} ${H}`).attr('height',H).attr('role','img').attr('aria-label',label+' versus recorded time');svg.append('title').text(label+'; recorded Pymunk results');
-      svg.append('rect').attr('data-chart-frame','').attr('x',left).attr('y',top).attr('width',W-left-right).attr('height',H-top-bottom).attr('fill','none').attr('stroke','var(--border)');
-      svg.append('g').attr('transform',`translate(0,${H-bottom})`).call(D.axisBottom(x).ticks(W<400?4:5));
-      svg.append('g').attr('transform',`translate(${left},0)`).call(D.axisLeft(y).ticks(4).tickFormat(D.format('.3~g')));
-      svg.append('text').attr('class','axis-title').attr('data-axis','x').attr('x',(left+W-right)/2).attr('y',H-8).attr('text-anchor','middle').text('Time (s)');
-      svg.append('text').attr('class','axis-title').attr('data-axis','y').attr('transform',`translate(15,${(top+H-bottom)/2}) rotate(-90)`).attr('text-anchor','middle').text(label);
-      const clip='pm-clip-'+id;svg.append('defs').append('clipPath').attr('id',clip).append('rect').attr('x',left).attr('y',top).attr('width',W-left-right).attr('height',H-top-bottom);
-      const marks=svg.append('g').attr('clip-path',`url(#${clip})`);
-      show.forEach(([key,name,color])=>marks.append('path').datum(rows).attr('fill','none').attr('stroke',color).attr('stroke-width',2).attr('d',D.line().x(r=>x(r[0])).y(r=>y(r[ki[key]]))));
-      const cursor=marks.append('line').attr('y1',top).attr('y2',H-bottom).attr('stroke','var(--foreground)').attr('opacity',.3),dots=marks.append('g');
-      const hover=marks.append('g'),guide=hover.append('line').attr('data-chart-hover-guide','').attr('y1',top).attr('y2',H-bottom).attr('stroke','var(--foreground)').attr('opacity',0);let pinned=false;
-      function showTip(event){const [px]=D.pointer(event,svg.node()),t=x.invert(Math.max(left+4,Math.min(W-right-4,px)));guide.attr('x1',x(t)).attr('x2',x(t)).attr('opacity',.5);hover.selectAll('circle').remove();
-        const lines=[fmt(t,3)+' s'];show.forEach(([key,name,color])=>{const value=interpolate(rows,t,ki[key]);hover.append('circle').attr('data-chart-hover-marker','').attr('cx',x(t)).attr('cy',y(value)).attr('r',4).attr('fill',color);lines.push(name+': '+fmt(value,3)+(id==='forces-chart'?' N / '+fmt(value/9.80665,3)+' kgf':''));});
-        const box=root.getBoundingClientRect(),cb=container.getBoundingClientRect();el('tip').textContent=lines.join('\n');el('tip').hidden=false;el('tip').style.left=Math.max(0,Math.min(root.clientWidth-240,cb.left-box.left+px+8))+'px';el('tip').style.top=cb.top-box.top+35+'px';
+      const container=el(id),traces=[];
+      container.parentElement.querySelector('.pm-legend')?.remove();
+      const legend=document.createElement('div');legend.className='pm-legend';legend.setAttribute('aria-label',label+' series');container.before(legend);
+      container.setAttribute('role','img');container.setAttribute('aria-label',label+' versus recorded time, interactive zoom plot');
+      for(const [key,name,color] of series){
+        const isForce=id==='forces-chart',index=traces.length;
+        if(visible[key]===undefined)visible[key]=true;
+        const button=document.createElement('button');button.type='button';button.className='cursor-interaction';button.setAttribute('aria-pressed',visible[key]);button.innerHTML=`<span class="pm-swatch" style="--series:${color}"></span>${name}`;
+        button.onclick=()=>{visible[key]=!visible[key];button.setAttribute('aria-pressed',visible[key]);Plotly.restyle(container,{visible:visible[key]?true:'legendonly'},[index]);};legend.append(button);
+        traces.push({x:rows.map(r=>r[0]),y:rows.map(r=>r[ki[key]]),customdata:isForce?rows.map(r=>r[ki[key]]/9.80665):undefined,type:'scatter',mode:'lines',name,visible:visible[key]?true:'legendonly',line:{color:resolved(color),width:2},hovertemplate:'%{y:.3f}'+(isForce?' N / %{customdata:.3f} kgf':'')+'<extra>'+name+'</extra>'});
       }
-      svg.append('rect').attr('data-chart-hit','').attr('data-chart-hover-overlay','cross-series').attr('x',left).attr('y',top).attr('width',W-left-right).attr('height',H-top-bottom).attr('fill','transparent').on('pointermove',e=>{if(!pinned)showTip(e);}).on('pointerleave',()=>{if(!pinned){guide.attr('opacity',0);hover.selectAll('circle').remove();el('tip').hidden=true;}}).on('click',e=>{pinned=!pinned;if(pinned)showTip(e);else{guide.attr('opacity',0);hover.selectAll('circle').remove();el('tip').hidden=true;}});
-      for(const axis of svg.selectAll('g').nodes()){let last=null;for(const text of axis.querySelectorAll(':scope > .tick > text')){const b=text.getBoundingClientRect();if(last&&b.left<last.right+4&&b.top<last.bottom&&b.bottom>last.top)text.style.visibility='hidden';else last=b;}}
-      plots.push({x,y,show,cursor,dots});
+      const axis={gridcolor:resolved('var(--border)'),zerolinecolor:resolved('var(--border)'),automargin:true};
+      Plotly.react(container,traces,{...chartStyle(),height:285,margin:{l:68,r:16,t:32,b:62},showlegend:false,hovermode:'x unified',dragmode:'zoom',uirevision:state.case+'-'+id,xaxis:{...axis,title:{text:'Time (s)'},range:[0,3],nticks:container.clientWidth<400?4:6},yaxis:{...axis,title:{text:label}},shapes:[{type:'line',xref:'x',yref:'paper',x0:state.time,x1:state.time,y0:0,y1:1,line:{color:resolved('var(--foreground)'),width:1,dash:'dot'}}]},plotConfig);
+      plots.push({container});
     }
   }
   function update(announce=true){
     const a=active(),r=nearest(a.rows,state.time);el('time').value=state.time;el('time-label').textContent=fmt(state.time,3)+' s';
     el('state').setAttribute('aria-live',announce?'polite':'off');el('state').textContent=`Height ${fmt(r[ki.input_mm],1)} mm · θ ${fmt(r[ki.theta_deg],1)}° · knee force ${fmt(r[ki.j2_force],1)} N / ${fmt(r[ki.j2_force]/9.80665,2)} kgf · spring moment ${fmt(r[ki.spring_knee_moment],1)} N·m`;
-    for(const plot of plots){plot.cursor.attr('x1',plot.x(state.time)).attr('x2',plot.x(state.time));plot.dots.selectAll('*').remove();plot.show.forEach(([key,name,color])=>plot.dots.append('circle').attr('cx',plot.x(state.time)).attr('cy',plot.y(interpolate(a.rows,state.time,ki[key]))).attr('r',4).attr('fill',color));}
+    const now=performance.now();
+    if(announce||now-lastPlotUpdate>80){lastPlotUpdate=now;for(const plot of plots)Plotly.relayout(plot.container,{'shapes[0].x0':state.time,'shapes[0].x1':state.time});}
     drawLeg();
   }
   function render(){el('case').value=state.case;el('force').value=state.force;drawCharts();el('input-detail').textContent=active().label;el('objects').textContent=JSON.stringify(active().model,null,2);update();}
@@ -154,7 +158,7 @@
   };
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
   window.addEventListener('openai:set_globals',e=>{if(e.detail?.globals?.widgetState){pause();saved(e.detail.globals.widgetState);render();}});
-  let resizeFrame=0;new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{drawCharts();update(false);});}).observe(root);
+  let resizeFrame=0;new ResizeObserver(()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(()=>{plots.forEach(p=>Plotly.Plots.resize(p.container));update(false);});}).observe(root);
   render();
 })();
 </script>

@@ -9,6 +9,6 @@ engineering gates and a project-local restart launcher for any localhost server.
 
 | App | Purpose | Status | Verified startup |
 | --- | --- | --- | --- |
-| [Wheel Leg Lab](wheel-leg-lab/README.md) | Both chats' motion studies, force calculator, detailed linkage and Pymunk | Experimental; 24 JS + 27 Python tests and browser checks | App-local 4186/legacy 4175 launchers pass lifecycle checks |
+| [Motion Lab](wheel-leg-lab/README.md) | Unified mathematical/Pymunk/study/data browser, with Plotly and dark mode | Experimental; 32 JS + 37 Python tests, MATLAB agreement and browser checks | Start Motion Lab.cmd at 4186; familiar launch names are aliases |
 | [Terrain Mobility Atlas](terrain-mobility-atlas/README.md) | Former loose atlas, numerical terrain workbench, historical linkage and force calculator | Experimental; 49 model tests, build and browser checks pass | App-local port-4175 launcher passes lifecycle checks |
 | [Legacy Capstone archive](capstone-archive/README.md) | Complete source/docs/data/historical-output backup from the nondeleting reorganization | 668 files restored with exact hashes; dependencies/caches stay local | Python standard-library restoration to a new directory; no server |

@@ -8,6 +8,8 @@ Limitations: exports kinematics/recorded states, not collision or hardware valid
 """
 from pathlib import Path
 from html import escape
+import re
+import shutil
 ROOT=Path(__file__).resolve().parents[1]
 STUDIES=[
  ('linear-leg','Grounded 2:1 straight-line leg','Equal links, moving belt material and exact vertical wheel-centre path.'),
@@ -21,11 +23,15 @@ STUDIES=[
 
 def page(title,fragment):
  fragment=fragment.replace('https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js','/d3.min.js')
+ fragment=re.sub(r'https://cdn.jsdelivr.net/npm/plotly.js-dist-min@[^/]+/plotly.min.js','/plotly.min.js',fragment)
  return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
-         '<title>'+escape(title)+'</title><link rel="stylesheet" href="/viewer.css"><script src="/viewer-state.js"></script></head><body><main>'
-         '<header><h1>'+escape(title)+'</h1><a href="/animations/">All studies</a><a href="/">Pymunk bench</a></header>'+fragment+'</main></body></html>')
+         '<title>'+escape(title)+'</title><link rel="stylesheet" href="/viewer.css"><script src="/theme.js"></script><script src="/viewer-state.js"></script></head><body><main>'
+         '<header><h1>'+escape(title)+'</h1><a href="/animations/">All studies</a><a href="/" target="_top">Motion Lab</a></header>'+fragment+'</main></body></html>')
 
 def main():
+ runtime=ROOT/'node_modules/plotly.js-dist-min/plotly.min.js'
+ if not runtime.exists():raise SystemExit('Plotly runtime missing; run npm ci before building.')
+ shutil.copyfile(runtime,ROOT/'web/plotly.min.js')
  for slug,title,_ in STUDIES:
   folder=ROOT/'web/animations'/slug;folder.mkdir(parents=True,exist_ok=True)
   (folder/'index.html').write_text(page(title,(ROOT/'animations'/f'{slug}.html').read_text(encoding='utf-8')),encoding='utf-8')
@@ -34,7 +40,7 @@ def main():
  cards=''.join(f'<a href="/animations/{slug}/"><h2>{escape(title)}</h2><p>{escape(detail)}</p></a>' for slug,title,detail in STUDIES)
  cards+='<a href="/force-plots/"><h2>Wheel / link force calculator</h2><p>Radius, required travel, angles, force and synchronized equal-link animation.</p></a>'
  cards+='<a href="/linkage/"><h2>Detailed linkage bench</h2><p>Two-coordinate drive, spring, impedance, finite actuator response and local analysis.</p></a>'
- cards+='<a href="/"><h2>Pymunk spring bench</h2><p>Actual engine, 50 mm extension spring, joint loads, pulse inputs and native debug view.</p></a>'
+ cards+='<a href="/physics/"><h2>Pymunk spring bench</h2><p>Actual engine, 50 mm extension spring, joint loads, pulse inputs and native debug view.</p></a>'
  cards+='<a href="/recorded/"><h2>Recorded remote preview</h2><p>Offline playback with moving disturbance profile and force values in N / kgf.</p></a>'
  gallery='<p class="scope">Andy Zhang · experimental studies from both chats · kinematics and fixture dynamics, not a validated CAMEL robot.</p><div class="gallery">'+cards+'</div>'
  (ROOT/'web/animations/index.html').write_text(page('Wheel Leg Lab studies',gallery),encoding='utf-8')

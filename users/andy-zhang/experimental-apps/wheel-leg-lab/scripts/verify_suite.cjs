@@ -20,9 +20,9 @@ const BASE=process.env.WHEEL_LEG_URL||'http://127.0.0.1:4186';
    await page.locator('#leg-angle').evaluate((n,v)=>{n.value=v;n.dispatchEvent(new Event('input',{bubbles:true}));},value);
    const dx=await page.locator('#linear-leg-motion').evaluate(r=>Number(r.querySelector('[data-foot]').getAttribute('cx'))-Number(r.querySelector('[data-base]').getAttribute('cx')));assert.equal(dx,0);
   }
-  await page.goto(`${BASE}/animations/leg-path-family/`);await page.locator('path.wheel-path').first().waitFor({state:'attached'});
+  await page.goto(`${BASE}/animations/leg-path-family/`);await page.locator('.family-chart .js-line').first().waitFor({state:'attached'});
   await page.locator('#leg-path-family').evaluate(r=>r.dispatchEvent(new CustomEvent('family:settings',{detail:{lambda:1,ratio:2,theta:55}})));
-  const family=await page.locator('svg.family-chart').evaluateAll(xs=>xs.map(s=>({R:+s.dataset.ratio,L:+s.dataset.lengthRatio,x:+s.dataset.currentX,y:+s.dataset.currentY})));
+  const family=await page.locator('.family-chart').evaluateAll(xs=>xs.map(s=>({R:+s.dataset.ratio,L:+s.dataset.lengthRatio,x:+s.dataset.currentX,y:+s.dataset.currentY})));
   assert.equal(family.length,6);for(const p of family){const q=55*Math.PI/180;assert.ok(Math.abs(p.x-250*(Math.sin(q)-p.L*Math.sin((p.R-1)*q)))<1e-8);}
   await page.goto(`${BASE}/animations/fixed-ratio-left-leg/`);let worst=0;
   for(const mode of ['lower','upper'])for(let i=0;i<=40;i++){

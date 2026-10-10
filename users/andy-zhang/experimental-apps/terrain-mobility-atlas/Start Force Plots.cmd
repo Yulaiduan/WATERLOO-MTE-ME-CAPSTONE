@@ -1,11 +1,4 @@
 @echo off
-setlocal
-cd /d "%~dp0"
-powershell.exe -NoLogo -NoProfile -ExecutionPolicy Bypass -File "%~dp0Start-Force-Plots.ps1" %*
-if errorlevel 1 (
-  echo.
-  echo Force plots did not start. Read the message above and .preview logs.
-  pause
-  exit /b 1
-)
-exit /b 0
+call "%~dp0..\wheel-leg-lab\Start Motion Lab.cmd" -NoBrowser
+if errorlevel 1 exit /b 1
+if /i not "%~1"=="-NoBrowser" start "" "http://127.0.0.1:4186/?tab=studies&study=ratio"

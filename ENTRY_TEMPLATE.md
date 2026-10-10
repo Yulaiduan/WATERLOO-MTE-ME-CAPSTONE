@@ -1104,3 +1104,95 @@ Andy's experimental app index links the maintained terrain atlas/workbench, Whee
 Continue from each app's context and verification record, use the project-local 4175/4186 launchers and preserve archive hashes before any future cleanup or canonical promotion.
 
 ---
+
+## Entry: 2026-10-10 — Andy Zhang — unified Motion Lab, mathematical model and Plotly data GUI
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's experimental motion apps and app-local documentation.
+- **Associated Issue/Task:** User requested one browser UI/launcher for mathematical simulation, Pymunk physics and motion studies, dark mode, JSON profiles/data and an always-available actual Pymunk visual GUI; authorized GPT-6.1 Sol subagents.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no tracked files deleted.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/README.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start Capstone.cmd`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start Force Plots.cmd`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Stop Capstone.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/.gitignore`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Open Native Pymunk Debugger.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Open Pymunk GUI.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Setup Motion Lab.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Setup Pymunk.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start Geometry Preview.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start Motion Lab.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start Pymunk Linkage.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop Geometry Preview.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop Motion Lab.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop Pymunk Linkage.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Stop-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/leg-path-family.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/animations/pymunk-remote-preview.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/decisions.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/design.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/licenses/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/licenses/plotly-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/wheel_leg_ode45.m`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/package-lock.json`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/package.json`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/requirements-analysis.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/requirements.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_animations.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify-force-plots.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_motion_lab.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_pymunk.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suite.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/charts.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/main.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/src/linkage/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/data-browser.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/mathematical/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/physics/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/theme.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/viewer.css`
+- **API/Interface Changes:** Add shared main menu/themes and mathematical/physical/study/data sections. Add independent SciPy scalar-energy model and verified MATLAB ode45 source while retaining distinct two-coordinate linkage and actual Pymunk models. Add /api/math/simulate and /api/pymunk/simulate with per-solver locks; preserve /api/simulate. Add versioned JSON profile/run/study imports, append-only browser IndexedDB library, MATLAB column-to-row support, separate detailed comparison-mode tables, full exports and study-state restoration. Quantitative charts use pinned locally generated Plotly runtime with zoom/pan/reset/image output; SVG mechanism/engine drawings remain. Add same-origin run/profile/theme/ready messages and actual recorded-engine viewer; mathematical poses are never represented as Pymunk. Canonical Motion Lab command aliases unify familiar browser launch names; native/legacy standalone helpers and source remain retained. Pin SciPy/NumPy and align optional analysis versions. No canonical/shared-engineering import or asset changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 37 Python tests pass (27 physical/reference/position plus 10 independent mathematical cases); 32 JavaScript tests pass (24 detailed mechanics plus 8 JSON/data contracts). Independent energy, equilibrium, force/moment closure, clipping, inertia and stop/refinement cases pass; Pymunk angle errors decrease 0.19835/0.09011/0.04298 degrees at 1/0.5/0.25 ms toward the SciPy reference. Actual MATLAB R2025b Update 3 batch step agreement is within 8.40e-8 degrees and 1.18e-6 N knee load; locked-square/clipped-impedance case also agrees, and aggressive travel events terminate consistently. Unified browser checks pass real APIs, model comparison, actual three-shape engine GUI, Plotly zoom/theme persistence, profile/full-run JSON, IndexedDB reload, malformed/read-only imports, study JSON/restore and mobile. Legacy calculator/Pymunk/study suites pass; detailed Plotly geometry/response/poles/Bode and exports/embedding were independently checked. Native live renderer advances three shapes/seven constraints. Production Vite/gallery build passes with local Plotly; npm installation audit reports zero vulnerabilities and pip check has no broken requirements. Canonical launcher passes start/reuse/scoped-stop/restart from C:\Windows and familiar Pymunk/geometry/Capstone/force aliases reuse it. All 406 relative Markdown links resolve and fences balance; diff hygiene and repository working/staged gates run before publication. Recorded remote data JSON remains exact. All five authorized child workers used GPT-6.1 Sol and were marked done after completion.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member-app UI/model contribution. Octave, hardware, tire contact, stress/explicit belt-span bearing loads and whole-vehicle behavior remain unverified. Browser library is local to its origin; JSON exports provide portable backups. Initial UI harness used a descendant selector for the Plotly container and a fixed-time wait on profile loading; selectors/condition waits were corrected and cold profile loading avoids an unwanted default run. GUI export schemas were reconciled with the common importer and MATLAB/study formats explicitly tested. Initial Vite external-script warning was removed by awaiting the locally generated classic runtime before detailed rendering. A loose SciPy comparison showed 5.86e-5 degree error against an overly tight 1e-5-degree threshold; the declared 1e-4-degree tolerance passes. Inline shell source/documentation edits rejected by command review were completed safely with structured patches/local editing helpers. No failed check was treated as canonical validation and no enforcement bypass was used.
+
+## 4. Compute Saving Handoff State
+
+Motion Lab at port 4186 now hosts independent mathematical simulation, actual Pymunk physics, motion studies and the persistent profile/data browser behind one themed menu and launcher.
+Plotly provides data inspection while JSON exports preserve full runs or explicit study settings, and the GUI button always displays actual engine states from the corresponding physical wheel-height profile.
+Continue from the unified workspace/model/validation docs, retain the historical sources and archive, and confirm physical inputs/contact/belt/hardware before any canonical promotion.
+
+---

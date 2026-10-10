@@ -15,13 +15,13 @@ function Test-PymunkHttp {
         $health=Invoke-RestMethod -Uri ($taskUrl+'api/health') -TimeoutSec 2
         $page=Invoke-WebRequest -Uri $taskUrl -UseBasicParsing -TimeoutSec 2
         return $health.app -eq 'capstone-wheel-leg-lab' -and $health.root -eq $taskRoot -and
-            $page.StatusCode -eq 200 -and $page.Content.Contains('pymunk-suspension-bench')
+            $page.StatusCode -eq 200 -and $page.Content.Contains('motion-lab')
     } catch { return $false }
 }
 try {
     Set-Location -LiteralPath $taskRoot
-    foreach($required in @($taskPython,$taskServer,(Join-Path $taskRoot 'web\index.html'),(Join-Path $taskRoot 'web\animations\index.html'),(Join-Path $taskRoot 'web\linkage\index.html'))) {
-        if(!(Test-Path -LiteralPath $required)) { throw "Missing prerequisite: $required. Run Setup Pymunk.cmd in this folder, including npm run build." }
+    foreach($required in @($taskPython,$taskServer,(Join-Path $taskRoot 'web\index.html'),(Join-Path $taskRoot 'web\plotly.min.js'),(Join-Path $taskRoot 'web\animations\index.html'),(Join-Path $taskRoot 'web\linkage\index.html'))) {
+        if(!(Test-Path -LiteralPath $required)) { throw "Missing prerequisite: $required. Run Setup Motion Lab.cmd in this folder, including npm run build." }
     }
     New-Item -ItemType Directory -Force -Path $taskStateDir | Out-Null
     $listeners=@(Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue)
@@ -30,7 +30,7 @@ try {
         if($owners.Count -ne 1) { throw 'Port $Port has multiple owners; nothing was stopped.' }
         $server=Get-CimInstance Win32_Process -Filter "ProcessId=$($owners[0])"
         if(!(Test-PymunkProcess $server) -or !(Test-PymunkHttp)) { throw 'Port $Port belongs to another or unready app; nothing was stopped.' }
-        Write-Host 'Pymunk linkage is already running; reusing verified server.'
+        Write-Host 'Motion Lab is already running; reusing verified server.'
     } else {
         foreach ($taskLogName in @('server.stdout.log','server.stderr.log')) {
             $taskPreviousLog=Join-Path $taskStateDir $taskLogName
@@ -55,6 +55,6 @@ try {
     }
     @{pid=$server.ProcessId;created=$server.CreationDate.ToUniversalTime().ToString('o');root=$taskRoot;server=$taskServer;port=$Port} | ConvertTo-Json | Set-Content -LiteralPath $taskStateFile -Encoding UTF8
     Write-Host "Ready: $taskUrl"
-    Write-Host "Stop with Stop Pymunk Linkage.cmd in $taskRoot. Logs: .preview"
+    Write-Host "Stop with Stop Motion Lab.cmd in $taskRoot. Logs: .preview"
     if(!$NoBrowser) { Start-Process $taskUrl }
 } catch { Write-Host "START FAILED: $($_.Exception.Message)" -ForegroundColor Red; exit 1 }

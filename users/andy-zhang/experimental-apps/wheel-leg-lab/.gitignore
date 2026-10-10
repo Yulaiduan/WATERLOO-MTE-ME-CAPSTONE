@@ -7,3 +7,6 @@ web/linkage/
 web/animations/
 web/recorded/
 *.pyc
+
+web/plotly.min.js
+.local-data/

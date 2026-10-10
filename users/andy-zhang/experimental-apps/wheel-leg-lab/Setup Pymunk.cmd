@@ -11,7 +11,7 @@ call npm ci
 if errorlevel 1 goto failed
 call npm run build
 if errorlevel 1 goto failed
-echo Setup complete. Double-click Start Pymunk Linkage.cmd.
+echo Setup complete. Double-click Start Motion Lab.cmd.
 pause
 exit /b 0
 :failed

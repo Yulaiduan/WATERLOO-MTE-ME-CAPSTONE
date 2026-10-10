@@ -1,3 +1,7 @@
+// Validate portable Plotly force/travel study and its exact linkage Jacobian.
+// Run: node scripts/verify-force-plots.cjs against the app on localhost:4186.
+// Inputs: browser controls in mm, degrees, N m; outputs: assertions/screenshots.
+// Limits: verifies analytical plots and UI only, not real contact or hardware.
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -40,10 +44,10 @@ const { pathToFileURL } = require('node:url');
     await page.locator('#wl-torque').fill('2'); await page.locator('#wl-torque').dispatchEvent('input');
     values = await rows(); assert.ok(Math.abs(parseFloat(values[1][4]) - 2 * Math.PI / 6 / .25) < .006);
     await page.locator('#wl-projection').check();
-    assert.equal(await page.locator('.wl-chart path[stroke-dasharray="5 4"]').count(), 6);
+    assert.deepEqual(await page.locator('.wl-plot').evaluateAll(xs => xs.map(x => x.data.filter(t => t.line?.dash === 'dash').length)), [3,3]);
     await page.locator('#wl-legend button').nth(0).click();
     assert.equal(await page.locator('#wl-legend button').nth(0).getAttribute('aria-pressed'), 'false');
-    assert.equal(await page.locator('.wl-chart path[stroke-dasharray="5 4"]').count(), 4);
+    assert.deepEqual(await page.locator('.wl-plot').evaluateAll(xs => xs.map(x => x.data.filter(t => t.line?.dash === 'dash').length)), [2,2]);
     await page.locator('#wl-legend button').nth(0).click();
     await setRange('#wl-progress', 0);
     const before = await page.locator('.wl-links').first().getAttribute('d');
@@ -57,6 +61,18 @@ const { pathToFileURL } = require('node:url');
     await page.locator('#wl-play').click(); await page.waitForTimeout(6200);
     assert.equal(await page.locator('#wl-play').textContent(), 'Animate cycle');
     assert.ok((await page.locator('.wl-theta').nth(2).textContent()).includes('30.0'));
+    const chart = page.locator('#wl-angle');
+    await chart.evaluate(async node => { await Plotly.relayout(node, {'xaxis.range':[35,55], 'yaxis.range':[.5,5]}); });
+    assert.deepEqual(await chart.evaluate(node => node.layout.xaxis.range), [35,55]);
+    await setRange('#wl-progress', 40);
+    assert.deepEqual(await chart.evaluate(node => node.layout.xaxis.range), [35,55]);
+    await chart.evaluate(async node => { await Plotly.relayout(node, {'xaxis.autorange':true,'yaxis.autorange':true}); });
+    assert.equal(await chart.evaluate(node => node._fullLayout.xaxis.autorange), true);
+    await page.evaluate(() => window.dispatchEvent(new MessageEvent('message',{data:{type:'motion-lab-theme',theme:'dark'}})));
+    assert.equal(await page.locator('html').getAttribute('data-theme'), 'dark');
+    assert.equal(await chart.evaluate(node => node.layout.paper_bgcolor), 'transparent');
+    assert.ok(await chart.evaluate(node => node._context.scrollZoom));
+    await page.evaluate(() => window.dispatchEvent(new MessageEvent('message',{data:{type:'motion-lab-theme',theme:'light'}})));
     const output = path.join(root, 'artifacts/force-plots'); fs.mkdirSync(output, { recursive: true });
     await setRange('#wl-radius', 200); await setRange('#wl-travel', 200);
     await page.locator('#wl-torque').fill('1'); await page.locator('#wl-torque').dispatchEvent('input');

@@ -2,20 +2,34 @@
 
 Owner: Andy Zhang. Updated: 2026-10-10. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
 
-## Included tools
+## Unified browser workspace
+
+**Start Motion Lab.cmd** is the canonical launcher. Open http://127.0.0.1:4186/
+for the shared main menu, dark-mode toggle and always-available Pymunk visual GUI.
+Read the [workflow, data contracts and validation](docs/unified-motion-lab.md).
 
 | Tool | Route | Content |
 | --- | --- | --- |
-| Pymunk spring bench | `/` | Actual rigid-body engine, 200 mm-radius wheel, 50 mm lower-link extension spring, prescribed-height step/square/pulse inputs and floating chassis, joint forces/torques, velocity/acceleration and native debug draw |
-| Seven rough motion studies | `/animations/` | Moving-belt straight leg, independent coaxial drive, tilted/mirrored inversion, historical reindexing alternative, fixed 4:1 near-linear strokes and mathematical path family |
-| Wheel/link calculator | `/force-plots/` | Radius 150–250 mm, independently adjustable travel, equal-link lengths, force curves and synchronized motion |
-| Detailed linkage bench | `/linkage/` | Two-coordinate guide/drive kinematics, mass matrix, physical spring, MIT-style control, finite actuator response and local dynamics |
-| Recorded remote playback | `/recorded/` | Captured Pymunk shapes, moving disturbance profile and force readouts in N/kgf; playback does not rerun the engine |
-| Native live GUI | `Open Pymunk GUI.cmd` | Official Pygame debug renderer with run/pause/step/reset and body inspection |
+| Main menu | `/` | Mathematical / physical / miscellaneous / profiles and data |
+| Mathematical suspension | `/mathematical/` | Independent Python/SciPy ODE, load/motion/energy data and MATLAB companion |
+| Pymunk physical bench | `/physics/` | Actual rigid-body engine, wheel-height input, floating chassis and solver loads |
+| Detailed linkage | `/linkage/` | Two-coordinate guide/drive, physical spring, impedance and local dynamics |
+| Miscellaneous studies | `/animations/`, `/force-plots/`, `/recorded/` | Motion studies and Plotly data charts |
+| Native live debugger | `Open Native Pymunk Debugger.cmd` | Optional official Pygame debug renderer |
 
 ## Setup and restart
 
-Requires installed **Python 3.13** (verified), **Node.js 22.20.0** (verified) and npm. The Vite toolchain also supports its documented Node 20.19+/22.12+ range, but those alternatives were not tested here. From this folder:
+Requires installed Python 3.13 and Node.js 22.20.0 (verified) with npm.
+Double-click **Setup Motion Lab.cmd** in a new checkout, then **Start Motion
+Lab.cmd** and wait for Ready. It uses the app-local installed environment and
+saved build; startup does not reinstall dependencies. Errors remain readable
+in the window and ignored .preview logs.
+
+After shutdown/reboot, double-click the same start launcher and reopen
+http://127.0.0.1:4186/. **Stop Motion Lab.cmd** stops only the verified process
+and archives its state. No login/boot automation is installed. The familiar
+Pymunk/geometry/Capstone browser command names remain aliases to this menu.
+The legacy standalone port-4175 service helpers/source are retained separately.
 
 ```sh
 python -m venv .venv
@@ -24,11 +38,11 @@ npm ci
 npm run build
 ```
 
-On Windows, **Setup Pymunk.cmd** performs these steps. Then double-click **Start Pymunk Linkage.cmd** and wait for Ready. Open [Pymunk](http://127.0.0.1:4186/), [all studies](http://127.0.0.1:4186/animations/), [force calculator](http://127.0.0.1:4186/force-plots/) or [detailed linkage](http://127.0.0.1:4186/linkage/). The server runs independently of Codex. Close it with **Stop Pymunk Linkage.cmd**; after shutdown or reboot, double-click the start launcher again and use the same URLs. Startup does not reinstall dependencies. Errors remain readable and persistent logs stay in ignored `.preview/`. No login/boot automation is installed.
-
-**Start Geometry Preview.cmd** preserves the older geometry URLs [force plots](http://127.0.0.1:4175/force-plots/) and [linkage](http://127.0.0.1:4175/linkage/). It uses a separate tracked port-4175 process; **Stop Geometry Preview.cmd** stops only that process. If another project owns either port, the launcher reports the conflict without killing it or choosing a new port. The original external prototypes can remain on disk, but only one matching service can own a given port.
-
-The launchers resolve their own folder and use its `.venv`; no author-specific filesystem paths are needed. A missing generated gallery/linkage build requires `npm run build`. Generated pages/bundles, environments, logs and test captures are intentionally ignored; source, pinned dependencies and lockfile are retained.
+Profiles and generated runs are appended to browser IndexedDB. Save/download
+JSON for portable backup; import JSON through Profiles & data. Plotly charts
+support zoom, pan, reset and image export; full JSON/CSV retains recorded data.
+The Mathematical tab also offers same-input SciPy/Pymunk comparison and the
+[verified MATLAB model](math/README.md).
 
 ## Position input correction
 
@@ -44,12 +58,12 @@ Shared requirements remain in the [repository research record](../../../../datab
 
 ```sh
 npm test
-.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input
+.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model
 npm run test:browser
 node scripts/verify_pymunk.cjs
 node scripts/verify-force-plots.cjs
 ```
 
-There are 24 detailed-model tests and 27 Pymunk/reference/position tests. Browser checks cover the seven offline studies, fixed-ratio geometry, force calculator, detailed bench, recorded preview and Pymunk controls/exports. The native renderer can be checked with `Open Pymunk GUI.cmd --headless-check`. See the validation record for results and remaining checks.
+There are 32 JavaScript tests and 37 Python mechanics/reference tests. Browser checks cover the unified UI/library, seven offline studies, fixed-ratio geometry, force calculator, detailed bench, recorded preview and Pymunk controls/exports. The native renderer can be checked with `Open Native Pymunk Debugger.cmd --headless-check`. See the validation record for results and remaining checks.
 
 The seven animation fragments are retained as editable source under `animations/`. The old high-resolution GIFs, raw frame directories and full traces are not committed; interactive pages retain the motion content and can be rebuilt. The Pymunk bench defaults to a prescribed vertical wheel-height step and floating chassis, with force/torque modes retained as legacy diagnostics. It uses sensor geometry, with no automatically solved tire contact, soil, belt elasticity or structural stress. The fixed 4:1 approximation is not an exact straight full inversion. Missing belt radii/T₀ value, real actuator limits, spring characterization, collision clearance and hardware validation remain open.

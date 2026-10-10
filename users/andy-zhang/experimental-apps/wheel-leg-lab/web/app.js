@@ -1,7 +1,16 @@
+/** Shared suspension bench: serve /physics/ or /mathematical/ with matching DOM.
+ * Inputs: SI JSON profiles/results, same-origin shell messages, Plotly and D3.
+ * Outputs: recorded playback, zoomable charts, full CSV/profile/run JSON downloads.
+ * Limitations: client playback does not integrate physics; math uses annotated geometry.
+ */
 (() => {
   const $=id=>document.getElementById(id),D=window.d3;
-  let config={},result=null,charts=[],time=0,playing=false,raf=0,last=0,dirty=false;
-  const fmt=(v,n=2)=>Number(v).toFixed(n),colors=['var(--blue)','var(--orange)','var(--accent)','var(--purple)','var(--red)','var(--muted)'];
+  const backend=document.body.dataset.backend==='math'?'math':'pymunk',isMath=backend==='math',viewer=new URLSearchParams(location.search).get('viewer')==='1',loadOnly=new URLSearchParams(location.search).get('loadOnly')==='1';
+  let config={},defaults={},result=null,charts=[],time=0,playing=false,raf=0,last=0,dirty=false,runRevision=0,lastChartTime=-Infinity,pendingProfile=null;
+  const fmt=(v,n=2)=>Number.isFinite(Number(v))?Number(v).toFixed(n):'—',colors=['var(--blue)','var(--orange)','var(--accent)','var(--purple)','var(--red)','var(--muted)'];
+  const cssColor=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  const publish=(type,fields={})=>{if(parent!==window)parent.postMessage({type,backend,...fields},location.origin);};
+  if(viewer)document.body.classList.add('engine-viewer');
   const KGF=9.80665,forceFmt=v=>`${fmt(v)} N / ${fmt(v/KGF)} kgf`,forceCell=v=>`${fmt(v)} / ${fmt(v/KGF)}`;
   let referenceT0N=null;
   try{const value=JSON.parse(localStorage.getItem('pymunk-reference-T0-N'));if(typeof value==='number'&&Number.isFinite(value)&&value>=0)referenceT0N=value;}catch{}
@@ -27,6 +36,7 @@
       if(key==='fixture'&&config.fixture==='wheel'){config.bias_force=0;config.load_point='hub';config.wheel_drive_locked=false;}
       dirty=true;$('status').textContent='Inputs changed. Run simulation to update the saved traces.';
       if(['fixture','target'].includes(key))controls();else updateControls();
+      publish('motion-lab-config',{config:{...config}});
     }));updateControls();
   }
   function updateControls(){
@@ -38,6 +48,14 @@
     if(find('impulse'))find('impulse').disabled=config.wave!=='impulse';
     find('rest_length').disabled=config.balance_spring;
     find('load_point').disabled=config.fixture==='wheel';find('wheel_drive_locked').disabled=config.fixture==='wheel';
+    if(isMath){
+      for(const key of ['fixture','target','load_point','ramp_shape','iterations'])find(key).disabled=true;
+      find('iterations').closest('.field').hidden=true;
+      const engineOption=$('model-view').querySelector('option[value="engine"]');if(engineOption)engineOption.disabled=true;
+      $('model-view').value='annotated';
+      const hints=$('controls').querySelectorAll('.hint');
+      hints[1].textContent='The independent equations prescribe wheel height directly. Support reaction and chassis motion are outputs; travel-limit events end the run before impact.';
+    }
     const width=config.wave==='square'?config.period*config.duty:config.pulse_width;
     const amplitude=position?config.position_amplitude*1000:config.wave==='impulse'?config.impulse/(width-(config.rise+config.fall)/2):config.amplitude;
     const units=position?'mm/s':config.target==='force'?'N/s':'N·m/s';
@@ -46,7 +64,7 @@
   function nearest(rows,t){const i=D.bisector(r=>r.t).center(rows,t);return rows[Math.max(0,Math.min(rows.length-1,i))];}
   function decimate(rows,key){if(rows.length<=1800)return rows;const out=[],stride=Math.ceil(rows.length/700);for(let i=0;i<rows.length;i+=stride){const chunk=rows.slice(i,i+stride),lo=chunk.reduce((a,b)=>a[key]<b[key]?a:b),hi=chunk.reduce((a,b)=>a[key]>b[key]?a:b);out.push(chunk[0],lo,hi,chunk.at(-1));}return [...new Map(out.map(r=>[r.t,r])).values()].sort((a,b)=>a.t-b.t);}
   function makePlots(){
-    if(!result)return;charts=[];$('plots').innerHTML='';const c=result.config,moving=c.fixture==='hip'?'hub':'chassis',view=$('force-view').value,probe=$('probe').value;
+    if(!result)return;const previousCharts=charts;charts=[];const c=result.config,moving=c.fixture==='hip'?'hub':'chassis',view=$('force-view').value,probe=$('probe').value;
     const definitions=[
       [c.target==='position'?'Prescribed height · command vs achieved':'Diagnostic disturbance',c.target==='position'?'Displacement (mm)':c.target==='force'?'Input force (N)':'Input torque (N·m)',c.target==='position'?[['input_mm','Command'],['position_actual_mm','Achieved']]:[['input','Disturbance']]],
       [c.fixture==='floating'?'Chassis response':'Link angle',c.fixture==='floating'?'Chassis displacement (mm)':'θ from horizontal (°)',c.fixture==='floating'?[['chassis_displacement_mm','Chassis']]:[['theta_deg','Link angle']]],
@@ -57,27 +75,34 @@
       ['Knee angular velocity','Opening velocity (rad/s)',[['knee_speed','Knee α̇']]],
       ['Knee angular acceleration','Opening acceleration (rad/s²)',[['knee_accel','Knee α̈']]],
     ];
-    for(const [title,label,series] of definitions){
-      const panel=document.createElement('section');panel.className='plot';panel.innerHTML=`<h3>${title}</h3><div class="chart"></div><div class="legend">${series.map(([key,name],i)=>`<span><i class="swatch" style="--series:${colors[i]}"></i>${name}</span>`).join('')}</div>`;$('plots').append(panel);
-      const container=panel.querySelector('.chart'),W=container.clientWidth,H=245,left=72,right=15,top=12,bottom=44;
-      const svg=D.select(container).append('svg').attr('viewBox',`0 0 ${W} ${H}`).attr('height',H).attr('role','img').attr('aria-label',title+' versus time');
-      svg.append('title').text(title+'; solver-step measurements over time');
-      const values=series.flatMap(([key])=>result.rows.map(r=>r[key])),extent=D.extent(values),pad=Math.max((extent[1]-extent[0])*.06,Math.max(Math.abs(extent[0]),Math.abs(extent[1]))*.03,.001);
-      const x=D.scaleLinear().domain([0,result.rows.at(-1).t]).range([left,W-right]);
-      const y=D.scaleLinear().domain([extent[0]-pad,extent[1]+pad]).nice().range([H-bottom,top]);
-      svg.append('g').attr('transform',`translate(0,${H-bottom})`).call(D.axisBottom(x).ticks(W<400?4:6));
-      svg.append('g').attr('transform',`translate(${left},0)`).call(D.axisLeft(y).ticks(5).tickFormat(D.format('.3~g')));
-      svg.append('text').attr('x',(left+W-right)/2).attr('y',H-8).attr('text-anchor','middle').text('Time (s)');
-      svg.append('text').attr('transform',`translate(14,${(top+H-bottom)/2}) rotate(-90)`).attr('text-anchor','middle').text(label);
-      const id='clip-'+charts.length;svg.append('defs').append('clipPath').attr('id',id).append('rect').attr('x',left).attr('y',top).attr('width',W-left-right).attr('height',H-top-bottom);
-      const marks=svg.append('g').attr('clip-path',`url(#${id})`);
-      series.forEach(([key],i)=>marks.append('path').datum(decimate(result.rows,key)).attr('fill','none').attr('stroke',colors[i]).attr('stroke-width',1.7).attr('d',D.line().x(r=>x(r.t)).y(r=>y(r[key]))));
-      const cursor=marks.append('line').attr('stroke','var(--muted)').attr('stroke-width',1).attr('y1',top).attr('y2',H-bottom),dots=marks.append('g');
-      svg.append('rect').attr('x',left).attr('y',top).attr('width',W-left-right).attr('height',H-top-bottom).attr('fill','transparent').on('pointermove',event=>{
-        const t=x.invert(D.pointer(event,svg.node())[0]),row=nearest(result.rows,t);$('tooltip').hidden=false;$('tooltip').textContent=fmt(row.t,3)+' s\n'+series.map(([key,name])=>name+': '+(label.endsWith('(N)')?forceFmt(row[key]):fmt(row[key],3))).join('\n');$('tooltip').style.left=Math.max(5,Math.min(innerWidth-300,event.clientX+12))+'px';$('tooltip').style.top=Math.max(5,Math.min(innerHeight-140,event.clientY+12))+'px';
-      }).on('pointerleave',()=>{$('tooltip').hidden=true;}).on('click',event=>{pause();time=x.invert(D.pointer(event,svg.node())[0]);updatePlayback();});
-      charts.push({series,x,y,cursor,dots});
-    }updatePlayback();
+    if(viewer){updatePlayback();return;}
+    if(!window.Plotly)throw Error('Plotly could not load. Restart the app and reload this page.');
+    for(const [title,label,requested] of definitions){
+      const series=requested.filter(([key])=>result.rows.some(r=>Number.isFinite(r[key])));
+      const index=charts.length;
+      let chart=previousCharts[index];
+      if(!chart){
+        const panel=document.createElement('section');panel.className='plot';
+        const heading=document.createElement('h3');heading.textContent=title;
+        const container=document.createElement('div');container.className='chart';container.setAttribute('aria-label',title+' versus time');panel.append(heading,container);$('plots').append(panel);
+        chart={panel,container,series,revision:-1};
+      }else chart.panel.querySelector('h3').textContent=title;
+      chart.series=series;
+      const palette=colors.map(value=>cssColor(value.slice(4,-1)));
+      const traces=series.map(([key,name],i)=>{
+        const rows=decimate(result.rows,key);
+        return {type:'scatter',mode:'lines',name,x:rows.map(r=>r.t),y:rows.map(r=>r[key]),line:{color:palette[i%palette.length],width:1.8},hovertemplate:label.endsWith('(N)')?'%{x:.3f} s<br>'+name+': %{y:.3f} N<br>%{customdata:.3f} kgf<extra></extra>':'%{x:.3f} s<br>'+name+': %{y:.4g}<extra></extra>',customdata:rows.map(r=>r[key]/KGF)};
+      });
+      const cursor={type:'line',xref:'x',yref:'paper',x0:time,x1:time,y0:0,y1:1,line:{color:cssColor('--muted'),width:1,dash:'dot'}};
+      const revision=backend+'-'+runRevision+'-'+title+'-'+series.map(([key])=>key).join('|');
+      const preserveZoom=chart.viewRevision===revision&&chart.container._fullLayout;
+      const layout={height:300,margin:{l:75,r:18,t:16,b:78},paper_bgcolor:cssColor('--panel'),plot_bgcolor:cssColor('--panel'),font:{family:'system-ui,Segoe UI,sans-serif',color:cssColor('--text'),size:11},hovermode:'x unified',dragmode:'zoom',uirevision:revision,xaxis:{title:{text:'Time (s)'},gridcolor:cssColor('--line'),zerolinecolor:cssColor('--line'),range:preserveZoom?[...chart.container._fullLayout.xaxis.range]:[0,result.rows.at(-1).t],automargin:true},yaxis:{title:{text:label},gridcolor:cssColor('--line'),zerolinecolor:cssColor('--line'),...(preserveZoom&&!chart.container._fullLayout.yaxis.autorange?{range:[...chart.container._fullLayout.yaxis.range]}:{autorange:true}),automargin:true},legend:{orientation:'h',x:0,y:-.24,font:{size:10}},shapes:[cursor]};
+      window.Plotly.react(chart.container,traces,layout,{responsive:true,scrollZoom:true,displaylogo:false,toImageButtonOptions:{format:'png',filename:backend+'-'+title.replaceAll(/[^a-z0-9]+/gi,'-')},modeBarButtonsToRemove:['lasso2d','select2d']}).then(()=>{
+        if(!chart.clickBound){chart.container.on('plotly_click',event=>{const t=event.points?.[0]?.x;if(Number.isFinite(t)){pause();time=t;updatePlayback();}});chart.clickBound=true;}
+      });
+      chart.revision=runRevision;chart.viewRevision=revision;charts.push(chart);
+    }
+    lastChartTime=-Infinity;updatePlayback();
   }
   function drawMechanism(){
     if(!result)return;const svg=D.select($('mechanism')),W=$('mechanism').clientWidth,H=$('mechanism').clientHeight,c=result.config;
@@ -85,13 +110,13 @@
     const frame=nearest(result.frames,time),points=result.frames.flatMap(f=>[f.hip,f.knee,f.hub,f.tip,[f.hub[0]-c.radius,f.hub[1]-c.radius],[f.hub[0]+c.radius,f.hub[1]+c.radius]]);
     const xe=D.extent(points,p=>p[0]),ye=D.extent(points,p=>p[1]),scale=Math.min((W-100)/(xe[1]-xe[0]),(modelHeight-65)/(ye[1]-ye[0]));
     const x=v=>W/2+(v-(xe[0]+xe[1])/2)*scale,y=v=>modelHeight/2-(v-(ye[0]+ye[1])/2)*scale;
-    svg.attr('viewBox',`0 0 ${W} ${H}`);svg.selectAll('*').remove();svg.append('title').text('Actual recorded Pymunk poses; spring runs from hip to lower-link tip, '+fmt(c.extension*1000,0)+' mm past knee.');
+    svg.attr('viewBox',`0 0 ${W} ${H}`);svg.selectAll('*').remove();svg.append('title').text((isMath?'Recorded mathematical-model geometry; ':'Actual recorded Pymunk poses; ')+'spring runs from hip to lower-link tip, '+fmt(c.extension*1000,0)+' mm past knee.');
     const A=frame.hip,B=frame.knee,C=frame.hub,E=frame.tip,row=nearest(result.rows,time);
     const point=p=>[x(p[0]),y(p[1])];
     const path=p=>D.line()(p.map(point));
     const engineView=$('model-view').value==='engine'&&frame.debug_draw;
     if(engineView){
-      const factor=result.model.debug_scale,position=p=>[x(p[0]/factor),y(p[1]/factor)],color=c=>`rgba(${c[0]},${c[1]},${c[2]},${c[3]/255})`;
+      const factor=result.model?.debug_scale||600,position=p=>[x(p[0]/factor),y(p[1]/factor)],color=c=>`rgba(${c[0]},${c[1]},${c[2]},${c[3]/255})`;
       for(const p of frame.debug_draw){
         if(p.kind==='circle'){const q=position(p.pos),r=p.radius/factor*scale;svg.append('circle').attr('class','engine-shape').attr('cx',q[0]).attr('cy',q[1]).attr('r',r).attr('fill',color(p.fill)).attr('stroke',color(p.outline));svg.append('line').attr('x1',q[0]).attr('y1',q[1]).attr('x2',q[0]+r*Math.cos(p.angle)).attr('y2',q[1]-r*Math.sin(p.angle)).attr('stroke',color(p.outline));}
         else if(p.kind==='capsule'){const a=position(p.a),b=position(p.b);svg.append('line').attr('class','engine-shape').attr('x1',a[0]).attr('y1',a[1]).attr('x2',b[0]).attr('y2',b[1]).attr('stroke',color(p.outline)).attr('stroke-width',2*p.radius/factor*scale+2).attr('stroke-linecap','round');svg.append('line').attr('x1',a[0]).attr('y1',a[1]).attr('x2',b[0]).attr('y2',b[1]).attr('stroke',color(p.fill)).attr('stroke-width',2*p.radius/factor*scale).attr('stroke-linecap','round');}
@@ -124,7 +149,7 @@
       }
     }
     const inputPoint=point(c.target==='knee'?B:c.fixture==='wheel'?A:c.target==='position'?C:c.load_point==='contact'?[C[0],C[1]-c.radius]:C);
-    const prescribed=c.target==='position'?{origin:point(result.position_origin),target:point(frame.position_target)}:null;
+    const prescribed=c.target==='position'?{origin:point(result.position_origin||[0,0]),target:point(frame.position_target||C)}:null;
     drawDisturbance(svg,W,H,inputPoint,row,prescribed);
   }
   function drawDisturbance(svg,W,H,target,row,prescribed){
@@ -168,9 +193,13 @@
     $('time').value=time;$('time-value').textContent=fmt(time,3)+' s';
     $('pose-values').innerHTML=`<span>θ ${fmt(row.theta_deg,1)}°</span><span>Height ${fmt(row.height*1000,0)} mm</span><span>Spring ${fmt(row.spring_length*1000,1)} mm</span>`;
     $('joint-values').innerHTML=[1,2,3].map(j=>`<tr><td>J${j}</td><td>${forceCell(row['j'+j+'_fx'])}</td><td>${forceCell(row['j'+j+'_fy'])}</td><td>${forceCell(row['j'+j+'_force'])}</td></tr>`).join('');
-    $('equation-values').innerHTML=[['L₂(−Fz cosθ + Fy sinθ): hub lever','ref_Min_wheel_moment','check_lower_moment_Nm','N·m'],['L₂(−Fz cosθ + Fy sinθ) + Fy r_w: contact lever','ref_Min_contact_moment','check_contact_moment_Nm','N·m'],['L₁(Bz cosθ + By sinθ)','ref_Mact_knee_moment','check_upper_moment_Nm','N·m'],['√(By² + Bz²)','ref_Br','check_Br_N','N']].map(([label,key,error,unit])=>`<tr><td>${label}</td><td>${fmt(row[key],3)} ${unit}</td><td>${row[error].toExponential(2)} ${unit}</td></tr>`).join('');
+    $('equation-values').innerHTML=[['L₂(−Fz cosθ + Fy sinθ): hub lever','ref_Min_wheel_moment','check_lower_moment_Nm','N·m'],['L₂(−Fz cosθ + Fy sinθ) + Fy r_w: contact lever','ref_Min_contact_moment','check_contact_moment_Nm','N·m'],['L₁(Bz cosθ + By sinθ)','ref_Mact_knee_moment','check_upper_moment_Nm','N·m'],['√(By² + Bz²)','ref_Br','check_Br_N','N']].map(([label,key,error,unit])=>`<tr><td>${label}</td><td>${fmt(row[key],3)} ${unit}</td><td>${Number.isFinite(row[error])?row[error].toExponential(2):'—'} ${unit}</td></tr>`).join('');
     $('torque-values').innerHTML=[...(c.target==='position'?[['Motion fixture reaction','driver_force','N']]:[]),['Spring tension','spring_tension','N'],['Spring moment about knee','spring_knee_moment','N·m'],['Knee actuator','actuator_torque','N·m'],['Guide on lower link','guide_link_torque','N·m'],['Grounded guide at J1','guide_hip_reaction','N·m'],['Knee travel stop','stop_knee_torque','N·m'],['Wheel contact torque','wheel_external_moment','N·m'],['Wheel drive → lower link','wheel_drive_reaction','N·m'],['Wheel angular speed','wheel_speed','rad/s'],[c.fixture==='hip'?'Hub velocity':'Chassis velocity',(c.fixture==='hip'?'hub':'chassis')+'_vy','m/s'],[c.fixture==='hip'?'Hub acceleration':'Chassis acceleration',(c.fixture==='hip'?'hub':'chassis')+'_ay','m/s²']].map(([name,key,unit])=>`<dt>${name}</dt><dd>${unit==='N'?forceFmt(row[key]):fmt(row[key])+' '+unit}</dd>`).join('');
-    for(const chart of charts){chart.cursor.attr('x1',chart.x(row.t)).attr('x2',chart.x(row.t));chart.dots.selectAll('*').remove();chart.series.forEach(([key],i)=>chart.dots.append('circle').attr('cx',chart.x(row.t)).attr('cy',chart.y(row[key])).attr('r',3.5).attr('fill',colors[i]));}
+    // Throttle cursor relayout while the SVG/readouts remain at animation speed.
+    if(!playing||Math.abs(time-lastChartTime)>=.1){
+      lastChartTime=time;
+      for(const chart of charts)if(chart.container._fullLayout)window.Plotly.relayout(chart.container,{'shapes[0].x0':row.t,'shapes[0].x1':row.t});
+    }
     drawMechanism();
   }
   function pause(){playing=false;cancelAnimationFrame(raf);last=0;$('play').textContent='Play';}
@@ -178,23 +207,87 @@
     function frame(stamp){if(!playing)return;if(last)time+=(stamp-last)/1000*Number($('speed').value);last=stamp;updatePlayback();if(time>=result.rows.at(-1).t){pause();return;}raf=requestAnimationFrame(frame);}raf=requestAnimationFrame(frame);
   };
   $('time').oninput=()=>{pause();time=Number($('time').value);updatePlayback();};$('forces').onchange=drawMechanism;$('model-view').onchange=drawMechanism;$('force-view').onchange=makePlots;$('probe').onchange=makePlots;
-  async function run(){
-    pause();$('run').disabled=true;$('error').hidden=true;$('status').textContent='Running Pymunk rigid-body solver…';
-    try{const response=await fetch('/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),data=await response.json();if(!response.ok)throw Error(data.error||'Simulation failed.');result=data;dirty=false;time=0;
-      $('engine').textContent='Pymunk '+data.engine;$('model-objects').textContent=JSON.stringify(data.model,null,2);$('snapshot').textContent=`${data.config.fixture==='floating'?'Floating chassis':data.config.fixture==='hip'?'Hip fixed':'Wheel fixed'} · ${data.config.radius*1000} mm wheel radius · ${fmt(data.config.extension*1000,0)} mm extension`;
-      $('status').textContent=`${data.config.target==='position'?'Prescribed position · ':''}Recorded ${data.rows.length.toLocaleString()} solver steps · dt ${data.config.dt*1000} ms · actual spring free length ${fmt(data.actual_rest_length*1000,1)} mm`;
-      $('warnings').innerHTML=data.warnings.map(w=>`<div class="warning">${w}</div>`).join('');
-      $('equation-formulas').textContent=data.equation_reference.visible_equations.join('\n')+'\n\nDerived identity: '+data.equation_reference.derived_identity;
-      $('equation-errors').textContent='Maximum residuals across saved run:\n'+JSON.stringify(data.equation_check_errors,null,2);
-      $('reference-validation').textContent='Screenshot torque reproduction (separate from current run):\n'+data.equation_reference.torque_reproduction.assumptions+'\n'+data.equation_reference.torque_reproduction.samples.map(s=>`${s.theta_deg}°: reported ${s.reported_Nm} N·m; reproduced ${s.reproduced_Nm.toFixed(10)} N·m`).join('\n');
-      $('equation-scope').textContent=data.equation_reference.status+' '+data.equation_reference.limitations.join(' ');
-      $('scope').textContent=data.scope;$('diagnostics').innerHTML='<pre>'+JSON.stringify(data.diagnostics,null,2)+'</pre>';
-      const moving=data.config.fixture==='hip'?'hub':'chassis';$('peaks').textContent=`Peak J2 ${forceFmt(data.peaks.j2_force.value)} · peak vertical accel ${fmt(data.peaks[moving+'_ay'].value,1)} m/s²`;
-      $('probe').value=data.config.fixture==='hip'?'j3':'j1';$('time').max=data.rows.at(-1).t;$('time').disabled=false;$('play').disabled=false;$('export').disabled=false;$('case').disabled=false;makePlots();
-    }catch(error){$('error').hidden=false;$('error').textContent=error.message;$('status').textContent='Run failed; any previous plots retain their saved inputs.';}finally{$('run').disabled=false;}
+  function loadResult(data,{emit=false}={}){
+    if(!data||!Array.isArray(data.rows)||!data.rows.length||!Array.isArray(data.frames)||!data.frames.length||!data.config)throw Error('This JSON does not contain a playable suspension run.');
+    if(data.backend&&data.backend!==backend)throw Error('Open this run in its matching simulation tab. The Pymunk viewer requires a Pymunk result.');
+    if(!data.rows.every(r=>Number.isFinite(r.t)))throw Error('Recorded time values must be finite.');
+    pause();result=data;config={...data.config};dirty=false;time=0;runRevision++;if(!viewer)controls();
+    $('error').hidden=true;
+    $('engine').textContent=(isMath?'':'Pymunk ')+data.engine;
+    $('model-objects').textContent=JSON.stringify(data.model||{renderer:'Mathematical kinematics'},null,2);
+    $('snapshot').textContent=`${data.config.fixture==='floating'?'Floating chassis':data.config.fixture==='hip'?'Hip fixed':'Wheel fixed'} · ${data.config.radius*1000} mm wheel radius · ${fmt(data.config.extension*1000,0)} mm extension`;
+    $('status').textContent=`${data.config.target==='position'?'Prescribed position · ':''}Recorded ${data.rows.length.toLocaleString()} ${isMath?'output samples':'solver steps'} · dt ${data.config.dt*1000} ms · actual spring free length ${fmt(data.actual_rest_length*1000,1)} mm`;
+    $('warnings').replaceChildren();
+    for(const warning of data.warnings||[]){const node=document.createElement('div');node.className='warning';node.textContent=warning;$('warnings').append(node);}
+    const reference=data.equation_reference||{};
+    $('equation-formulas').textContent=(reference.visible_equations||[]).join('\n')+(reference.derived_identity?'\n\nDerived identity: '+reference.derived_identity:'');
+    $('equation-errors').textContent='Maximum residuals across saved run:\n'+JSON.stringify(data.equation_check_errors||{},null,2);
+    const reproduction=reference.torque_reproduction;
+    $('reference-validation').textContent=reproduction?'Screenshot torque reproduction (separate from current run):\n'+reproduction.assumptions+'\n'+reproduction.samples.map(s=>`${s.theta_deg}°: reported ${s.reported_Nm} N·m; reproduced ${s.reproduced_Nm.toFixed(10)} N·m`).join('\n'):'';
+    $('equation-scope').textContent=(reference.status||'')+' '+(reference.limitations||[]).join(' ');
+    const equationHeading=$('equation-checks')?.querySelector('summary');if(equationHeading)equationHeading.textContent=isMath?'Mathematical equations & load balances':'Equation cross-check · reference screenshots';
+    $('scope').textContent=data.scope||'';$('diagnostics').textContent=JSON.stringify({...(data.diagnostics||{}),...(data.solver?{solver:data.solver}:{})},null,2);
+    const moving=data.config.fixture==='hip'?'hub':'chassis';
+    $('peaks').textContent=`Peak J2 ${forceFmt(data.peaks?.j2_force?.value)} · peak vertical accel ${fmt(data.peaks?.[moving+'_ay']?.value,1)} m/s²`;
+    $('probe').value=data.config.fixture==='hip'?'j3':'j1';$('time').max=data.rows.at(-1).t;
+    for(const id of ['time','play','export','case','save-data'])if($(id))$(id).disabled=false;
+    $('model-view').value=isMath?'annotated':$('model-view').value;
+    makePlots();publish('motion-lab-config',{config:{...config}});if(emit)publish('motion-lab-run',{result:{...data,backend}});
   }
-  $('run').onclick=run;$('export').onclick=()=>{if(!result)return;const keys=Object.keys(result.rows[0]),csv=keys.join(',')+'\r\n'+result.rows.map(row=>keys.map(key=>row[key]).join(',')).join('\r\n');const url=URL.createObjectURL(new Blob([csv],{type:'text/csv'})),a=document.createElement('a');a.href=url;a.download='pymunk-linkage-full-trace.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-  $('case').onclick=()=>{if(!result)return;const data={engine:result.engine,config:result.config,actual_rest_length:result.actual_rest_length,diagnostics:result.diagnostics,equation_reference:result.equation_reference,equation_check_errors:result.equation_check_errors,reference_inputs:{T0_N:referenceT0N,T0_kgf:referenceT0N===null?null:referenceT0N/KGF,applied_to_solver:false},scope:result.scope},url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download='pymunk-linkage-run-config.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+  async function run(){
+    pause();$('run').disabled=true;$('error').hidden=true;$('status').textContent=isMath?'Running independent SciPy equations…':'Running Pymunk rigid-body solver…';
+    try{const response=await fetch(isMath?'/api/math/simulate':'/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),data=await response.json();if(!response.ok)throw Error(data.error||'Simulation failed.');loadResult(data,{emit:true});}
+    catch(error){showError(error);$('status').textContent='Run failed; any previous plots retain their saved inputs.';}finally{$('run').disabled=false;}
+  }
+  function showError(error){$('error').hidden=false;$('error').textContent=error.message||String(error);}
+  function download(data,name,type='application/json'){
+    const url=URL.createObjectURL(new Blob([type==='application/json'?JSON.stringify(data,null,2):data],{type})),a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+  }
+  function saveProfile(){
+    const profile={schema:'wheel-leg-lab-profile/v1',backend,config:{...config},reference_inputs:referenceInputs()};
+    publish('motion-lab-profile',{config:{...config},reference_inputs:profile.reference_inputs});download(profile,backend+'-motion-profile.json');
+  }
+  function referenceInputs(){return {T0_N:referenceT0N,T0_kgf:referenceT0N===null?null:referenceT0N/KGF,applied_to_solver:false};}
+  function restoreReference(value){
+    const n=value?.reference_inputs?.T0_N;
+    if(n===null||(Number.isFinite(n)&&n>=0)){referenceT0N=n;showReferenceT0();}
+  }
+  function applyProfile(value){
+    const incoming=value?.config||value;if(!incoming||Array.isArray(incoming)||typeof incoming!=='object')throw Error('Profile must contain a configuration object.');
+    if(!Object.keys(defaults).length){pendingProfile=value;return;}
+    const next={...defaults};
+    const choices={fixture:['floating','hip','wheel'],target:['position','force','knee'],wave:['step','square','pulse','impulse'],ramp_shape:['quintic','linear'],load_point:['hub','contact']};
+    for(const [key,value] of Object.entries(incoming)){
+      if(!Object.hasOwn(defaults,key))throw Error('Unknown profile field: '+key);
+      if(typeof value!==typeof defaults[key]||(typeof value==='number'&&!Number.isFinite(value)))throw Error('Invalid profile value for '+key);
+      if(choices[key]&&!choices[key].includes(value))throw Error('Unsupported choice for '+key);next[key]=value;
+    }
+    if(isMath&&(next.fixture!=='floating'||next.target!=='position'||next.ramp_shape!=='quintic'||next.load_point!=='hub'||!['step','square','pulse'].includes(next.wave)))throw Error('The mathematical tab requires a floating chassis, smooth position input and hub loads. Open other profiles in 2D Physics.');
+    pause();config=next;dirty=true;controls();restoreReference(value);$('error').hidden=true;$('status').textContent='Profile loaded. Run simulation to generate a new result.';publish('motion-lab-config',{config:{...config}});
+  }
+  $('run').onclick=run;
+  $('export').onclick=()=>{if(!result)return;const keys=Object.keys(result.rows[0]),csv=keys.join(',')+'\r\n'+result.rows.map(row=>keys.map(key=>row[key]).join(',')).join('\r\n');download(csv,backend+'-linkage-full-trace.csv','text/csv');};
+  $('case').onclick=()=>{if(!result)return;download({engine:result.engine,config:result.config,actual_rest_length:result.actual_rest_length,diagnostics:result.diagnostics,equation_reference:result.equation_reference,equation_check_errors:result.equation_check_errors,reference_inputs:{T0_N:referenceT0N,T0_kgf:referenceT0N===null?null:referenceT0N/KGF,applied_to_solver:false},scope:result.scope},backend+'-linkage-run-config.json');};
+  if($('profile'))$('profile').onclick=saveProfile;
+  if($('save-data'))$('save-data').onclick=()=>{if(!result)return;const data={...result,backend,reference_inputs:referenceInputs()};publish('motion-lab-save-run',{result:data});download(data,backend+'-motion-run.json');};
+  if($('gui'))$('gui').onclick=()=>{
+    if(parent!==window){publish('motion-lab-show-gui',{config:{...config},result:result?{...result,backend}:null});return;}
+    if(isMath){try{sessionStorage.setItem('motion-lab-gui-profile',JSON.stringify(config));}catch{}location.assign('/?gui=1');return;}
+    if(!result){showError(Error('Run a simulation or load a recorded result before opening the Pymunk viewer.'));return;}
+    document.body.classList.add('engine-viewer');$('model-view').value='engine';drawMechanism();
+    if(!document.getElementById('back-to-controls')){const back=document.createElement('button');back.id='back-to-controls';back.textContent='Back to simulation controls';back.onclick=()=>{document.body.classList.remove('engine-viewer');back.remove();};document.querySelector('.mechanism-panel').prepend(back);}
+  };
+  if($('profile-import'))$('profile-import').onchange=async event=>{try{const file=event.target.files[0];if(!file)return;if(file.size>80*1024*1024)throw Error('JSON exceeds the 80 MiB import limit.');applyProfile(JSON.parse(await file.text()));}catch(error){showError(error);}event.target.value='';};
+  addEventListener('message',event=>{
+    if(event.origin!==location.origin||event.source!==parent)return;
+    const message=event.data;if(!message||typeof message.type!=='string')return;
+    try{
+      if(message.type==='motion-lab-load-profile')applyProfile({config:message.config,reference_inputs:message.reference_inputs});
+      else if(message.type==='motion-lab-save-profile')saveProfile();
+      else if(message.type==='motion-lab-load-result')loadResult(message.result);
+      else if(message.type==='motion-lab-theme'){requestAnimationFrame(()=>{if(result)makePlots();});}
+    }catch(error){showError(error);}
+  });
   function showReferenceT0(source=null){
     if(source!=='N')$('T0-newtons').value=referenceT0N===null?'':String(Number(referenceT0N.toPrecision(12)));
     if(source!=='kgf')$('T0-kgf').value=referenceT0N===null?'':String(Number((referenceT0N/KGF).toPrecision(12)));
@@ -208,7 +301,22 @@
     showReferenceT0(unit);try{localStorage.setItem('pymunk-reference-T0-N',JSON.stringify(referenceT0N));}catch{}
   });
   showReferenceT0();
-  let resizePending=0;new ResizeObserver(()=>{cancelAnimationFrame(resizePending);resizePending=requestAnimationFrame(()=>{if(result)makePlots();});}).observe($('plots'));
+  let resizePending=0,lastWidth=0;
+  new ResizeObserver(entries=>{
+    const width=entries[0].contentRect.width;if(Math.abs(width-lastWidth)<1)return;lastWidth=width;
+    cancelAnimationFrame(resizePending);resizePending=requestAnimationFrame(()=>{for(const chart of charts)if(chart.container._fullLayout)window.Plotly.Plots.resize(chart.container);drawMechanism();});
+  }).observe($('plots'));
+  let heightPending=0,lastHeight=0;
+  new ResizeObserver(()=>{cancelAnimationFrame(heightPending);heightPending=requestAnimationFrame(()=>{const height=Math.ceil(document.body.scrollHeight);if(height!==lastHeight){lastHeight=height;publish('motion-lab-height',{height});}});}).observe(document.body);
+  new MutationObserver(()=>{if(result)makePlots();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
-  fetch('/api/defaults').then(r=>r.json()).then(data=>{config=data;controls();run();}).catch(error=>{$('status').textContent='Could not connect to Pymunk backend: '+error.message;});
+  fetch('/api/defaults').then(r=>{if(!r.ok)throw Error('Backend unavailable.');return r.json();}).then(data=>{
+    defaults={...data};config={...data};
+    if(isMath){config.fixture='floating';config.target='position';config.ramp_shape='quintic';config.load_point='hub';config.wave='step';}
+    if(viewer){$('status').textContent='Waiting for a recorded Pymunk run from the main lab.';publish('motion-lab-viewer-ready');publish('motion-lab-ready');return;}
+    controls();publish('motion-lab-config',{config:{...config}});
+    if(pendingProfile){applyProfile(pendingProfile);pendingProfile=null;publish('motion-lab-ready');}
+    else if(loadOnly){$('status').textContent='Choose or load a profile, then run the simulation.';publish('motion-lab-ready');}
+    else run().finally(()=>publish('motion-lab-ready'));
+  }).catch(error=>{$('status').textContent='Could not connect to simulation backend: '+error.message;});
 })();

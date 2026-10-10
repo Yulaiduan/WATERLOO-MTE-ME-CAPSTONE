@@ -41,3 +41,12 @@ The fixed 4:1 example retains about 42.35 mm working travel with less than 0.768
 With shared documentation indexes, publication uses preliminary scope. Repository regressions ran 36 tests: 34 pass and two MuJoCo fixture tests are skipped because the global environment lacks MuJoCo. These skips are not canonical physics passes. The shared manifest stays empty and unchanged; canonical physics is not applicable to this isolated toolkit. Architecture, link/log checks and the scoped gate must pass before publication.
 
 Untested: hardware, real belt pretension/elasticity, tire/terrain/soil contact, structure/buckling, inversion clearance, GPU performance, other operating systems, and missing T₀/pulley/component limits.
+
+## Unified Motion Lab, 2026-10-10
+
+The shared browser menu now separates independent mathematical simulation,
+2D Pymunk physics and miscellaneous motion studies, with dark mode, Plotly
+charts and a profile/data browser. Use Start Motion Lab.cmd at port 4186;
+familiar browser launchers are aliases and the native debugger is preserved
+separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
+verification are in the [unified workspace record](unified-motion-lab.md).

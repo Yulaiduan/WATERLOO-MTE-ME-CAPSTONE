@@ -18,5 +18,5 @@ try {
     }
     Stop-Process -Id $server.ProcessId
     Archive-PymunkState
-    Write-Host 'Pymunk linkage stopped. Double-click Start Pymunk Linkage.cmd to restart.'
+    Write-Host 'Motion Lab stopped. Double-click Start Motion Lab.cmd to restart.'
 } catch { Write-Host "STOP FAILED: $($_.Exception.Message)" -ForegroundColor Red; exit 1 }
