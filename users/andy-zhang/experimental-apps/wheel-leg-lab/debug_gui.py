@@ -34,7 +34,7 @@ def main():
     args=parser.parse_args()
     values=json.loads(args.config.read_text()) if args.config else None
     c=config(values.get('config',values) if values else None)
-    pygame.init();screen=pygame.display.set_mode((1180,940),pygame.RESIZABLE)
+    pygame.init();screen=pygame.display.set_mode((1180,1020 if c['aux_spring_enabled'] else 940),pygame.RESIZABLE)
     pygame.display.set_caption('Pymunk live model - Capstone suspension')
     font=pygame.font.SysFont('Segoe UI',16);small=pygame.font.SysFont('Segoe UI',14);title=pygame.font.SysFont('Segoe UI',23)
     clock=pygame.time.Clock();model=build(c);t=0.;paused=not args.run;accumulator=0.;selected='lower';command=0.;steps=0;loops=0
@@ -69,7 +69,7 @@ def main():
         options.transform=pymunk.Transform(a=scale,d=-scale,tx=ox,ty=oy)
         model['space'].debug_draw(options)
         draw_suspension(screen,model,c,lambda p:(round(ox+p[0]*scale),round(oy-p[1]*scale)),small)
-        for name in ['upper','lower', 'moving']:
+        for name in ['upper','lower', 'moving']+(['hip'] if c['aux_spring_enabled'] else []):
             b=model[name];p=(round(ox+b.position.x*scale),round(oy-b.position.y*scale))
             pygame.draw.line(screen,(220,105,168),(p[0]-4,p[1]),(p[0]+4,p[1]),1)
             pygame.draw.line(screen,(220,105,168),(p[0],p[1]-4),(p[0],p[1]+4),1)
@@ -102,15 +102,20 @@ def main():
         else:moment=0.
         text(f'Spring about knee: {moment:.2f} N m',x,y,small);y+=22
         text(f'Knee actuator: {model.get("live_actuator",0.):.2f} N m',x,y,small);y+=22
+        if model.get('auxiliary',{}).get('enabled'):
+            state=model.get('auxiliary_state',{})
+            text(f'Ride strut force: {state.get("tension",0.):.2f} N',x,y,small);y+=22
+            text(f'Ride k / c: {c["aux_stiffness"]:.0f} / {c["aux_damping"]:.0f}',x,y,small);y+=22
+            text(f'Ride free length: {model["auxiliary"]["config"]["rest_length"]*1000:.1f} mm',x,y,small);y+=22
         text('Geometry shapes are sensors.',x,H-53,small,(166,190,173))
         text('No tire / terrain contact in this bench.',x,H-31,small,(166,190,173))
         return ox,oy,scale,side
     if args.headless_check:
         for _ in range(1200):step()
         paint();args.screenshot.parent.mkdir(parents=True,exist_ok=True);pygame.image.save(screen,str(args.screenshot))
-        assert len(model['space'].shapes)==3 and len(model['space'].constraints)==6-int(model['manual_spring'])+int(c['wheel_drive_locked'])+int(c['target']=='position')
+        assert len(model['space'].shapes)==3+int(c['aux_spring_enabled']) and len(model['space'].constraints)==6-int(model['manual_spring'])+int(c['wheel_drive_locked'])+int(c['target']=='position')
         assert math.isfinite(model['lower'].angle)
-        print(f"PASS: live Pymunk stepped, official pygame debug_draw rendered 3 shapes and {len(model['space'].constraints)} constraints.")
+        print(f"PASS: live Pymunk stepped, official pygame debug_draw rendered {len(model['space'].shapes)} shapes and {len(model['space'].constraints)} constraints.")
         pygame.quit();return
     running=True;last_report=0.;snapshot_taken=False;report('ready')
     while running:

@@ -1279,3 +1279,65 @@ Its GUI buttons launch, restore and reuse live desktop solvers on the host while
 Continue from the constant-lift/preset/model/validation docs, preserve the original archives and confirm real hardware/contact/routing and required restoring stiffness before canonical promotion.
 
 ---
+
+## Entry: 2026-10-10 — Andy Zhang — complete constant-lift folding-leg suspension
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's isolated Motion Lab wheel suspension experiment.
+- **Associated Issue/Task:** User requested integration of the constant-lift lever into a suspension architecture and explicitly selected the existing 2:1 folding wheel-leg with a restoring spring and damper. Continue the authorized source/docs publication and durable preview.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; historical files remain intact.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/constant-lift.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/decisions.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/design.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/wheel_leg_ode45.m`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_suspension.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_counterbalance_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_native_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suspension_architecture_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/suspension_architecture.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/suspension_runtime.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_suspension_architecture.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/style.css`
+- **API/Interface Changes:** Add optional passive hip-to-original-tip ride strut alongside the upper-link gravity compensator. Separate captured/compression/extension law, stiffness, damping and automatic zero-at-pose free length; sum actual body point forces and moments in Pymunk and generalized forces/energies in independent SciPy. Export per-stage elastic/damper forces, support, energies and actual auxiliary geometry. Add a massless chassis sensor polygon only for this architecture, preserving existing chassis mass/pitch inertia. Add /api/suspension-architecture/defaults with editable 200 mm wheel/2:1 leg, primary damping zero, ride k8000/c500, no knee controller. Add cold one-run deep entry /?tab=physics&architecture=constant-lift, main/Physical buttons and embedded/standalone lever bridge. Add dual coils, actual mount/bracket/chassis labels and 15 Plotly charts. JSON/library-to-math keeps both stages. Global native launch now uses the active iframe's profile instead of a different inactive study/viewer; explicit record/child configs remain authoritative. Actual native renderer displays four engine shapes and both force paths. MATLAB parses auxiliary-off legacy exports and rejects enabled ride strut. No canonical/shared component changes or new startup services.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All 90 Python tests pass (prior82 plus eight architecture cases), and all33 JavaScript tests pass. Architecture cases cover equilibrium/zero initial ride elastic force, restoring signs, passive damping, real point-force/pin/torque closure, unchanged sensor mass/inertia, manual-preload equilibrium caveat, exact unchanged trajectories for nine auxiliary-disabled presets, and independent energy/timestep refinement. Final-angle errors vs SciPy decrease .009763/.005147/.002635 degrees at1/.5/.25ms; finest final J2/driver/guide/aux differences are about.0450N/.0166N/.00309Nm/.0511N. Conservative actual-body energy drift decreases .002542/.001250/.000619J. Real architecture browser tests pass cold single configured run, four actual shapes/dual paths, restoring and damping channels, zero initial ride elastic load, Math1e-7N/physical.02N constant-primary-support tolerances, JSON/library-to-math import with ride damping500, 15Plotly charts, native flat wheel-profile/show reuse, lever bridges, dark/mobile. Existing counterbalance and unified suites pass, including Math350mm versus inactive Misc400mm native-profile isolation. Native actual five-case API suite passes including complete two-stage suspension with four shapes/six constraints, real HWND/PID ownership, solver step advancement/loops, visible restore, exact-profile reuse and graceful zero exit. Official architecture headless render passes. Expanded auxiliary-off legacy MATLAB R2025b profile still parses, and new force laws/auxiliary stage remain explicitly unsupported. All relative Markdown links/fences and diff hygiene pass; working/staged repository gates run before publication. Original project-local CMD passes fresh start/scoped-stop/restart from an unrelated Windows directory and keeps port4186. Source workers were given exclusive final edit windows and marked done after completion.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member-app contribution. Tire/soil contact, full vehicle pitch/roll, packaging/clearance, friction, real spring capture and structural/hardware ratings remain unverified. Source controls label demo settings and captured bilateral behavior. The initial browser draft used the old100Ns/m damping, an incorrect wheel_radius key and an over-tight physical constant-lift tolerance; factory500/radius and the measured.02N finite-step tolerance now pass, while SciPy retains1e-7N. Library load uses its matching backend before explicit JSON import into Math. A queued chassis label/camera bound and duplicate engine rectangle were corrected against the actual new polygon. No failed test was treated as canonical acceptance; no historical file, archive or unrelated process was removed.
+
+## 4. Compute Saving Handoff State
+
+The constant-lift concept now forms a complete passive two-stage suspension on the existing 2:1 folding leg with floating chassis and prescribed wheel height.
+Weight compensation, ride restoration and damping have separate visible geometry/data, while both solvers and the live desktop GUI carry their combined pin and torque loads.
+Continue from the suspension-architecture and validation records, use the project-local restart launcher and preserve archives while confirming real mechanical packaging/contact before promotion.
+
+---

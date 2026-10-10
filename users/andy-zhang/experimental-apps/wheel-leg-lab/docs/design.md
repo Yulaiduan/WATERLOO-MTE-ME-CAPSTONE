@@ -33,3 +33,9 @@ and Miscellaneous studies. Its plots distinguish varying coil tension and
 moment from equivalent lift, and compare ideal compensation with an ordinary
 finite-free-length coil. Its wheel adaptation is the ninth suspension preset.
 Each model keeps its own runnable profiles and native solver geometry.
+
+The lever's **Use in wheel-leg suspension** action opens the complete 2:1
+architecture: constant support, a restoring ride spring, damping, floating
+chassis and prescribed wheel height. Distinct colors/labels and per-stage
+Plotly traces preserve their roles. The native view includes the actual chassis
+shape and both applied force paths.

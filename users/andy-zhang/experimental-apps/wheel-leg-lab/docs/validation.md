@@ -152,3 +152,33 @@ MATLAB R2025b parsing. Its legacy step differs from SciPy by at most
 explicitly rejected. The initial local probe used MATLAB run's changed working
 directory; resolving the app root from the script path then passed without
 warnings. No new mechanism is silently evaluated with the old MATLAB law.
+
+## Two-stage suspension architecture
+
+All **90 Python tests** pass: the prior 82 plus eight dedicated architecture
+cases. The nine auxiliary-disabled preset trajectories remain unchanged.
+Tests verify initial gravity support and zero ride elastic load, restoring
+force on both sides of ride pose, positive damper dissipation, actual point-force
+and impulse/moment closure, unchanged chassis mass/inertia after adding its
+sensor polygon, and independent energy/step refinement. Architecture final-angle
+errors decrease 0.009763 / 0.005147 / 0.002635° at 1 / 0.5 / 0.25 ms. Finest-step
+final differences are about 0.0450 N at J2, 0.0166 N driver reaction, 0.00309 Nm
+guide torque and 0.0511 N ride-strut force. Conservative body-energy drift
+decreases 0.002542 / 0.001250 / 0.000619 J. All 33 JavaScript tests still pass.
+
+The actual factory uses primary damping zero and ride damping 500 N s/m;
+these are labeled editable demos. Real browser checks pass the cold architecture
+entry with one configured run, four actual shapes and two coil paths, restoring/
+damper telemetry, per-stage energies, 15 Plotly charts, JSON/library-to-math
+preservation, embedded/standalone lever bridges, dark mode and mobile. The
+existing lever and main-menu suites also pass, including the native active-frame
+regression: a 350 mm Math lever remains selected after an inactive 400 mm Misc
+lever is opened. Explicit saved-record/child configurations stay authoritative.
+
+The actual native test now passes five fixtures, including the two-stage model
+with four shapes and six constraints. Window ownership, live step advancement,
+looping, visible restore, exact-profile reuse and graceful zero exit pass.
+Official headless rendering also passes and shows the rigid compensator mount,
+chassis and independent ride strut. MATLAB accepts the expanded auxiliary-off
+legacy profile; enabled auxiliary mode is explicitly unsupported. These checks
+do not establish real contact, packaging, structural stress or hardware ratings.

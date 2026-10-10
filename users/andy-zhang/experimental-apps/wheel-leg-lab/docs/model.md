@@ -138,3 +138,9 @@ length/preload. Horizontal mount offset, nonzero effective input free length
 and damping break exact constant elastic lift. The fully calibrated undamped
 case is neutral, so it supplies gravity compensation without restoring ride
 height or a complete suspension.
+
+The [two-stage architecture](suspension-architecture.md) adds an independent
+hip-to-lower-extension strut. Its energy and generalized force add to the gravity
+stage, and pin-force/moment ledgers include both sets of actual force sites.
+Automatic auxiliary free length gives zero elastic force at the initial pose;
+captured behavior restores either side. Per-stage telemetry stays separate.

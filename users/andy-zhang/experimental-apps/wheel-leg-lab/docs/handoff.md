@@ -79,3 +79,15 @@ Automatic rate calibration preserves zero effective free length and a positive
 physical coil length. This produces neutral gravity compensation rather than
 a restoring ride-height spring. The complete 82 Python and 33 JavaScript tests,
 both browser tools and four native cases pass; use the latest validation record.
+
+## Complete suspension follow-up
+
+The latest user choice is the 2:1 folding wheel-leg with a restoring spring and
+damper. Open `/?tab=physics&architecture=constant-lift` or use the lever bridge.
+The weight stage remains separate from the hip-to-tip ride strut, whose auto
+free length sets zero initial elastic load. Both solvers reconstruct combined
+pin/torque loads, with separate force/energy channels and four actual shapes.
+Read [architecture](suspension-architecture.md) and the latest validation.
+The complete 90 Python/33 JavaScript tests, architecture browser flow and five
+native cases pass. Preserve archives and confirm physical packaging/contact
+before promoting this ideal one-corner model.

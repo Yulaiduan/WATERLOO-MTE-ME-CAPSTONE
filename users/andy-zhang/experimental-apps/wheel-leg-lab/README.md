@@ -83,14 +83,20 @@ Shared requirements remain in the [repository research record](../../../../datab
 
 ## Checks and limitations
 
+The [complete constant-lift suspension](docs/suspension-architecture.md) combines
+gravity support with a separate ride spring/damper on the folding leg. Use
+**Use in wheel-leg suspension** on the lever page, or open
+[the architecture preview](http://127.0.0.1:4186/?tab=physics&architecture=constant-lift).
+
 ```sh
 npm test
-.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance
+.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance test_suspension_architecture
 npm run test:browser
 node scripts/verify_pymunk.cjs
 node scripts/verify-force-plots.cjs
 node scripts/verify_suspension_ui.cjs
 node scripts/verify_counterbalance_ui.cjs
+node scripts/verify_suspension_architecture_ui.cjs
 node scripts/verify_motion_lab.cjs
 .venv/Scripts/python.exe scripts/verify_native_gui.py
 ```
@@ -102,7 +108,7 @@ tolerances are in the [validation record](docs/validation.md). The native render
 `Open Native Pymunk Debugger.cmd --headless-check`. No canonical robot or hardware
 validation is claimed.
 
-The current constant-lift integration passes **82 Python tests** (71 wheel-leg
+The current suspension architecture passes **90 Python tests** (79 wheel-leg
 and 11 lever) and **33 JavaScript tests**. Real-backend browser checks pass all
 nine presets, both lever APIs, JSON/library integration and the unified menus.
 Actual native runs pass captured-knee, gravity-balance, prescribed-lever and

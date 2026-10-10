@@ -24,7 +24,8 @@ from scipy.integrate import solve_ivp
 from motion_input import position_state
 from spring_mechanisms import (CATALOG, MECHANISM_DEFAULTS, apply_preset, equal_poses,
                                geometry, geometry_from_bodies, mechanism_config,
-                               spring_law, calibrate_zero_effective_rate, mechanism_metadata)
+                               spring_law, calibrate_zero_effective_rate, mechanism_metadata,
+                               auxiliary_parameters, auxiliary_metadata, generalized)
 
 # Experimental defaults shared by value, independently resolved without importing
 # the Pymunk fixture. Non-mathematical fields remain in exported profiles so the
@@ -151,7 +152,8 @@ def parameters(c):
         if abs(-check['tension']*J0-needed) > 1e-7:
             raise ValueError('Unilateral spring is slack at the requested automatic equilibrium; choose compatible preload geometry.')
     return {'S': S, 'Iu': Iu, 'Il': Il, 'Iw': Iw, 'q0': q0, 'rest': rest,
-            'input_ref': input_ref, 'spring_config': {**c, 'rest_length': rest}}
+            'input_ref': input_ref, 'spring_config': {**c, 'rest_length': rest},
+            'auxiliary': auxiliary_parameters(c)}
 
 
 def terms(q, velocity, c, p):
@@ -176,6 +178,9 @@ def derivative(t, state, c, p):
     M, Mp, _, J, elastic, damper, torque, _ = terms(q, velocity, c, p)
     _, _, base_accel = position_state(t, c)
     force = -(elastic+damper)*J + 2*torque
+    if p['auxiliary']['enabled']:
+        aux=p['auxiliary']
+        force += generalized(q, velocity, aux['config'], aux['input_ref'])['generalized_force']
     accel = (force-p['S']*math.cos(q)*(c['gravity']+base_accel)-.5*Mp*velocity**2)/M
     return velocity, accel
 
@@ -215,6 +220,18 @@ def observe(t, q, velocity, c, p):
         force = (elastic+damper)*np.array(site['direction'])
         spring_forces[site['body']] += force
         spring_sites.append((site['body'], np.array(site['world']), force))
+    primary_spring_forces = {body: force.copy() for body, force in spring_forces.items()}
+    auxiliary_spring_forces = {body: np.zeros(2) for body in spring_forces}
+    aux = p['auxiliary'];auxiliary_geometry=None;auxiliary_law=None;auxiliary_Q=0.
+    if aux['enabled']:
+        auxiliary_geometry=geometry_from_bodies(equal_poses(q,c,theta_speed=velocity,base_height=z,base_speed=zv),aux['config'])
+        auxiliary_law=spring_law(auxiliary_geometry['input_length'],auxiliary_geometry['input_speed'],aux['config'],aux['input_ref'])
+        auxiliary_Q=-auxiliary_law['tension']*auxiliary_geometry['jacobian']
+        for site in auxiliary_geometry['force_sites']:
+            force=auxiliary_law['tension']*np.array(site['direction'])
+            spring_forces[site['body']] += force
+            auxiliary_spring_forces[site['body']] += force
+            spring_sites.append((site['body'],np.array(site['world']),force))
     f1 = spring_forces['hip']-c['chassis_mass']*(aa-gravity)
     f2 = f1+spring_forces['upper']-c['upper_mass']*(au-gravity)
     f3 = f2+spring_forces['lower']-c['lower_mass']*(ad-gravity)
@@ -240,6 +257,8 @@ def observe(t, q, velocity, c, p):
     potential = g*(c['chassis_mass']*A[1]+c['upper_mass']*U[1]
                    +c['lower_mass']*D[1]+c['wheel_mass']*C[1])
     potential += law['energy']
+    if auxiliary_law:
+        potential += auxiliary_law['energy']
     F, knee_load = -f3, -f2
     Min = L*(-F[1]*cs+F[0]*sn)
     Mact = L*(knee_load[1]*cs+knee_load[0]*sn)
@@ -297,12 +316,30 @@ def observe(t, q, velocity, c, p):
         'mechanical_energy_J': float(kinetic+potential),
         'driver_power_W': float(driver@vc), 'bias_power_W': float(external@vc),
         'actuator_power_W': 2*torque*velocity,
-        'dissipation_power_W': law['dissipation_rate'],
+        'dissipation_power_W': law['dissipation_rate']+(auxiliary_law['dissipation_rate'] if auxiliary_law else 0.),
         'total_mass_kg': total_mass,
     }
+    if auxiliary_law:
+        row.update(aux_spring_tension=auxiliary_law['tension'],aux_spring_length=auxiliary_geometry['input_length'],
+                   aux_spring_elastic_tension=auxiliary_law['elastic_tension'],aux_spring_damper_tension=auxiliary_law['damper_tension'],
+                   aux_spring_coil_length=auxiliary_law['coil_length'],aux_spring_coil_load=auxiliary_law['coil_load'],
+                   aux_spring_energy_J=auxiliary_law['energy'],aux_spring_generalized_force=auxiliary_Q,
+                   aux_spring_equivalent_lift_N=auxiliary_Q/(2*L*cs),
+                   aux_spring_elastic_equivalent_lift_N=-auxiliary_law['elastic_tension']*auxiliary_geometry['jacobian']/(2*L*cs),
+                   aux_spring_dissipation_W=auxiliary_law['dissipation_rate'],aux_spring_engaged=float(auxiliary_law['engaged']),aux_spring_slack=float(auxiliary_law['slack']))
+    else:
+        row.update({f'aux_spring_{key}':0. for key in ['tension','length','elastic_tension','damper_tension','coil_length','coil_load','energy_J','generalized_force','equivalent_lift_N','elastic_equivalent_lift_N','dissipation_W','engaged','slack']})
+    row.update(total_spring_energy_J=law['energy']+(auxiliary_law['energy'] if auxiliary_law else 0.),
+               total_spring_generalized_force=-(elastic+damper)*J+auxiliary_Q,
+               total_spring_equivalent_lift_N=(-(elastic+damper)*J+auxiliary_Q)/(2*L*cs),
+               total_spring_dissipation_W=row['dissipation_power_W'])
     for body, force in spring_forces.items():
         row[f'spring_{body}_fx'] = float(force[0])
         row[f'spring_{body}_fy'] = float(force[1])
+        row[f'primary_spring_{body}_fx']=float(primary_spring_forces[body][0])
+        row[f'primary_spring_{body}_fy']=float(primary_spring_forces[body][1])
+        row[f'aux_spring_{body}_fx']=float(auxiliary_spring_forces[body][0])
+        row[f'aux_spring_{body}_fy']=float(auxiliary_spring_forces[body][1])
     for index, (force, vel, acc) in enumerate(((f1, va, aa), (f2, vb, ab), (f3, vc, ac)), 1):
         row.update({f'j{index}_fx': float(force[0]), f'j{index}_fy': float(force[1]),
                     f'j{index}_force': float(np.linalg.norm(force)),
@@ -313,6 +350,9 @@ def observe(t, q, velocity, c, p):
              'hub': C.tolist(), 'tip': E.tolist(), 'upper_angle': -q,
              'lower_angle': q-math.pi, 'position_target': C.tolist(), 'debug_draw': [],
              'spring_geometry': spring_geom, 'spring_coil_length': law['coil_length']}
+    if auxiliary_geometry:
+        frame['auxiliary_spring_geometry']=auxiliary_geometry
+        frame['auxiliary_spring_coil_length']=auxiliary_law['coil_length']
     return row, frame
 
 
@@ -357,7 +397,9 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
             frames.append(frame)
     warnings = []
     spring_meta = mechanism_metadata({**c, 'rest_length': p['rest']}, p['input_ref'])
+    aux_meta = auxiliary_metadata(c,p['auxiliary'])
     warnings.extend(spring_meta['notes'])
+    warnings.extend(aux_meta['notes'])
     stop_event = None
     if solution.status == 1:
         name = 'lower' if len(solution.t_events[0]) else 'upper'
@@ -399,7 +441,10 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
                                   'Zero-effective emulation overrides ordinary coil mapping: coil_length=physical_free + eta*(ell-effective_input_free), eta=+1 direct / -1 pull-through; T_elastic=k*(ell-effective_input_free)',
                                   'Gravity-balance vertical mount: ell^2=H^2+R^2-2HR sin(theta), J=-HR cos(theta)/ell; zero effective input free gives elastic lift=kHR/(2L)',
                                   'T_input = dU/dell + passive unilateral damping; ideal rope T_input >= 0',
-                                  'M theta_ddot + 0.5 M_prime theta_dot^2 + S cos(theta)(g + z_ddot) = -T_input J + 2 tau_knee',
+                                  'Optional ride strut: original hip-to-lower-tip ell_aux(theta), J_aux=dell_aux/dtheta; automatic free length=ell_aux(theta_initial), so elastic load is zero at the ride pose',
+                                  'Q_aux = -T_aux J_aux; captured T_aux=k_aux(ell_aux-free_aux)+c_aux ell_aux_dot; no active controller in either spring stage',
+                                  'M theta_ddot + 0.5 M_prime theta_dot^2 + S cos(theta)(g + z_ddot) = -T_input J + Q_aux + 2 tau_knee',
+                                  'Mechanical energy = body kinetic + gravitational potential + primary spring energy + auxiliary spring energy; dissipated power sums both passive dampers',
                                   'S = 1.5 m_upper L + 0.5 m_lower (L+e) + 2 m_chassis L',
                                   'M = I_upper + I_lower [+ I_wheel if locked] + m_upper[(L/2)^2 sin^2(theta)+(3L/2)^2 cos^2(theta)] + m_lower[(L+e)/2]^2 + 4 m_chassis L^2 cos^2(theta)',
                                   'Joint forces: individual body momentum balances; guide torque: independent upper/lower angular balances.']},
@@ -418,7 +463,8 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
                    'max_step_s': max_step, 'output_step_s': c['dt'], 'stop_event': stop_event},
         'warnings': warnings,
         'spring_mechanism': spring_meta,
-        'scope': 'Independent Python/SciPy scalar-energy model, exact equal-link 2:1 guide, selected direct/crank/ideal-pulley spring topology, floating chassis with pitch held, and prescribed bilateral wheel height. Smooth C2 input only. Reactions are instantaneous Newton-Euler loads, including physical tangent/mount force pairs; mathematical support tracks exactly. Stops terminate the run before impact. No tire contact, rope stretch/friction, coil solid-height limit, stress or hardware calibration. Legacy amplitude/impulse, fixed-hip preload and Pymunk iterations are preserved in profiles but do not drive this model.',
+        'auxiliary_spring': aux_meta,
+        'scope': 'Independent Python/SciPy scalar-energy model, exact equal-link 2:1 guide, selected direct/crank/ideal-pulley spring topology and optional independent original-tip ride strut, floating chassis with pitch held, and prescribed bilateral wheel height. Primary spring telemetry describes the support stage; spring_knee_moment and body spring loads include both passive stages when enabled. Smooth C2 input only. Reactions are instantaneous Newton-Euler loads, including physical tangent/mount force pairs; mathematical support tracks exactly. Stops terminate the run before impact. No tire contact, rope stretch/friction, coil solid-height limit, stress or hardware calibration. Legacy amplitude/impulse, fixed-hip preload and Pymunk iterations are preserved in profiles but do not drive this model.',
     }
 
 

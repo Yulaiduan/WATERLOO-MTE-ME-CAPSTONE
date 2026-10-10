@@ -45,8 +45,22 @@ def update(model,c):
         forces[key]+=F;torques[key]+=(point-body.position).cross(F)
         body.apply_force_at_world_point(F,point)
     model['spring_loads']=forces;model['spring_torques']=torques
+    model['primary_spring_loads']=dict(forces);model['primary_spring_torques']=dict(torques)
     model['spring_state']={**law,'input_length':g['input_length'],'input_speed':g['input_speed'],'jacobian':g['jacobian'],'geometry':g}
     model['cache']['distance']=g['input_length']
+    aux=model.get('auxiliary',{'enabled':False})
+    if aux['enabled']:
+        ag=geometry_from_bodies(bodies,aux['config'])
+        alaw=spring_law(ag['input_length'],ag['input_speed'],aux['config'],aux['input_ref'])
+        aforces={key:Vec2d(0,0) for key in forces};atorques={key:0. for key in forces}
+        for site in ag['force_sites']:
+            key=site['body'];body=bodies[key];F=Vec2d(*site['direction'])*alaw['tension'];point=Vec2d(*site['world'])
+            aforces[key]+=F;atorques[key]+=(point-body.position).cross(F)
+            body.apply_force_at_world_point(F,point)
+        model['auxiliary_loads']=aforces;model['auxiliary_torques']=atorques
+        model['auxiliary_state']={**alaw,'input_length':ag['input_length'],'input_speed':ag['input_speed'],'jacobian':ag['jacobian'],'geometry':ag}
+        model['spring_loads']={key:forces[key]+aforces[key] for key in forces}
+        model['spring_torques']={key:torques[key]+atorques[key] for key in torques}
 
 def visual(model,c):
     if not model.get('manual_spring'):return None

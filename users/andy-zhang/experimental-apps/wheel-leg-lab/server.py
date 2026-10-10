@@ -16,6 +16,7 @@ from math_model import simulate_math
 from native_viewer import launch as launch_native, status as native_status, show as show_native
 from spring_mechanisms import CATALOG, MECHANISM_DEFAULTS
 import counterbalance
+from suspension_architecture import constant_lift_profile
 import pymunk
 
 ROOT=Path(__file__).resolve().parent
@@ -40,6 +41,7 @@ class Handler(SimpleHTTPRequestHandler):
         if self.path=='/api/health':
             return self.json({'app':'capstone-wheel-leg-lab','root':str(ROOT),'engine':pymunk.version})
         if self.path=='/api/defaults': return self.json(DEFAULTS)
+        if self.path=='/api/suspension-architecture/defaults':return self.json(constant_lift_profile())
         if self.path=='/api/counterbalance/defaults':return self.json(counterbalance.DEFAULTS)
         if self.path=='/api/spring-presets': return self.json({'catalog':CATALOG,'defaults':MECHANISM_DEFAULTS})
         if self.path.startswith('/api/native-gui/'):

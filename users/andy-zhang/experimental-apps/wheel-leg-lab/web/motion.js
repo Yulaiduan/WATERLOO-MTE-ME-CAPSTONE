@@ -6,12 +6,14 @@
  */
 import {saveRecord,downloadJSON} from './library.js';
 import {mountDataBrowser} from './data-browser.js';
-const $=id=>document.getElementById(id),frames=new Map(),pending=new Map(),ready=new Set(),configs={},runs={};
+const $=id=>document.getElementById(id),frames=new Map(),pending=new Map(),ready=new Set(),frameConfigs=new Map(),configs={},runs={};
 let tab='home',mathModel='scipy',theme=document.documentElement.dataset.theme||'light',guiResult=null;
 let nativeSession=null,nativeConfig=null,nativePoll=0,nativeGeneration=0;
+let architectureLoading=false;
 const studies=[['gallery','All motion studies','/animations/'],['counterbalance','Constant-lift lever','/counterbalance/'],['ratio','Wheel / link force & travel','/force-plots/'],['linear','Straight 2:1 leg','/animations/linear-leg/'],['coaxial','Independent coaxial wheel drive','/animations/coaxial-wheel-leg/'],['tilt','Tilted invertible leg','/animations/tilted-invertible-leg/'],['mirror','Mirrored left tilt','/animations/left-tilted-leg/'],['reindex','Historical reindexing alternative','/animations/two-position-left-leg/'],['fixed','Fixed 4:1 working strokes','/animations/fixed-ratio-left-leg/'],['paths','Mathematical path family','/animations/leg-path-family/'],['recorded','Recorded Pymunk playback','/recorded/']];
 const counterbalanceBackend=backend=>['counterbalance_math','counterbalance_pymunk'].includes(backend);
 const activeCounterbalance=()=>tab==='math'&&mathModel==='counterbalance'||tab==='studies'&&$('study-select').value==='counterbalance';
+const activeFrameKey=()=>tab==='physics'?'physics':tab==='math'?(mathModel==='scipy'?'math':mathModel):tab==='studies'?'studies':null;
 const nativeProfile=record=>counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
 function status(text){$('lab-status').textContent=text;}
 function error(cause){$('lab-error').hidden=false;$('lab-error').textContent=cause instanceof Error?cause.message:String(cause);}
@@ -45,7 +47,7 @@ function selectTab(next){
  if(tab==='data'){void dataBrowser.refresh();requestAnimationFrame(()=>$('data-panel').querySelectorAll('.js-plotly-plot').forEach(plot=>Plotly.Plots.resize(plot)));}
  const url=new URL(location.href);url.searchParams.set('tab',tab);if(tab==='math')url.searchParams.set('model',mathModel);else url.searchParams.delete('model');history.replaceState(null,'',url);
 }
-function openStudy(id){const study=studies.find(s=>s[0]===id)||studies[0];$('save-study').disabled=study[0]==='gallery';$('save-study-data').disabled=!['ratio','paths','recorded','counterbalance'].includes(study[0]);let frame=frames.get('studies');if(!frame)frame=ensureFrame('studies','studies-host',study[2]+'?embedded=1',study[1]);else{frame.src=study[2]+'?embedded=1';frame.title=study[1];ready.delete('studies');}}
+function openStudy(id){const study=studies.find(s=>s[0]===id)||studies[0];$('save-study').disabled=study[0]==='gallery';$('save-study-data').disabled=!['ratio','paths','recorded','counterbalance'].includes(study[0]);let frame=frames.get('studies');if(!frame)frame=ensureFrame('studies','studies-host',study[2]+'?embedded=1',study[1]);else{frameConfigs.delete('studies');frame.src=study[2]+'?embedded=1';frame.title=study[1];ready.delete('studies');}}
 async function keepRun(backend,result){
  runs[backend]=result;if(result.config)configs[backend]=result.config;
  if(counterbalanceBackend(backend)){runs.counterbalance=result;configs.counterbalance=result.config;}
@@ -57,14 +59,32 @@ async function keepProfile(backend,config,reference_inputs){const record=await s
 function requestProfile(){const key=tab==='physics'?'physics':mathModel==='linkage'?'linkage':mathModel==='counterbalance'?'counterbalance':'math';if(!frames.has(key)){selectTab('math');status('Open a model, set its inputs, then save the profile.');return;}send(key,{type:'motion-lab-save-profile'});}
 function loadProfile(record,backend){
  if(counterbalanceBackend(backend)){
+  frameConfigs.set('counterbalance',{backend,config:record.config});
   ensureFrame('counterbalance','math-host','/counterbalance/?embedded=1&loadOnly=1','Constant-lift counterbalance lever');mathModel='counterbalance';selectTab('math');
   send('counterbalance',{type:'motion-lab-load-profile',config:record.config,backend});configs[backend]=record.config;configs.counterbalance=record.config;status('Counterbalance profile loaded. Run its math or Pymunk lever model to generate new data.');return;
  }
+ frameConfigs.set(backend==='pymunk'?'physics':backend==='linkage'?'linkage':'math',{backend,config:record.config});
  if(backend==='math')ensureFrame('math','math-host','/mathematical/?embedded=1&loadOnly=1','Independent SciPy mathematical simulation');
  if(backend==='pymunk')ensureFrame('physics','physics-host','/physics/?embedded=1&loadOnly=1','Actual 2D Pymunk physical model');
  if(backend==='linkage'){mathModel='linkage';selectTab('math');send('linkage',{type:'motion-lab-load-profile',config:record.config});}
  else{if(backend==='math')mathModel='scipy';selectTab(backend==='math'?'math':'physics');send(backend==='math'?'math':'physics',{type:'motion-lab-load-profile',config:record.config,reference_inputs:record.reference_inputs});}
  configs[backend]=record.config;const label=record.name.replace(/ · (math|pymunk|linkage)( · (step|square|pulse|impulse))?$/,'').slice(0,100);$('profile-name').value=label;$('physics-profile-name').value=label;status('Profile loaded into controls. Run simulation to generate new data.');
+}
+async function openArchitecture(){
+ if(architectureLoading)return;architectureLoading=true;clearError();
+ const buttons=document.querySelectorAll('[data-open-architecture]');buttons.forEach(button=>button.disabled=true);
+ try{
+  status('Loading the 2:1 wheel-leg suspension: constant weight support plus a separate restoring spring and damper…');
+  const response=await fetch('/api/suspension-architecture/defaults');let value;
+  try{value=await response.json();}catch{throw Error('Suspension architecture endpoint unavailable. Restart Motion Lab with its project launcher.');}
+  if(!response.ok)throw Error(value.error||'Could not load the suspension architecture.');
+  const config=value.config||value;
+  if(!config||typeof config.length!=='number'||!Number.isFinite(config.length)||config.aux_spring_enabled!==true)throw Error('The suspension factory must supply a wheel-leg profile with its restoring spring enabled.');
+  loadProfile({backend:'pymunk',name:'Constant-lift suspension',config},'pymunk');
+  send('physics',{type:'motion-lab-run'});
+  const url=new URL(location.href);url.searchParams.set('architecture','constant-lift');history.replaceState(null,'',url);
+  status('Complete suspension loaded. Running the floating chassis, 200 mm wheel and 2:1 folding leg with weight compensation plus restoring spring/damper.');
+ }catch(cause){error(cause);}finally{architectureLoading=false;buttons.forEach(button=>button.disabled=false);}
 }
 function loadStudy(record){
  const settings=record.result?.study_settings;if(!settings||!studies.some(study=>study[0]===settings.id))throw Error('Unknown motion study.');
@@ -155,10 +175,11 @@ async function showNativeGui(selectedConfig=null){
  try{
   let config=selectedConfig;
   if(!config){
-   if(activeCounterbalance())config={model:'counterbalance',config:configs.counterbalance||await (await fetch('/api/counterbalance/defaults')).json()};
+   const activeKey=activeFrameKey(),activeProfile=frameConfigs.get(activeKey);
+   if(activeCounterbalance())config={model:'counterbalance',config:activeProfile?.config||await (await fetch('/api/counterbalance/defaults')).json()};
    else{
    if(tab==='math'&&mathModel==='linkage')throw Error('The detailed two-axis linkage has a different configuration. Select the SciPy or 2D wheel-height model to launch its matching Pymunk desktop GUI.');
-   config=configs[tab==='math'?'math':'pymunk'];
+   config=activeProfile?.config||(!activeKey?configs.pymunk:null);
    if(!config)config=await (await fetch('/api/defaults')).json();
    }
   }
@@ -193,18 +214,26 @@ window.addEventListener('message',event=>{
  const key=[...frames].find(([,frame])=>frame.contentWindow===event.source)?.[0];if(!key)return;const data=event.data;
  if(data.type==='motion-lab-height'&&Number.isFinite(data.height))frames.get(key).style.height=Math.min(18000,Math.max(key==='gui'?680:600,data.height))+'px';
  else if(data.type==='motion-lab-ready'||data.type==='motion-lab-viewer-ready')markReady(key);
- else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk'].includes(data.backend)){configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
+ else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk'].includes(data.backend)){frameConfigs.set(key,{backend:data.backend,config:data.config});configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
  else if(data.type==='motion-lab-run'&&key!=='gui'){markReady(key);void keepRun(data.backend,data.result).catch(error);}
  else if(data.type==='motion-lab-profile')void keepProfile(data.backend,data.config,data.reference_inputs).catch(error);
  else if(data.type==='motion-lab-save-run')void keepRun(data.backend,data.result).catch(error);
  else if(data.type==='motion-lab-show-gui')void showNativeGui(data.config);
  else if(data.type==='motion-lab-show-playback')void showPlayback(data.config,data.result);
+ else if(data.type==='motion-lab-open-architecture')void openArchitecture();
  else if(data.type==='motion-lab-theme')changeTheme(data.theme);
 });
 document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>selectTab(button.dataset.tab));document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>selectTab(button.dataset.open));document.querySelectorAll('[data-math-model]').forEach(button=>button.onclick=()=>showMathModel(button.dataset.mathModel));
 for(const [id,title] of studies){const option=document.createElement('option');option.value=id;option.textContent=title;$('study-select').append(option);}
 $('study-select').onchange=()=>openStudy($('study-select').value);$('theme-toggle').onclick=()=>changeTheme(theme==='dark'?'light':'dark');$('show-gui').onclick=()=>showNativeGui();$('show-playback').onclick=()=>showPlayback(null,tab==='physics'?runs.pymunk:null);$('close-gui').onclick=()=>$('gui-dialog').close();$('save-profile').onclick=requestProfile;$('physics-save-profile').onclick=requestProfile;$('open-data').onclick=()=>selectTab('data');
 $('save-study').onclick=()=>saveStudy(false);$('save-study-data').onclick=()=>saveStudy(true);
-const query=new URLSearchParams(location.search);mathModel=['linkage','counterbalance'].includes(query.get('model'))?query.get('model'):'scipy';if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);selectTab(query.get('tab')||'home');
+for(const host of [document.querySelector('.home-secondary'),document.querySelector('[data-panel="physics"] .workspace-actions')]){
+ const button=document.createElement('button');button.dataset.openArchitecture='constant-lift';button.textContent='Open constant-lift wheel-leg suspension';button.onclick=()=>openArchitecture();host.append(button);
+}
+const query=new URLSearchParams(location.search);mathModel=['linkage','counterbalance'].includes(query.get('model'))?query.get('model'):'scipy';if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);
+if(query.get('architecture')==='constant-lift'){
+ // Prevent a cold Physics frame from running unrelated defaults while the factory loads.
+ ensureFrame('physics','physics-host','/physics/?embedded=1&loadOnly=1','Actual 2D Pymunk physical model');selectTab('physics');void openArchitecture();
+}else selectTab(query.get('tab')||'home');
 if(query.get('gui')==='1'){let config=null;try{config=JSON.parse(sessionStorage.getItem('motion-lab-gui-profile')||'null');}catch{}void showNativeGui(config);}
 window.addEventListener('pagehide',()=>{nativeGeneration++;clearTimeout(nativePoll);});

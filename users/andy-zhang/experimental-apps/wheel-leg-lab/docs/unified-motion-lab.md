@@ -195,3 +195,16 @@ Primary API references: [Plotly chart configuration](https://plotly.com/javascri
 and [SciPy solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html).
 Live engine references: [Pymunk Space/body APIs](https://www.pymunk.org/en/latest/pymunk.html)
 and [Pygame DrawOptions](https://www.pymunk.org/en/latest/pymunk.pygame_util.html).
+
+## Complete suspension architecture
+
+The [two-stage architecture](suspension-architecture.md) has a direct
+`/?tab=physics&architecture=constant-lift` entry and a bridge from the lever.
+It queues the factory profile before its first simulation. Constant gravity
+support and an independent ride spring/damper use separate controls/traces;
+joint loads include both. The architecture has four real engine shapes and
+15 Plotly charts, with its own flat wheel-leg JSON and the existing live GUI.
+All 90 Python tests and 33 JavaScript tests pass. Architecture, lever and unified
+browser suites pass, along with five actual native cases including the complete
+suspension. Native launch uses the visible frame's profile rather than an
+inactive study's settings. MATLAB remains legacy-only; see latest validation.

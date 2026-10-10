@@ -56,7 +56,17 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   await tool.locator('#lift-angle .lever-chart').evaluate(node=>window.Plotly.relayout(node,{'xaxis.range':[10,55]}));
   assert.deepEqual(await tool.locator('#lift-angle .lever-chart').evaluate(node=>node._fullLayout.xaxis.range),[10,55]);
   await page.screenshot({path:path.join(out,'lever-dark-mobile.png'),fullPage:true});
+  // The Math and Misc tools are independent frames sharing a backend. A later
+  // default run in an inactive frame must not replace the active native profile.
+  await tool.locator('#c-length').fill('350');await tool.locator('#c-length').dispatchEvent('change');
+  await page.locator('[data-tab="studies"]').click();await page.locator('#study-select').selectOption('counterbalance');
+  const misc=page.frameLocator('iframe[data-key="studies"]');await misc.locator('#status').filter({hasText:'Recorded'}).waitFor({timeout:30000});
+  assert.equal(await misc.locator('#c-length').inputValue(),'400');
+  await page.locator('[data-tab="math"]').click();assert.equal(await tool.locator('#c-length').inputValue(),'350');
+  const beforeActiveLaunch=launches.length,nativeResponse=page.waitForResponse(response=>response.url().endsWith('/api/native-gui')&&response.request().method()==='POST');
+  await page.locator('#show-gui').click();assert.equal((await nativeResponse).status(),202);
+  assert.equal(launches.length,beforeActiveLaunch+1);assert.equal(launches.at(-1).model,'counterbalance');assert.equal(launches.at(-1).config.length,.35);
   assert.deepEqual(wheelCalls,[]);assert.deepEqual(errors,[]);
-  console.log('PASS: flat equivalent lift vs changing spring tension, ordinary comparison, physical coil free length, live math/Pymunk, free balance, JSON/library/load, lever playback/native envelope, Plotly zoom/theme and mobile.');
+  console.log('PASS: flat equivalent lift vs changing spring tension, ordinary comparison, physical coil free length, live math/Pymunk, free balance, JSON/library/load, active-frame native profile isolation, lever playback/native envelope, Plotly zoom/theme and mobile.');
  }finally{await browser.close();}
 })().catch(cause=>{console.error(cause);process.exitCode=1;});

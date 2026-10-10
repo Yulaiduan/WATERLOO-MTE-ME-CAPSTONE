@@ -147,6 +147,7 @@ async function native(){
  }catch(cause){error(cause);}finally{$('native').disabled=false;}
 }
 $('run').onclick=()=>run();$('compare').onclick=()=>run(true);$('save-profile').onclick=saveProfile;$('save-run').onclick=()=>{if(result){downloadJSON(packet('run',result),'counterbalance-full-run.json');void retain({type:'motion-lab-save-run',backend:result.backend,result}).catch(error);}};$('native').onclick=native;
+$('architecture').onclick=()=>{if(embedded)emit({type:'motion-lab-open-architecture'});else location.assign('/?tab=physics&architecture=constant-lift');};
 $('backend').onchange=()=>{pause();emit({type:'motion-lab-config',backend:backend(),config});if(results[backend()])showResult(results[backend()]);else $('status').textContent='Backend selected. Run this lever model to generate its own recorded data.';};
 $('time').oninput=()=>{pause();time=Number($('time').value);draw();};
 $('play').onclick=()=>{if(playing){pause();return;}if(time>=result.rows.at(-1).t)time=0;playing=true;lastStamp=0;$('play').textContent='Pause';function tick(stamp){if(!playing)return;if(lastStamp)time=Math.min(result.rows.at(-1).t,time+(stamp-lastStamp)/1000);lastStamp=stamp;$('time').value=time;draw();if(time>=result.rows.at(-1).t){pause();return;}animation=requestAnimationFrame(tick);}animation=requestAnimationFrame(tick);};

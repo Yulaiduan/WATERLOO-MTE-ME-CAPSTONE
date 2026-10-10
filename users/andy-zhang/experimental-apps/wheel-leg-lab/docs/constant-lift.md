@@ -1,5 +1,9 @@
 # Constant-lift gravity compensation
 
+For the complete wheel-leg implementation with a restoring spring and damper,
+open [the suspension architecture](suspension-architecture.md). The lever page's
+**Use in wheel-leg suspension** button loads that configured physical model.
+
 Owner: Andy Zhang. Updated: 2026-10-10. Status: user-requested standalone lever study and wheel-leg adaptation, with editable ideal geometry; not selected hardware.
 
 ## Browser entry and provenance

@@ -44,12 +44,13 @@ def main():
         except HTTPError as error:assert error.code==expected,(error.code,error.read())
     cases=[('knee_capture',{'spring_topology':'knee_capture','radius':.2,'duration':1.2,'start':.3,'position_amplitude':.008},6),
            ('gravity_balance',{'spring_topology':'gravity_balance','radius':.2,'duration':1.2,'start':.3,'position_amplitude':.008},6),
+           ('two_stage_suspension',{**request('/api/suspension-architecture/defaults')[1],'duration':1.2,'start':.3,'position_amplitude':.008},6),
            ('counterbalance_prescribed',{'model':'counterbalance','config':{'duration':1.2,'start':.3,'angle_amplitude_deg':20.}},2),
            ('counterbalance_free',{'model':'counterbalance','config':{'mode':'free','duration':1.2,'initial_speed_deg':10.}},1)]
     evidence=[verify_case(name,values,constraints) for name,values,constraints in cases]
     artifact=ROOT/'artifacts/native-api-verification.json';artifact.parent.mkdir(exist_ok=True)
     artifact.write_text(json.dumps(evidence,indent=2),encoding='utf-8')
-    print('PASS: four live fixtures, visible owned-window restore, cross-origin/invalid requests and graceful owned-window close.')
+    print('PASS: five live fixtures, complete two-stage suspension, owned-window restore/reuse and graceful close.')
 
 def verify_case(name,values,constraints):
     code,session=request('/api/native-gui',values)
@@ -63,7 +64,7 @@ def verify_case(name,values,constraints):
             if state.get('loops',0)>=1 and state.get('solver_steps',0)>1500:break
             time.sleep(.25)
         assert state.get('window_id',0)>0 and state.get('solver_steps',0)>1500,state
-        assert state['loops']>=1 and not state['paused'] and state['shape_count']==3 and state['constraint_count']==constraints,state
+        assert state['loops']>=1 and not state['paused'] and state['shape_count']==3+int(values.get('aux_spring_enabled',False)) and state['constraint_count']==constraints,state
         assert any(a.get('solver_steps',0)<b.get('solver_steps',0) for a,b in zip(states,states[1:])),states
         _,shown=request('/api/native-gui/'+session['id']+'/show',{})
         assert shown['pid']==state['pid'] and shown['window_shown'],shown

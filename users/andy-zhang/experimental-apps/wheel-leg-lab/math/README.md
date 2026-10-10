@@ -1,5 +1,12 @@
 # Independent suspension mathematics
 
+The [two-stage architecture](../docs/suspension-architecture.md) now combines
+gravity compensation with an independent captured ride spring and damper.
+Both energies, generalized forces and body force sites enter the independent
+SciPy balance. Eight added architecture tests pass; the full Python suite has
+90 cases. MATLAB parses auxiliary-disabled legacy profiles and rejects an
+enabled ride strut, rather than evaluating it with an incomplete equation.
+
 Owner: Andy Zhang. Updated: 2026-10-10. Status: experimental.
 
 The browser Mathematical Model tab runs [Python/SciPy](../math_model.py), independent of Pymunk. Python supports all eight [spring topology presets](../spring_mechanisms.py). [wheel_leg_ode45.m](wheel_leg_ode45.m) provides the original **hip-to-tip captured direct spring** equation, automatic spring equilibrium and smooth wheel-position input for MATLAB/Octave. It accepts the expanded legacy browser profile fields but rejects other topology/mode/transmission combinations explicitly; use Python/SciPy for those. MATLAB R2025b Update 3, the Python implementation and Pymunk refinement comparison have been tested. Octave is untested.

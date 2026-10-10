@@ -14,7 +14,7 @@ from pymunk import Vec2d
 from debug_view import capture, describe
 from equation_checks import SCREENSHOT, moment_checks
 from motion_input import position_state
-from spring_mechanisms import MECHANISM_DEFAULTS,apply_preset,mechanism_config,geometry_from_bodies,mechanism_metadata
+from spring_mechanisms import MECHANISM_DEFAULTS,apply_preset,mechanism_config,geometry_from_bodies,mechanism_metadata,auxiliary_parameters,auxiliary_metadata
 import suspension_runtime as suspension
 
 DEFAULTS = {
@@ -155,6 +155,12 @@ def build(c):
     shapes={'upper_link':upper_shape,'lower_link':lower_shape,'wheel':wheel_shape}
     for shape,shade in [(upper_shape,(52,152,219,255)),(lower_shape,(39,174,96,255)),(wheel_shape,(241,196,15,130))]:
         shape.sensor=True;shape.filter=pymunk.ShapeFilter(group=1);shape.color=shade
+    if c['aux_spring_enabled']:
+        # Visual/query geometry on the existing chassis body; zero shape mass
+        # retains its declared mass and fixed-pitch inertia, with no contact.
+        chassis_shape=pymunk.Poly.create_box(hip,(.14,.055))
+        chassis_shape.sensor=True;chassis_shape.filter=pymunk.ShapeFilter(group=1)
+        chassis_shape.color=(131,104,219,230);shapes['chassis']=chassis_shape
     space.add(*shapes.values())
     j1=pymunk.PivotJoint(hip,upper,hip.world_to_local(A),(-L/2,0))
     j2=pymunk.PivotJoint(upper,lower,(L/2,0),(-(L-e)/2,0))
@@ -206,7 +212,8 @@ def build(c):
         driver.collide_bodies=False;space.add(carriage,driver)
     return {"space":space,"hip":hip,"upper":upper,"lower":lower,"wheel":wheel,"moving":moving,
             "j1":j1,"j2":j2,"j3":j3,"guide":guide,"stop":stop,"spring":spring,"wheel_drive":wheel_drive,"cache":cache,"rest":rest,"shapes":shapes,
-            "driver":driver,"carriage":carriage,"driver_origin":origin,"manual_spring":manual_spring,"spring_input_reference":input_reference}
+            "driver":driver,"carriage":carriage,"driver_origin":origin,"manual_spring":manual_spring,"spring_input_reference":input_reference,
+            "auxiliary":auxiliary_parameters(c)}
 
 def drive(model, c, t, dt):
     """Shared prescribed motion / diagnostic load for traces and native viewer."""
@@ -339,6 +346,26 @@ def simulate(values=None):
                    spring_elastic_equivalent_lift_N=Qelastic/height_J,
                    spring_gravity_equivalent_N=gravity_equivalent,
                    spring_balance_residual_N=Qspring/height_J-gravity_equivalent)
+        aux_state=m.get('auxiliary_state');Qaux=0.;aux_energy=0.;aux_dissipation=0.
+        if aux_state:
+            Qaux=-aux_state['tension']*aux_state['jacobian'];aux_energy=aux_state['energy'];aux_dissipation=aux_state['dissipation_rate']
+            row.update(aux_spring_tension=aux_state['tension'],aux_spring_length=aux_state['input_length'],
+                       aux_spring_elastic_tension=aux_state['elastic_tension'],aux_spring_damper_tension=aux_state['damper_tension'],
+                       aux_spring_coil_length=aux_state['coil_length'],aux_spring_coil_load=aux_state['coil_load'],
+                       aux_spring_energy_J=aux_energy,aux_spring_generalized_force=Qaux,
+                       aux_spring_equivalent_lift_N=Qaux/height_J,
+                       aux_spring_elastic_equivalent_lift_N=-aux_state['elastic_tension']*aux_state['jacobian']/height_J,
+                       aux_spring_dissipation_W=aux_dissipation,aux_spring_engaged=float(aux_state['engaged']),aux_spring_slack=float(aux_state['slack']))
+        else:
+            row.update({f'aux_spring_{key}':0. for key in ['tension','length','elastic_tension','damper_tension','coil_length','coil_load','energy_J','generalized_force','equivalent_lift_N','elastic_equivalent_lift_N','dissipation_W','engaged','slack']})
+        row.update(total_spring_energy_J=state['energy']+aux_energy,total_spring_generalized_force=Qspring+Qaux,
+                   total_spring_equivalent_lift_N=(Qspring+Qaux)/height_J,
+                   total_spring_dissipation_W=state.get('dissipation_rate',c['damping']*spring_geom['input_speed']**2)+aux_dissipation)
+        for key in ['hip','upper','lower']:
+            primary=m.get('primary_spring_loads',sf)[key];auxforce=m.get('auxiliary_loads',{}).get(key,Vec2d(0,0))
+            row.update({f'spring_{key}_fx':sf[key].x,f'spring_{key}_fy':sf[key].y,
+                        f'primary_spring_{key}_fx':primary.x,f'primary_spring_{key}_fy':primary.y,
+                        f'aux_spring_{key}_fx':auxforce.x,f'aux_spring_{key}_fy':auxforce.y})
         if m['driver']:
             z,v,a=m['position_command'];actual=m['moving'].position.y-m['driver_origin'].y
             row.update(position_command=z,position_actual=actual,position_actual_mm=actual*1000,position_error=actual-z,position_velocity_command=v,position_accel_command=a)
@@ -358,10 +385,15 @@ def simulate(values=None):
             if m['driver']:frame['position_target']=[m['driver_origin'].x,m['driver_origin'].y+row['position_command']]
             if m['manual_spring']:
                 frame['spring_geometry']=geometry_from_bodies({key:m[key] for key in ['hip','upper','lower']},c);frame['spring_coil_length']=state['coil_length']
+            if m['auxiliary']['enabled']:
+                frame['auxiliary_spring_geometry']=geometry_from_bodies({key:m[key] for key in ['hip','upper','lower']},m['auxiliary']['config'])
+                frame['auxiliary_spring_coil_length']=aux_state['coil_length']
             frames.append(frame)
     warnings=[]
     spring_meta=mechanism_metadata(dict(c,rest_length=m['rest']),m['spring_input_reference'])
+    aux_meta=auxiliary_metadata(c,m['auxiliary'])
     warnings.extend(spring_meta['notes'])
+    warnings.extend(aux_meta['notes'])
     if m['manual_spring']:warnings.append('Preset spring forces are integrated explicitly; refine dt before interpreting sharp/high-stiffness peak loads. Cranks/cable are massless and rope is ideal, lossless and inextensible.')
     if c['target']=='position' and c['ramp_shape']=='linear':warnings.append('Linear position ramps have velocity jumps at their joins; acceleration/reaction peaks depend on dt. Use quintic ramps for finite C2 motion.')
     tracking=max(abs(r['position_error']) for r in rows)
@@ -373,10 +405,10 @@ def simulate(values=None):
     if max_impulse_error>.01 or max_angular_error>.01: warnings.append("Reaction reconstruction differs from solver impulse readings; review diagnostics before using directional loads.")
     equation_errors={key:max(abs(row[key]) for row in rows) for key in ['check_lower_moment_Nm','check_contact_moment_Nm','check_upper_moment_Nm','check_lower_balance_Nm','check_upper_balance_Nm','check_Br_N','wheel_drive_check','driver_check']}
     peaks['driver_force']=max(({'value':r['driver_force'],'t':r['t']} for r in rows),key=lambda p:abs(p['value']))
-    return {"config":c,"engine":pymunk.version,"model":model_info,"position_origin":list(m['driver_origin']),"equation_reference":SCREENSHOT,"equation_check_errors":equation_errors,"actual_rest_length":m["rest"],"spring_mechanism":spring_meta,"rows":rows,"frames":frames,"peaks":peaks,
+    return {"config":c,"engine":pymunk.version,"model":model_info,"position_origin":list(m['driver_origin']),"equation_reference":SCREENSHOT,"equation_check_errors":equation_errors,"actual_rest_length":m["rest"],"spring_mechanism":spring_meta,"auxiliary_spring":aux_meta,"rows":rows,"frames":frames,"peaks":peaks,
             "diagnostics":{"max_pin_error_m":max_pin_error,"max_guide_error_rad":max_phase_error,
                            "max_force_check_N":max_impulse_error,"max_torque_check_Nm":max_angular_error,
                            "input_integral":input_integral,'input_unit':'m' if c['target']=='position' else 'N' if c['target']=='force' else 'N m',
                            'input_integral_unit':'m s' if c['target']=='position' else 'N s' if c['target']=='force' else 'N m s',
                            'max_position_error_m':tracking,"stop_steps":limit_steps,"clipped_steps":clipped_steps},"warnings":warnings,
-            "scope":"Ideal rigid links, grounded 2:1 no-slip guide, linear spring-damper. Position mode prescribes a bilateral moving support, with chassis pitch held; no unilateral tire contact or belt elasticity. Reactions are solver-step mean loads; acceleration is a COM velocity difference / dt. Grounded guide torque excludes tooth/shaft load distribution."}
+            "scope":"Ideal rigid links, grounded 2:1 no-slip guide, selected passive spring law and optional independent original-tip ride strut. Primary spring channels describe the support stage; spring_knee_moment and per-body spring loads include both stages when enabled. Position mode prescribes a bilateral moving support, with chassis pitch held; no unilateral tire contact or belt elasticity. Reactions are solver-step mean loads; acceleration is a COM velocity difference / dt. Grounded guide torque excludes tooth/shaft load distribution. Native-coil dissipation telemetry is an instantaneous sampled rate, not an exact solver-step work ledger."}

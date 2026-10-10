@@ -20,7 +20,7 @@ Rough-path displays use positive y down and angles from downward vertical. Detai
 
 ## Actual verification and open work
 
-The unified app uses app-local Python/Node dependencies and no machine-specific runtime paths. Current verification passes 82 Python tests (71 wheel-leg and 11 lever) and 33 JavaScript tests. Both actual backends, nine-preset and lever browser checks, JSON/library integration, actual native launch/window restore and durable restart evidence are retained in [validation](../docs/validation.md). MATLAB comparisons apply to the original captured/direct tip spring, not the new presets or lever. Canonical robot physics is not applicable to this member toolkit; the shared manifest remains unchanged.
+The unified app uses app-local Python/Node dependencies and no machine-specific runtime paths. Current verification passes 90 Python tests (79 wheel-leg and 11 lever) and 33 JavaScript tests. Both backends, the complete two-stage suspension, nine-preset/lever browser checks, JSON/library integration, actual native launch/window restore and durable restart evidence are retained in [validation](../docs/validation.md). MATLAB comparisons apply to the original captured/direct tip spring, not the new presets, ride strut or lever. Canonical robot physics is not applicable to this member toolkit; the shared manifest remains unchanged.
 
 Continue by confirming pulley radii and T₀ value/role, actuator hardware, spring preload/characterization, clearance through inversion and real wheel contact. Do not treat derived torque agreement or a collision-free drawing as hardware validation. The immutable assumptions and decisions are summarized in [decisions](../docs/decisions.md); accepted shared requirements remain in the existing repository records.
 
@@ -72,3 +72,12 @@ derived equations describe an ideal study, not confirmed hardware packaging.
 The combined 82 Python/33 JavaScript checks, real-backend browser workflows,
 four live native model cases and durable launcher lifecycle pass. Complete
 evidence and numerical limits are recorded in [validation](../docs/validation.md).
+
+## Complete wheel suspension
+
+The user chose the existing 2:1 folding leg with a restoring spring and damper.
+The [architecture](../docs/suspension-architecture.md) uses a gravity stage plus
+an independent hip-to-tip ride strut and a real chassis sensor polygon. The
+lever's bridge and direct architecture URL load one configured physical run.
+All 90 Python/33 JavaScript checks and five live native cases pass. Current
+factory damping is an editable 500 N s/m; the knee controller is disabled.

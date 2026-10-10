@@ -1,5 +1,11 @@
 # Design decisions and superseded alternatives
 
+On 2026-10-10 the user selected the existing 2:1 folding leg with a restoring
+spring and damper for constant-lift suspension. Weight compensation and ride
+restoration are separate passive paths; no hidden controller supplies restoring
+force. The [architecture](suspension-architecture.md) records demo dimensions,
+rates and validation.
+
 Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: prototype decisions and user constraints; no team hardware selection.
 
 | Decision | Reason and consequence | Status |

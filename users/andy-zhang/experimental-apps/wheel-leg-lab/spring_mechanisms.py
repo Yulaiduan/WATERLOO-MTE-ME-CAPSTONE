@@ -24,6 +24,8 @@ MECHANISM_DEFAULTS = {
     'spring_bellcrank_radius': .05, 'spring_bellcrank_offset_deg': 135.,
     'spring_chassis_x': .12, 'spring_chassis_y': .05,
     'spring_force_law': 'hooke', 'spring_effective_free_length': 0.,
+    'aux_spring_enabled': False, 'aux_stiffness': 8000., 'aux_damping': 100.,
+    'aux_mode': 'captured', 'aux_rest_length': .28, 'aux_auto_rest': True,
 }
 
 CATALOG = {
@@ -86,9 +88,14 @@ def mechanism_config(c):
         raise ValueError('Spring transmission must be direct, pullrod or ideal_rope.')
     if resolved['spring_force_law'] not in ('hooke', 'zero_effective'):
         raise ValueError('Spring force law must be hooke or zero_effective.')
+    if resolved['aux_mode'] not in ('compression', 'extension', 'captured'):
+        raise ValueError('Auxiliary spring mode must be compression, extension or captured.')
     for key, default in MECHANISM_DEFAULTS.items():
         value = resolved[key]
-        if isinstance(default, (int, float)):
+        if isinstance(default, bool):
+            if not isinstance(value, bool):
+                raise ValueError(f'{key} must be boolean.')
+        elif isinstance(default, (int, float)):
             if isinstance(value, bool) or not isinstance(value, (float, int)) or not math.isfinite(value):
                 raise ValueError(f'{key} must be finite.')
     if resolved['spring_direction'] not in (-1., 1.):
@@ -101,6 +108,12 @@ def mechanism_config(c):
             raise ValueError(f'{key} must be between zero and one.')
     if not 0 <= resolved['spring_effective_free_length'] <= 1:
         raise ValueError('Effective input free length must be between zero and one metre.')
+    if not 0 <= resolved['aux_stiffness'] <= 100000 or not 0 <= resolved['aux_damping'] <= 2000:
+        raise ValueError('Auxiliary stiffness/damping must be nonnegative and at most 100000 N/m / 2000 N s/m.')
+    if not .005 <= resolved['aux_rest_length'] <= 1:
+        raise ValueError('Auxiliary free length must be between 0.005 and one metre.')
+    if resolved['aux_spring_enabled'] and resolved['spring_topology'] != 'gravity_balance':
+        raise ValueError('The auxiliary ride spring is currently supported only with the gravity_balance primary stage.')
     L, e = c['length'], c['extension']
     if not (math.isfinite(L) and math.isfinite(e) and 0 < e < L):
         raise ValueError('Require finite link length and 0 < extension < length.')
@@ -414,6 +427,47 @@ def generalized(theta, speed, c, input_reference=None):
             'generalized_force': -law['tension']*g['jacobian'],
             'generalized_elastic_force': -law['elastic_tension']*g['jacobian'],
             'generalized_damping_force': -law['damper_tension']*g['jacobian']}
+
+
+def auxiliary_parameters(c):
+    """Resolve the optional original-tip ride spring without gravity retuning.
+
+    Automatic free length makes its elastic force zero at the selected initial
+    theta. Positive stiffness then supplies restoring force about that pose.
+    The primary gravity compensator remains a separate calibrated stage.
+    """
+    s = mechanism_config(c)
+    if not s['aux_spring_enabled']:
+        return {'enabled': False, 'config': None, 'input_ref': 0., 'rest': 0.}
+    aux = {**c, 'aux_spring_enabled': False, 'spring_topology': 'legacy_tip',
+           'spring_mode': s['aux_mode'], 'spring_transmission': 'direct',
+           'spring_force_law': 'hooke', 'spring_effective_free_length': 0.,
+           'stiffness': s['aux_stiffness'], 'damping': s['aux_damping'],
+           'rest_length': s['aux_rest_length'], 'balance_spring': False}
+    initial = geometry(math.radians(c['theta']), aux)
+    rest = initial['input_length'] if s['aux_auto_rest'] else s['aux_rest_length']
+    aux['rest_length'] = rest
+    spring_law(initial['input_length'], 0., aux, initial['input_length'])
+    return {'enabled': True, 'config': aux, 'input_ref': initial['input_length'], 'rest': rest}
+
+
+def auxiliary_metadata(c, params=None):
+    """Declare passive-stage roles, resolved ride free length and preload caveat."""
+    params = auxiliary_parameters(c) if params is None else params
+    if not params['enabled']:
+        return {'enabled': False, 'role': 'Optional ride restoring spring and damper; disabled.', 'notes': []}
+    law = spring_law(params['input_ref'], 0., params['config'], params['input_ref'])
+    notes = []
+    if abs(law['elastic_tension']) > 1e-8:
+        notes.append('Manual auxiliary preload shifts the initial equilibrium. The primary compensator balances gravity alone; it is not silently retuned for this ride-stage preload.')
+    if c['aux_mode'] != 'captured':
+        notes.append('A one-sided ride coil supplies restoring/damping load only while engaged; bilateral ride stiffness requires captured mode.')
+    return {'enabled': True, 'topology': 'legacy_tip', 'mode': c['aux_mode'],
+            'actual_rest_length_m': params['rest'], 'automatic_rest': c['aux_auto_rest'],
+            'initial_elastic_tension_N': law['elastic_tension'],
+            'stiffness_N_m': c['aux_stiffness'], 'damping_N_s_m': c['aux_damping'],
+            'role': 'Primary stage provides gravity support; this independent original-tip strut provides ride restoring stiffness and passive damping.',
+            'active_control': False, 'notes': notes}
 
 
 def force_pair_power(force_sites, bodies, tension):

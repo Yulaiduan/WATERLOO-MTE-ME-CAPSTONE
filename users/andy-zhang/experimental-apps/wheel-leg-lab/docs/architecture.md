@@ -42,3 +42,10 @@ versioned library backend IDs distinguish these configs from wheel fixtures.
 The native launcher accepts a fixed `model: counterbalance` envelope to select
 `debug_counterbalance_gui.py`; users cannot choose an arbitrary executable.
 The main menu, theme, data library, port and manual restart launcher are shared.
+
+`suspension_architecture.py` builds the two-stage folding-leg profile. The
+auxiliary hip-to-tip ride strut uses the spring kernel, with separate telemetry
+and summed body forces/moments. An architecture-only chassis sensor polygon
+visualizes the existing body without changing its mass/inertia. Cold entry
+loads the profile before solving; the lever bridges to that physical workspace.
+See [suspension architecture](suspension-architecture.md).
