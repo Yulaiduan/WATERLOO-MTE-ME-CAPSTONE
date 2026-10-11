@@ -143,3 +143,19 @@ The corrected enlarged and comparison diagrams distinguish a **bare** inline
 coil from a housing/piston and from the external rod-eye/cable/idler assembly.
 The drawings still use the actual captured coil lengths and resolved free
 length; illustrative housing/rod/idler sizes do not add contact or inertia.
+
+## Remove the added piston idler, 2026-10-11
+
+The user's latest correction removes the separate idler drawn in the earlier
+type3 symbol. The cylinder/piston assembly has no pulley of its own. Its rope
+starts at the external rod eye, runs directly to the existing hip or knee
+spring pulley, and wraps around that pulley at the modeled tangent. The main
+preview has exactly one spring drum for each pulley preset (the separate2:1
+guide remains unchanged). Cable material dots follow the recorded payout.
+
+The enlarged view labels its circle `J1 · hip` or `J2 · knee · same pulley`,
+with the same configured radius and recorded angle as the main mechanism. It
+is another view of the same part. The three generic comparison diagrams now
+show a rope lead toward the mechanism, without inventing a separate pulley.
+This removes a visual interpretation only: solver constraints, kinematics,
+force laws, actual coil lengths, saved JSON and models are unchanged.

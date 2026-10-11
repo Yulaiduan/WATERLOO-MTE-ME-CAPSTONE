@@ -2,6 +2,32 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
 
+## Existing joint pulley only, 2026-10-11
+
+The user corrected the earlier added piston idler. It is removed from the main
+mechanism and generic transmission comparisons. Cable now starts at the moving
+external piston rod eye and goes directly to the actual existing hip/knee
+spring-drum tangent/wrap. The enlarged view repeats that same named joint pulley
+with matching configured radius and recorded angle, labeled "same pulley".
+The separate2:1 guide and all solver configurations/data remain unchanged.
+
+All61 JavaScript tests pass, including absence of an implicit piston pulley and
+an explicit-only same-joint close-up. Three actual browser suites pass:
+transmission_memory, setup_preview and playback. Assertions check exactly one
+spring drum in each hip/knee/capture main view, zero routing-idler shapes,
+matching main/detail joint identity, no pulley in generic comparisons, real
+recorded coil/cap motion, all9 setup presets, settings memory and Plotly behavior.
+The in-app preview was refreshed and visually inspected. The actual project-local
+CMD stop/start/reuse passes from C:/Windows at127.0.0.1:4186. Source syntax,
+Markdown links/fences and diff hygiene are checked before publication.
+
+This is a presentation-only correction. Numerical/physics and native-window
+suites were not rerun; the previous40 affected-model tests remain historical
+evidence. No backend, constraint, spring law, profile schema, saved result or
+hardware definition changed. Canonical physics is NOT APPLICABLE to this member
+workspace. Housing placement is schematic, while the main pulley location and
+radius still follow the actual recorded/setup mechanism geometry.
+
 ## Three physical transmission assemblies, 2026-10-11
 
 The user's follow-up distinguishes bare inline spring, reversing cylinder/piston,

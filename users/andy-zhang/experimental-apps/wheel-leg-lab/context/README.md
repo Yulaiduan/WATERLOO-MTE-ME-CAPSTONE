@@ -152,7 +152,17 @@ separate, and rope is tension-only. See the current [preset record](../docs/susp
 
 `web/spring-transmission.js` no longer draws a housing around type1 or a rope
 through the coil in type3. Rod eye and cap move equally with fixed rigid rod
-length; cable starts at the exterior eye and turns around a separate idler.
+length; cable starts at the exterior eye and goes directly to the existing
+joint pulley (latest correction removes the earlier extra idler).
 Session imports restore configuration from the config object, then only view
 fields/disclosures, so an older remembered dropdown cannot undo route migration.
 Legacy API/config IDs remain for reproduction; recorded data is not rewritten.
+
+## One mechanism pulley, 2026-10-11
+
+User correction: do not put an extra pulley on the piston assembly. The main
+view now draws cable from the piston rod eye directly to the existing hip/knee
+spring-drum tangent and wrap. Generic piston comparison diagrams have no pulley.
+The enlarged view explicitly repeats the same named joint pulley with its
+configured radius and recorded angle; it is labeled as the same part. No solver
+geometry, forces or saved profiles changed in this presentation-only correction.

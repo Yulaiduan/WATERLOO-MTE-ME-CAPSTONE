@@ -10,11 +10,19 @@ test('inline has no housing; rope attaches to a moving rigid rod eye outside the
   const g=svgNode(),a=drawCylinder(g,{...state,transmission});
   assert.equal(g.children.filter(n=>n.attrs.class==='cylinder-housing').length,transmission==='direct'?0:1);
   assert.equal(g.children.filter(n=>n.attrs.class==='pull-cable').length,transmission==='ideal_rope'?1:0);
+  assert.equal(g.children.filter(n=>n.attrs.class==='routing-idler').length,0);
+  assert.equal(g.children.filter(n=>n.attrs.class==='mechanism-pulley-detail').length,0,'A generic piston has no pulley of its own');
   if(transmission==='ideal_rope'){
    const cable=g.children.find(n=>n.attrs.class==='pull-cable'),rod=g.children.find(n=>n.attrs.class==='piston-rod');
    assert.equal(cable.attrs['data-attachment-x'],rod.attrs.x2);assert.equal(cable.attrs['data-attachment-y'],rod.attrs.y2);assert.ok(a.eye>a.seat);
   }
  }
+});
+test('the close-up repeats only an explicitly supplied existing joint pulley',()=>{
+ const g=svgNode(),pulley={joint:'J2 · knee',radius:.04,angle:.3};
+ drawCylinder(g,{transmission:'ideal_rope',coil:.18,free:.2,travel:.02},{mechanismPulley:pulley});
+ const circles=g.children.filter(n=>n.attrs.class==='mechanism-pulley-detail');assert.equal(circles.length,1);assert.equal(circles[0].attrs['data-joint'],pulley.joint);assert.equal(circles[0].attrs['data-radius-m'],.04);assert.equal(circles[0].attrs['data-angle'],.3);
+ const main=svgNode();drawCylinder(main,{transmission:'ideal_rope',coil:.18,free:.2,travel:.02},{routeRope:false});assert.equal(main.children.filter(n=>n.attrs.class==='pull-cable').length,0,'Main view routes the eye directly to its actual mechanism pulley');
 });
 test('pulling moves cap and rod end equally, preserving rigid rod length and shortening the coil',()=>{
  const a=drawCylinder(svgNode(),{transmission:'pullrod',coil:.2,free:.2,travel:0}),b=drawCylinder(svgNode(),{transmission:'pullrod',coil:.18,free:.2,travel:.02});

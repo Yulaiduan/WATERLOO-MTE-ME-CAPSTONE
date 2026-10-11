@@ -85,7 +85,8 @@ a cylinder with rope attached at its external rod end, plus an enlarged view
 at the upper right. Expand Compare the
 three transmissions to see direct, rigid pull-through and ideal-rope diagrams.
 Recorded cap travel uses the actual saved coil length, including preload and
-slack; housing/idler dimensions are illustrative, not added solver bodies.
+slack. The rope goes directly to the existing joint pulley; there is no
+extra pulley on the piston. Housing dimensions are illustrative, not solver bodies.
 
 Wheel settings and view selections survive tab changes and page refresh in the
 same browser session. Misc studies remember inputs when returning to a study,

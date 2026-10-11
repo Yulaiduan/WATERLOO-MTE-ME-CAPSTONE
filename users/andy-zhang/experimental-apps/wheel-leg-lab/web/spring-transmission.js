@@ -12,12 +12,12 @@ export function transmissionState(c,frame,row={},initial={}){
   travel:input-reference,strain:coil-c.rest_length,slack:Boolean(frame.spring_slack??row.spring_slack),
   compensated:c.spring_force_law==='zero_effective',mode:c.spring_mode};
 }
-export function drawCylinder(group,state,{width=330,height=170,labels=true}={}){
+export function drawCylinder(group,state,{width=330,height=170,labels=true,routeRope=true,mechanismPulley=null}={}){
  const {coil,free,transmission}=state,pull=transmission!=='direct',rope=transmission==='ideal_rope';
  // One fixed scale per profile: piston cap AND the rigid rod-end eye move.
  const px=(width-140)/Math.max(free*2.4,0.15),y=height*.48,seat=pull?width*.55:36;
  const length=Math.max(2,coil*px),cap=seat+(pull?-length:length),rodLength=free*1.5*px;
- const eye=pull?cap+rodLength:cap,port=rope?width-100-state.travel*px:eye,portY=rope?y+20:y;
+ const eye=pull?cap+rodLength:cap,port=eye,portY=y;
  const fmt=v=>Number.isFinite(v)?(v*1000).toFixed(1):'—';
  group.attr('class',(group.attr('class')||'')+' spring-transmission '+(pull?'spring-cylinder ':'spring-inline ')+transmission)
   .attr('data-transmission',transmission).attr('data-coil-length-m',coil).attr('data-input-travel-m',state.travel)
@@ -41,19 +41,25 @@ export function drawCylinder(group,state,{width=330,height=170,labels=true}={}){
   line(cap,y,eye,y,'piston-rod','var(--purple)',3).attr('data-rigid-length-px',rodLength);
   circle(eye,y,'piston-rod-eye');
  }else{circle(seat,y,'inline-fixed-eye');circle(cap,y,'inline-moving-eye');}
- if(rope){
-  // The rope is attached OUTSIDE the housing to the rigid piston rod eye.
-  // It turns on a separate frictionless idler, never through the coil/cap.
-  const idler=width-28,r=10;
-  group.append('circle').attr('class','routing-idler').attr('cx',idler).attr('cy',y+10).attr('r',r)
-   .attr('fill','var(--panel)').attr('stroke','var(--purple)').attr('stroke-width',2);
-  circle(idler,y+10,'idler-pivot');
+ if(rope&&routeRope){
+  // Main view draws its cable to the actual joint pulley. The close-up may
+  // repeat that SAME named part; the piston assembly itself has no idler.
+  const end=width-28,r=mechanismPulley?Math.min(22,Math.max(14,mechanismPulley.radius*px)):0;
+  if(mechanismPulley){
+   group.append('circle').attr('class','mechanism-pulley-detail').attr('data-joint',mechanismPulley.joint)
+    .attr('data-radius-m',mechanismPulley.radius).attr('data-angle',mechanismPulley.angle)
+    .attr('cx',end).attr('cy',y+r).attr('r',r).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',2);
+   circle(end,y+r,'mechanism-pulley-pivot');
+   line(end,y+r,end+r*.8*Math.cos(mechanismPulley.angle),y+r-r*.8*Math.sin(mechanismPulley.angle),'mechanism-pulley-spoke','var(--accent)',2);
+   if(labels)text(width-140,35,`${mechanismPulley.joint} · same pulley`,'mechanism-pulley-label');
+  }
   group.append('path').attr('class','pull-cable').attr('data-attachment-x',eye).attr('data-attachment-y',y)
-   .attr('d',`M${eye},${y}H${idler}A10,10 0 0 1 ${idler},${y+20}H${port}`)
+   .attr('data-route-to',mechanismPulley?.joint||'mechanism pulley')
+   .attr('d',`M${eye},${y}H${end}`+(mechanismPulley?`A${r},${r} 0 0 1 ${end},${y+2*r}`:''))
    .attr('fill','none').attr('stroke','var(--purple)').attr('stroke-width',2).attr('stroke-dasharray',state.slack?'4 4':null);
-  for(let i=0;i<5;i++){const xx=eye+((i/5+state.travel*px/Math.max(idler-eye,1))%1+1)%1*(idler-eye);
+  for(let i=0;i<5;i++){const xx=eye+((i/5+state.travel*px/Math.max(end-eye,1))%1+1)%1*(end-eye);
    group.append('circle').attr('class','spring-cable-mark').attr('cx',xx).attr('cy',y).attr('r',2).attr('fill','var(--accent)');}
-  circle(port,portY,'cable-input-eye');
+  if(labels&&!mechanismPulley)text(width-137,35,'To mechanism pulley');
  }
  if(labels){
   text(10,16,rope?'3 · Rope → piston rod end → coil':pull?'2 · Reversing cylinder / piston':'1 · Inline spring · normal travel','transmission-title');

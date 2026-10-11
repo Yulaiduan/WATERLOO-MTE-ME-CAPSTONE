@@ -19,7 +19,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
    await page.locator('[data-key="spring_transmission"]').selectOption(method);await page.locator('#transmission-detail .'+method).waitFor();
    assert.equal(await page.locator('#transmission-detail .cylinder-housing').count(),method==='direct'?0:1);
    assert.equal(await page.locator('#mechanism .direct-cylinder-housing').count(),0);
-   assert.equal(await page.locator('#transmission-detail .routing-idler').count(),0);
+   assert.equal(await page.locator('.routing-idler').count(),0);
    assert.equal(await page.locator('#transmission-comparison svg').count(),3);
   }
   for(const topology of ['hip_pulley','knee_pulley','knee_capture']){
@@ -27,6 +27,11 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
    assert.equal(await page.locator('[data-key="spring_transmission"]').isDisabled(),true);assert.equal(await page.locator('[data-key="spring_transmission"] option').count(),1);
    assert.equal(await page.locator('#mechanism .cylinder-housing').count(),1);assert.equal(await page.locator('#mechanism .pull-cable').count(),1);
    assert.equal(await page.locator('#transmission-detail .piston-rod-eye').count(),1);
+   assert.equal(await page.locator('#mechanism .spring-drum').count(),1);assert.equal(await page.locator('#mechanism .mechanism-pulley-detail').count(),0);assert.equal(await page.locator('.routing-idler').count(),0);
+   assert.equal(await page.locator('#transmission-detail .mechanism-pulley-detail').count(),1);
+   assert.equal(await page.locator('#transmission-detail .mechanism-pulley-detail').getAttribute('data-joint'),await page.locator('#mechanism .spring-drum').getAttribute('data-joint'));
+   assert.equal(await page.locator('#transmission-detail .mechanism-pulley-detail').getAttribute('data-radius-m'),await page.locator('#mechanism .spring-drum').getAttribute('data-radius-m'));
+   assert.equal(await page.locator('#transmission-comparison .mechanism-pulley-detail').count(),0);
   }
   // Full recording: both main and detail consume the captured coil length, cap
   // motion has opposite sign under pull-through, and no per-frame plot rebuild.
@@ -61,6 +66,6 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   assert.equal(await study.locator('#'+id).inputValue(),'2.1');assert.equal(await study.locator('#wl-projection').isChecked(),true);assert.equal(await study.locator('#wl-radius').inputValue(),'220');
   // Changed field contract is skipped, unchanged checkboxes/numbers restore.
   const matched=await page.evaluate(async()=>{const {captureForm,restoreForm}=await import('/form-memory.js');const root=document.createElement('div');root.innerHTML='<input id="a" type="number" min="0" max="500" value="42"><input id="b" type="checkbox" checked><select id="s"><option value="a">A</option><option value="b" selected>B</option></select>';const saved=captureForm(root);root.querySelector('#a').max='50';root.querySelector('#a').value='9';root.querySelector('#b').checked=false;root.querySelector('#s').value='a';restoreForm(root,saved);return [root.querySelector('#a').value,root.querySelector('#b').checked,root.querySelector('#s').value];});assert.deepEqual(matched,['9',true,'b']);
-  assert.deepEqual(errors,[]);console.log('PASS: actual coil/cap travel, three distinct transmissions, routed cable/idler, undamped replacement, no extra strut controls, tab/refresh/study memory and explicit profile precedence.');
+  assert.deepEqual(errors,[]);console.log('PASS: actual coil/cap travel, three distinct transmissions, rod-end cable to same mechanism pulley without piston idler, undamped replacement, no extra strut controls, tab/refresh/study memory and explicit profile precedence.');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});

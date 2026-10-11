@@ -308,7 +308,7 @@
     const coil=(start,end,target=group)=>{const delta=[end[0]-start[0],end[1]-start[1]],length=Math.max(Math.hypot(...delta),1),normal=[-delta[1]/length,delta[0]/length];const points=Array.from({length:25},(_,i)=>{const t=i/24,w=i<3||i>21?0:(i%2?5:-5);return[start[0]+t*delta[0]+w*normal[0],start[1]+t*delta[1]+w*normal[1]];});return target.append('path').attr('class','spring-coil').attr('d',D.line()(points)).attr('fill','none').attr('stroke','var(--orange)').attr('stroke-width',2);};
     if(geometry.kind==='pulley'){
       const center=point(geometry.topology==='hip_pulley'?frame.hip:frame.knee),radius=c.spring_pulley_radius*scale;
-      group.append('circle').attr('class','spring-drum').attr('cx',center[0]).attr('cy',center[1]).attr('r',radius).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',2);
+      group.append('circle').attr('class','spring-drum').attr('data-joint',geometry.topology==='hip_pulley'?'J1 · hip':'J2 · knee').attr('data-radius-m',c.spring_pulley_radius).attr('cx',center[0]).attr('cy',center[1]).attr('r',radius).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',2);
       line(center,pa,'var(--orange)',1);
       group.append('text').attr('x',center[0]+radius+8).attr('y',center[1]+radius+15).text(`Drum r ${fmt(c.spring_pulley_radius*1000,0)} mm`);
     }
@@ -328,9 +328,10 @@
         // Pulley reaction anchor is the carrier mount; direct pull-through uses A.
         const mount=geometry.kind==='pulley'?pb:pa,toward=geometry.kind==='pulley'?pa:pb,angle=Math.atan2(toward[1]-mount[1],toward[0]-mount[0]),width=190,offset=-.65*70*.48;
         const origin=[mount[0]-Math.sin(angle)*offset,mount[1]+Math.cos(angle)*offset],local=unit.append('g').attr('class','leg-mounted-cylinder').attr('transform',`translate(${origin}) rotate(${angle*180/Math.PI}) scale(.65)`);
-        const cylinder=transmissionModule.drawCylinder(local,state,{width,height:70,labels:false});
+        const cylinder=transmissionModule.drawCylinder(local,state,{width,height:70,labels:false,routeRope:false});
         const port=[origin[0]+.65*cylinder.port*Math.cos(angle)-.65*cylinder.portY*Math.sin(angle),origin[1]+.65*cylinder.port*Math.sin(angle)+.65*cylinder.portY*Math.cos(angle)];
-        const seatWorld=[origin[0]+.65*cylinder.seat*Math.cos(angle)-.65*70*.48*Math.sin(angle),origin[1]+.65*cylinder.seat*Math.sin(angle)+.65*70*.48*Math.cos(angle)];line(mount,seatWorld,'var(--muted)',2).attr('class','cylinder-mount-bracket');line(port,toward,'var(--purple)',2).attr('class','spring-input-routing');
+        const seatWorld=[origin[0]+.65*cylinder.seat*Math.cos(angle)-.65*70*.48*Math.sin(angle),origin[1]+.65*cylinder.seat*Math.sin(angle)+.65*70*.48*Math.cos(angle)];line(mount,seatWorld,'var(--muted)',2).attr('class','cylinder-mount-bracket');line(port,toward,'var(--purple)',2).attr('class',(c.spring_transmission==='ideal_rope'?'pull-cable ':'')+'spring-input-routing').attr('data-attachment-x',port[0]).attr('data-attachment-y',port[1]);
+        if(c.spring_transmission==='ideal_rope'){const distance=Math.max(Math.hypot(toward[0]-port[0],toward[1]-port[1]),1);for(let i=0;i<8;i++){const f=((i/8+state.travel*scale/distance)%1+1)%1;unit.append('circle').attr('class','spring-cable-mark').attr('cx',port[0]+f*(toward[0]-port[0])).attr('cy',port[1]+f*(toward[1]-port[1])).attr('r',1.6).attr('fill','var(--accent)');}}
         if(geometry.kind==='pulley'){
           const center=point(geometry.topology==='hip_pulley'?frame.hip:frame.knee),radius=c.spring_pulley_radius*scale,rotation=geometry.topology==='hip_pulley'?frame.upper_angle:frame.lower_angle-frame.upper_angle;
           const tangentAngle=Math.atan2(pa[1]-center[1],pa[0]-center[0]),winding=Array.from({length:25},(_,i)=>[center[0]+radius*Math.cos(tangentAngle+c.spring_direction*Math.PI*i/24),center[1]+radius*Math.sin(tangentAngle+c.spring_direction*Math.PI*i/24)]);
@@ -338,7 +339,7 @@
           unit.append('circle').attr('class','spring-drum-mark').attr('cx',center[0]+radius*.8*Math.cos(rotation)).attr('cy',center[1]-radius*.8*Math.sin(rotation)).attr('r',3).attr('fill','var(--accent)');
         }
       }
-      const detail=D.select($('transmission-detail'));detail.selectAll('*').remove();transmissionModule.drawCylinder(detail.append('g'),state,{width:350,height:190});
+      const detail=D.select($('transmission-detail'));detail.selectAll('*').remove();transmissionModule.drawCylinder(detail.append('g'),state,{width:350,height:190,mechanismPulley:geometry.kind==='pulley'?{joint:geometry.topology==='hip_pulley'?'J1 · hip':'J2 · knee',radius:c.spring_pulley_radius,angle:geometry.topology==='hip_pulley'?frame.upper_angle:frame.lower_angle-frame.upper_angle}:null});
       const comparison=$('transmission-comparison'),signature='200mm-demo';if(comparison.dataset.signature!==signature){comparison.dataset.signature=signature;comparison.replaceChildren();
       for(const method of ['direct','pullrod','ideal_rope']){const node=document.createElementNS('http://www.w3.org/2000/svg','svg');node.setAttribute('viewBox','0 0 350 170');node.setAttribute('role','img');node.setAttribute('aria-label',method+' transmission comparison');comparison.append(node);transmissionModule.drawCylinder(D.select(node).append('g'),{...state,transmission:method,free:.2,coil:.2+(method==='direct'?.02:-.02),travel:.02,strain:method==='direct'?.02:-.02,slack:false,compensated:false},{width:350,height:170});}}
     }

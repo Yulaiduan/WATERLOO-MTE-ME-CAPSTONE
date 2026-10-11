@@ -1699,3 +1699,42 @@ Pulley presets/UI now use the cylinder-plus-rope assembly while non-pulley layou
 Continue from the corrected preset/validation records and transmission-memory tests, preserve old recorded data and legacy solver IDs, and restart with Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — remove the added piston pulley
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab spring cylinder/cable mechanism drawing.
+- **Associated Issue/Task:** User requested no second pulley on the piston assembly; cable must use the mechanism's existing hip/knee pulley.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_transmission_memory_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/spring-transmission.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/spring-transmission.js`
+- **API/Interface Changes:** Extend client-only drawCylinder options with routeRope and mechanismPulley. Generic cylinder/comparison symbols no longer add an idler. Main mechanism draws rope from the moving exterior rod eye directly to the existing modeled joint-pulley tangent and wrap, with material marks following recorded payout. Enlarged view explicitly repeats the same named hip/knee pulley, configured radius and recorded angle and labels it as the same part. Add main/detail joint metadata and assertions preventing unintended extra circles. Reposition the generic rope-lead label to avoid the rod-end label. Update current README/context/preset/validation records and the browser regression's output. No backend equations, constraints, spring law, data/profile schema, saved records, guide belt, hardware assets or original archives change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All61 JavaScript tests pass, including no implicit cylinder pulley and an explicitly supplied same-joint close-up. Three actual browser suites pass verify_transmission_memory_ui, verify_setup_preview_ui and verify_playback_ui. Coverage includes exactly one main spring drum in hip/knee/capture presets, zero routing idlers, matching main/detail joint identity and radius metadata, no pulley in generic comparison symbols, actual recorded cap/coil motion and rod-end cable, all9 initial previews without solved loads, form/profile/tab memory and Plotly cursor/zoom/export/pause behavior. Latest transmission suite rerun captures the final non-overlapping labels and corrected diagram. In-app current preview was refreshed, visually inspected and retained. Actual project-local CMD stop/start/reuse succeeds from C:/Windows at127.0.0.1:4186. Node syntax, edited Markdown links/fences and diff hygiene pass; fetched-base working/staged/publication checks run before push. Raw screenshots and recordings remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE. This presentation-only edit adds/removes no solver body, constraint or force; previous numerical/native tests remain historical rather than claimed reruns. The close-up is another view of the existing joint pulley, with schematic housing placement/visual scale, not a second hardware part. The separate2:1 guide still has its own existing two pulleys. A first contribution-log read used the app working directory; the existing root ENTRY_TEMPLATE.md was then read successfully before dependent edits. No required source remains inaccessible and no original file or dataset was deleted.
+
+## 4. Compute Saving Handoff State
+
+The piston assembly no longer has an added idler: its cable directly uses the existing mechanism hip/knee pulley.
+Main view, enlarged view and generic comparisons now distinguish the single physical joint pulley from a repeated view, preserving recorded stroke, force data and settings.
+Continue from the latest preset/validation record and the no-extra-pulley browser checks, and restart with the existing Start Motion Lab.cmd at port4186.
+
+---
