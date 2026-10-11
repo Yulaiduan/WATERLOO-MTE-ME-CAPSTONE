@@ -33,6 +33,14 @@ test('detailed linkage exports keep comparison modes in distinct tables',()=>{
  const run={schema:'motion-lab-linkage-run',version:1,backend:'linkage',config:defaultConfig(),samples:[{t:0,q:1,mode:'passive'},{t:1,q:2,mode:'passive'},{t:0,q:3,mode:'finite'}]};
  const record=normalizeImport(run);assert.equal(record.backend,'linkage');assert.deepEqual(extractTables(record.result).map(t=>[t.name,t.rows.length]),[['passive',2],['finite',1]]);
 });
+test('end-force lever profiles preserve undamped replay intervals and model identity',()=>{
+ const config={length:.4,spring_radius:.2,anchor_height:.2,law:'zero_effective',mode:'force',damping:0,force_amplitude_N:2,force_history:[{start:.1,end:.3,force_N:2},{start:.3,end:.5,force_N:-2}],dt:.001,duration:1};
+ for(const backend of ['counterbalance_math','counterbalance_pymunk']){
+  const saved=normalizeImport({backend,config});
+  assert.equal(saved.kind,'profile');assert.equal(saved.backend,backend);
+  assert.deepEqual(normalizeImport(JSON.parse(JSON.stringify(saved))).config,config);
+ }
+});
 test('MATLAB column JSON becomes a plot-ready run while preserving columns',()=>{
  const matlab={backend:'matlab-ode45',config,t:[0,1],theta_deg:[45,46],j2_force:[100,120],stop_event_time:[]};
  const record=normalizeImport(matlab,'MATLAB run.json');assert.equal(record.backend,'math');assert.equal(record.result.source_backend,'matlab-ode45');assert.deepEqual(record.result.rows[1],{t:1,theta_deg:46,j2_force:120});assert.deepEqual(record.result.theta_deg,matlab.theta_deg);

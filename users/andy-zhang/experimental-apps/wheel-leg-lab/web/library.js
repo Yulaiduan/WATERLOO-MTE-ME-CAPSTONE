@@ -143,7 +143,7 @@ export function normalizeImport(input, fileName = 'Imported study') {
     for(const key of ['length','spring_radius','anchor_height'])if(typeof config[key]!=='number'||config[key]<=0)throw new Error(`Counterbalance ${key} must be positive metres.`);
     if(config.spring_radius>config.length)throw new Error('Spring radius must fit on the counterbalance lever.');
     if(!['zero_effective','ordinary'].includes(config.law))throw new Error('Counterbalance law must be zero_effective or ordinary.');
-    if(!['prescribed','free'].includes(config.mode))throw new Error('Counterbalance mode must be prescribed or free.');
+    if(!['prescribed','free','force'].includes(config.mode))throw new Error('Counterbalance mode must be prescribed, free or force.');
     for(const key of ['dt','duration'])if(config[key]!==undefined&&(typeof config[key]!=='number'||config[key]<=0))throw new Error(`Counterbalance ${key} must be positive seconds.`);
     if(config.stiffness_auto!==undefined&&typeof config.stiffness_auto!=='boolean')throw new Error('Automatic counterbalance stiffness must be boolean.');
   }
@@ -208,8 +208,8 @@ export async function getRecord(id) {
   return requestValue(db.transaction('records').objectStore('records').get(id));
 }
 
-export function downloadJSON(value, name = 'motion-study.json') {
-  const data = JSON.stringify(value, null, 2);
+export function downloadJSON(value, name = 'motion-study.json', {compact=false} = {}) {
+  const data = JSON.stringify(value, null, compact?0:2);
   const url = URL.createObjectURL(new Blob([data], { type: 'application/json' }));
   const link = document.createElement('a');
   link.href = url; link.download = name.replace(/[<>:"/\\|?*\x00-\x1f]/g, '-'); link.click();

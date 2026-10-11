@@ -1419,3 +1419,104 @@ The revised nine-preset demos pass the documented108-case envelope and display l
 Continue from the mechanism-audit, suspension-architecture and validation documents, use the project-local Start Motion Lab.cmd at port4186, and preserve archives while confirming real routing/contact/component limits before canonical promotion.
 
 ---
+
+## Entry: 2026-10-10 — Andy Zhang — saved-run comparison workspace and undamped end-force lever
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's isolated Motion Lab member app.
+- **Associated Issue/Task:** Move the standalone constant-lift study into Miscellaneous, retire the detailed-linkage main tab, add end-force interaction/equations, create multi-profile/channel comparison with independent plot visibility and horizontal/vertical splits, and run/show SciPy-versus-Pymunk deltas. User explicitly clarified the single-link lever needs no controller or damping.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; source/history and existing records retained.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/counterbalance.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_counterbalance_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/comparison-workspace.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/constant-lift.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/compare_suspension_models.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_comparison_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_counterbalance_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_lever_force_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_motion_lab.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_native_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suspension_architecture_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_counterbalance.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_counterbalance_force.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/comparison.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison-data.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/data-browser.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/mathematical/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/physics/index.html`
+- **API/Interface Changes:** Mathematical navigation now exposes the current 2D SciPy suspension only. Constant-lift lever uses one persistent Misc frame; detailed linkage stays available as an explicitly archived Misc study/direct route. Legacy Math deep links and saved profiles route to the matching retained study. Add top-level Comparison plus library actions; profile loading runs its supported solver explicitly and appends a recorded result. New comparison modules implement multiple source records, searchable right-hand channels, independent per-plot visibility/legend, up to eight recursively split plots, distinct unit axes, reference selection and signed candidate-minus-reference deltas. Validate known matching channel/family/units and increasing sample time; interpolate only within overlap without crossing missing values. Report max/RMS/final/sample count, export/import full-source comparison JSON with layout/visibility/provenance and portable 80 MiB limits. Existing source datasets are preserved. Run both now opens paired overlay/delta panels. Standalone lever defaults to free motion, damping0, one pivot and no motor. Add force mode, force_amplitude_N, ramp_shape and portable force_history intervals; apply actual tip force Fy and moment Fy L cos(theta) in both independent math and Pymunk, with force/power/work/energy diagnostics. Add bounded stateless /api/counterbalance/advance using SciPy and explicit t/theta/velocity state. Browser press/hold controls use 100ms chunks paced to wall time, preserve velocity on release, release/pause on blur/inactive tab and cap each session at20s. Explicit Place at rest is a user-visible state reset, not control. Prescribed motor mode stays an explicit diagnostic and old tests request it. Update native force drawing/readouts, model-specific JSON validation, seven docs, browser regressions and a reproducible wheel-comparison script. No shared runtime/assets/interfaces or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All19 affected Python lever tests pass (11 historical tests plus8 force/live tests). All56 JavaScript tests pass, including12 new comparison/interpolation/layout/provenance tests and force-history JSON roundtrip. Live browser suites pass verify_lever_force_ui, verify_comparison_ui, verify_motion_lab, verify_counterbalance_ui and verify_suspension_architecture_ui. Coverage includes real up/down input, coast on release, rest placement, portable force-history replay, native routing, inactive-frame pause/resume, one Misc instance, profile rerun, matched model deltas, independent channels/legends, both split directions, comparison JSON roundtrip, Plotly zoom, theme, mobile and retired-linkage compatibility. Actual five-case native API suite passes window ownership, advancing live steps, loop, restore/reuse and graceful zero exit; prescribed lever case now explicitly selects its diagnostic mode. New end-force native headless rendering passes1000 actual steps, three shapes and one PivotJoint. A2N/.3s pulse with50ms rise/fall starts at.1s and ends a1s SciPy run at51.55276285deg; release angular velocity .50101018rad/s persists without damping and external-energy residual is4.6e-10J. Force-pulse final-angle errors versus Pymunk refine .26191165/.13057446/.06519184deg at1/.5/.25ms with force/moment closure below1e-8. The new reproduction script ran both unchanged wheel models at1/.5ms using200mm wheel,273mm links,45deg,30mm/.25s quintic step,6s. Max chassis discrepancies are .5892305/.2894302mm for original tip and .3246738/.1512563mm for replacement constant lift. Full-window J1 startup maxima remain7.21089N/48.60924N and do not halve; after50ms J1 maxima decrease3.61330 to1.79449N and.227748 to.114630N respectively. UI and script share union-of-timestamps interpolation and sample RMS; the default displayed pair has6000 matched samples. The in-app Comparison tab is populated with actual paired runs/deltas and retained for the user. Updated project-local launcher passes stop/start from C:/Windows, keeping127.0.0.1:4186. Documentation relative links/fences and diff hygiene pass; scoped working/staged/publication checks run before push. Parallel source workers used isolated managed worktrees; needed native evidence was copied before requesting recoverable archive. No raw runs/logs/screenshots/dependencies are committed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE. The previous114-test nine-mechanism wheel audit was not rerun because its core was unchanged; it remains historical evidence, not a new claim. Current wheel comparisons are the measured cases above. Pymunk pin reactions average solver impulses; math loads are instantaneous, and startup differences are reported rather than hidden. No hardware/contact/structural or global-stability claim is made. An undamped balanced lever stays where placed at rest but coasts if released with velocity; there is no automatic brake. Live force changes have up to one100ms chunk latency and may run slower under host load; state is not sped up to compensate. Early harness failures came from a new home button count, a collapsed control and reading mobile width before Plotly responsive layout settled; final assertions remain strict and pass. Parent-script CRLF changes were normalized without semantic edits. The comparison workspace uses browser storage/downloads, not cloud upload; original detailed-linkage source and archives remain intact.
+
+## 4. Compute Saving Handoff State
+
+Motion Lab now separates the current wheel mathematical/physical models from the undamped single-link lever in Miscellaneous and retains the older detailed study as an archive.
+Comparison loads saved profiles or recorded data into independently configurable split Plotly panels with checked units, signed deltas and portable full-source workspace JSON.
+Continue from comparison-workspace, constant-lift and latest validation records, preserve the distinction between undamped rest and moving release, and use the existing project-local launcher at port4186.
+
+---
+
+## Entry: 2026-10-10 — Andy Zhang — compact comparator plotting UI
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab saved-run comparator.
+- **Associated Issue/Task:** During the preceding implementation the user requested a much tighter UI, hideable text/buttons and larger plots. Preserve their open comparison while updating the layout.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/comparison-workspace.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_comparison_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- **API/Interface Changes:** Compact the comparator header/navigation and channel rows. Sources/help and per-plot Controls are collapsed by default; controls retain splitting, mode/reference, trace visibility, removal and legend functions. Add Hide/Show channels and Focus plots with Exit/Escape restoration. Focus temporarily hides interface chrome and legends without mutating source data or saved per-plot visibility. Enlarge and vertically resize charts, observe geometry changes for Plotly fitting, and compress delta readouts. Comparison JSON downloads now request compact formatting through a backward-compatible optional downloadJSON argument; actual download size matches its80MiB import guard. No numerical solver or data schema changed.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Updated real-browser comparison harness passes compact chart positioning, collapsed controls, sidebar toggle, focus/restore, independent trace/legend visibility, both split directions, export/import, actual profile rerun, zoom/theme/mobile. All22 comparison/library unit tests pass after the optional export-format change. In-app Focus and Escape were visually checked. The open comparison was backed up before refresh and restored; original results/layout/visibility are retained alongside subsequent channel selections. Its initial indented JSON was87,116,203bytes and exceeded the80MiB importer; compact export is55,032,085bytes, below the bound, with identical source results verified. Original backups remain intact. The earlier feature's19Python/56JavaScript and native/browser evidence remains scoped above; no solver retest is claimed for this presentation-only change. Documentation and diff checks pass; repository gates are rerun for the complete combined contribution before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE. A first compact-UI harness attempt tried selecting a library item after closing its containing disclosure; sequencing was corrected, preserving the visibility assertion. Restoring the earlier indented workspace exposed the formatting-size mismatch, now fixed with compact export rather than a raised import limit or dropped data. Transient controls/sidebar/focus state is presentation-only; portable workspace JSON retains plots, sources and their data-visibility settings. No original source or user dataset was deleted.
+
+## 4. Compute Saving Handoff State
+
+The comparator now prioritizes larger plots, with source/help details and individual plot controls available on demand.
+Sidebar and focus toggles resize Plotly while preserving selected channels, legends and numerical comparisons, and the user's open comparison has been restored.
+Use Sources & help for portable compact JSON, Controls for plot configuration and Exit focus or Escape to return to the compact workspace.
+
+---

@@ -20,7 +20,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   await page.goto('http://127.0.0.1:4186/?tab=math&model=counterbalance');
   const tool=page.frameLocator('iframe[data-key="counterbalance"]');
   await tool.locator('#status').filter({hasText:'Recorded'}).waitFor({timeout:30000});
-  assert.ok(await tool.locator('.js-plotly-plot').count()>=11);
+  assert.ok(await tool.locator('.js-plotly-plot').count()>=11);assert.equal(await page.locator('[data-panel="studies"]').isVisible(),true);assert.equal(await page.locator('[data-math-model="counterbalance"]').count(),0);await tool.locator('#c-mode').selectOption('prescribed');
   const staticValues=await tool.locator('#lift-angle .lever-chart').evaluate(node=>node.data.map(trace=>trace.y.filter(Number.isFinite)));
   assert.ok(Math.max(...staticValues[0])-Math.min(...staticValues[0])<1e-10);
   assert.ok(Math.max(...staticValues[1])-Math.min(...staticValues[1])>1);
@@ -56,13 +56,11 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   await tool.locator('#lift-angle .lever-chart').evaluate(node=>window.Plotly.relayout(node,{'xaxis.range':[10,55]}));
   assert.deepEqual(await tool.locator('#lift-angle .lever-chart').evaluate(node=>node._fullLayout.xaxis.range),[10,55]);
   await page.screenshot({path:path.join(out,'lever-dark-mobile.png'),fullPage:true});
-  // The Math and Misc tools are independent frames sharing a backend. A later
-  // default run in an inactive frame must not replace the active native profile.
+  // The retired Math entry redirects to one persistent Misc lever. Other studies
+  // must not replace its saved live/native profile when returning to this tool.
   await tool.locator('#c-length').fill('350');await tool.locator('#c-length').dispatchEvent('change');
-  await page.locator('[data-tab="studies"]').click();await page.locator('#study-select').selectOption('counterbalance');
-  const misc=page.frameLocator('iframe[data-key="studies"]');await misc.locator('#status').filter({hasText:'Recorded'}).waitFor({timeout:30000});
-  assert.equal(await misc.locator('#c-length').inputValue(),'400');
-  await page.locator('[data-tab="math"]').click();assert.equal(await tool.locator('#c-length').inputValue(),'350');
+  await page.locator('#study-select').selectOption('ratio');await page.locator('#study-select').selectOption('counterbalance');
+  assert.equal(await tool.locator('#c-length').inputValue(),'350');assert.equal(await page.locator('iframe[data-key="counterbalance"]').count(),1);
   const beforeActiveLaunch=launches.length,nativeResponse=page.waitForResponse(response=>response.url().endsWith('/api/native-gui')&&response.request().method()==='POST');
   await page.locator('#show-gui').click();assert.equal((await nativeResponse).status(),202);
   assert.equal(launches.length,beforeActiveLaunch+1);assert.equal(launches.at(-1).model,'counterbalance');assert.equal(launches.at(-1).config.length,.35);

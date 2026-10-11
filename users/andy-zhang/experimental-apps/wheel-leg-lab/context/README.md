@@ -57,7 +57,7 @@ diagnostic because its constraint/spring splitting can bias the response.
 
 The user requested both the exact reference lever and a wheel-leg preset.
 The standalone [constant-lift study](../docs/constant-lift.md) is available in
-the Mathematical selector, Miscellaneous studies and `/counterbalance/`; it
+Miscellaneous studies only and directly at `/counterbalance/`; it
 has independent math/free dynamics, actual Pymunk angle/free runs, profile/run
 JSON, data-library records and a model-specific live native GUI.
 
@@ -90,3 +90,19 @@ is saved separately from reference-sheet T₀ and solver config. The earlier
 two-stage factory is superseded; its explicit optional variant and validation
 history remain documented. Continue from the architecture, mechanism audit and
 latest validation, not an older release's test count.
+
+## Comparison and free single-link interaction, 2026-10-10
+
+Math now contains only 2D SciPy wheel suspension. The standalone lever lives in
+Miscellaneous; detailed linkage is archived there with source/direct route
+preserved. Old Math deep links translate to the corresponding Misc entry.
+The top-level [Comparison workspace](../docs/comparison-workspace.md) accepts
+multiple runs or explicitly runs saved profiles, adds searched channels to the
+active plot and supports independent trace visibility/splits and signed deltas.
+
+The standalone default is free, undamped and uncontrolled. Up/Down applies
+vertical end force; release leaves angular velocity intact. Place at rest is
+an explicit zero-speed reset, not a holding controller. Live stateless SciPy
+advances preserve state/force history for replay. The wheel model remains the
+upper-link/chassis replacement spring with damping 100 N s/m. Latest scoped
+checks are in validation; the unchanged wheel core's full audit was not rerun.

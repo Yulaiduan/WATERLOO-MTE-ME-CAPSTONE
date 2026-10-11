@@ -9,11 +9,12 @@ Use **Start Motion Lab.cmd** in the app root, wait for Ready and open
 
 | Section | Model and outputs |
 | --- | --- |
-| Mathematical model | Independent Python/SciPy energy ODE for all nine wheel-leg spring presets; instantaneous forces, torques, motion and energy; original-spring MATLAB ode45 companion is downloadable |
-| Constant-lift lever, within mathematical tools | Separate fixed-pivot lever with ideal gravity compensation, SciPy free dynamics, analytic prescribed-angle demand and actual Pymunk comparison |
-| Detailed linkage, within mathematical tools | Existing two-coordinate guide/independent-drive model, dynamics, inverse demand and local poles/Bode analysis |
+| Mathematical model | 2D Python/SciPy wheel suspension only; nine spring presets, instantaneous loads and energy; legacy MATLAB companion |
+| Constant-lift single-link lever, within Miscellaneous only | Free undamped lever, vertical end force and coasting release, SciPy/Pymunk and native GUI |
+| Archived detailed linkage, within Miscellaneous | Retained source/direct route and two-coordinate guide/drive; retired from main Math |
 | 2D physical model | Actual Pymunk space, nine editable wheel-leg spring presets, pivots, guide and travel limits; solver impulse loads and motion |
 | Miscellaneous studies | Wheel/link ratio calculator, seven pulley/linkage motion studies, constant-lift lever and recorded Pymunk playback |
+| Comparison | Multi-run/profile loading, searchable channels, independent Plotly visibility/splits, signed deltas/statistics and workspace JSON |
 | Profiles & data | Browser-local profile/run library, JSON import/export, numeric channels, Plotly inspection and complete table CSV |
 
 The persistent **Show Pymunk visual GUI** button launches a **live native
@@ -29,7 +30,7 @@ Opening the native viewer from Mathematical tools runs the Pymunk backend with
 the corresponding profile; it does not render SciPy as Pymunk. The independent
 wheel-drive linkage is a distinct model with no two-axis native implementation;
 select the wheel suspension model to launch that physical fixture.
-The constant-lift lever selector launches its own live lever model, using the
+The Miscellaneous constant-lift entry launches its own live lever model, using the
 same native-GUI controls with an explicitly separate profile envelope.
 
 Dark mode is explicitly selected and shared with embedded benches/studies.
@@ -102,8 +103,10 @@ balanced, providing no restoring ride-height stiffness by itself. The standalone
 lever has separate free/prescribed-angle modes, profiles and backend records;
 it has no MATLAB companion.
 
-**Run both & compare** sends the same profile to the two backends, saves both
-results and overlays chassis displacement/input. These are numerical checks of
+**Run both & compare** sends the same profile to both backends, saves both
+results and opens the top-level [Comparison workspace](comparison-workspace.md).
+Initial plots show source overlays plus signed deltas. Additional imported runs
+and explicitly executed library profiles can share independent split plots. These are numerical checks of
 ideal models, not hardware or canonical robot validation. Neither wheel-height
 fixture solves unilateral tire contact, explicit belt elasticity or beam stress.
 
@@ -224,3 +227,20 @@ curated passive defaults and point-force integration. The latest
 [validation](validation.md) owns solver/browser/native/launcher evidence and
 finite-envelope limits; historical release counts above do not certify current
 or edited configurations. MATLAB remains legacy-only.
+
+## Current navigation and lever interaction
+
+Only 2D SciPy suspension remains in Math. The standalone lever is under
+Miscellaneous only; detailed linkage is an archived Misc entry with direct
+route/source retained. Historical Math links with `model=counterbalance` or
+`model=linkage` translate to those Misc entries. Profiles & data offers Add run /
+Run profile actions for Comparison; profiles alone provide no plotted samples.
+See the [comparison record](comparison-workspace.md) for sampling and statistics.
+
+The single-link default is free, damping zero, one actual PivotJoint and no
+controller/motor. Up/Down applies end force, release coasts, and Place at rest
+explicitly resets angle/speed. Stateless SciPy
+`POST /api/counterbalance/advance` advances 100 ms chunks paced at nominal 1x
+wall time, capped at a 20-second recording. Force intervals export for replay.
+Prescribed angular motion remains an explicit motor diagnostic. Wheel
+suspension damping remains 100 N s/m.

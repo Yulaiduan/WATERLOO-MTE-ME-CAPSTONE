@@ -1,5 +1,22 @@
 # Validation record
 
+## Compact comparison follow-up, 2026-10-10
+
+The later UI request collapses per-plot controls and source/help sections,
+adds a hideable channel sidebar and Focus plots / Exit focus / Escape, and
+expands/resizes the charts. The updated real-browser comparison suite passes
+compact positioning, control expansion, sidebar visibility, focus/restore,
+independent traces/legends, both splits, JSON roundtrip, profile execution,
+zoom, dark mode and mobile. The 22 comparison/library unit tests still pass.
+The live in-app comparison was backed up and restored with all user-selected
+channels intact; focus and Escape were visually verified. Its two full six-second
+recordings occupied 87,116,203 bytes as indented JSON, exceeding the import cap.
+Comparison exports now use compact JSON, matching the 80 MiB size guard; the
+actual 55,032,085-byte export is below the cap and retains identical results and
+layout, preserving the prior trace visibility alongside added channel selections.
+The original backup remains intact. No numerical solver changed
+in this UI follow-up.
+
 Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: locally checked member experiment, not canonical robot or hardware validation.
 
 ## Current contract and evidence scope
@@ -261,3 +278,62 @@ Rigid-stop peaks remain timestep dependent; prescribed height is bilateral and
 chassis pitch is held. No hardware, real spring/belt packaging, tire/terrain
 contact, structural, GPU or other-OS validation is claimed. Repository publication
 gates are reported separately in the contribution log.
+
+## Comparison and single-link force update, 2026-10-10
+
+Scoped lever checks pass 19 Python tests: eleven existing lever cases and eight
+new end-force/live-advance cases. All 56 JavaScript tests pass, including twelve
+comparison contracts and force-history JSON validation. Five live browser suites
+pass: verify_lever_force_ui.cjs, verify_comparison_ui.cjs, verify_motion_lab.cjs,
+verify_counterbalance_ui.cjs and verify_suspension_architecture_ui.cjs.
+The harness fixes opened a collapsed control and waited for responsive Plotly
+layout to settle; assertions were not relaxed. Checks cover new navigation,
+explicit profile execution, multi-import, active-plot channels, visibility,
+split layout, signed delta/unit/gap rules, workspace roundtrip and live force
+release/reset/history. Native requests mocked by browser suites remain separate
+from actual desktop checks.
+
+Actual five-case native API checks pass. A new force-mode headless render
+advances 1000 steps with three real shapes, one PivotJoint and no motor.
+The default standalone model is free, damping zero and uncontrolled. This
+does not change the wheel replacement unit's damping of 100 N s/m.
+
+A 2 N pulse for .3 s, with .05 s rise/fall beginning .1 s, gives SciPy angle
+51.55276285° at 1 s and release speed .50101018 rad/s. Energy/work residual is
+4.6e-10 J. Pymunk angle errors decrease .26191165 / .13057446 / .06519184°
+at 1 / .5 / .25 ms. Release preserves velocity and coasts; explicit Place at
+rest zeros speed without a holding controller. Prescribed motion remains an
+explicit motor diagnostic, not the default.
+
+The wheel core is unchanged; its preceding 114-test/108-case audit was not rerun
+for this update. Historical evidence above retains its original scope.
+The new matched-profile comparison script and portable records use recorded
+overlap/union timestamps, with full-window startup errors reported separately
+from post-startup errors. See [Comparison](comparison-workspace.md).
+Publication gates remain separately reported by the contribution log.
+
+### Matched-profile wheel model comparison
+
+The actual scripts/compare_suspension_models.py run writes four portable records
+and summary JSON to ignored artifacts/model-comparison. Both models use the
+same 200 mm wheel, 273 mm links, 45° initial angle, 30 mm / 250 ms quintic
+position step and six-second horizon. Delta is Pymunk minus SciPy over the
+union of recorded timestamps in shared overlap, matching the Comparison UI:
+6000 samples at 1 ms and 12000 at .5 ms. RMS is a sample RMS.
+
+| Quantity / window | Original tip: max absolute delta at 1 / .5 ms | Constant lift: max absolute delta at 1 / .5 ms |
+| --- | --- | --- |
+| Chassis displacement, full window | .5892305 / .2894302 mm | .3246738 / .1512563 mm |
+| J1 force, full window | 7.210894 / 7.210894 N | 48.609238 / 48.609238 N |
+| J2 force, full window | 7.603287 / 7.603287 N | 16.053063 / 16.053063 N |
+| Hip guide reaction, full window | 4.315348 / 4.315348 N m | 20.198128 / 20.198128 N m |
+| J1 force, t >= .05 s | 3.613304 / 1.794493 N | .227748 / .114630 N |
+| J2 force, t >= .05 s | 3.644238 / 1.809873 N | .064025 / .032034 N |
+| Hip guide reaction, t >= .05 s | .069036 / .034253 N m | .036278 / .018583 N m |
+
+Full-window force/guide maxima are dominated by initial constraint initialization
+and do **not** halve with timestep here. Post-50-ms errors refine, but that
+window must not replace the full result without disclosure. These compare
+physical step-averaged impulse loads to instantaneous mathematical loads,
+not measured hardware. The script summary retains RMS and signed final values
+for every listed channel as well as the complete configs.

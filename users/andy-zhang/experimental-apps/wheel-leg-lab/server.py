@@ -57,15 +57,16 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
     def do_POST(self):
         native_show=self.path.startswith('/api/native-gui/') and self.path.endswith('/show')
-        if self.path not in ['/api/simulate','/api/pymunk/simulate','/api/math/simulate','/api/counterbalance/math','/api/counterbalance/pymunk','/api/native-gui'] and not native_show:
+        if self.path not in ['/api/simulate','/api/pymunk/simulate','/api/math/simulate','/api/counterbalance/math','/api/counterbalance/pymunk','/api/counterbalance/advance','/api/native-gui'] and not native_show:
             return self.json({'error':'Unknown endpoint.'},404)
         try:
             count=int(self.headers.get('Content-Length','0'))
             if count<=0 or count>50000: return self.json({'error':'Invalid request size.'},413)
             value=json.loads(self.rfile.read(count))
-            if self.path=='/api/native-gui' or native_show:
+            if self.path=='/api/native-gui' or native_show or self.path=='/api/counterbalance/advance':
                 origin=self.headers.get('Origin');allowed={f'http://127.0.0.1:{self.server.server_port}',f'http://localhost:{self.server.server_port}'}
-                if (origin and origin not in allowed) or self.headers.get('Sec-Fetch-Site')=='cross-site':return self.json({'error':'Native launch requires this local application.'},403)
+                if (origin and origin not in allowed) or self.headers.get('Sec-Fetch-Site')=='cross-site':return self.json({'error':'Native launch and live interaction require this local application.'},403)
+                if self.path=='/api/counterbalance/advance':return self.json(counterbalance.advance(value))
                 if native_show:return self.json(show_native(self.path.split('/')[3]))
                 return self.json(launch_native(value),202)
             mathematical=self.path in ('/api/math/simulate','/api/counterbalance/math')

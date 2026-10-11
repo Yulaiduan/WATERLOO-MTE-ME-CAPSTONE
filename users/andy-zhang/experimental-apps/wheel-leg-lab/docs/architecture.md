@@ -65,3 +65,21 @@ selected record. Lever envelopes remain model-specific. Live status and owned
 
 [Mechanism audit](mechanism-audit.md) owns current curated defaults and
 integration rationale; [validation](validation.md) owns actual test evidence.
+
+## Comparison and single-link force workspace, 2026-10-10
+
+Math now hosts only the 2D SciPy suspension; the lever lives in Miscellaneous
+and detailed linkage is archived there. Direct routes remain; historical
+Math deep links translate to Misc. `web/comparison.js` mounts the workspace,
+`web/comparison-data.js` owns pure unit/family/time matching and signed deltas,
+and `web/comparison.css` styles recursive splits. Original records stay attached
+to exported layouts. Profiles explicitly run their matching backend before
+becoming plotted data. See [comparison contract](comparison-workspace.md).
+
+The standalone lever defaults to free undamped motion with one PivotJoint;
+only prescribed diagnostic mode adds a motor. Vertical end force acts at the
+actual tip and enters energy/pivot/angular balances.
+`POST /api/counterbalance/advance` validates supplied config/state/force and
+advances an independent SciPy chunk without server-owned state. Browser pacing
+and force history supply live interaction and portable replay. Wheel suspension
+equations/damping are unchanged.

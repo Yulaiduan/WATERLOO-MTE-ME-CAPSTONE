@@ -8,9 +8,9 @@ Owner: Andy Zhang. Updated: 2026-10-10. Status: user-requested standalone lever 
 
 ## Browser entry and provenance
 
-The Mathematical Model tab offers **Constant-lift lever** alongside the guided
-wheel suspension and detailed linkage models. The same study is available under
-Miscellaneous studies and directly at `/counterbalance/`. Use the existing
+The standalone **Constant-lift lever** is available under Miscellaneous only
+and directly at `/counterbalance/`. Math contains only the 2D SciPy wheel
+suspension; detailed linkage is a retained archive entry under Miscellaneous. Use the existing
 **Start Motion Lab.cmd** and [port-4186 menu](http://127.0.0.1:4186/); no separate
 server or launcher is required. The wheel-leg Mathematical and Physical tabs
 also offer the ninth suspension preset, `gravity_balance`.
@@ -87,8 +87,11 @@ damping and travel reserve require separate design choices.
 
 ## Independent and actual physical runs
 
-**Free** mode integrates lever dynamics with SciPy DOP853, using exact pivot
-inertia and passive spring/gravity moments. **Prescribed angle** mode computes
+Default **Free** mode uses SciPy DOP853 with exact pivot inertia, spring/gravity
+moments and damping zero. The actual physical model has one PivotJoint and
+no holding motor/controller. An exactly balanced link placed at rest remains
+at that allowed angle; release of a moving link preserves angular velocity.
+**Prescribed angle** is an explicitly selected motor diagnostic that computes
 finite C2 angle step/square/pulse motion and required driver torque from its
 analytic derivatives. The Pymunk counterpart uses an actual PivotJoint and,
 only in prescribed mode, an unlimited ideal SimpleMotor commanded by
@@ -96,7 +99,7 @@ interval-average angular velocity. The dynamic body is not teleported onto the
 reference angle. Joint forces and motor torque are recovered from momentum
 balance and checked against public constraint impulses.
 
-Motor tracking has timestep lag. The default 30° / 250 ms step has about 0.225°
+Motor tracking has timestep lag. The historical prescribed diagnostic's 30° / 250 ms step had about 0.225°
 maximum tracking error at 1 ms; the focused refinement test requires less than
 0.06° at 0.25 ms. Explicit point-spring integration, energy/work residuals and
 sharp load peaks likewise require refinement. Free runs end at travel bounds
@@ -121,7 +124,7 @@ wrapper:
 ```sh
 .venv/Scripts/python.exe counterbalance.py --backend math --output .preview/lever-math.json
 .venv/Scripts/python.exe counterbalance.py --backend pymunk --config profile.json --output .preview/lever-physical.json
-.venv/Scripts/python.exe -m unittest -v test_counterbalance
+.venv/Scripts/python.exe -m unittest -v test_counterbalance test_counterbalance_force
 ```
 
 ## Guided wheel-leg adaptation
@@ -170,3 +173,25 @@ MATLAB and launcher evidence is in [validation](validation.md); current curated
 passive defaults and integration changes are in [mechanism audit](mechanism-audit.md).
 These are ideal numerical checks, not acceptance of the sketch's hardware or a
 canonical CAMEL robot.
+
+## Vertical end force and live interaction
+
+Force mode applies signed vertical load `Fy` at payload C: upward positive,
+`M_external=Fy L cos(theta)`. Step, square and pulse inputs have editable
+rise/fall ramps. Work integrates `Fy*v_tip_y`, retained with energy residual,
+tip velocity/acceleration, pivot load and moment channels. This standalone
+force input differs from the wheel fixture's prescribed wheel position.
+
+Hold Up/Down to apply force; Release sets force zero while velocity coasts.
+Opposite force brakes motion. Place at rest explicitly resets the selected
+angle with zero speed; it is not feedback control. Live interaction requires
+zero damping and uses stateless SciPy `POST /api/counterbalance/advance`,
+100 ms chunks paced at nominal 1x wall time, capped at 20 seconds. Requests
+carry config, time/angle/speed, force N and duration; no server-owned session
+or hidden motor is created. Exported `force_history` intervals
+`[{start,end,force_N}]` reproduce the recording in force mode.
+
+Explicit damped profiles and prescribed-angle motor diagnostics remain recorded
+studies. Single-link damping zero does not change wheel replacement damping
+100 N s/m. Full data enters [Comparison](comparison-workspace.md); lever loads
+cannot be subtracted from wheel loads merely because names look similar.

@@ -7,6 +7,7 @@ import {normalizeImport,saveRecord,downloadJSON} from '/library.js';
 const $=id=>document.getElementById(id),embedded=parent!==window,NS='http://www.w3.org/2000/svg';
 const backends=['counterbalance_math','counterbalance_pymunk'];
 let config={},defaults={},result=null,results={},time=0,playing=false,animation=0,lastStamp=0,plots=[],nativeTimer=0,nativeSession=null,nativeConfig=null;
+let liveRunning=false,liveGeneration=0,liveForce=0,liveState=null,liveConfig=null,liveRun=null,lastLivePlot=0;
 const fmt=(value,n=3)=>Number.isFinite(value)?value.toFixed(n):'—';
 const emit=value=>{if(embedded)parent.postMessage(value,location.origin);};
 function error(cause){$('error').hidden=false;$('error').textContent=cause instanceof Error?cause.message:String(cause);}
@@ -22,27 +23,31 @@ function controls(){
  const check=(key,label)=>`<label class="lever-check"><input id="c-${key}" data-key="${key}" type="checkbox" ${config[key]?'checked':''}>${label}</label>`;
  $('controls').innerHTML=`<details open><summary>Geometry & gravity</summary><div class="lever-fields">${field('length','Lever L','mm',1000,20,3000)}${field('spring_radius','Spring radius R','mm',1000,5,3000)}${field('anchor_height','Anchor H','mm',1000,5,3000)}${field('payload_mass','Payload at C','kg',1,0,100)}${field('lever_mass','Uniform lever','kg',1,.001,100)}${field('gravity','Gravity','m/s²',1,0,20)}</div></details>
  <details open><summary>Spring law & physical coil</summary><div class="lever-fields">${select('law','Spring law',[['zero_effective','Zero effective length · T=k·d'],['ordinary','Ordinary coil · T=k·max(d−d₀,0)']])}${check('stiffness_auto','Auto k for zero-length gravity balance')}${field('stiffness','Manual spring k','N/m',1,0,100000)}${field('physical_free_length','Physical coil free length','mm',1000,1,5000)}${field('effective_free_length','Ordinary effective d₀','mm',1000,0,5000)}${field('damping','Span damping','N·s/m',1,0,2000)}</div><p id="coil-note" class="muted"></p></details>
- <details open><summary>Motion / free dynamics</summary><div class="lever-fields">${select('mode','Experiment',[['prescribed','Prescribed angle · measure loads'],['free','Free lever · spring / gravity response']])}${field('initial_angle_deg','Initial θ','° from horizontal',1,-178,178)}${field('initial_speed_deg','Initial speed','°/s · free mode',1,-720,720)}${field('theta_min_deg','Minimum θ','°',1,-179,178)}${field('theta_max_deg','Maximum θ','°',1,-178,179)}${select('wave','Prescribed waveform',[['step','Angle step'],['square','Angle square wave'],['pulse','Angle pulse']])}${field('angle_amplitude_deg','Angle change','°',1,-300,300)}${field('start','Start','s',1,0,20)}${field('rise','Smooth C2 rise','ms',1000,0,5000)}${field('fall','Smooth C2 fall','ms',1000,0,5000)}${field('period','Square period','s',1,.02,10)}${field('duty','Square duty','%',100,1,99)}${field('pulse_width','Pulse width','ms',1000,1,5000)}</div><p class="muted">Finite C2 ramps avoid instantaneous angle jumps. Free motion ends at bounds before an impact model.</p></details>
+ <details open><summary>Motion / free dynamics</summary><div class="lever-fields">${select('mode','Experiment',[['free','Free lever · no motor'],['force','Vertical end force · no motor'],['prescribed','Prescribed angle · ideal motor diagnostic']])}${field('initial_angle_deg','Initial θ','° from horizontal',1,-178,178)}${field('initial_speed_deg','Initial speed','°/s · free / force',1,-720,720)}${field('theta_min_deg','Minimum θ','°',1,-179,178)}${field('theta_max_deg','Maximum θ','°',1,-178,179)}${select('wave','Input waveform',[['step','Step'],['square','Square wave'],['pulse','Finite pulse']])}${field('angle_amplitude_deg','Angle change','° · motor mode',1,-300,300)}${field('force_amplitude_N','Signed end-force change','N · upward positive',1,-500,500)}${select('ramp_shape','Force ramp shape',[['quintic','Smooth C2'],['linear','Linear']])}${field('start','Start','s',1,0,20)}${field('rise','Input rise','ms',1000,0,5000)}${field('fall','Input fall','ms',1000,0,5000)}${field('period','Square period','s',1,.02,10)}${field('duty','Square duty','%',100,1,99)}${field('pulse_width','Pulse width','ms',1000,1,5000)}</div><p class="muted">Prescribed angles use C2 ramps and an ideal motor. Force mode applies a vertical point load at C with editable slopes. Nonempty saved press/hold history replaces the scheduled waveform.</p><button type="button" id="clear-force-history">Use scheduled waveform / clear hold history</button></details>
  <details><summary>Integration</summary><div class="lever-fields">${field('duration','Duration','s',1,.1,20)}${field('dt','Output / Pymunk step','ms',1000,.25,4)}${field('iterations','Pymunk iterations','integer',1,20,300)}</div></details>`;
  $('controls').querySelectorAll('[data-key]').forEach(node=>node.addEventListener('change',()=>{
+  stopLive();liveState=null;liveRun=null;
   config[node.dataset.key]=node.type==='checkbox'?node.checked:node.tagName==='SELECT'?node.value:node.valueAsNumber/Number(node.dataset.scale||1);
   if(node.dataset.key==='mode'&&config.mode==='prescribed')config.initial_speed_deg=0;
   $('status').textContent='Inputs changed. Static setup updates now; recorded motion keeps its saved configuration until Run.';
   updateControls();staticPlots();if(!result)draw();emit({type:'motion-lab-config',backend:backend(),config});
- }));updateControls();
+ }));$('clear-force-history').onclick=()=>{stopLive();config.force_history=[];$('status').textContent='Press/hold history cleared; the next force run uses the scheduled waveform.';emit({type:'motion-lab-config',backend:backend(),config});};updateControls();
 }
 function rate(c){return c.stiffness_auto?c.gravity*c.length*(c.payload_mass+.5*c.lever_mass)/(c.anchor_height*c.spring_radius):c.stiffness;}
 function updateControls(){
- const find=key=>$('controls').querySelector(`[data-key="${key}"]`),free=config.mode==='free';
+ const find=key=>$('controls').querySelector(`[data-key="${key}"]`),free=config.mode==='free',motor=config.mode==='prescribed';
  find('stiffness').disabled=config.stiffness_auto;
  find('effective_free_length').disabled=false;
  find('physical_free_length').disabled=config.law==='ordinary';
- find('initial_speed_deg').disabled=!free;
+ find('initial_speed_deg').disabled=motor;
  find('initial_speed_deg').value=config.initial_speed_deg;
- for(const key of ['wave','angle_amplitude_deg','start','rise'])find(key).disabled=free;
+ for(const key of ['wave','start','rise'])find(key).disabled=free;
+ find('angle_amplitude_deg').disabled=!motor;
+ for(const key of ['force_amplitude_N','ramp_shape'])find(key).disabled=config.mode!=='force';
  find('fall').disabled=free||config.wave==='step';
  for(const key of ['period','duty'])find(key).disabled=free||config.wave!=='square';
  find('pulse_width').disabled=free||config.wave!=='pulse';
+ if(!liveRunning){$('live-force-N').value=Math.abs(config.force_amplitude_N);$('live-force-kgf').value=fmt(Math.abs(config.force_amplitude_N)/9.80665,5);}
  $('coil-note').textContent=config.law==='zero_effective'?`Resolved k = ${fmt(rate(config),3)} N/m. Ideal routing: physical coil length = physical free length + span d; tension k·d. Free length is not assumed to be zero physically.`:`Ordinary law uses effective d₀; slack at d≤d₀. Auto k remains the zero-length reference and cannot make this ordinary law exactly constant.`;
 }
 function plot(id,title,xTitle,yTitle,traces){
@@ -73,6 +78,9 @@ function dynamicPlots(){
  plot('acceleration-time','Recorded angular acceleration','Time (s)','Angular acceleration (rad/s²)',series([['angular_acceleration_rad_s2','Lever angular acceleration']]));
  plot('tip-acceleration','Recorded tip acceleration','Time (s)','Vertical acceleration (m/s²)',series([['tip_acceleration_y','Payload point C']]));
  plot('energy-time','Recorded energy','Time (s)','Mechanical energy (J)',series([['mechanical_energy_J','Kinetic + spring + gravity']]));
+ plot('end-force-time','Vertical end input','Time (s)','Force (N)',series([['end_force_N','Applied force at C · upward positive']]));
+ plot('tip-speed-time','End C velocity','Time (s)','Vertical velocity (m/s)',series([['tip_velocity_y','End C · release preserves motion']]));
+ plot('external-work-time','External work','Time (s)','Work (J)',series([['external_work_J','Integrated end-force work']]));
  const comparison=Object.entries(results).map(([key,run])=>({name:key==='counterbalance_math'?'SciPy':'Pymunk',x:run.rows.map(r=>r.t),y:run.rows.map(r=>r.theta_deg)}));
  if(comparison.length>1)plot('comparison-time','Independent model comparison','Time (s)','θ (°)',comparison);
 }
@@ -93,12 +101,14 @@ function draw(){
  for(let i=0;i<=24;i++){const s=i/24,w=i<3||i>21?0:(i%2?6:-6);springPoints.push([A[0]+dx*s+normal[0]*w,A[1]+dy*s+normal[1]*w].join(','));}
  svgNode('polyline',{points:springPoints.join(' '),fill:'none',stroke:color('orange'),'stroke-width':2.4});
  [[O,'O · pivot'],[A,'A · anchor'],[B,'B · spring'],[C,'C · payload']].forEach(([p,label])=>{svgNode('circle',{cx:p[0],cy:p[1],r:5,fill:color('panel'),stroke:color('text'),'stroke-width':2});svgNode('text',{x:p[0]+9,y:p[1]-10,fill:color('text'),'font-size':13},label);});
- svgNode('text',{x:20,y:H-14,fill:color('muted'),'font-size':12},result?`${result.engine} recorded geometry · ${c.mode} · θ ${fmt(row.theta_deg,2)}°`:'Current setup geometry · run to generate loads and motion');
+ if(row?.end_force_N){const sign=Math.sign(row.end_force_N),endY=C[1]-sign*Math.min(70,22+Math.abs(row.end_force_N)*5);svgNode('line',{x1:C[0],y1:C[1],x2:C[0],y2:endY,stroke:color('red'),'stroke-width':3});svgNode('polyline',{points:`${C[0]-5},${endY+sign*8} ${C[0]},${endY} ${C[0]+5},${endY+sign*8}`,fill:'none',stroke:color('red'),'stroke-width':3});svgNode('text',{x:C[0]+12,y:endY,fill:color('red'),'font-size':12},`${fmt(row.end_force_N,2)} N`);}
+ svgNode('text',{x:20,y:H-14,fill:color('muted'),'font-size':12},result?`${result.engine} ${liveRunning?'LIVE':'recorded'} geometry · ${c.mode} · θ ${fmt(row.theta_deg,2)}°`:'Current setup geometry · run to generate loads and motion');
  $('time-label').textContent=fmt(time,3)+' s';
- if(row){const stats=[['Spring tension',fmt(row.spring_force_N,2)+' N'],['Equivalent lift',row.equivalent_defined?fmt(row.equivalent_support_N,2)+' N':'Undefined at vertical'],['Pivot resultant',fmt(row.joint_force_N,2)+' N'],['Driver torque',fmt(row.driver_torque_Nm,3)+' N·m'],['Spring span',fmt(row.span_m*1000,1)+' mm'],['Physical coil length',fmt(row.coil_length_m*1000,1)+' mm']];$('values').replaceChildren(...stats.map(([label,value])=>{const box=document.createElement('div'),strong=document.createElement('strong');box.textContent=label;strong.textContent=value;box.append(strong);return box;}));}
+ if(row){const stats=[['Spring tension',fmt(row.spring_force_N,2)+' N'],['Equivalent lift',row.equivalent_defined?fmt(row.equivalent_support_N,2)+' N':'Undefined at vertical'],['Pivot resultant',fmt(row.joint_force_N,2)+' N'],['End force at C',fmt(row.end_force_N||0,2)+' N / '+fmt((row.end_force_N||0)/9.80665,3)+' kgf'],['End C velocity',fmt(row.tip_velocity_y,4)+' m/s'],['Driver torque',fmt(row.driver_torque_Nm,3)+' N·m'],['Spring span',fmt(row.span_m*1000,1)+' mm'],['Physical coil length',fmt(row.coil_length_m*1000,1)+' mm']];$('values').replaceChildren(...stats.map(([label,value])=>{const box=document.createElement('div'),strong=document.createElement('strong');box.textContent=label;strong.textContent=value;box.append(strong);return box;}));}
 }
 function pause(){playing=false;lastStamp=0;cancelAnimationFrame(animation);$('play').textContent='Play';}
 function showResult(run){
+ stopLive();liveState=null;liveRun=null;
  if(!backends.includes(run.backend)||!run.rows?.length)throw Error('This is not a recorded counterbalance lever run.');
  pause();result=run;results[run.backend]=run;config={...run.config};$('backend').value=run.backend;time=0;controls();staticPlots();dynamicPlots();draw();
  $('time').max=run.rows.at(-1).t;$('time').value=0;$('time').disabled=false;$('play').disabled=false;$('save-run').disabled=false;
@@ -108,6 +118,7 @@ function showResult(run){
  $('status').textContent=`Recorded ${run.rows.length.toLocaleString()} samples · ${run.engine} · equivalent lift and coil tension are separate channels.`;emit({type:'motion-lab-config',backend:run.backend,config});
 }
 function loadConfiguration(value,which=backend()){
+ stopLive();liveState=null;liveRun=null;
  pause();result=null;config={...defaults,...value};if(backends.includes(which))$('backend').value=which;
  $('play').disabled=$('time').disabled=$('save-run').disabled=true;$('values').replaceChildren();$('snapshot').textContent='Current setup · generate a run to record loads and motion';$('scope').textContent='';$('diagnostics').textContent='';$('warnings').replaceChildren();
  for(const id of plots.filter(id=>!['lift-angle','tension-angle','moment-angle','coil-angle'].includes(id))){const panel=$(id);if(panel){Plotly.purge(panel.querySelector('.lever-chart'));panel.remove();}}
@@ -123,13 +134,71 @@ async function requestRun(which,snapshot){
  }
 }
 async function run(compare=false){
- clearError();pause();$('run').disabled=$('compare').disabled=true;$('status').textContent='Running independent counterbalance lever model…';
+ stopLive();clearError();pause();$('run').disabled=$('compare').disabled=true;$('status').textContent='Running independent counterbalance lever model…';
  try{
   const snapshot=normalizeImport(packet('profile')).config;
   for(const which of compare?backends:[backend()]){const value=await requestRun(which,snapshot);results[value.backend]=value;await retain({type:'motion-lab-run',backend:value.backend,result:value});}
   showResult(results[backend()]||results.counterbalance_math);
  }catch(cause){error(cause);}finally{$('run').disabled=$('compare').disabled=false;}
 }
+function stopLive(message='Live simulation paused; angle and angular velocity are retained for Resume.'){
+ const wasRunning=liveRunning;liveRunning=false;liveForce=0;liveGeneration++;
+ $('live-toggle').textContent=liveState?'Resume live':'Start live';
+ if(wasRunning){$('live-status').textContent=message;dynamicPlots();if(liveRun?.rows.length)void retain({type:'motion-lab-run',backend:liveRun.backend,result:liveRun}).catch(error);}
+}
+function appendForceInterval(start,end,force){
+ const previous=liveConfig.force_history.at(-1);
+ if(previous&&previous.force_N===force&&Math.abs(previous.end-start)<1e-8)previous.end=end;
+ else liveConfig.force_history.push({start,end,force_N:force});
+}
+async function liveTick(generation){
+ if(!liveRunning||generation!==liveGeneration)return;
+ const stamp=performance.now(),start=liveState.t,applied=liveForce;
+ try{
+  const response=await fetch('/api/counterbalance/advance',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({config:liveConfig,state:liveState,force_N:applied,advance_s:.1})});
+  const chunk=await response.json();if(!response.ok)throw Error(chunk.error||'Live lever step failed.');
+  if(generation!==liveGeneration)return;
+  liveState=chunk.next_state;appendForceInterval(start,liveState.t,applied);liveConfig.duration=Math.max(.1,liveState.t);
+  const previousWork=liveRun?.rows.at(-1)?.external_work_J||0;
+  for(const row of chunk.rows)row.external_work_J+=previousWork;
+  if(!liveRun){liveRun={...chunk,config:structuredClone(liveConfig),rows:[],frames:[],diagnostics:{...chunk.diagnostics,energy_balance_error_J:0}};delete liveRun.next_state;}
+  liveRun.rows.push(...chunk.rows);liveRun.frames.push(...chunk.frames);liveRun.config=structuredClone(liveConfig);
+  liveRun.diagnostics={...chunk.diagnostics,actual_duration_s:liveState.t,energy_balance_error_J:liveRun.diagnostics.energy_balance_error_J+chunk.diagnostics.energy_balance_error_J};
+  config=structuredClone(liveConfig);result=liveRun;results.counterbalance_math=liveRun;time=liveState.t;
+  $('time').max=time;$('time').value=time;$('time').disabled=false;$('play').disabled=false;$('save-run').disabled=false;
+  $('snapshot').textContent='Live Python / SciPy · one link · no motor or damping · recorded force history';
+  $('status').textContent=`Live ${fmt(time,2)} s · force ${fmt(applied,2)} N · θ ${fmt(liveState.theta_deg,2)}° · ω ${fmt(liveState.angular_velocity_rad_s,4)} rad/s`;
+  $('live-status').textContent=applied?`Applying ${fmt(applied,2)} N at end C. Release changes the force to zero; it does not arrest motion.`:'End force released · neutral motion coasts. Use opposite force to brake, or Place at rest to reset explicitly.';
+  $('diagnostics').textContent=JSON.stringify({config,parameters:liveRun.parameters,model:liveRun.model,diagnostics:liveRun.diagnostics},null,2);$('scope').textContent=liveRun.scope;
+  draw();emit({type:'motion-lab-config',backend:'counterbalance_math',config});
+  if(performance.now()-lastLivePlot>500){dynamicPlots();lastLivePlot=performance.now();}
+  if(chunk.diagnostics.stop_event){stopLive('Travel limit reached; simulation ended before a stop impact. Place at rest to restart.');liveState=null;return;}
+  if(liveState.t>=19.9-1e-8){stopLive('20-second live recording limit reached. Save JSON or Place at rest for a new recording.');liveState=null;return;}
+  setTimeout(()=>void liveTick(generation),Math.max(0,100-(performance.now()-stamp)));
+ }catch(cause){if(generation===liveGeneration){stopLive('Live simulation stopped after an input or solver error.');error(cause);}}
+}
+function startLive(){
+ if(liveRunning)return;clearError();pause();
+ if(config.damping!==0){error('Live force interaction uses no damping. Set Span damping to 0; explicitly damped profiles can still run as recorded diagnostics.');return;}
+ if(!liveState){liveConfig={...structuredClone(config),mode:'force',force_history:[],duration:20};liveState={t:0,theta_deg:config.initial_angle_deg,angular_velocity_rad_s:config.initial_speed_deg*Math.PI/180};liveRun=null;}
+ config={...structuredClone(liveConfig)};$('backend').value='counterbalance_math';controls();liveRunning=true;const generation=++liveGeneration;$('live-toggle').textContent='Pause live';void liveTick(generation);
+}
+function releaseForce(){liveForce=0;$('force-up').classList.remove('held');$('force-down').classList.remove('held');}
+function pressForce(sign){
+ const magnitude=$('live-force-N').valueAsNumber;
+ if(!Number.isFinite(magnitude)||magnitude<0||magnitude>500){error('Live force magnitude must be 0–500 N.');return;}
+ startLive();if(!liveRunning)return;liveForce=sign*magnitude;$('force-'+(sign>0?'up':'down')).classList.add('held');
+}
+for(const [id,sign] of [['force-up',1],['force-down',-1]]){
+ const node=$(id);node.onpointerdown=event=>{event.preventDefault();node.setPointerCapture(event.pointerId);pressForce(sign);};node.onpointerup=releaseForce;node.onpointercancel=releaseForce;node.onlostpointercapture=releaseForce;
+ node.onkeydown=event=>{if((event.key===' '||event.key==='Enter')&&!event.repeat){event.preventDefault();pressForce(sign);}};node.onkeyup=event=>{if(event.key===' '||event.key==='Enter')releaseForce();};
+}
+$('force-release').onclick=releaseForce;
+$('live-toggle').onclick=()=>{releaseForce();if(liveRunning)stopLive();else startLive();};
+$('place-rest').onclick=()=>{releaseForce();stopLive();const placement={...config,mode:'free',force_history:[],initial_speed_deg:0};loadConfiguration(placement,'counterbalance_math');$('live-status').textContent=`Placed at θ ${fmt(config.initial_angle_deg,2)}° with zero velocity. This is an explicit reset, not a holding controller.`;};
+$('force-pulse').onclick=()=>{releaseForce();stopLive();config={...config,mode:'force',wave:'pulse',force_history:[]};controls();void run();};
+for(const [id,other,scale] of [['live-force-N','live-force-kgf',1/9.80665],['live-force-kgf','live-force-N',9.80665]])$(id).onchange=()=>{const value=$(id).valueAsNumber;if(!Number.isFinite(value)||value<0||value*scale>($(other).max||500)){error('Use a force magnitude within 0–500 N.');return;}$(other).value=fmt(value*scale,5);config.force_amplitude_N=$('live-force-N').valueAsNumber;};
+window.addEventListener('blur',releaseForce);document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseForce();});
 function saveProfile(){clearError();try{const p=normalizeImport(packet('profile'));downloadJSON(p,'counterbalance-profile.json');void retain({type:'motion-lab-profile',backend:backend(),config}).catch(error);}catch(cause){error(cause);}}
 async function native(){
  clearError();if(embedded){emit({type:'motion-lab-show-gui',config:{model:'counterbalance',config}});return;}
@@ -148,13 +217,13 @@ async function native(){
 }
 $('run').onclick=()=>run();$('compare').onclick=()=>run(true);$('save-profile').onclick=saveProfile;$('save-run').onclick=()=>{if(result){downloadJSON(packet('run',result),'counterbalance-full-run.json');void retain({type:'motion-lab-save-run',backend:result.backend,result}).catch(error);}};$('native').onclick=native;
 $('architecture').onclick=()=>{if(embedded)emit({type:'motion-lab-open-architecture'});else location.assign('/?tab=physics&architecture=constant-lift');};
-$('backend').onchange=()=>{pause();emit({type:'motion-lab-config',backend:backend(),config});if(results[backend()])showResult(results[backend()]);else $('status').textContent='Backend selected. Run this lever model to generate its own recorded data.';};
-$('time').oninput=()=>{pause();time=Number($('time').value);draw();};
-$('play').onclick=()=>{if(playing){pause();return;}if(time>=result.rows.at(-1).t)time=0;playing=true;lastStamp=0;$('play').textContent='Pause';function tick(stamp){if(!playing)return;if(lastStamp)time=Math.min(result.rows.at(-1).t,time+(stamp-lastStamp)/1000);lastStamp=stamp;$('time').value=time;draw();if(time>=result.rows.at(-1).t){pause();return;}animation=requestAnimationFrame(tick);}animation=requestAnimationFrame(tick);};
+$('backend').onchange=()=>{stopLive();pause();emit({type:'motion-lab-config',backend:backend(),config});if(results[backend()])showResult(results[backend()]);else $('status').textContent='Backend selected. Run this lever model to generate its own recorded data.';};
+$('time').oninput=()=>{stopLive();pause();time=Number($('time').value);draw();};
+$('play').onclick=()=>{stopLive();if(playing){pause();return;}if(time>=result.rows.at(-1).t)time=0;playing=true;lastStamp=0;$('play').textContent='Pause';function tick(stamp){if(!playing)return;if(lastStamp)time=Math.min(result.rows.at(-1).t,time+(stamp-lastStamp)/1000);lastStamp=stamp;$('time').value=time;draw();if(time>=result.rows.at(-1).t){pause();return;}animation=requestAnimationFrame(tick);}animation=requestAnimationFrame(tick);};
 $('import').onchange=async()=>{clearError();try{const file=$('import').files?.[0];if(!file)return;if(file.size>80*1024*1024)throw Error('JSON exceeds 80 MiB.');const record=normalizeImport(JSON.parse(await file.text()),file.name);if(!backends.includes(record.backend))throw Error('Import a counterbalance lever profile or run.');if(record.result)showResult(record.result);else loadConfiguration(record.config,record.backend);emit({type:'motion-lab-config',backend:backend(),config});}catch(cause){error(cause);}finally{$('import').value='';}};
 function theme(){const dark=document.documentElement.dataset.theme==='dark';$('theme').textContent=dark?'Light mode':'Dark mode';staticPlots();dynamicPlots();draw();}
 $('theme').onclick=()=>{const next=document.documentElement.dataset.theme==='dark'?'light':'dark';if(embedded)emit({type:'motion-lab-theme',theme:next});else{localStorage.setItem('motion-lab-theme',next);document.documentElement.dataset.theme=next;document.documentElement.style.colorScheme=next;theme();}};
 document.addEventListener('motion-lab-theme',theme);
-window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==parent)return;const value=event.data;try{if(value?.type==='motion-lab-save-profile')saveProfile();else if(value?.type==='motion-lab-load-profile')loadConfiguration(value.config,value.backend);else if(value?.type==='motion-lab-load-result')showResult(value.result);}catch(cause){error(cause);}});
-window.addEventListener('pagehide',()=>{pause();clearTimeout(nativeTimer);});
+window.addEventListener('message',event=>{if(event.origin!==location.origin||event.source!==parent)return;const value=event.data;try{if(value?.type==='motion-lab-deactivate'){releaseForce();stopLive('Live lever paused while its tab is inactive. Resume retains angle and velocity.');}else if(value?.type==='motion-lab-save-profile')saveProfile();else if(value?.type==='motion-lab-load-profile')loadConfiguration(value.config,value.backend);else if(value?.type==='motion-lab-load-result')showResult(value.result);}catch(cause){error(cause);}});
+window.addEventListener('pagehide',()=>{releaseForce();stopLive();pause();clearTimeout(nativeTimer);});
 fetch('/api/counterbalance/defaults').then(async response=>{if(!response.ok)throw Error('Counterbalance defaults unavailable. Restart Motion Lab with its launcher.');return response.json();}).then(async value=>{defaults={...value};config=value;controls();staticPlots();draw();emit({type:'motion-lab-config',backend:backend(),config});emit({type:'motion-lab-ready',backend:backend()});if(!new URLSearchParams(location.search).has('loadOnly'))await run();}).catch(error);

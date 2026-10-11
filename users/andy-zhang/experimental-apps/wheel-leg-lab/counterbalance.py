@@ -34,12 +34,13 @@ DEFAULTS = {
     'payload_mass': 2., 'lever_mass': .4, 'gravity': 9.80665,
     'stiffness': 215.7463, 'stiffness_auto': True,
     'law': 'zero_effective', 'effective_free_length': .15,
-    'physical_free_length': .15, 'damping': 0., 'mode': 'prescribed',
+    'physical_free_length': .15, 'damping': 0., 'mode': 'free',
     'initial_angle_deg': 30., 'initial_speed_deg': 0.,
     'angle_amplitude_deg': 30., 'theta_min_deg': -80., 'theta_max_deg': 80.,
     'wave': 'step', 'start': .5, 'rise': .25, 'fall': .25,
     'period': 1.5, 'duty': .5, 'pulse_width': .7,
     'duration': 2., 'dt': .001, 'iterations': 80,
+    'force_amplitude_N': 2., 'ramp_shape': 'quintic', 'force_history': [],
 }
 
 
@@ -71,6 +72,7 @@ def config(values=None):
               'period': (.02, 10.), 'duty': (.01, .99), 'pulse_width': (.001, 5.),
               'initial_speed_deg': (-720., 720.), 'angle_amplitude_deg': (-300., 300.),
               'iterations': (20, 300)}
+    limits['force_amplitude_N'] = (-500., 500.)
     for key, (lo, hi) in limits.items():
         if not lo <= c[key] <= hi:
             raise ValueError(f'{key} must lie between {lo} and {hi} (SI unless labelled degrees).')
@@ -84,8 +86,24 @@ def config(values=None):
         raise ValueError('Limit each run to 30,000 samples.')
     if c['law'] not in ('zero_effective', 'ordinary'):
         raise ValueError('Choose zero_effective or ordinary spring law.')
-    if c['mode'] not in ('prescribed', 'free'):
-        raise ValueError('Choose prescribed angle or free lever dynamics.')
+    if c['mode'] not in ('prescribed', 'free', 'force'):
+        raise ValueError('Choose prescribed angle, free lever or end-force dynamics.')
+    if c['ramp_shape'] not in ('linear', 'quintic'):
+        raise ValueError('Choose linear or quintic force ramps.')
+    history = c['force_history']
+    if not isinstance(history, list) or len(history) > 500:
+        raise ValueError('force_history must contain at most 500 timed force intervals.')
+    previous_end = 0.
+    for interval in history:
+        if not isinstance(interval, dict) or set(interval) != {'start', 'end', 'force_N'}:
+            raise ValueError('Each force interval needs start, end (s) and force_N (upward positive).')
+        if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in interval.values()):
+            raise ValueError('Force history values must be finite numbers.')
+        if not previous_end <= interval['start'] < interval['end'] <= 20. or abs(interval['force_N']) > 500.:
+            raise ValueError('Force intervals must be ordered, nonoverlapping, inside 0–20 s and ±500 N.')
+        previous_end = interval['end']
+    if c['mode'] == 'force' and not -89. <= c['theta_min_deg'] < c['theta_max_deg'] <= 89.:
+        raise ValueError('End-force dynamics uses travel bounds inside ±89 degrees, before vertical/singular configurations.')
     if c['wave'] not in ('step', 'square', 'pulse'):
         raise ValueError('Choose a finite angle step, square wave or pulse.')
     if c['mode'] == 'prescribed':
@@ -173,14 +191,34 @@ def angle_state(t, c):
     return math.radians(c['initial_angle_deg'])+delta, speed, accel
 
 
+def end_force(t, c):
+    """Signed vertical end load in N: upward positive, force mode only.
+
+    Recorded press/hold intervals take precedence over a scheduled waveform;
+    gaps and released intervals are zero. Intervals are half-open [start,end).
+    """
+    if c['mode'] != 'force':
+        return 0.
+    if c['force_history']:
+        return next((v['force_N'] for v in c['force_history'] if v['start'] <= t < v['end']), 0.)
+    return position_state(t, dict(c, position_amplitude=c['force_amplitude_N']))[0]
+
+
+def acceleration(t, theta, speed, c):
+    """Driven ODE, independent of engine: I θ̈=passive moment+F_y L cos θ."""
+    return (forces(theta, speed, c)['net_passive_moment_Nm']
+            + end_force(t, c)*c['length']*math.cos(theta))/parameters(c)['pivot_inertia']
+
+
 def math_observe(t, theta, speed, accel, c):
     p = parameters(c)
     state = forces(theta, speed, c)
     sn, cs = math.sin(theta), math.cos(theta)
+    external = end_force(t, c)
     ax = p['com_radius']*(-cs*speed*speed-sn*accel)
     ay = p['com_radius']*(-sn*speed*speed+cs*accel)
     joint_fx = p['mass']*ax-state['spring_fx']
-    joint_fy = p['mass']*(ay+c['gravity'])-state['spring_fy']
+    joint_fy = p['mass']*(ay+c['gravity'])-state['spring_fy']-external
     driver = p['pivot_inertia']*accel-state['net_passive_moment_Nm'] if c['mode'] == 'prescribed' else 0.
     command = angle_state(t, c)[0] if c['mode'] == 'prescribed' else math.radians(c['initial_angle_deg'])
     energy = .5*p['pivot_inertia']*speed*speed+c['gravity']*p['first_moment']*sn+state['spring_energy_J']
@@ -193,6 +231,10 @@ def math_observe(t, theta, speed, accel, c):
             'com_vx': -p['com_radius']*sn*speed, 'com_vy': p['com_radius']*cs*speed,
             'com_ax': ax, 'com_ay': ay,
             'tip_velocity_y': c['length']*cs*speed,
+            'tip_height_m': c['length']*sn,
+            'end_force_N': external, 'end_force_kgf': external/9.80665,
+            'end_force_moment_Nm': external*c['length']*cs,
+            'external_power_W': external*c['length']*cs*speed,
             'tip_acceleration_y': c['length']*(cs*accel-sn*speed*speed),
             'mechanical_energy_J': energy, 'driver_power_W': driver*speed,
             'force_check_N': 0., 'moment_check_Nm': 0., 'pin_error_m': 0.}
@@ -255,6 +297,12 @@ def drive(model, c, t, dt):
     model['applied_angle'] = body.angle
     force = Vec2d(*geom['direction'])*state['spring_force_N']
     body.apply_force_at_world_point(force, geom['attach'])
+    external = end_force(t+dt/2, c)
+    tip_force = Vec2d(0., external)
+    body.apply_force_at_world_point(tip_force, geom['tip'])
+    model['end_force_N'] = external
+    model['end_force_com_moment_Nm'] = (Vec2d(*geom['tip'])-body.position).cross(tip_force)
+    model['end_force_moment_Nm'] = Vec2d(*geom['tip']).cross(tip_force)
     state.update(spring_fx=force.x, spring_fy=force.y,
                  spring_com_moment_Nm=(Vec2d(*geom['attach'])-body.position).cross(force),
                  spring_moment_Nm=Vec2d(*geom['attach']).cross(force),
@@ -278,11 +326,12 @@ def telemetry(model, c, t, old_velocity, old_spin, dt):
     angular_accel = (body.angular_velocity-old_spin)/dt
     state = model['spring_state']
     force = Vec2d(state['spring_fx'], state['spring_fy'])
-    reaction = p['mass']*(accel-Vec2d(0., -c['gravity']))-force
+    reaction = p['mass']*(accel-Vec2d(0., -c['gravity']))-force-Vec2d(0., model['end_force_N'])
     # Pymunk solves impulses at the post-position-update configuration.
     pivot = body.local_to_world(model['anchors']['pivot'])
     pin_moment = (pivot-body.position).cross(reaction)
-    motor_torque = p['com_inertia']*angular_accel-pin_moment-state['spring_com_moment_Nm']
+    motor_torque = (p['com_inertia']*angular_accel-pin_moment-state['spring_com_moment_Nm']
+                    -model['end_force_com_moment_Nm'])
     motor_error = abs(abs(motor_torque)-model['motor'].impulse/dt) if model['motor'] else abs(motor_torque)
     current = physical_geometry(model, c)
     current_law = spring_state(current['span'], current['span_speed'], c)
@@ -301,6 +350,10 @@ def telemetry(model, c, t, old_velocity, old_spin, dt):
             'com_vx': body.velocity.x, 'com_vy': body.velocity.y,
             'com_ax': accel.x, 'com_ay': accel.y,
             'tip_velocity_y': tip_velocity.y, 'tip_acceleration_y': tip_accel.y,
+            'tip_height_m': current['tip'][1],
+            'end_force_N': model['end_force_N'], 'end_force_kgf': model['end_force_N']/9.80665,
+            'end_force_moment_Nm': model['end_force_moment_Nm'],
+            'external_power_W': model['end_force_N']*tip_velocity.y,
             'equivalent_support_N': state['spring_force_N']*support_factor,
             'elastic_equivalent_support_N': state['spring_elastic_N']*support_factor,
             'equivalent_defined': float(equivalent_defined),
@@ -364,8 +417,8 @@ def simulate(values=None, backend='pymunk'):
     solution = None
     if backend == 'math':
         def rhs(t, state):
-            return state[1], forces(state[0], state[1], c)['net_passive_moment_Nm']/p['pivot_inertia']
-        if c['mode'] == 'free':
+            return state[1], acceleration(t, state[0], state[1], c)
+        if c['mode'] != 'prescribed':
             def lower(t, state):
                 return state[0]-math.radians(c['theta_min_deg'])
             def upper(t, state):
@@ -412,7 +465,7 @@ def simulate(values=None, backend='pymunk'):
             rows.append(row)
             if i % stride == 0 or i == math.ceil(c['duration']/c['dt'])-1:
                 frames.append(frame(model, c, t+dt))
-            if c['mode'] == 'free' and not c['theta_min_deg'] < row['theta_deg'] < c['theta_max_deg']:
+            if c['mode'] != 'prescribed' and not c['theta_min_deg'] < row['theta_deg'] < c['theta_max_deg']:
                 event = {'t': row['t'], 'theta_deg': row['theta_deg'], 'kind': 'travel_limit',
                          'resolution_s': dt}
                 if frames[-1]['t'] != row['t']:
@@ -423,10 +476,15 @@ def simulate(values=None, backend='pymunk'):
         raise ValueError('Counterbalance produced missing or non-finite state.')
     initial_q = math.radians(c['initial_angle_deg'])
     initial_v = math.radians(c['initial_speed_deg'])
-    initial_a = forces(initial_q, initial_v, c)['net_passive_moment_Nm']/p['pivot_inertia'] if c['mode'] == 'free' else 0.
+    initial_a = acceleration(0., initial_q, initial_v, c) if c['mode'] != 'prescribed' else 0.
     initial = math_observe(0., initial_q, initial_v, initial_a, c)
     ts = [0.]+[row['t'] for row in rows]
-    power = [row['driver_power_W']-row['dissipation_W'] for row in [initial]+rows]
+    observations = [initial]+rows
+    power = [row['driver_power_W']+row['external_power_W']-row['dissipation_W'] for row in observations]
+    external_work = 0.
+    for i, row in enumerate(rows):
+        external_work += .5*(observations[i]['external_power_W']+row['external_power_W'])*(row['t']-ts[i])
+        row['external_work_J'] = external_work
     energy_error = rows[-1]['mechanical_energy_J']-initial['mechanical_energy_J']-float(np.trapezoid(power, ts))
     warnings = ['Illustrative standalone lever; dimensions and spring implementation require hardware confirmation.']
     if c['law'] == 'ordinary' and c['effective_free_length'] > 0.:
@@ -435,6 +493,8 @@ def simulate(values=None, backend='pymunk'):
         warnings.append('Spring point forces and speed-motor motion use finite timesteps. Refine dt for angle tracking, energy and peak loads; the body is never teleported.')
     if event:
         warnings.append('Free motion ended at a travel bound; stop impact is not modelled. Pymunk detects crossing after one finite step.')
+    if c['mode'] != 'prescribed' and c['damping'] == 0. and c['law'] == 'zero_effective' and c['stiffness_auto']:
+        warnings.append('Neutral balance with no damping/controller: release while moving preserves motion; place the lever at rest to hold an arbitrary height.')
     keys = ('spring_force_N', 'equivalent_support_N', 'joint_force_N', 'driver_torque_Nm',
             'angular_velocity_rad_s', 'angular_acceleration_rad_s2', 'tip_acceleration_y')
     peaks = {key: {'value': max(rows, key=lambda row: abs(row[key]))[key],
@@ -451,8 +511,51 @@ def simulate(values=None, backend='pymunk'):
             'equations': ['d²=H²+R²−2HR sin(theta)', 'T=k d (zero effective free length)',
                           'M_spring=T HR cos(theta)/d', 'F_equiv=M_spring/(L cos(theta))=kHR/L',
                           'kHR=gL(m_payload+m_lever/2)',
-                          'I_pivot theta_ddot=M_spring−gL(m_payload+m_lever/2)cos(theta)+M_driver'],
+                          'I_pivot theta_ddot=M_spring−gL(m_payload+m_lever/2)cos(theta)+F_y L cos(theta)+M_driver',
+                          'v_Cy=L cos(theta) theta_dot; P_external=F_y v_Cy; delta E=integral(P_external+P_driver−P_damping)dt'],
             'scope': 'Standalone ideal lever and point payload, fixed pivot, massless ideal zero-effective-length routing or ordinary tension-only spring. Zero-length equivalent support is constant; spring tension itself varies. Free dynamics has no holding motor; prescribed mode uses an unlimited ideal angular-speed motor. Physical force/coil samples describe the applied pre-step spring, with post-step body motion and independent momentum checks; equivalent support uses the nominal analytical lever geometry, and physical tip velocity/acceleration use actual point velocity differences. Undefined equivalent support at vertical lever is flagged. No wheel-leg adaptation, contacts, pulley friction, stress or impact model.'}
+
+
+def advance(values):
+    """Bounded stateless SciPy live step; input state is never silently arrested.
+
+    Input: {config, state:{t,theta_deg,angular_velocity_rad_s}, force_N,
+    advance_s}; SI time/force, radians per second. Output: normal portable run
+    chunk with global times and next_state. No engine session/process is kept.
+    Actual press/hold history is assembled by the browser for portable replay.
+    """
+    if not isinstance(values, dict) or set(values) != {'config', 'state', 'force_N', 'advance_s'}:
+        raise ValueError('Live advance needs config, state, force_N and advance_s.')
+    c = config(values['config'])
+    state = values['state']
+    if not isinstance(state, dict) or set(state) != {'t', 'theta_deg', 'angular_velocity_rad_s'}:
+        raise ValueError('Live state needs t, theta_deg and angular_velocity_rad_s.')
+    scalars = [*state.values(), values['force_N'], values['advance_s']]
+    if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) for v in scalars):
+        raise ValueError('Live values must be finite numbers.')
+    if not 0. <= state['t'] <= 20. or not .1 <= values['advance_s'] <= .25 or state['t']+values['advance_s'] > 20.+1e-10:
+        raise ValueError('Live chunks span 0.1–0.25 s and the complete demonstration is limited to 20 s.')
+    if abs(values['force_N']) > 500.:
+        raise ValueError('End force must be within ±500 N.')
+    if c['damping'] != 0.:
+        raise ValueError('Live end-force demonstration requires damping=0; use a recorded run for explicit damping diagnostics.')
+    chunk = dict(c, mode='force', duration=values['advance_s'],
+                 initial_angle_deg=state['theta_deg'],
+                 initial_speed_deg=math.degrees(state['angular_velocity_rad_s']),
+                 force_history=[{'start': 0., 'end': values['advance_s'], 'force_N': values['force_N']}])
+    result = simulate(chunk, 'math')
+    for row in result['rows']:
+        row['t'] += state['t']
+    for pose in result['frames']:
+        pose['t'] += state['t']
+    stop = result['diagnostics']['stop_event']
+    if stop:
+        stop['t'] += state['t']
+    last = result['rows'][-1]
+    result['next_state'] = {key: last[channel] for key, channel in
+                            [('t', 't'), ('theta_deg', 'theta_deg'),
+                             ('angular_velocity_rad_s', 'angular_velocity_rad_s')]}
+    return result
 
 
 def main():

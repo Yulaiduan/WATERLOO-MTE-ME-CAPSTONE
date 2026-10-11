@@ -45,7 +45,7 @@ def main():
     cases=[('knee_capture',{'spring_topology':'knee_capture','radius':.2,'duration':1.2,'start':.3,'position_amplitude':.008},6),
            ('gravity_balance',{'spring_topology':'gravity_balance','radius':.2,'duration':1.2,'start':.3,'position_amplitude':.008},6),
            ('replacement_suspension',{'model':'wheel_leg','config':{**request('/api/suspension-architecture/defaults')[1],'duration':1.2,'start':.3,'position_amplitude':.008},'guide_visualization':{'pretension_N':60.,'show_force_vectors':True,'applied_to_solver':False}},6),
-           ('counterbalance_prescribed',{'model':'counterbalance','config':{'duration':1.2,'start':.3,'angle_amplitude_deg':20.}},2),
+           ('counterbalance_prescribed',{'model':'counterbalance','config':{'mode':'prescribed','duration':1.2,'start':.3,'angle_amplitude_deg':20.}},2),
            ('counterbalance_free',{'model':'counterbalance','config':{'mode':'free','duration':1.2,'initial_speed_deg':10.}},1)]
     evidence=[verify_case(name,values,constraints) for name,values,constraints in cases]
     artifact=ROOT/'artifacts/native-api-verification.json';artifact.parent.mkdir(exist_ok=True)

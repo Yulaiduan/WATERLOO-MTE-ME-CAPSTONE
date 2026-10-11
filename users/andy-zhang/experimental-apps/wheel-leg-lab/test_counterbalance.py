@@ -71,7 +71,7 @@ class CounterbalanceTests(unittest.TestCase):
             self.assertAlmostEqual(-energy_gradient, forces(q, 0., c)['net_passive_moment_Nm'], delta=1e-8)
 
     def test_actual_aggregate_body_inertia_and_geometry(self):
-        c = config()
+        c = config({'mode': 'prescribed'})
         p = parameters(c)
         expected_com_inertia = (c['lever_mass']*c['length']**2/12
                                 + c['lever_mass']*(c['length']/2-p['com_radius'])**2
@@ -130,7 +130,7 @@ class CounterbalanceTests(unittest.TestCase):
         self.assertLess(energy_errors[-1], .001)
 
     def test_prescribed_position_is_real_speed_motor_with_timestep_convergence(self):
-        values = {'duration': 1.2}
+        values = {'mode': 'prescribed', 'duration': 1.2}
         reference = simulate(values, 'math')
         q0 = config()['initial_angle_deg']
         self.assertAlmostEqual(reference['rows'][-1]['theta_deg'], q0+30., places=11)
@@ -152,7 +152,7 @@ class CounterbalanceTests(unittest.TestCase):
 
     def test_square_and_pulse_are_finite_c2_angular_position_inputs(self):
         for wave in ('square', 'pulse'):
-            c = config({'wave': wave, 'duration': 1.5})
+            c = config({'mode': 'prescribed', 'wave': wave, 'duration': 1.5})
             self.assertEqual(angle_state(0., c)[1:], (0., 0.))
             self.assertAlmostEqual(angle_state(1.5, c)[0], math.radians(c['initial_angle_deg']))
             for t in (c['start'], c['start']+c['rise'],
@@ -178,11 +178,11 @@ class CounterbalanceTests(unittest.TestCase):
 
     def test_config_rejects_unsupported_and_nonfinite_inputs(self):
         for values in ({'unknown': 1.}, {'stiffness_auto': 1}, {'payload_mass': float('nan')},
-                       {'law': 'constant_tension'}, {'mode': 'force'}, {'spring_radius': .5},
+                       {'law': 'constant_tension'}, {'mode': 'controller'}, {'spring_radius': .5},
                        {'rise': 0.}, {'initial_speed_deg': 5.}, {'angle_amplitude_deg': 60.},
                        {'theta_max_deg': 110., 'angle_amplitude_deg': 70.}):
             with self.subTest(values=values), self.assertRaises(ValueError):
-                config(values)
+                config(dict({'mode': 'prescribed'}, **values))
         manual = config({'stiffness_auto': False, 'stiffness': 123.})
         self.assertEqual(manual['stiffness'], 123.)
         self.assertNotEqual(config({'payload_mass': 3.})['stiffness'], config()['stiffness'])

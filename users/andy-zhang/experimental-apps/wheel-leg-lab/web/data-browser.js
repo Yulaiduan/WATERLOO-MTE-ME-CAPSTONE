@@ -22,7 +22,7 @@ function csvDownload(rows, name) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = () => {}, onPlayback=()=>{}, onLoadStudy=()=>{}, theme = 'light' } = {}) {
+export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = () => {}, onPlayback=()=>{}, onLoadStudy=()=>{}, onCompare=()=>{}, theme = 'light' } = {}) {
   let summaries = [], selected = null, tableIndex = 0, normalizedRows = [], channels = [], selectedChannels = [], xChannel = 't', currentTheme = theme, plotRevision = 0;
   let selectionGeneration = 0;
   root.replaceChildren();
@@ -88,8 +88,9 @@ export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = ()
     const pre = element('pre', JSON.stringify({ config: record.config, reference_inputs: record.reference_inputs, engine:record.result?.engine, units:record.result?.units, solver:record.result?.solver, scope:record.result?.scope, source_created_at: record.source_created_at }, null, 2));
     configPanel.append(summary, pre); metadata.append(configPanel);
     actions.replaceChildren(); actions.hidden = false;
+    actions.append(button(record.result?'Add run to Comparison':'Run profile in Comparison',()=>safe(()=>onCompare(record))));
     const lever=['counterbalance_math','counterbalance_pymunk'].includes(record.backend);
-    if (record.config && record.backend) actions.append(button(`Load ${lever?'counterbalance lever':record.backend === 'math' ? 'mathematical' : record.backend === 'pymunk' ? '2D physics' : 'detailed linkage'} profile`, () => safe(() => onLoadProfile(record, record.backend))));
+    if (record.config && record.backend) actions.append(button(`Load ${lever?'counterbalance lever':record.backend === 'math' ? 'mathematical' : record.backend === 'pymunk' ? '2D physics' : 'archived detailed linkage'} profile`, () => safe(() => onLoadProfile(record, record.backend))));
     if (record.config && ['pymunk','math','counterbalance_math','counterbalance_pymunk'].includes(record.backend)) {
       const native=button('Show Pymunk desktop GUI', () => safe(() => onPymunk(record)));
       native.title='Launch live physics on the simulation host desktop using this saved configuration.';

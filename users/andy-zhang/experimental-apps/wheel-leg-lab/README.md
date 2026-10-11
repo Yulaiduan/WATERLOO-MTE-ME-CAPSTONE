@@ -11,11 +11,12 @@ Read the [workflow and data contracts](docs/unified-motion-lab.md),
 
 | Tool | Route | Content |
 | --- | --- | --- |
-| Main menu | `/` | Mathematical / physical / miscellaneous / profiles and data |
+| Main menu | `/` | Mathematical / physical / miscellaneous / comparison / profiles and data |
 | Mathematical suspension | `/mathematical/` | Independent Python/SciPy ODE with nine spring presets; MATLAB companion supports the original captured/direct tip spring |
 | Pymunk physical bench | `/physics/` | Actual rigid-body engine, nine editable spring presets, wheel-height input, floating chassis and solver loads |
-| Constant-lift lever | `/counterbalance/`, Mathematical selector and Miscellaneous studies | Independent lever equations/free dynamics and actual Pymunk counterpart; variable tension, constant equivalent lift, JSON and native GUI |
-| Detailed linkage | `/linkage/` | Two-coordinate guide/drive, physical spring, impedance and local dynamics |
+| Constant-lift single-link lever | `/counterbalance/`, Miscellaneous studies only | Free undamped lever, upward/downward end force, coasting after release, SciPy/Pymunk, JSON and native GUI |
+| Archived detailed linkage | `/linkage/`, archive entry under Miscellaneous | Retained source and direct route; retired from the main Math tab |
+| Comparison | `/?tab=compare` | Multiple runs/profiles, searchable channels, independent trace visibility, split Plotly plots and signed deltas |
 | Miscellaneous studies | `/animations/`, `/force-plots/`, `/recorded/` | Motion studies and Plotly data charts |
 | Native live debugger | Browser GUI button or `Open Native Pymunk Debugger.cmd` | Live `Space.step` simulation in the official Pygame debug renderer on the host desktop |
 
@@ -43,8 +44,12 @@ npm run build
 Profiles and generated runs are appended to browser IndexedDB. Save/download
 JSON for portable backup; import JSON through Profiles & data. Plotly charts
 support zoom, pan, reset and image export; full JSON/CSV retains recorded data.
-The Mathematical tab also offers same-input SciPy/Pymunk comparison and the
-[MATLAB companion and its supported scope](math/README.md).
+Math runs only the 2D SciPy wheel suspension and retains the
+[legacy MATLAB companion](math/README.md). Run both opens the top-level
+[Comparison workspace](docs/comparison-workspace.md), alongside Profiles & data.
+The standalone lever is in Miscellaneous only. Its default is one free link,
+zero damping and no motor/controller; release preserves velocity. This does not
+change the wheel replacement unit's damping of 100 N s/m.
 
 **Show Pymunk visual GUI** starts a live native Pygame simulation using the
 current wheel-height or constant-lift lever profile. The window opens on the computer running this
@@ -92,7 +97,7 @@ old lower-tip strut disabled. Use
 
 ```sh
 npm test
-.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance test_suspension_architecture test_replacement_suspension test_guide_belt test_native_guide test_mechanism_stability
+.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance test_counterbalance_force test_suspension_architecture test_replacement_suspension test_guide_belt test_native_guide test_mechanism_stability
 npm run test:browser
 node scripts/verify_pymunk.cjs
 node scripts/verify-force-plots.cjs
@@ -101,6 +106,8 @@ node scripts/verify_counterbalance_ui.cjs
 node scripts/verify_suspension_architecture_ui.cjs
 node scripts/verify_passive_stability_ui.cjs
 node scripts/verify_motion_lab.cjs
+node scripts/verify_comparison_ui.cjs
+node scripts/verify_lever_force_ui.cjs
 .venv/Scripts/python.exe scripts/verify_native_gui.py
 ```
 

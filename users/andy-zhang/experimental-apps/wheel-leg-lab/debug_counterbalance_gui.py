@@ -49,7 +49,7 @@ def main():
         nonlocal buttons
         W,H=screen.get_size();side=W-320;screen.fill((23,30,27));pygame.draw.rect(screen,(31,42,36),(side,0,320,H))
         text('Actual Pymunk Space - constant-lift lever',24,18,title)
-        text('LIVE Space.step | '+('PAUSED' if paused else 'RUNNING')+' | '+c['mode']+' angle',24,49,small,(164,190,173))
+        text('LIVE Space.step | '+('PAUSED' if paused else 'RUNNING')+' | '+c['mode']+' dynamics',24,49,small,(164,190,173))
         buttons={name:pygame.Rect(24+i*102,80,94,34) for i,name in enumerate(['Run' if paused else 'Pause','Step','Reset'])}
         for name,rect in buttons.items():pygame.draw.rect(screen,(56,87,66),rect,border_radius=4);text(name,rect.x+15,rect.y+5)
         text('Space: pause/run   . : one solver step   R: reset   Esc: close',24,125,small)
@@ -65,6 +65,11 @@ def main():
         pygame.draw.line(screen,colour,a,b,2)
         for key,label in [('pivot','O'),('anchor','A / H'),('attach','B / R'),('tip','Payload / L')]:
             p=project(pose[key]);pygame.draw.circle(screen,colour,p,4);text(label,p[0]+10,p[1]-20,small)
+        if row and row['end_force_N']:
+            start=project(pose['tip']);sign=1 if row['end_force_N']>0 else -1;end=(start[0],start[1]-sign*60)
+            pygame.draw.line(screen,(243,111,101),start,end,3)
+            pygame.draw.lines(screen,(243,111,101),False,[(end[0]-6,end[1]+sign*10),end,(end[0]+6,end[1]+sign*10)],3)
+            text(f'End C: {row["end_force_N"]:.2f} N',end[0]+12,end[1],small)
         pygame.draw.line(screen,(120,145,131),project([0,-height]),project([0,height]),1)
         state=model.get('spring_state') or study.forces(model['lever'].angle,model['lever'].angular_velocity,c)
         # Physical finite coil is shown as a separate routed inset, not a zero-size coil.
@@ -79,9 +84,9 @@ def main():
             text(value,x,y,small);y+=25
         y+=15;text('Actual constraints',x,y);y+=29
         text('PivotJoint at O',x,y,small);y+=25
-        text('SimpleMotor: prescribed angle' if model['motor'] else 'No driver: free dynamics',x,y,small);y+=40
+        text('SimpleMotor: prescribed angle' if model['motor'] else 'No holding motor / controller',x,y,small);y+=40
         if row:
-            for value in [f'Pin force {row["joint_force_N"]:.2f} N',f'Pin Fx / Fy {row["joint_fx"]:.2f} / {row["joint_fy"]:.2f} N',f'Driver torque {row["driver_torque_Nm"]:.3f} N m',f'Spring moment {row["spring_moment_Nm"]:.3f} N m',f'Angular accel {row["angular_acceleration_rad_s2"]:.3f} rad/s2',f'COM accel ({row["com_ax"]:.2f}, {row["com_ay"]:.2f}) m/s2',f'Equivalent lift {row["equivalent_support_N"]:.3f} N',f'Energy {row["mechanical_energy_J"]:.3f} J']:
+            for value in [f'Pin force {row["joint_force_N"]:.2f} N',f'Pin Fx / Fy {row["joint_fx"]:.2f} / {row["joint_fy"]:.2f} N',f'End force {row["end_force_N"]:.2f} N / {row["end_force_kgf"]:.3f} kgf',f'End moment {row["end_force_moment_Nm"]:.3f} N m',f'End velocity {row["tip_velocity_y"]:.4f} m/s',f'Driver torque {row["driver_torque_Nm"]:.3f} N m',f'Spring moment {row["spring_moment_Nm"]:.3f} N m',f'Angular accel {row["angular_acceleration_rad_s2"]:.3f} rad/s2',f'Equivalent lift {row["equivalent_support_N"]:.3f} N',f'Energy {row["mechanical_energy_J"]:.3f} J']:
                 text(value,x,y,small);y+=25
         text(f't {t:.3f} s | {steps} live steps | {loops} loops',24,H-48,small)
         text('Engine shapes are sensors; coil routing is schematic and massless.',24,H-26,small)

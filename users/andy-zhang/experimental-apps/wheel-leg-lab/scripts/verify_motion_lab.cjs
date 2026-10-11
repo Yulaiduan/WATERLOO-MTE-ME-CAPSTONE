@@ -20,7 +20,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
    return r.fulfill({contentType:'application/json',body:JSON.stringify({id,pid:7654321,status:nativeFailure?'failed':'running',solver_steps:nativeSteps,loops:0,paused:false,window_shown:true,...(nativeFailure?{error:'Fixture native startup failure'}:{})})});
   });
   await page.goto('http://127.0.0.1:4186/');await page.locator('#motion-lab').waitFor();
-  assert.equal(await page.locator('[data-open]').count(),4);
+  assert.equal(await page.locator('[data-open]').count(),5);
   await page.locator('#show-gui').click();
   await page.waitForFunction(()=>document.querySelector('#native-status').dataset.state==='running');
   assert.equal(nativeLaunches.length,1);assert.equal(nativeLaunches[0].target,'position');
@@ -47,16 +47,16 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   const profile=JSON.parse(fs.readFileSync(path.join(out,'profile.json'),'utf8'));assert.equal(profile.backend,'math');assert.equal(profile.config.length,.25);
   await page.waitForFunction(()=>document.querySelector('#lab-status').textContent.includes('Saved profile'));
   await page.locator('#compare-models').click();await page.waitForFunction(()=>document.querySelector('#lab-status').textContent.includes('Both runs saved'),null,{timeout:45000});
-  assert.equal(await page.locator('#comparison-plot').evaluate(n=>n.data.length),3);
+  assert.equal(await page.locator('#compare-panel').isVisible(),true);assert.equal(await page.locator('.comparison-chart').count(),3);assert.ok(await page.locator('.comparison-stat').count()>=2);await page.locator('[data-tab="math"]').click();
   assert.equal(await math.locator('#status').evaluate(n=>/NaN|undefined/.test(n.textContent)),false);
   await math.locator('.chart').first().evaluate(n=>window.Plotly.relayout(n,{'xaxis.range':[.8,1.4]}));
   await page.locator('#theme-toggle').click();await page.waitForTimeout(250);
   assert.equal(await page.locator('html').getAttribute('data-theme'),'dark');
   assert.deepEqual(await math.locator('.chart').first().evaluate(n=>n._fullLayout.xaxis.range),[.8,1.4]);
   await page.locator('#show-playback').click();await viewer.locator('.engine-shape').first().waitFor();assert.equal(await viewer.locator('.engine-shape').count(),3);await page.locator('#close-gui').click();
-  await page.locator('[data-math-model="linkage"]').click();
+  assert.equal(await page.locator('[data-math-model="linkage"]').count(),0);await page.locator('[data-tab="studies"]').click();await page.locator('#study-select').selectOption('legacy-linkage');
   const linkage=page.frameLocator('iframe[data-key="linkage"]');await linkage.locator('.js-plotly-plot').first().waitFor();assert.equal(await linkage.locator('.js-plotly-plot').count(),4);
-  await page.locator('[data-math-model="scipy"]').click();
+  await page.locator('[data-tab="math"]').click();
   await page.locator('[data-tab="data"]').click();await page.locator('.data-record').first().waitFor();
   const savedCount=await page.locator('.data-record').count();assert.ok(savedCount>=4);
   await page.locator('.data-record').filter({hasText:'Integration profile'}).first().click();
