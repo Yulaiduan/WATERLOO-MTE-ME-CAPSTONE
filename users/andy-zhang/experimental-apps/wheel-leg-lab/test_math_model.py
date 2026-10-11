@@ -61,8 +61,10 @@ class MathModelTests(unittest.TestCase):
         self.assertLess(max(np.diff(energy_damped)), 1e-7)
 
     def test_smooth_position_energy_work_and_solver_tolerance(self):
-        coarse = simulate_math({'duration': 1.2}, rtol=1e-6, atol=1e-8, max_step=.01)
-        fine = simulate_math({'duration': 1.2}, rtol=1e-10, atol=1e-12, max_step=.001)
+        # Explicit original rate/damping preserves the recorded reference case.
+        values = {'duration': 1.2, 'stiffness': 8000., 'damping': 100.}
+        coarse = simulate_math(values, rtol=1e-6, atol=1e-8, max_step=.01)
+        fine = simulate_math(values, rtol=1e-10, atol=1e-12, max_step=.001)
         # The deliberately loose 1e-6 solve stays within 0.0001 degree of the
         # tighter solve across the joins of the C2 input trajectory.
         self.assertAlmostEqual(coarse['rows'][-1]['theta_deg'], fine['rows'][-1]['theta_deg'], delta=1e-4)
@@ -74,11 +76,12 @@ class MathModelTests(unittest.TestCase):
 
     def test_pymunk_response_and_loads_converge_toward_independent_math(self):
         from physics import simulate
-        math_result = simulate_math({'duration': 1.2})
+        values = {'duration': 1.2, 'stiffness': 8000., 'damping': 100., 'spring_integration': 'native_legacy'}
+        math_result = simulate_math(values)
         reference = math_result['rows'][-1]
         errors = []
         for dt in (.001, .0005, .00025):
-            physical = simulate({'duration': 1.2, 'dt': dt})
+            physical = simulate({**values, 'dt': dt})
             actual = physical['rows'][-1]
             self.assertAlmostEqual(physical['actual_rest_length'], math_result['actual_rest_length'], places=12)
             errors.append(abs(actual['theta_deg']-reference['theta_deg']))
@@ -113,7 +116,7 @@ class MathModelTests(unittest.TestCase):
         self.assertAlmostEqual(a['rows'][-1]['position_command'], 0.)
 
     def test_stop_event_ends_before_unmodelled_impact(self):
-        result = simulate_math({'duration': 1., 'position_amplitude': .25,
+        result = simulate_math({'duration': 1., 'stiffness': 8000., 'damping': 100., 'position_amplitude': .25,
                                 'start': .1, 'rise': .04})
         self.assertIsNotNone(result['solver']['stop_event'])
         self.assertLess(result['diagnostics']['actual_duration_s'], 1.)

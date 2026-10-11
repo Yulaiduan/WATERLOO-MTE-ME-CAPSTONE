@@ -20,7 +20,7 @@ Rough-path displays use positive y down and angles from downward vertical. Detai
 
 ## Actual verification and open work
 
-The unified app uses app-local Python/Node dependencies and no machine-specific runtime paths. Current verification passes 90 Python tests (79 wheel-leg and 11 lever) and 33 JavaScript tests. Both backends, the complete two-stage suspension, nine-preset/lever browser checks, JSON/library integration, actual native launch/window restore and durable restart evidence are retained in [validation](../docs/validation.md). MATLAB comparisons apply to the original captured/direct tip spring, not the new presets, ride strut or lever. Canonical robot physics is not applicable to this member toolkit; the shared manifest remains unchanged.
+The unified app uses app-local Python/Node dependencies. Current and historical numerical, browser, native-window and restart evidence is retained in [validation](../docs/validation.md); the [mechanism audit](../docs/mechanism-audit.md) owns the curated passive demo settings. MATLAB comparisons apply only to the original captured/direct Hooke tip spring. Canonical robot physics is not applicable to this member toolkit; the shared manifest remains unchanged.
 
 Continue by confirming pulley radii and T₀ value/role, actuator hardware, spring preload/characterization, clearance through inversion and real wheel contact. Do not treat derived torque agreement or a collision-free drawing as hardware validation. The immutable assumptions and decisions are summarized in [decisions](../docs/decisions.md); accepted shared requirements remain in the existing repository records.
 
@@ -49,8 +49,9 @@ simulation host desktop, stepping a newly built Space with the chosen profile.
 Recorded browser engine playback remains explicitly separate and can be used
 from a remote browser. Python/SciPy supports the spring catalog; MATLAB supports
 only the original `legacy_tip` captured/direct combination. New Pymunk presets
-apply actual point forces explicitly each timestep, while the original captured
-tip spring keeps its native DampedSpring.
+apply actual point forces explicitly each timestep, including the original tip
+spring. The original native DampedSpring is now an explicit `native_legacy`
+diagnostic because its constraint/spring splitting can bias the response.
 
 ## Constant-lift lever and wheel adaptation, 2026-10-10
 
@@ -69,15 +70,23 @@ Offset mounts or a finite effective free length break exact constant lift;
 neutral gravity compensation alone provides no restoring ride-height stiffness.
 The [retained reference sketch](../references/constant-lift-lever.png) and
 derived equations describe an ideal study, not confirmed hardware packaging.
-The combined 82 Python/33 JavaScript checks, real-backend browser workflows,
+Historical constant-lift release evidence (2026-10-10): the combined 82 Python/33
+JavaScript checks, real-backend browser workflows,
 four live native model cases and durable launcher lifecycle pass. Complete
 evidence and numerical limits are recorded in [validation](../docs/validation.md).
 
-## Complete wheel suspension
+## Latest replacement correction, 2026-10-10
 
-The user chose the existing 2:1 folding leg with a restoring spring and damper.
-The [architecture](../docs/suspension-architecture.md) uses a gravity stage plus
-an independent hip-to-tip ride strut and a real chassis sensor polygon. The
-lever's bridge and direct architecture URL load one configured physical run.
-All 90 Python/33 JavaScript checks and five live native cases pass. Current
-factory damping is an editable 500 N s/m; the knee controller is disabled.
+The user clarified that constant lift **replaces the original spring**: one unit
+runs from upper r1 to the chassis massblock rigidly mounted at J1. The current
+[architecture](../docs/suspension-architecture.md) disables the auxiliary strut,
+uses primary damping 100 N s/m and keeps the knee controller disabled. Elastic
+balance is neutral; damping does not create a unique static ride height.
+
+The chassis and 28/14 mm guide drums are real massless sensor geometry. Belt
+marks and tangent vectors visualize the ideal guide's torque-equivalent tension
+difference, not additional solver bearing forces. Optional viewer baseline N/kgf
+is saved separately from reference-sheet T₀ and solver config. The earlier
+two-stage factory is superseded; its explicit optional variant and validation
+history remain documented. Continue from the architecture, mechanism audit and
+latest validation, not an older release's test count.

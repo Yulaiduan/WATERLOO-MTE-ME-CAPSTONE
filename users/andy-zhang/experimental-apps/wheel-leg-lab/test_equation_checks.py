@@ -10,7 +10,8 @@ import unittest
 from equation_checks import screenshot_reference
 from physics import simulate as actual_simulate
 
-def simulate(values=None): return actual_simulate({"target":"force",**(values or {})})
+# Preserve the historical native diagnostic reference profile explicitly.
+def simulate(values=None): return actual_simulate({"target":"force","stiffness":8000.,"damping":100.,"spring_integration":"native_legacy",**(values or {})})
 
 class EquationChecks(unittest.TestCase):
     def test_reported_torques_match_inferred_400_mm_links(self):

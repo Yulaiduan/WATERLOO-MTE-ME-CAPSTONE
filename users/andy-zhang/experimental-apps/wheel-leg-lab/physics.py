@@ -14,7 +14,7 @@ from pymunk import Vec2d
 from debug_view import capture, describe
 from equation_checks import SCREENSHOT, moment_checks
 from motion_input import position_state
-from spring_mechanisms import MECHANISM_DEFAULTS,apply_preset,mechanism_config,geometry_from_bodies,mechanism_metadata,auxiliary_parameters,auxiliary_metadata
+from spring_mechanisms import MECHANISM_DEFAULTS,apply_preset,mechanism_config,geometry_from_bodies,mechanism_metadata,auxiliary_parameters,auxiliary_metadata,guide_pulley_frame,passive_stability
 import suspension_runtime as suspension
 
 DEFAULTS = {
@@ -22,7 +22,7 @@ DEFAULTS = {
     "load_point":"hub", "wheel_drive_locked":False,
     "theta_min": 15., "theta_max": 80., "upper_mass": .6, "lower_mass": .65,
     "wheel_mass": 1.5, "chassis_mass": 8., "gravity": 9.80665,
-    "fixture": "floating", "stiffness": 8000., "damping": 100., "rest_length": .23,
+    "fixture": "floating", "stiffness": 20000., "damping": 500., "rest_length": .23,
     "balance_spring": True, "bias_force": 0., "bias_force_x":0., "preload_force":80., "knee_kp": 0., "knee_kd": 0.,
     "torque_limit": 80., "target": "position", "wave": "step", "amplitude": 5.,
     "position_amplitude":.03,"ramp_shape":"quintic",
@@ -41,7 +41,7 @@ def config(values=None):
         c.update(values)
         if 'spring_topology' in values:
             seeded=apply_preset(DEFAULTS,values['spring_topology'])
-            for key in MECHANISM_DEFAULTS:
+            for key in set(MECHANISM_DEFAULTS) | {'stiffness', 'damping'}:
                 if key not in values:c[key]=seeded[key]
     if c['target']!='position':
         # Preserve the explicit historical force/torque case defaults.
@@ -155,12 +155,18 @@ def build(c):
     shapes={'upper_link':upper_shape,'lower_link':lower_shape,'wheel':wheel_shape}
     for shape,shade in [(upper_shape,(52,152,219,255)),(lower_shape,(39,174,96,255)),(wheel_shape,(241,196,15,130))]:
         shape.sensor=True;shape.filter=pymunk.ShapeFilter(group=1);shape.color=shade
-    if c['aux_spring_enabled']:
+    if c['chassis_shape_enabled'] or c['aux_spring_enabled']:
         # Visual/query geometry on the existing chassis body; zero shape mass
         # retains its declared mass and fixed-pitch inertia, with no contact.
         chassis_shape=pymunk.Poly.create_box(hip,(.14,.055))
         chassis_shape.sensor=True;chassis_shape.filter=pymunk.ShapeFilter(group=1)
-        chassis_shape.color=(131,104,219,230);shapes['chassis']=chassis_shape
+        chassis_shape.color=(112,121,134,230);shapes['chassis']=chassis_shape
+    if c['guide_pulleys_visible']:
+        hip_pulley=pymunk.Circle(hip,c['guide_hip_radius'],hip.world_to_local(A))
+        knee_pulley=pymunk.Circle(lower,c['guide_hip_radius']/2,(-(L-e)/2,0))
+        for name,shape in [('guide_hip_pulley',hip_pulley),('guide_knee_pulley',knee_pulley)]:
+            shape.sensor=True;shape.filter=pymunk.ShapeFilter(group=1)
+            shape.color=(98,109,126,235);shapes[name]=shape
     space.add(*shapes.values())
     j1=pymunk.PivotJoint(hip,upper,hip.world_to_local(A),(-L/2,0))
     j2=pymunk.PivotJoint(upper,lower,(L/2,0),(-(L-e)/2,0))
@@ -332,6 +338,8 @@ def simulate(values=None):
              "spring_knee_moment":sm['lower']+(l.position-B).cross(sf['lower']),
              'spring_coil_length':state['coil_length'],'spring_coil_load':state['coil_load'],'spring_energy_J':state['energy'],'spring_engaged':float(state['engaged']),'spring_slack':float(state['slack']),
              "actuator_torque":torque,"actuator_command":torque_raw,"guide_link_torque":guide_torque,
+             "guide_tension_difference_N":guide_torque/(c['guide_hip_radius']/2),
+             "guide_belt_speed_relative":c['guide_hip_radius']*(h.angular_velocity-u.angular_velocity),
              "wheel_external_moment":m['wheel_external_moment'],"wheel_drive_reaction":wheel_drive_reaction,
              "wheel_speed":w.angular_velocity,"wheel_accel":angular_w,"wheel_drive_check":wheel_drive_check,
              "guide_hip_reaction":-2*guide_torque,"stop_knee_torque":stop_torque,
@@ -383,13 +391,18 @@ def simulate(values=None):
         if i%frame_stride==0 or i==n-1:
             frame={"index":i,"t":row["t"],"hip":[A.x,A.y],"knee":[B.x,B.y],"hub":[C.x,C.y],"tip":[E.x,E.y],"upper_angle":u.angle,"lower_angle":l.angle,"debug_draw":capture(s)}
             if m['driver']:frame['position_target']=[m['driver_origin'].x,m['driver_origin'].y+row['position_command']]
+            if c['guide_pulleys_visible']:
+                frame['guide_pulleys']=guide_pulley_frame(c,h.local_to_world(m['j1'].anchor_a),
+                                                        l.local_to_world(m['j2'].anchor_b),h.angle,u.angle,l.angle)
             if m['manual_spring']:
                 frame['spring_geometry']=geometry_from_bodies({key:m[key] for key in ['hip','upper','lower']},c);frame['spring_coil_length']=state['coil_length']
             if m['auxiliary']['enabled']:
                 frame['auxiliary_spring_geometry']=geometry_from_bodies({key:m[key] for key in ['hip','upper','lower']},m['auxiliary']['config'])
                 frame['auxiliary_spring_coil_length']=aux_state['coil_length']
             frames.append(frame)
-    warnings=[]
+    stability=passive_stability(c,m['rest'],m['spring_input_reference'],m['auxiliary'])
+    warnings=list(stability.get('notes',[]))
+    if not m['manual_spring']:warnings.append('Advanced native_legacy DampedSpring diagnostic: constraint/spring splitting can bias ride response, especially at high damping. Refine dt and compare point_force/SciPy before using results.')
     spring_meta=mechanism_metadata(dict(c,rest_length=m['rest']),m['spring_input_reference'])
     aux_meta=auxiliary_metadata(c,m['auxiliary'])
     warnings.extend(spring_meta['notes'])
@@ -405,7 +418,7 @@ def simulate(values=None):
     if max_impulse_error>.01 or max_angular_error>.01: warnings.append("Reaction reconstruction differs from solver impulse readings; review diagnostics before using directional loads.")
     equation_errors={key:max(abs(row[key]) for row in rows) for key in ['check_lower_moment_Nm','check_contact_moment_Nm','check_upper_moment_Nm','check_lower_balance_Nm','check_upper_balance_Nm','check_Br_N','wheel_drive_check','driver_check']}
     peaks['driver_force']=max(({'value':r['driver_force'],'t':r['t']} for r in rows),key=lambda p:abs(p['value']))
-    return {"config":c,"engine":pymunk.version,"model":model_info,"position_origin":list(m['driver_origin']),"equation_reference":SCREENSHOT,"equation_check_errors":equation_errors,"actual_rest_length":m["rest"],"spring_mechanism":spring_meta,"auxiliary_spring":aux_meta,"rows":rows,"frames":frames,"peaks":peaks,
+    return {"config":c,"engine":pymunk.version,"model":model_info,"position_origin":list(m['driver_origin']),"equation_reference":SCREENSHOT,"equation_check_errors":equation_errors,"actual_rest_length":m["rest"],"spring_mechanism":spring_meta,"passive_stability":stability,"auxiliary_spring":aux_meta,"rows":rows,"frames":frames,"peaks":peaks,
             "diagnostics":{"max_pin_error_m":max_pin_error,"max_guide_error_rad":max_phase_error,
                            "max_force_check_N":max_impulse_error,"max_torque_check_Nm":max_angular_error,
                            "input_integral":input_integral,'input_unit':'m' if c['target']=='position' else 'N' if c['target']=='force' else 'N m',

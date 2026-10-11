@@ -27,8 +27,8 @@ inspection.
 
 Opening the native viewer from Mathematical tools runs the Pymunk backend with
 the corresponding profile; it does not render SciPy as Pymunk. The independent
-wheel-drive linkage is a distinct model, and its native viewer uses the separate
-wheel-height fixture rather than claiming a two-axis physical implementation.
+wheel-drive linkage is a distinct model with no two-axis native implementation;
+select the wheel suspension model to launch that physical fixture.
 The constant-lift lever selector launches its own live lever model, using the
 same native-GUI controls with an explicitly separate profile envelope.
 
@@ -63,6 +63,10 @@ rejected. Backend controls/API perform the full model-specific validation.
 Internal inputs use m, kg, s, rad, N and N m. The UI converts mm/degrees and
 also displays force in N/kgf. Reference belt T₀ remains independent and is
 retained with saved profiles without being applied as a suspension force.
+Optional guide baseline N/kgf and vector visibility are also saved under
+`reference_inputs.guide_visualization`, independently of sheet T₀. Unknown
+baseline means only the ideal guide tension difference is known; these viewer
+arrows do not add forces to the solver.
 The data browser retains source values/units and shows model/configuration/scope.
 Its previews are short; JSON/CSV preserve full recorded outputs.
 
@@ -125,15 +129,21 @@ project-owned native viewer; `GET /api/native-gui/<id>` reports its status and
 live step count. `POST /api/native-gui/<id>/show` restores only its verified
 desktop window; foreground activation follows Windows' rules. Its
 profile/status/log files remain in ignored `.preview/`.
-Wheel configs retain their existing payload; lever launch uses
+Flat wheel configs remain compatible. Wheel launch can also use
+`{model:'wheel_leg',config,guide_visualization:{pretension_N,show_force_vectors}}`
+to preserve viewer-only assumptions. Guide metadata is validated separately,
+included in reuse matching and not applied to solver pin/bearing loads. The
+active frame supplies the global launch config; explicit saved-record/child
+configs remain authoritative. Lever launch uses
 `{model:'counterbalance',config:...}`. Free lever mode has one pivot constraint;
 prescribed mode adds an actual velocity-driven SimpleMotor. Timestep-dependent
 angle tracking and load peaks require refinement rather than exact pose claims.
 The catalog/force-law kernel is standard-library geometry rather than a Pymunk
-dependency in SciPy. Nonlegacy Pymunk springs apply real point forces explicitly
-before each step; the original captured/direct tip configuration preserves the
-native DampedSpring. Refine physical dt for stiff or sharp inputs before using
-their peak loads.
+dependency in SciPy. All nine current Pymunk presets apply real point forces
+before each step (`spring_integration=point_force`). The original DampedSpring
+requires explicit `native_legacy`, restricted to captured/direct Hooke tip
+spring, and warns about constraint/spring splitting bias. Refine physical dt
+for stiff or sharp inputs before using their peak loads.
 
 The old browser `.cmd` names forward to the canonical Motion Lab launcher,
 including the imported Capstone/force launchers. Source and legacy standalone
@@ -141,7 +151,7 @@ PowerShell services remain preserved; existing port-4175 terrain pages can still
 be served independently. The normal browser entry is now one port-4186 menu.
 Old source/archive files are retained; no boot/login automation is added.
 
-## Earlier unified-release verification
+## Historical unified-release verification (2026-10-10)
 
 - 37 Python tests pass: 27 existing physical/reference checks plus 10 independent
   mathematical checks, including energy and timestep/load convergence.
@@ -168,7 +178,7 @@ reuse that same verified service. Production Vite/gallery builds pass without
 runtime CDN dependencies; the final detailed module waits for local Plotly and
 announces readiness before accepting a queued profile.
 
-### Expanded suspension/native-viewer verification
+### Historical preset/constant-lift releases (superseded defaults, 2026-10-10)
 
 The earlier counts and browser/native checks above describe the preceding
 unified release. The eight-preset expansion passed all 64 Python tests, including 12
@@ -189,22 +199,28 @@ prescribed lever and free lever cases with live solver steps, window restoration
 looping and graceful close. The prescribed lever uses two constraints and the
 free lever uses one; both render the actual three-shape model. The durable
 launcher passes fresh start/reuse/scoped-stop/restart outside the app directory.
-See [validation](validation.md) for the complete current evidence and limits.
+These historical checks retain their original scope; see [validation](validation.md)
+for the latest evidence and limits.
 
 Primary API references: [Plotly chart configuration](https://plotly.com/javascript/configuration-options/)
 and [SciPy solve_ivp](https://docs.scipy.org/doc/scipy/reference/generated/scipy.integrate.solve_ivp.html).
 Live engine references: [Pymunk Space/body APIs](https://www.pymunk.org/en/latest/pymunk.html)
 and [Pygame DrawOptions](https://www.pymunk.org/en/latest/pymunk.pygame_util.html).
 
-## Complete suspension architecture
+## Current replacement suspension architecture
 
-The [two-stage architecture](suspension-architecture.md) has a direct
+The [replacement architecture](suspension-architecture.md) has a direct
 `/?tab=physics&architecture=constant-lift` entry and a bridge from the lever.
-It queues the factory profile before its first simulation. Constant gravity
-support and an independent ride spring/damper use separate controls/traces;
-joint loads include both. The architecture has four real engine shapes and
-15 Plotly charts, with its own flat wheel-leg JSON and the existing live GUI.
-All 90 Python tests and 33 JavaScript tests pass. Architecture, lever and unified
-browser suites pass, along with five actual native cases including the complete
-suspension. Native launch uses the visible frame's profile rather than an
-inactive study's settings. MATLAB remains legacy-only; see latest validation.
+It queues the factory profile before the first solve. One upper-link/chassis
+unit replaces the old lower-tip spring; auxiliary is off and primary damping
+is 100 N s/m. Exact elastic compensation is neutral, not a restoring ride spring.
+Six actual sensor shapes include the chassis and 28/14 mm guide drums; twelve
+Plotly charts separate elastic support, damping and dynamic loads. The recorded
+coil/damper drawing uses the primary anchors and labels its ideal routing.
+
+The optional earlier auxiliary restoring strut remains selectable and clearly
+separate from the factory. [Mechanism audit](mechanism-audit.md) explains the
+curated passive defaults and point-force integration. The latest
+[validation](validation.md) owns solver/browser/native/launcher evidence and
+finite-envelope limits; historical release counts above do not certify current
+or edited configurations. MATLAB remains legacy-only.

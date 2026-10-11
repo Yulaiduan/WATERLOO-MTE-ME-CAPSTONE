@@ -1,10 +1,11 @@
 # Design decisions and superseded alternatives
 
-On 2026-10-10 the user selected the existing 2:1 folding leg with a restoring
-spring and damper for constant-lift suspension. Weight compensation and ride
-restoration are separate passive paths; no hidden controller supplies restoring
-force. The [architecture](suspension-architecture.md) records demo dimensions,
-rates and validation.
+On 2026-10-10 the user clarified that the constant-lift unit **replaces** the
+original spring: one upper-r1/chassis-massblock spring/damper, auxiliary off and
+primary damping 100 N s/m. The earlier two-stage factory is superseded. Exact
+elastic compensation remains neutral; no hidden spring or controller supplies
+restoring stiffness. The [architecture](suspension-architecture.md) records this
+experimental choice and its limits.
 
 Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: prototype decisions and user constraints; no team hardware selection.
 
@@ -17,7 +18,7 @@ Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: prototype decisions 
 | Explore unequal links and 4:1 as a short-stroke approximation | Approximately 42.35 mm working stroke / 0.768 mm ray error trades global straightness for working-region fit and large inversion travel | Exploratory candidate, not selected hardware |
 | Optimize travel, stiffness/damping and motor constraints together | Average static force alone rewards near-singular leverage and cannot select a useful suspension | Derived model boundary |
 | Radius 200 mm and lower-link extension 50 mm in the Pymunk fixture | These are explicit user inputs; larger 150–250 mm radius sweep remains a separate study | User prototype inputs |
-| Preserve the original native DampedSpring and separate knee impedance | Physical attachment leverage/preload and virtual gains are different quantities; the original captured/direct tip combination keeps its solver implementation | Implemented |
+| Use point-force spring integration for all nine current presets | Real attachment forces/moments must agree with independent geometry; native constraint/spring splitting biased older responses | Current; native DampedSpring retained only as explicit `native_legacy` diagnostic |
 | Prescribe wheel height rather than applied disturbance force | User corrected the input quantity on 2026-10-10; measure support reaction and suspension response instead | User correction, implemented |
 | Default to floating chassis with fixed pitch | User selected floating chassis with prescribed wheel height; fixed hip remains a joint-load test and fixed wheel permits chassis-height input | User fixture choice; hardware boundary remains unresolved |
 | Use finite smooth C2 position ramps | An instantaneous height jump gives unbounded ideal velocity/acceleration; linear joins remain timestep dependent | Implemented |
@@ -41,13 +42,13 @@ verification are in the [unified workspace record](unified-motion-lab.md).
 
 | Decision | Reason and consequence | Status |
 | --- | --- | --- |
-| Retain the original eight editable spring presets | Preserve the original tip spring, six sketch concepts and internal knee capture without selecting hardware | Implemented experimental interpretations |
+| Retain nine editable spring presets | Preserve the original tip spring, six sketch concepts, internal knee capture and gravity compensation without selecting hardware | Implemented experimental interpretations |
 | Separate coil mode from topology and transmission | Compression, extension and captured describe the coil law; a pull-through mechanism can load the external linkage in tension while compressing its coil | User clarification captured in [preset equations](suspension-presets.md) |
 | Define pull-through by input-span growth, not vague leg extension | `dc/dell=-1`; which leg motion compresses the coil depends on geometry or wrap direction | Explicit coordinate convention |
 | Treat ideal rope as tension-only, zero-stretch and 100% efficient | Rope cannot push; slack removes elastic and damper input load, while coil damping remains dissipative | Requested ideal assumption |
-| Apply real anchor/tangent forces for new physical presets | Bearing/pin forces must follow the spring load path; torque alone would omit them. Explicit force integration requires timestep refinement | Implemented; expanded validation pending |
+| Apply real spring anchor/tangent forces for every current preset | Pin forces must follow the spring load path; torque alone would omit them. Explicit force integration requires timestep refinement | Implemented; evidence in mechanism audit and validation |
 | Keep SciPy independent and label MATLAB's narrower scope | SciPy supports every catalog mechanism; MATLAB supports only the original captured/direct tip configuration and rejects unsupported combinations | Implemented model boundary |
-| Launch a live desktop Pymunk GUI from the browser button | Actual Pygame rendering and Space.step run on the simulation host; recorded browser playback remains distinct and available remotely | User GUI clarification, implemented; integration validation pending |
+| Launch a live desktop Pymunk GUI from the browser button | Actual Pygame rendering and Space.step run on the simulation host; recorded browser playback remains distinct and available remotely | User GUI clarification, implemented; see validation |
 | Keep sketch dimensions editable and illustrative | Drum/crank/mount sizes lack measured hardware input; reject invalid spans/preloads rather than silently substituting values | Experimental assumptions |
 
 The ideal mechanisms omit crank/drum inertia, transmission friction, rope
@@ -72,3 +73,18 @@ equations, demo parameters and validation scope. Finite effective free length
 or offset mounts do not inherit exact constant lift from the default geometry.
 This study does not accept a manufactured spring, prove routing/package clearance
 or validate a canonical robot.
+
+## Replacement and passive audit decisions, 2026-10-10
+
+| Decision | Consequence | Status |
+| --- | --- | --- |
+| Replace lower-tip strut with one upper-link/chassis unit | Auxiliary is off; damping belongs to that same unit. No automatic second restoring spring | Latest user correction |
+| Keep exact gravity balance neutral | Damping dissipates motion but does not select a static ride height | Derived identity |
+| Draw guide drums as sensors and exact belt material motion | 28/14 mm demo radii enforce physical 2:1 visualization without mass/contact changes | Implemented ideal guide |
+| Separate guide tension difference from optional absolute baseline | Unknown baseline does not determine absolute spans or bearing load. Viewer N/kgf remains independent of sheet T₀ and solver config | Implemented reference boundary |
+| Audit full passive demo horizon, not only preload and short trajectories | Curated rates/geometry are tested at 30/45/60° under six-second smooth step/square; edited settings can still be unstable | Bounded experimental scope; see [audit](mechanism-audit.md) |
+| Retain native spring splitting only as a diagnostic | Explicit `native_legacy` applies only to original captured/direct Hooke spring; warnings require refinement and independent comparison | Supersedes earlier default implementation |
+
+Earlier two-stage restoring-strut evidence remains in [validation](validation.md)
+and the optional-variant section of the architecture; it is not the current
+factory. The independent two-stage coaxial wheel-drive concept is unchanged.

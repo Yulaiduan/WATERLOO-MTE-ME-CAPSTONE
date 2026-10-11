@@ -53,7 +53,7 @@ class PositionInputTests(unittest.TestCase):
         c=config();m=build(c)
         self.assertEqual(c['target'],'position');self.assertEqual(c['fixture'],'floating')
         self.assertEqual(type(m['driver']).__name__,'PivotJoint')
-        self.assertEqual(len(m['space'].constraints),7)
+        self.assertEqual(len(m['space'].constraints),6)  # Point-force coil adds no constraint.
         self.assertEqual(m['carriage'].body_type,m['carriage'].KINEMATIC)
 
     def test_actual_motion_tracking_and_reaction_checks(self):

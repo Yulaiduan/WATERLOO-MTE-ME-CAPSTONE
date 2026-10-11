@@ -7,19 +7,23 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),path
  try{
   const page=await browser.newPage({viewport:{width:1440,height:1100},acceptDownloads:true}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
-  const presets=['legacy_tip','hip_pulley','knee_pulley','direct_scissor','hip_bellcrank','knee_bellcrank','chassis_direct','knee_capture','gravity_balance'];
+  const presetData=await (await page.request.get('http://127.0.0.1:4186/api/spring-presets')).json(),presets=Object.keys(presetData.catalog);
   for(const route of ['physics','mathematical']){
    await page.goto(`http://127.0.0.1:4186/${route}/?loadOnly=1`);
    await page.locator('[data-key="spring_topology"]').waitFor();
    for(const name of presets){
     await page.locator('[data-key="spring_topology"]').selectOption(name);
-    assert.equal(await page.locator('[data-key="spring_pulley_radius"]').inputValue(),'40');
+    const expected={...presetData.defaults,...presetData.catalog[name].defaults};
+    for(const [key,scale] of [['spring_pulley_radius',1000],['spring_bellcrank_radius',1000],['stiffness',1],['damping',1]])assert.ok(Math.abs(Number(await page.locator(`[data-key="${key}"]`).inputValue())-expected[key]*scale)<1e-9,`${name}: catalog ${key} must reset`);
     const set=async(key,value)=>{await page.locator(`[data-key="${key}"]`).evaluate(n=>n.closest('details').open=true);await page.locator(`[data-key="${key}"]`).fill(String(value));await page.locator(`[data-key="${key}"]`).dispatchEvent('change');};
     await set('duration',1.2);await set('start',.3);await set('position_amplitude',8);
     const responsePromise=page.waitForResponse(r=>r.url().includes('/simulate'));
     await page.locator('#run').click();const response=await responsePromise;const result=await response.json();
     assert.equal(response.status(),200,JSON.stringify(result));assert.equal(result.config.spring_topology,name);
     await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('Recorded'));
+    assert.equal(result.config.spring_integration,'point_force');
+    assert.equal(await page.locator('#passive-stability').getAttribute('data-classification'),result.passive_stability.classification);
+    assert.ok((await page.locator('#stability-balance').textContent()).includes('kgf'));
     assert.equal(await page.locator('.js-plotly-plot').count(),name==='gravity_balance'?12:11);
     if(name==='gravity_balance'){
      assert.equal(result.config.spring_force_law,'zero_effective');

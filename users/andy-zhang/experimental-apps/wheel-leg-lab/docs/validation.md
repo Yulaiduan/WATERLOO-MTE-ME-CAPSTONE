@@ -2,7 +2,22 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: locally checked member experiment, not canonical robot or hardware validation.
 
-## Position-input correction, 2026-10-10
+## Current contract and evidence scope
+
+The latest architecture replaces the old lower-tip strut with **one upper-link /
+chassis massblock spring/damper**. Auxiliary is off, primary damping is 100 N s/m,
+knee impedance is disabled and elastic compensation is neutral. All nine
+current wheel presets use `point_force`; `native_legacy` is a restricted
+diagnostic. Chassis and 28/14 mm guide sensors add no mass/contact. Belt viewer
+baseline/force arrows stay independent of sheet T₀ and solver bearing loads.
+
+[Mechanism audit](mechanism-audit.md) records corrected geometry/rates,
+passivity and the tested envelope. Following release blocks are preserved
+historical evidence; earlier counts, native-spring integration, four-shape /
+two-stage architecture and unsafe old demo defaults are superseded. They are
+not current-profile acceptance. Latest evidence is appended below.
+
+## Historical position-input release, 2026-10-10
 
 The user corrected force excitation to prescribed displacement. All **27** Python checks pass: the 19 historical force/reference checks now explicitly select diagnostic force mode, and eight position checks cover ramp derivatives, trajectories, driver type, tracking, force-versus-position separation, spring sensitivity, independent energy response/refinement and fixed-hip range rejection. Build and browser suites pass after regenerating step/square recordings. Actual backend checks cover default position/floating controls, a 30 mm moving-height arrow, full CSV/config, N/kgf and retained diagnostic modes; offline mobile recorded playback passes. The native live renderer advances the default position model and draws three shapes/seven constraints.
 
@@ -10,7 +25,7 @@ For the 30 mm C2 step at 1.2 s, independent scalar-energy RK4 gives θ = 48.0286
 
 This follow-up is confined to the member app and contribution log: workspace scope, canonical physics NOT APPLICABLE. The earlier shared-index import used preliminary scope; that historical result remains below.
 
-## Rebuilt import
+## Historical rebuilt import
 
 The app-local Python 3.13.12 environment installs Pymunk 7.3.0, pygame-ce 2.5.8, cffi 2.1.1 and pycparser 3.11. The build uses Node.js 22.20.0, Vite 7.3.6, ml-matrix 6.15.0 and Playwright 1.62.1 with installed Edge for browser tests. Seven animation fragments, recorded playback and the detailed Vite entry build successfully with project-relative sources and local web assets.
 
@@ -32,7 +47,7 @@ From an unrelated Windows directory, the imported 4186 launcher starts the actua
 
 The launchers require setup/build in a new clone, resolve their own directory and reject unrelated port owners. Test screenshots, logs and full traces remain ignored.
 
-## Physics interpretation and repository scope
+## Historical import physics interpretation and repository scope
 
 Independent Pymunk angle errors decrease at 2/1/0.5/0.25 ms: approximately 0.175/0.089/0.044/0.022° in the mild-impulse case. A locked-contact case also agrees with an independent energy model including wheel inertia. Checked force/moment residuals are below 1e-7. Rigid-stop peak loads remain timestep dependent.
 
@@ -51,7 +66,7 @@ familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](unified-motion-lab.md).
 
-## Suspension presets and live desktop GUI, 2026-10-10
+## Historical eight-preset/native release (superseded defaults), 2026-10-10
 
 The expanded suite passes **64 Python tests**: 27 original physical/reference/
 position cases, 15 independent SciPy cases, 12 mechanism-kernel cases and 10
@@ -96,7 +111,8 @@ the first stop safely; comparing UTC DateTime values preserves fractional ticks
 and also works with Windows PowerShell's string decoding. Previous state/log
 files are archived and no unrelated process or source file is removed.
 
-The hip-pulley demo's passive instability is explicitly tested and retained.
+The historical 40 mm hip-pulley demo's instability was explicitly tested;
+the current curated default is repaired as documented in the mechanism audit.
 Spring law and transmission are independent settings; increasing pull-through
 travel compresses the coil, while wrap/mount geometry selects the leg-loading
 direction. SciPy supports the full catalog; MATLAB's expanded-profile parsing
@@ -104,7 +120,7 @@ was checked in R2025b for the original captured/direct tip spring and rejects
 other mechanisms explicitly. No hardware, coil-bind, cable friction/stretch,
 tire contact, whole vehicle or canonical robot validation is claimed.
 
-## Final constant-lift integration
+## Historical constant-lift integration, 2026-10-10
 
 The final combined suite passes **82 Python tests** (71 wheel/kernel/reference
 plus 11 standalone-lever cases) and **33 JavaScript tests** (24 detailed model
@@ -153,7 +169,7 @@ explicitly rejected. The initial local probe used MATLAB run's changed working
 directory; resolving the app root from the script path then passed without
 warnings. No new mechanism is silently evaluated with the old MATLAB law.
 
-## Two-stage suspension architecture
+## Historical two-stage architecture (superseded factory), 2026-10-10
 
 All **90 Python tests** pass: the prior 82 plus eight dedicated architecture
 cases. The nine auxiliary-disabled preset trajectories remain unchanged.
@@ -166,7 +182,7 @@ final differences are about 0.0450 N at J2, 0.0166 N driver reaction, 0.00309 Nm
 guide torque and 0.0511 N ride-strut force. Conservative body-energy drift
 decreases 0.002542 / 0.001250 / 0.000619 J. All 33 JavaScript tests still pass.
 
-The actual factory uses primary damping zero and ride damping 500 N s/m;
+The factory at this historical stage used primary damping zero and ride damping 500 N s/m;
 these are labeled editable demos. Real browser checks pass the cold architecture
 entry with one configured run, four actual shapes and two coil paths, restoring/
 damper telemetry, per-stage energies, 15 Plotly charts, JSON/library-to-math
@@ -182,3 +198,66 @@ Official headless rendering also passes and shows the rigid compensator mount,
 chassis and independent ride strut. MATLAB accepts the expanded auxiliary-off
 legacy profile; enabled auxiliary mode is explicitly unsupported. These checks
 do not establish real contact, packaging, structural stress or hardware ratings.
+
+## Current replacement and passive audit, 2026-10-10
+
+Full app-local Python unittest discovery passes **114 tests** in 299.557 s.
+Its six-second envelope covers 108 backend cases: nine catalog presets,
+30/45/60° initial poses, smooth 30 mm / 250 ms quintic step and square inputs,
+SciPy and Pymunk. Every case completes with no stops, slack, nonfinite values
+or actuator torque; force/moment closure stays below 1e-7 and signed prescribed
+support stays positive. Minimum observed support is 49.65184 N in Pymunk
+`chassis_direct`, 30° square. This is a bounded ideal-fixture result, not
+global passive stability or ground-contact acceptance.
+
+At 30° square, final-angle errors against SciPy decrease with 1/.5/.25 ms:
+
+| Repaired preset | Error at 1 / .5 / .25 ms, degrees |
+| --- | --- |
+| Original tip | .465685 / .262895 / .133506 |
+| Hip pulley | .003096 / .001546 / .000773 |
+| Hip bellcrank | .000498 / .000240 / .000117 |
+| Knee bellcrank | .012975 / .006191 / .003024 |
+
+Kernel audit covers 1404 valid mechanism/routing/law/angle/speed combinations,
+with no negative damping dissipation or compressive rope force. Force-site
+power error is at most 6.9e-13 W; energy-gradient error at most 1.64e-7 N m.
+Fifty-four impossible coil lengths are explicitly rejected. The
+[mechanism audit](mechanism-audit.md) explains repaired defaults and the limits
+of short-run/preload checks.
+
+All **43 JavaScript tests** pass. Actual API browser suites pass
+`verify_passive_stability_ui.cjs`, `verify_suspension_ui.cjs` (all nine presets /
+both backends), `verify_pymunk.cjs`, `verify_suspension_architecture_ui.cjs` and
+`verify_motion_lab.cjs`. They check passive metadata/default reset, controls,
+export/library flow, current single primary path, six engine shapes, twelve
+charts, guide dots/spokes/vector reference metadata, zoom/theme and mobile.
+Shell native requests are mocked in browser tests; actual native checks below
+are separate. Earlier lever UI tests remain scoped to the unchanged tool.
+
+Actual `scripts/verify_native_gui.py` passes five desktop fixtures: knee capture,
+gravity balance, corrected replacement wheel-leg envelope with viewer baseline
+60 N, prescribed lever and free lever. Replacement has six sensor shapes and
+six constraints, auxiliary off and viewer baseline outside solver config.
+Verified HWND/PID ownership, more than 1500 advancing solver steps, loop
+completion, owned `/show` restoration, exact-profile reuse and graceful zero-exit
+close pass. The final replacement native window was visually reviewed for its
+rigid chassis mount, upper attachment, belt marks, pivot spokes and
+unknown-baseline difference labels. Generated sessions/logs remain ignored.
+
+Actual MATLAB R2025b comparison of the updated full legacy profile
+(k20000 N/m, c500 N s/m, 1.2 s, 8 mm step starting .3 s) passes: maximum
+matched-time angle difference 2.5674e-8° and J2-force difference 1.0209e-6 N
+against SciPy. Zero-effective law is explicitly rejected. This does not extend
+MATLAB support to the new mechanisms; Octave remains untested.
+
+The actual project-local CMD launcher passes scoped stop/start from C:/Windows
+and duplicate matching-server reuse on the new backend, preserving port 4186.
+The in-app preview was checked for single upper-anchor geometry, auxiliary off,
+200 mm wheel, primary damping 100, zero controller, neutral 0 N/m stiffness /
+zero initial balance residual and an advancing completed run.
+
+Rigid-stop peaks remain timestep dependent; prescribed height is bilateral and
+chassis pitch is held. No hardware, real spring/belt packaging, tire/terrain
+contact, structural, GPU or other-OS validation is claimed. Repository publication
+gates are reported separately in the contribution log.

@@ -1,3 +1,8 @@
+/** Exercise the real Pymunk bench controls and measured point-force results.
+ * Run: node scripts/verify_pymunk.cjs with Motion Lab on loopback port 4186.
+ * Inputs: SI profiles and browser interactions; outputs: ignored JSON/CSV/PNG.
+ * Checks solver/browser wiring and reconstruction, not hardware validity.
+ */
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -13,7 +18,9 @@ const path = require('node:path');
     assert.equal(await page.locator('.plot').count(),11);assert.equal(await page.locator('[data-key="target"]').inputValue(),'position');assert.equal(await page.locator('[data-key="fixture"]').inputValue(),'floating');assert.ok((await page.locator('.plot h3').allTextContents()).some(s=>s.includes('Prescribed height')));
     assert.equal(await page.locator('#model-view').inputValue(),'engine');
     assert.equal(await page.locator('.engine-shape').count(),3);
-    assert.ok((await page.locator('#model-objects').textContent()).includes('DampedSpring'));
+    assert.equal((await page.locator('#model-objects').textContent()).includes('DampedSpring'),false);
+    assert.equal(await page.locator('.spring-mechanism-overlay').count(),1);
+    assert.equal(await page.locator('#passive-stability').isVisible(),true);
     await page.locator('#equation-checks summary').click();
     assert.equal(await page.locator('#equation-values tr').count(),4);
     assert.ok((await page.locator('#equation-formulas').textContent()).includes('M_act_visible'));
@@ -53,6 +60,7 @@ const path = require('node:path');
     const csv=fs.readFileSync(path.join(output,'verified-trace.csv'),'utf8');assert.ok(csv.includes('j2_fx'));assert.ok(csv.includes('knee_accel'));assert.equal(csv.trim().split(/\r?\n/).length,6001);
     const configDownload=page.waitForEvent('download');await page.locator('#case').click();const savedConfig=await configDownload;await savedConfig.saveAs(path.join(output,'verified-run-config.json'));
     const caseData=JSON.parse(fs.readFileSync(path.join(output,'verified-run-config.json'),'utf8'));assert.equal(caseData.config.radius,.2);assert.equal(caseData.config.extension,.05);assert.equal(caseData.engine,'7.3.0');assert.equal(caseData.config.target,'position');assert.equal(caseData.config.position_amplitude,.03);assert.ok(caseData.diagnostics.max_position_error_m<.0002);
+    assert.equal(caseData.config.spring_integration,'point_force');
     assert.ok(Math.abs(caseData.reference_inputs.T0_N-49.03325)<1e-8);
     assert.ok(Math.abs(caseData.reference_inputs.T0_kgf-5)<1e-8);
     assert.equal(caseData.reference_inputs.applied_to_solver,false);
@@ -67,6 +75,7 @@ const path = require('node:path');
     assert.equal(data.config.bias_force_x,27.590625);
     assert.ok(Object.values(data.equation_check_errors).every(x=>x<1e-7));
     await page.waitForFunction(()=>document.querySelector('#status').textContent.includes('Recorded'));
+    assert.equal(await page.locator('#passive-stability').getAttribute('data-classification'),'not_applicable');
     await page.locator('[data-key="load_point"]').selectOption('contact');await page.locator('[data-key="wheel_drive_locked"]').check();
     const contactResponse=page.waitForResponse(r=>r.url().endsWith('/api/simulate'));await page.locator('#run').click();const contact=await (await contactResponse).json();
     assert.equal(contact.config.load_point,'contact');assert.equal(contact.config.wheel_drive_locked,true);

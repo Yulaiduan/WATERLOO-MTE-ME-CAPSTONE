@@ -17,6 +17,7 @@ from copy import deepcopy
 
 
 MECHANISM_DEFAULTS = {
+    'spring_integration': 'point_force',
     'spring_topology': 'legacy_tip', 'spring_mode': 'captured',
     'spring_transmission': 'direct', 'spring_pulley_radius': .04,
     'spring_direction': 1., 'spring_input_ref': .20, 'spring_coil_ref': .20,
@@ -26,6 +27,8 @@ MECHANISM_DEFAULTS = {
     'spring_force_law': 'hooke', 'spring_effective_free_length': 0.,
     'aux_spring_enabled': False, 'aux_stiffness': 8000., 'aux_damping': 100.,
     'aux_mode': 'captured', 'aux_rest_length': .28, 'aux_auto_rest': True,
+    'chassis_shape_enabled': False, 'guide_pulleys_visible': False,
+    'guide_hip_radius': .028,
 }
 
 CATALOG = {
@@ -64,6 +67,13 @@ CATALOG = {
 }
 for _entry in CATALOG.values():
     _entry['status'] = 'Illustrative editable preset; dimensions are not confirmed hardware.'
+    _entry['defaults'].update(stiffness=8000., damping=100.)
+CATALOG['legacy_tip']['defaults'].update(stiffness=20000., damping=500.)
+CATALOG['hip_pulley']['defaults'].update(spring_pulley_radius=.08, damping=500.)
+CATALOG['knee_pulley']['defaults'].update(damping=500.)
+CATALOG['knee_capture']['defaults'].update(damping=500.)
+CATALOG['hip_bellcrank']['defaults'].update(spring_bellcrank_radius=.08, damping=500.)
+CATALOG['knee_bellcrank']['defaults'].update(stiffness=24000., damping=1000.)
 
 
 def apply_preset(config, topology):
@@ -82,6 +92,12 @@ def mechanism_config(c):
     resolved = {key: c.get(key, default) for key, default in MECHANISM_DEFAULTS.items()}
     if resolved['spring_topology'] not in CATALOG:
         raise ValueError('Unknown spring topology.')
+    if resolved['spring_integration'] not in ('point_force', 'native_legacy'):
+        raise ValueError('Spring integration must be point_force or native_legacy.')
+    if resolved['spring_integration'] == 'native_legacy' and not (
+            resolved['spring_topology'] == 'legacy_tip' and resolved['spring_mode'] == 'captured'
+            and resolved['spring_transmission'] == 'direct' and resolved['spring_force_law'] == 'hooke'):
+        raise ValueError('native_legacy diagnostic requires legacy_tip/captured/direct/hooke.')
     if resolved['spring_mode'] not in ('compression', 'extension', 'captured'):
         raise ValueError('Spring mode must be compression, extension or captured.')
     if resolved['spring_transmission'] not in ('direct', 'pullrod', 'ideal_rope'):
@@ -114,9 +130,13 @@ def mechanism_config(c):
         raise ValueError('Auxiliary free length must be between 0.005 and one metre.')
     if resolved['aux_spring_enabled'] and resolved['spring_topology'] != 'gravity_balance':
         raise ValueError('The auxiliary ride spring is currently supported only with the gravity_balance primary stage.')
+    if not .005 <= resolved['guide_hip_radius'] <= .1:
+        raise ValueError('Guide hip radius must be between 0.005 and 0.1 metre; knee radius is half for the ideal 2:1 guide.')
     L, e = c['length'], c['extension']
     if not (math.isfinite(L) and math.isfinite(e) and 0 < e < L):
         raise ValueError('Require finite link length and 0 < extension < length.')
+    if resolved['guide_pulleys_visible'] and 1.5*resolved['guide_hip_radius']>=L:
+        raise ValueError('Visible guide pulleys must not overlap: use 1.5 times hip radius < link length.')
     return resolved
 
 
@@ -406,6 +426,7 @@ def mechanism_metadata(c, input_reference):
     if s['spring_topology'] == 'gravity_balance' and not eligible:
         notes.append('Constant lift requires zero effective input free length, a downward vertical chassis mount and compatible tension-producing routing. This edited arrangement lacks exact constant lift; automatic calibration, if enabled, balances only the initial pose.')
     return {'topology': s['spring_topology'], 'mode': s['spring_mode'],
+            'pymunk_integration': s['spring_integration'],
             'transmission': s['spring_transmission'], 'force_law': s['spring_force_law'],
             'effective_free_length_m': s['spring_effective_free_length'],
             'physical_coil_free_length_m': c['rest_length'],
@@ -427,6 +448,46 @@ def generalized(theta, speed, c, input_reference=None):
             'generalized_force': -law['tension']*g['jacobian'],
             'generalized_elastic_force': -law['elastic_tension']*g['jacobian'],
             'generalized_damping_force': -law['damper_tension']*g['jacobian']}
+
+
+def passive_stability(c, rest, input_reference, auxiliary=None):
+    """Local elastic stability at the initial ride pose, excluding active control.
+
+    Uses actual calibrated free lengths/rate and distributed gravity. Derivatives
+    are one-sided about the initial pose to expose unilateral engagement. This
+    local ideal-guide test is neither a global stability proof nor contact safety.
+    """
+    if c['fixture'] != 'floating':
+        return {'classification': 'not_applicable', 'reason': 'Fixed-fixture diagnostic; floating ride height required.'}
+    q = math.radians(c['theta']); L = c['length']; eps = 1e-5
+    cfg = {**c, 'rest_length': rest}
+    aux = auxiliary if auxiliary is not None else auxiliary_parameters(c)
+    S = 1.5*L*c['upper_mass'] + .5*(L+c['extension'])*c['lower_mass'] + 2*L*c['chassis_mass']
+    def net(theta):
+        Q = generalized(theta, 0., cfg, input_reference)['generalized_elastic_force']
+        if aux['enabled']:
+            Q += generalized(theta, 0., aux['config'], aux['input_ref'])['generalized_elastic_force']
+        return (Q-S*c['gravity']*math.cos(theta))/(2*L*math.cos(theta))
+    f = net(q); h = 2*L*math.sin(q)
+    left = -(f-net(q-eps))/(h-2*L*math.sin(q-eps))
+    right = -(net(q+eps)-f)/(2*L*math.sin(q+eps)-h)
+    mean = (left+right)/2; tolerance = 1e-3
+    classification = ('unstable' if min(left,right) < -tolerance else
+                      'restoring' if min(left,right) > tolerance else 'neutral')
+    notes = []
+    if classification == 'unstable':
+        notes.append('Passive initial ride equilibrium is locally unstable: gravity/geometric preload overwhelms restoring stiffness. Automatic preload balances force but does not guarantee stability; edit leverage/rate/mounts.')
+    elif classification == 'neutral':
+        notes.append('Passive initial ride equilibrium is locally neutral or one-sided: constant gravity compensation alone does not restore ride height. Damping can dissipate motion but cannot provide static restoring stiffness.')
+    if abs(f) > .01:
+        notes.append('Initial elastic/gravity force is unbalanced; the freely floating chassis will accelerate even if the local stiffness is restoring.')
+    return {'classification': classification, 'net_ride_stiffness_N_m': mean,
+            'left_ride_stiffness_N_m': left, 'right_ride_stiffness_N_m': right,
+            'initial_force_balance_residual_N': f, 'theta_deg': c['theta'],
+            'travel_limits_deg': [c['theta_min'], c['theta_max']],
+            'active_controller_excluded': True, 'difference_angle_rad': eps,
+            'scope': 'Local elastic/gravity test at initial ride height; exact ideal 2:1 guide, calibrated primary/auxiliary free lengths; excludes knee feedback, damping, contact and global travel stability. SciPy stops before limit impact; Pymunk solves rotary-stop reactions.',
+            'notes': notes}
 
 
 def auxiliary_parameters(c):
@@ -479,3 +540,18 @@ def force_pair_power(force_sites, bodies, tension):
             raise ValueError('Body velocities are required for force-pair power.')
         total += tension*_dot(site['direction'], velocity)
     return total
+
+
+def guide_pulley_frame(c, hip_center, knee_center, hip_angle, upper_angle, lower_angle):
+    """Visible actual/analytical guide geometry, distinct from belt force dynamics.
+
+    Angles are world radians. The hip pulley is fixed to chassis; the knee pulley
+    is fixed to the lower link, with the upper link as the moving carrier.
+    Visibility and massless sensor sizes do not alter the angular constraint.
+    """
+    return {'ratio': 2., 'carrier_angle': float(upper_angle),
+            'hip': {'body': 'hip', 'center': [float(v) for v in hip_center],
+                    'angle': float(hip_angle), 'radius': c['guide_hip_radius']},
+            'knee': {'body': 'lower', 'center': [float(v) for v in knee_center],
+                     'angle': float(lower_angle), 'radius': c['guide_hip_radius']/2},
+            'scope': 'Ideal 2:1 angular constraint. Pulley sensors are massless visual/query geometry; no belt stretch, pretension or bearing-load model. Torque-implied tension difference is derived telemetry, not an applied belt force.'}

@@ -9,8 +9,10 @@ import math
 import unittest
 from physics import config as actual_config, build, simulate as actual_simulate, excitation_area, input_average
 
-def config(values=None): return actual_config({"target":"force",**(values or {})})
-def simulate(values=None): return actual_simulate({"target":"force",**(values or {})})
+# Explicit historical force-fixture/native diagnostic; factory demos now use
+# point forces and topology-specific rates tested in test_mechanism_stability.
+def config(values=None): return actual_config({"target":"force","stiffness":8000.,"damping":100.,"spring_integration":"native_legacy",**(values or {})})
+def simulate(values=None): return actual_simulate({"target":"force","stiffness":8000.,"damping":100.,"spring_integration":"native_legacy",**(values or {})})
 
 
 def reference(values):

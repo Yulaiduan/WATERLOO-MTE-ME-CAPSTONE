@@ -18,7 +18,7 @@ The clear reference image includes Fy r_w and distinct T₀/T force terms. Its t
 
 The user clarified that the disturbance is position, not force. The Pymunk default is now a prescribed wheel-height step and dynamic floating chassis with pitch held. Height command/achievement and chassis response are separate traces; driver force, pins, torques and acceleration are measured outputs. The editable 30 mm / 250 ms smooth-rise demo values are assumptions. Alternatives fix the hip or wheel; force/torque inputs remain labeled diagnostic. Recorded remote cases are regenerated from this solver and can be reproduced with `scripts/record_position_preview.py` before the build.
 
-All 27 Python tests pass, including an independent energy-model response and timestep refinement. Continue from the updated validation/model docs. The previous force runs remain valid legacy tests; they do not represent the user's corrected excitation.
+Historical position-input release (2026-10-10): all 27 Python tests passed, including an independent energy-model response and timestep refinement. Continue from the updated validation/model docs. The previous force runs remain valid legacy tests; they do not represent the user's corrected excitation.
 
 ## How to continue
 
@@ -46,11 +46,11 @@ familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](unified-motion-lab.md).
 
-## Suspension and desktop-GUI continuation
+## Historical eight-preset continuation (superseded defaults, 2026-10-10)
 
 The user's latest clarification defines pull-through by increasing rod/cable
 travel compressing the coil, with editable demo dimensions and selectable coil
-law. Eight presets now run through a common geometry/force kernel in independent
+law. At this release, eight presets ran through a common geometry/force kernel in independent
 SciPy and actual Pymunk. Read [presets](suspension-presets.md) and the expanded
 [validation](validation.md) before changing their signs or force sites.
 
@@ -59,14 +59,14 @@ recorded browser playback is separate. Close that desktop window to stop it.
 Native launch sessions/configs/logs/screenshots remain in ignored .preview.
 The browser library/profile exports preserve the selected mechanism settings.
 
-All 64 Python and 32 JavaScript tests pass. Preset browser and actual desktop API
+Historical release evidence: all 64 Python and 32 JavaScript tests passed. Preset browser and actual desktop API
 checks pass; the MATLAB companion is explicitly limited to the original
 captured/direct tip spring. A 40 mm hip drum with an 8 kN/m coil is passively
 unstable around the demo ride pose, even with balanced initial preload.
 Confirm real mounts, routing, travel, rates and component limits before
 interpreting the demo as a selected suspension design.
 
-## Constant-lift continuation
+## Historical constant-lift release (2026-10-10)
 
 The user requested both the pictured lever and a wheel-leg adaptation. Both
 now run independently in SciPy and actual Pymunk with JSON/library support,
@@ -80,9 +80,9 @@ physical coil length. This produces neutral gravity compensation rather than
 a restoring ride-height spring. The complete 82 Python and 33 JavaScript tests,
 both browser tools and four native cases pass; use the latest validation record.
 
-## Complete suspension follow-up
+## Historical two-stage follow-up (superseded factory, 2026-10-10)
 
-The latest user choice is the 2:1 folding wheel-leg with a restoring spring and
+At this stage, the user choice was interpreted as the 2:1 folding wheel-leg with a restoring spring and
 damper. Open `/?tab=physics&architecture=constant-lift` or use the lever bridge.
 The weight stage remains separate from the hip-to-tip ride strut, whose auto
 free length sets zero initial elastic load. Both solvers reconstruct combined
@@ -91,3 +91,24 @@ Read [architecture](suspension-architecture.md) and the latest validation.
 The complete 90 Python/33 JavaScript tests, architecture browser flow and five
 native cases pass. Preserve archives and confirm physical packaging/contact
 before promoting this ideal one-corner model.
+
+## Continue from the corrected replacement model
+
+The latest clarification replaces the original lower-tip spring with one
+upper-r1/chassis-massblock spring/damper. Open the same architecture route.
+Auxiliary is off, primary damping is 100 N s/m, chassis and 28/14 mm guide drums
+are sensors, and the knee controller stays disabled. Elastic constant lift is
+neutral; do not describe it as positive restoring ride stiffness.
+
+Current nine-preset defaults use `point_force`; the old DampedSpring path is an
+explicit restricted diagnostic. Read [mechanism audit](mechanism-audit.md) for
+the repaired passive defaults and finite six-second envelope. Read the latest
+[validation](validation.md) block for actual solver, browser, native-window,
+MATLAB and launcher evidence rather than an older release's counts.
+
+Guide material dots/spokes and tangent vectors follow recorded geometry. Unknown
+baseline supplies only a tension difference; optional viewer baseline N/kgf is
+independent of reference T₀ and is not applied to solver pin forces. Keep that
+metadata outside solver config when exporting, loading or launching native GUI.
+Preserve the archives and confirm hardware routing, measured tension, travel,
+contact and structural limits before canonical promotion.

@@ -2,16 +2,17 @@
 
 Imported by physics.py. Inputs: validated SI config, actual body poses/velocities.
 Outputs: equal/opposite forces, exact applied body torques and spring telemetry.
-Nonlegacy springs use explicit force integration; refinement is required for
+Default springs use explicit force integration; refinement is required for
 sharp/high-stiffness cases. Massless cranks/ropes preserve virtual work, with no
-rope stretch/friction or hardware coil-bound/contact model. Legacy stays native.
+rope stretch/friction or hardware coil-bound/contact model. Native legacy is an
+explicit advanced diagnostic, with timestep-dependent constraint split bias.
 """
 import math
 from pymunk import Vec2d
 from spring_mechanisms import geometry, geometry_from_bodies, spring_law, calibrate_zero_effective_rate
 
 def manual(c):
-    return not(c['spring_topology']=='legacy_tip' and c['spring_mode']=='captured' and c['spring_transmission']=='direct' and c['spring_force_law']=='hooke')
+    return c['spring_integration'] != 'native_legacy'
 
 def free_length(c,needed):
     g=geometry(math.radians(c['theta']),c);J=g['jacobian']

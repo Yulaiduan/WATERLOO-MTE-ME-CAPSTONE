@@ -6,13 +6,13 @@
 (() => {
   const $=id=>document.getElementById(id),D=window.d3;
   const backend=document.body.dataset.backend==='math'?'math':'pymunk',isMath=backend==='math',viewer=new URLSearchParams(location.search).get('viewer')==='1',loadOnly=new URLSearchParams(location.search).get('loadOnly')==='1',architecture=new URLSearchParams(location.search).get('architecture')==='constant-lift';
-  let config={},defaults={},result=null,charts=[],time=0,playing=false,raf=0,last=0,dirty=false,runRevision=0,lastChartTime=-Infinity,pendingProfile=null,springCatalog={},mechanismDefaults={};
+  let config={},defaults={},result=null,charts=[],time=0,playing=false,raf=0,last=0,dirty=false,runRevision=0,lastChartTime=-Infinity,pendingProfile=null,springCatalog={},mechanismDefaults={},guideModule=null;
   const fmt=(v,n=2)=>Number.isFinite(Number(v))?Number(v).toFixed(n):'—',colors=['var(--blue)','var(--orange)','var(--accent)','var(--purple)','var(--red)','var(--muted)'];
   const cssColor=name=>getComputedStyle(document.documentElement).getPropertyValue(name).trim();
   const publish=(type,fields={})=>{if(parent!==window)parent.postMessage({type,backend,...fields},location.origin);};
   if(viewer)document.body.classList.add('engine-viewer');
   const KGF=9.80665,forceFmt=v=>`${fmt(v)} N / ${fmt(v/KGF)} kgf`,forceCell=v=>`${fmt(v)} / ${fmt(v/KGF)}`;
-  let referenceT0N=null;
+  let referenceT0N=null,guidePretensionN=null,guideForcesVisible=true;
   try{const value=JSON.parse(localStorage.getItem('pymunk-reference-T0-N'));if(typeof value==='number'&&Number.isFinite(value)&&value>=0)referenceT0N=value;}catch{}
   const field=(key,label,unit='',scale=1,min=0,max=1e6,step='any')=>`<label class="field">${label}${unit?` <em>${unit}</em>`:''}<input data-key="${key}" data-scale="${scale}" type="number" min="${min}" max="${max}" step="${step}" value="${config[key]*scale}"></label>`;
   const select=(key,label,choices)=>`<label class="field full">${label}<select data-key="${key}">${choices.map(([v,l])=>`<option value="${v}" ${config[key]===v?'selected':''}>${l}</option>`).join('')}</select></label>`;
@@ -22,6 +22,7 @@
     const fixtures=position?[['floating','Wheel height input · floating chassis'],['hip','Wheel height input · fixed hip'],['wheel','Chassis height input · fixed wheel']]:[['hip','Fixed hip · wheel force response'],['wheel','Fixed wheel · chassis force response']];
     const inputFields=position?field('position_amplitude','Step / pulse height','mm, up +',1000,-500,500):field('amplitude','Step / square amplitude',config.target==='force'?'N':'N·m',1,-10000,10000)+field('impulse','Impulse area',config.target==='force'?'N·s':'N·m·s',1,-1000,1000);
     $('controls').innerHTML=`<details open><summary>Geometry & masses</summary><div class="fields">${field('length','Each link','mm',1000,80,800)}${field('extension','r₂ past knee','mm',1000,5,150)}${field('radius','Wheel radius','mm',1000,50,400)}${field('theta','Initial θ','°',1,3,87)}${field('theta_min','Minimum θ','°',1,3,86)}${field('theta_max','Maximum θ','°',1,4,87)}${field('upper_mass','Upper link','kg',1,.01,20)}${field('lower_mass','Full lower link','kg',1,.01,20)}${field('wheel_mass','Wheel','kg',1,.01,30)}${field('chassis_mass','Chassis corner','kg',1,.01,100)}${select('fixture','Fixture',fixtures)}</div></details>
+    ${guideControls()}
     ${springControls()}
     ${auxiliaryControls()}
     <details open><summary>Spring rate, damping & static loading</summary><div class="fields">${field('stiffness','Spring k','N/m',1,0,100000)}${field('damping','Damper c','N·s/m',1,0,2000)}${field('rest_length','Manual free length','mm',1000,5,1000)}${field('bias_force','Optional static vertical force','N, up +',1,-5000,5000)}${field('bias_force_x','Optional static horizontal force','N, right +',1,-5000,5000)}${position&&config.fixture==='hip'?field('preload_force','Fixed-hip preload design load','N',1,-5000,5000):''}<label class="check"><input data-key="balance_spring" type="checkbox" ${config.balance_spring?'checked':''}>${rateBalance?'Calibrate spring rate for gravity balance':'Set spring preload at initial pose'}</label></div><p class="hint">${rateBalance?'Gravity balance sets spring rate, with finite physical free length and zero effective length via compensation routing.':'For the selected spring mechanism, preload is resolved at the initial pose.'} In the floating chassis test, preload supports the moving chassis/link weight. Forces are measured responses to the imposed wheel motion.</p></details>
@@ -39,18 +40,34 @@
       if(key==='spring_topology'){Object.assign(config,mechanismDefaults,springCatalog[config.spring_topology]?.defaults||{},{spring_topology:node.value});if(config.spring_topology!=='gravity_balance'&&Object.hasOwn(config,'aux_spring_enabled'))config.aux_spring_enabled=false;}
       if(key==='fixture'&&config.fixture==='wheel'){config.bias_force=0;config.load_point='hub';config.wheel_drive_locked=false;}
       dirty=true;$('status').textContent='Inputs changed. Run simulation to update the saved traces.';
-      if(['fixture','target','spring_topology','spring_transmission','spring_force_law'].includes(key)||(key==='length'&&config.spring_topology==='gravity_balance'))controls();else updateControls();
-      publish('motion-lab-config',{config:{...config}});
-    }));updateControls();
+      if(['fixture','target','spring_topology','spring_transmission','spring_force_law','guide_hip_radius'].includes(key)||(key==='length'&&config.spring_topology==='gravity_balance'))controls();else updateControls();
+      if(key==='guide_pulleys_visible')drawMechanism();
+      publish('motion-lab-config',{config:{...config},reference_inputs:referenceInputs()});
+    }));updateControls();bindGuideControls();showIntegrationWarning();
+  }
+  function guideControls(){
+    if(config.guide_pulleys_visible===undefined)return '';
+    return `<details open class="guide-controls"><summary>2:1 guide · pulleys & belt</summary><div class="fields"><label class="check"><input data-key="chassis_shape_enabled" type="checkbox" ${config.chassis_shape_enabled?'checked':''}>Show chassis block geometry</label><label class="check"><input data-key="guide_pulleys_visible" type="checkbox" ${config.guide_pulleys_visible?'checked':''}>Show guide pulleys & material belt marks</label>${field('guide_hip_radius','Hip guide radius','mm',1000,5,100)}<div class="field">Knee guide radius <em>fixed 2:1 ratio</em><output>${fmt(config.guide_hip_radius*500,1)} mm</output></div><label class="field">Assumed slack baseline <em>N · optional</em><input id="guide-pretension-N" type="number" min="0" step="any" placeholder="Unknown" value="${guidePretensionN??''}"></label><label class="field">Same baseline <em>kgf · optional</em><input id="guide-pretension-kgf" type="number" min="0" step="any" placeholder="Unknown" value="${guidePretensionN===null?'':guidePretensionN/KGF}"></label><label class="check"><input id="guide-force-vectors" type="checkbox" ${guideForcesVisible?'checked':''}>Show derived guide-force arrows</label></div><p class="hint" id="guide-force-state">Pretension unspecified; only torque-required ΔT is known.</p><p class="hint">Hip drum is fixed to chassis J1; knee drum is fixed to lower link r₂. Upper link r₁ carries their centers. Belt marks follow the recorded angles. Geometry/radius changes need a new run; the visibility checkbox also hides the current overlay.</p><p class="hint">Baseline is an independent visual assumption, saved with the profile. It never changes the solver or reference-sheet T₀. Belt bearing forces are outside the ideal GearJoint model.</p></details>`;
+  }
+  function bindGuideControls(){
+    for(const [id,unit] of [['guide-pretension-N','N'],['guide-pretension-kgf','kgf']])if($(id))$(id).oninput=()=>{
+      const node=$(id),value=node.valueAsNumber;
+      if(node.value==='')guidePretensionN=null;
+      else if(!Number.isFinite(value)||value<0||!Number.isFinite(value*(unit==='kgf'?KGF:1))){$('guide-force-state').textContent='Enter a finite nonnegative assumed baseline, or leave it unspecified.';return;}
+      else guidePretensionN=value*(unit==='kgf'?KGF:1);
+      const other=$(unit==='N'?'guide-pretension-kgf':'guide-pretension-N');other.value=guidePretensionN===null?'':String(Number((unit==='N'?guidePretensionN/KGF:guidePretensionN).toPrecision(12)));
+      drawMechanism();publish('motion-lab-config',{config:{...config},reference_inputs:referenceInputs()});
+    };
+    if($('guide-force-vectors'))$('guide-force-vectors').onchange=()=>{guideForcesVisible=$('guide-force-vectors').checked;drawMechanism();publish('motion-lab-config',{config:{...config},reference_inputs:referenceInputs()});};
   }
   function springControls(){
     if(!Object.keys(springCatalog).length)return '';
     const entry=springCatalog[config.spring_topology]||springCatalog.legacy_tip,gravityBalance=config.spring_topology==='gravity_balance';
-    return `<details open class="spring-preset"><summary>Spring mechanism preset</summary><div class="fields">${select('spring_topology','Attachment / mechanism',Object.entries(springCatalog).map(([id,preset])=>[id,preset.label]))}${config.spring_force_law!==undefined?select('spring_force_law','Effective force law',[['hooke','Ordinary Hooke spring'],['zero_effective','Zero effective length · compensation route']]):''}${config.spring_effective_free_length!==undefined?field('spring_effective_free_length','Effective free length','mm · zero for exact balance',1000,0,500):''}${select('spring_mode','Coil law',[['compression','Compression only'],['extension','Extension only'],['captured','Captured · bilateral']])}${select('spring_transmission','Transmission',[['direct','Direct coil'],['pullrod','Rigid pull-through rod'],['ideal_rope','Ideal zero-stretch rope']])}${select('spring_direction','Pulley payout sign',[[1,'+1 · default tangent'],[-1,'−1 · opposite tangent']])}${field('spring_pulley_radius','Spring drum radius','mm',1000,1,250)}${field('spring_bellcrank_radius','Crank arm radius','mm',1000,1,250)}${field('spring_bellcrank_offset_deg','Crank offset','°',1,-360,360)}${gravityBalance?field('spring_upper_fraction','Upper arm anchor R','mm from hip',1000*config.length,1,1000*config.length):field('spring_upper_fraction','Upper attachment from hip','% of link',100,0,100)}${field('spring_lower_fraction','Lower attachment from knee','% of link',100,0,100)}${field('spring_chassis_x','Chassis mount x','mm, right +',1000,-500,500)}${gravityBalance?field('spring_chassis_y','Mount below hip H','mm, down +',-1000,1,500):field('spring_chassis_y','Chassis mount y','mm, up +',1000,-500,500)}${field('spring_input_ref','Initial drum payout','mm',1000,1,1500)}${field('spring_coil_ref','Pull-through coil reference','mm',1000,1,1500)}</div><p class="hint" id="spring-preset-description">${entry.description}</p><p class="hint">Illustrative editable dimensions. Selecting a preset resets its mechanism geometry; link geometry and mass stay as entered. Ideal transmission is massless and 100% efficient.</p></details>`;
+    return `<details open class="spring-preset"><summary>Spring mechanism preset</summary><div class="fields">${select('spring_topology','Attachment / mechanism',Object.entries(springCatalog).map(([id,preset])=>[id,preset.label]))}${config.spring_force_law!==undefined?select('spring_force_law','Effective force law',[['hooke','Ordinary Hooke spring'],['zero_effective','Zero effective length · compensation route']]):''}${config.spring_effective_free_length!==undefined?field('spring_effective_free_length','Effective free length','mm · zero for exact balance',1000,0,500):''}${select('spring_mode','Coil law',[['compression','Compression only'],['extension','Extension only'],['captured','Captured · bilateral']])}${select('spring_transmission','Transmission',[['direct','Direct coil'],['pullrod','Rigid pull-through rod'],['ideal_rope','Ideal zero-stretch rope']])}${select('spring_direction','Pulley payout sign',[[1,'+1 · default tangent'],[-1,'−1 · opposite tangent']])}${field('spring_pulley_radius','Spring drum radius','mm',1000,1,250)}${field('spring_bellcrank_radius','Crank arm radius','mm',1000,1,250)}${field('spring_bellcrank_offset_deg','Crank offset','°',1,-360,360)}${gravityBalance?field('spring_upper_fraction','Upper arm anchor R','mm from hip',1000*config.length,1,1000*config.length):field('spring_upper_fraction','Upper attachment from hip','% of link',100,0,100)}${field('spring_lower_fraction','Lower attachment from knee','% of link',100,0,100)}${field('spring_chassis_x','Chassis mount x','mm, right +',1000,-500,500)}${gravityBalance?field('spring_chassis_y','Mount below hip H','mm, down +',-1000,1,500):field('spring_chassis_y','Chassis mount y','mm, up +',1000,-500,500)}${field('spring_input_ref','Initial drum payout','mm',1000,1,1500)}${field('spring_coil_ref','Pull-through coil reference','mm',1000,1,1500)}</div><p class="hint" id="spring-preset-description">${entry.description}</p><p class="hint">Illustrative editable dimensions. Selecting a preset resets its demo geometry, spring rate, damping and integration setting; link geometry and mass stay as entered. Ideal transmission is massless and 100% efficient.</p></details>`;
   }
   function auxiliaryControls(){
     if(config.aux_spring_enabled===undefined)return '';
-    return `<details open class="auxiliary-preset"><summary>Suspension architecture / ride spring & damper</summary><div class="fields"><label class="check"><input data-key="aux_spring_enabled" type="checkbox" ${config.aux_spring_enabled?'checked':''}>Add lower-link ride spring & damper</label>${field('aux_stiffness','Ride spring k','N/m',1,0,100000)}${field('aux_damping','Ride damper c','N·s/m',1,0,2000)}${select('aux_mode','Ride coil law',[['captured','Captured · bilateral'],['compression','Compression only'],['extension','Extension only']])}${field('aux_rest_length','Manual ride free length','mm',1000,5,1000)}<label class="check"><input data-key="aux_auto_rest" type="checkbox" ${config.aux_auto_rest?'checked':''}>Zero elastic ride load at initial θ</label></div><p class="hint">The upper-link compensation stage supplies constant elastic weight support. This separate hip → lower-link extension spring restores ride height and damps motion. Its elastic force is zero at the initial pose when automatic free length is enabled.</p><p class="hint">Available with the gravity-balance preset. Primary-stage damping is independent; the architecture profile uses its separate ride damper.</p></details>`;
+    return `<details open class="auxiliary-preset"><summary>Optional variant / extra tip spring & damper</summary><div class="fields"><label class="check"><input data-key="aux_spring_enabled" type="checkbox" ${config.aux_spring_enabled?'checked':''}>Enable additional original-tip strut (off in replacement profile)</label>${field('aux_stiffness','Ride spring k','N/m',1,0,100000)}${field('aux_damping','Ride damper c','N·s/m',1,0,2000)}${select('aux_mode','Ride coil law',[['captured','Captured · bilateral'],['compression','Compression only'],['extension','Extension only']])}${field('aux_rest_length','Manual ride free length','mm',1000,5,1000)}<label class="check"><input data-key="aux_auto_rest" type="checkbox" ${config.aux_auto_rest?'checked':''}>Zero elastic ride load at initial θ</label></div><p class="hint">The replacement unit connects the upper link to the chassis and contains its own spring and damper. This optional extra hip → original lower-link tip strut adds restoring ride stiffness; it is disabled in the replacement profile. Automatic free length starts this extra spring at zero elastic force.</p><p class="hint">Variant available with gravity balance. Extra-strut damping is independent of the replacement unit damping.</p></details>`;
   }
   function updateControls(){
     const position=config.target==='position',find=k=>$('controls').querySelector(`[data-key="${k}"]`);
@@ -138,7 +155,8 @@
     if(!result)return;const svg=D.select($('mechanism')),W=$('mechanism').clientWidth,H=$('mechanism').clientHeight,c=result.config;
     const modelHeight=H-90;
     const frame=nearest(result.frames,time),points=result.frames.flatMap(f=>[f.hip,f.knee,f.hub,f.tip,[f.hub[0]-c.radius,f.hub[1]-c.radius],[f.hub[0]+c.radius,f.hub[1]+c.radius],...Object.values(f.spring_geometry?.anchors||{}).map(a=>a.world),...Object.values(f.auxiliary_spring_geometry?.anchors||{}).map(a=>a.world)]);
-    if(c.aux_spring_enabled)for(const f of result.frames)points.push([f.hip[0],f.hip[1]+.1]);
+    const chassisShown=c.chassis_shape_enabled||c.aux_spring_enabled,guideVisible=config.guide_pulleys_visible??c.guide_pulleys_visible;
+    if(chassisShown)for(const f of result.frames)points.push([f.hip[0],f.hip[1]+.1]);
     const xe=D.extent(points,p=>p[0]),ye=D.extent(points,p=>p[1]),scale=Math.min((W-100)/(xe[1]-xe[0]),(modelHeight-65)/(ye[1]-ye[0]));
     const x=v=>W/2+(v-(xe[0]+xe[1])/2)*scale,y=v=>modelHeight/2-(v-(ye[0]+ye[1])/2)*scale;
     svg.attr('viewBox',`0 0 ${W} ${H}`);svg.selectAll('*').remove();svg.append('title').text((isMath?'Recorded mathematical-model geometry; ':'Actual recorded Pymunk poses; ')+(springCatalog[c.spring_topology]?.label||'spring runs from hip to lower-link tip')+'.');
@@ -149,18 +167,15 @@
     if(engineView){
       const factor=result.model?.debug_scale||600,position=p=>[x(p[0]/factor),y(p[1]/factor)],color=c=>`rgba(${c[0]},${c[1]},${c[2]},${c[3]/255})`;
       for(const p of frame.debug_draw){
-        if(p.kind==='circle'){const q=position(p.pos),r=p.radius/factor*scale;svg.append('circle').attr('class','engine-shape').attr('cx',q[0]).attr('cy',q[1]).attr('r',r).attr('fill',color(p.fill)).attr('stroke',color(p.outline));svg.append('line').attr('x1',q[0]).attr('y1',q[1]).attr('x2',q[0]+r*Math.cos(p.angle)).attr('y2',q[1]-r*Math.sin(p.angle)).attr('stroke',color(p.outline));}
+        if(p.kind==='circle'){const q=position(p.pos),r=p.radius/factor*scale,guideCircle=c.guide_pulleys_visible&&((Math.abs(p.radius/factor-c.guide_hip_radius)<1e-8&&Math.hypot(p.pos[0]/factor-(frame.guide_pulleys?.hip.center||A)[0],p.pos[1]/factor-(frame.guide_pulleys?.hip.center||A)[1])<1e-6)||(Math.abs(p.radius/factor-c.guide_hip_radius/2)<1e-8&&Math.hypot(p.pos[0]/factor-(frame.guide_pulleys?.knee.center||B)[0],p.pos[1]/factor-(frame.guide_pulleys?.knee.center||B)[1])<1e-6));svg.append('circle').attr('class',guideCircle?'engine-shape engine-guide-pulley':'engine-shape').attr('display',guideCircle&&!guideVisible?'none':null).attr('cx',q[0]).attr('cy',q[1]).attr('r',r).attr('fill',color(p.fill)).attr('stroke',color(p.outline));if(!guideCircle)svg.append('line').attr('x1',q[0]).attr('y1',q[1]).attr('x2',q[0]+r*Math.cos(p.angle)).attr('y2',q[1]-r*Math.sin(p.angle)).attr('stroke',color(p.outline));}
         else if(p.kind==='capsule'){const a=position(p.a),b=position(p.b);svg.append('line').attr('class','engine-shape').attr('x1',a[0]).attr('y1',a[1]).attr('x2',b[0]).attr('y2',b[1]).attr('stroke',color(p.outline)).attr('stroke-width',2*p.radius/factor*scale+2).attr('stroke-linecap','round');svg.append('line').attr('x1',a[0]).attr('y1',a[1]).attr('x2',b[0]).attr('y2',b[1]).attr('stroke',color(p.fill)).attr('stroke-width',2*p.radius/factor*scale).attr('stroke-linecap','round');}
         else if(p.kind==='segment'){const a=position(p.a),b=position(p.b);svg.append('line').attr('class','engine-constraint').attr('x1',a[0]).attr('y1',a[1]).attr('x2',b[0]).attr('y2',b[1]).attr('stroke',color(p.color)).attr('stroke-width',1.5);}
         else if(p.kind==='dot'){const q=position(p.pos);svg.append('circle').attr('class','engine-constraint').attr('cx',q[0]).attr('cy',q[1]).attr('r',p.size/2).attr('fill',color(p.color));}
-        else if(p.kind==='polygon')svg.append('path').attr('class',c.aux_spring_enabled?'engine-shape engine-chassis':'engine-shape').attr('d',D.line()(p.vertices.map(position))+'Z').attr('fill',color(p.fill)).attr('stroke',color(p.outline));
+        else if(p.kind==='polygon')svg.append('path').attr('class',chassisShown?'engine-shape engine-chassis':'engine-shape').attr('d',D.line()(p.vertices.map(position))+'Z').attr('fill',color(p.fill)).attr('stroke',color(p.outline));
       }
     }else{
     svg.append('path').attr('d',path([A,B])).attr('stroke','var(--blue)').attr('stroke-width',8).attr('stroke-linecap','round').attr('fill','none');
     svg.append('path').attr('d',path([E,C])).attr('stroke','var(--accent)').attr('stroke-width',8).attr('stroke-linecap','round').attr('fill','none');
-    // Grounded pulley and knee pulley: physical radius ratio 2:1.
-    svg.append('path').attr('d',path([A,B])).attr('stroke','var(--muted)').attr('stroke-width',1).attr('stroke-dasharray','4 3').attr('fill','none');
-    for(const [p,r] of [[A,.028],[B,.014]])svg.append('circle').attr('cx',x(p[0])).attr('cy',y(p[1])).attr('r',r*scale).attr('fill','var(--panel)').attr('stroke','var(--muted)').attr('stroke-width',1.5);
     svg.append('circle').attr('cx',x(C[0])).attr('cy',y(C[1])).attr('r',c.radius*scale).attr('fill','none').attr('stroke','var(--text)').attr('stroke-width',2.5);
     svg.append('path').attr('d',`M${x(C[0])-c.radius*scale},${y(C[1])}h${2*c.radius*scale}M${x(C[0])},${y(C[1])-c.radius*scale}v${2*c.radius*scale}`).attr('stroke','var(--line)').attr('stroke-width',1);
     if(!frame.spring_geometry){
@@ -170,12 +185,13 @@
 
     }
     }
+    if(chassisShown){const hip=point(A),chassis=svg.append('g').attr('class','chassis-body'),actualChassis=engineView&&frame.debug_draw.some(p=>p.kind==='polygon');if(!actualChassis)chassis.append('rect').attr('x',hip[0]-.07*scale).attr('y',hip[1]-.0275*scale).attr('width',.14*scale).attr('height',.055*scale).attr('rx',3).attr('fill','var(--panel)').attr('stroke','var(--text)').attr('stroke-width',2);chassis.append('text').attr('x',hip[0]).attr('y',hip[1]-.0275*scale-12).attr('text-anchor','middle').text('Chassis · J1 · pitch held');}
+    if(guideVisible&&guideModule)drawGuideBelt(svg,frame,row,point,scale,c,engineView);
     if(frame.spring_geometry)drawSpringGeometry(svg,frame,row,point,scale,c);
     if(c.aux_spring_enabled&&frame.auxiliary_spring_geometry)drawAuxiliaryGeometry(svg,frame,row,point,scale,c);
-    if(c.aux_spring_enabled){const hip=point(A),chassis=svg.append('g').attr('class','chassis-body'),actualChassis=engineView&&frame.debug_draw.some(p=>p.kind==='polygon');if(!actualChassis)chassis.append('rect').attr('x',hip[0]-.07*scale).attr('y',hip[1]-.0275*scale).attr('width',.14*scale).attr('height',.055*scale).attr('rx',3).attr('fill','var(--panel)').attr('stroke','var(--text)').attr('stroke-width',2);chassis.append('text').attr('x',hip[0]).attr('y',hip[1]-.0275*scale-12).attr('text-anchor','middle').text('Chassis · pitch held');}
     const fixed=c.fixture==='hip'?A:C,fp=point(fixed);
     if(c.fixture!=='floating')svg.append('path').attr('d',`M${fp[0]-24},${fp[1]-10}h48`).attr('stroke','var(--text)').attr('stroke-width',3);
-    for(const [p,name,offset] of [[A,'J1 · hip',c.aux_spring_enabled?[-72,12]:[-14,-16]],[B,'J2 · knee',[13,-3]],[C,'J3 · wheel pin',[10,17]],[E,c.spring_topology&&c.spring_topology!=='legacy_tip'?'Lower-link tip':'Spring tip',[10,-12]]]){
+    for(const [p,name,offset] of [[A,'J1 · hip',chassisShown?[-72,12]:[-14,-16]],[B,'J2 · knee',[13,-3]],[C,'J3 · wheel pin',[10,17]],[E,c.spring_topology&&c.spring_topology!=='legacy_tip'?'Lower-link tip':'Spring tip',[10,-12]]]){
       const pp=point(p);svg.append('circle').attr('cx',pp[0]).attr('cy',pp[1]).attr('r',4).attr('fill','var(--panel)').attr('stroke','var(--text)').attr('stroke-width',1.5);
       svg.append('text').attr('x',Math.min(W-105,Math.max(5,pp[0]+offset[0]))).attr('y',Math.min(H-8,Math.max(13,pp[1]+offset[1]))).text(name);
     }
@@ -188,6 +204,32 @@
     const inputPoint=point(c.target==='knee'?B:c.fixture==='wheel'?A:c.target==='position'?C:c.load_point==='contact'?[C[0],C[1]-c.radius]:C);
     const prescribed=c.target==='position'?{origin:point(result.position_origin||[0,0]),target:point(frame.position_target||C)}:null;
     drawDisturbance(svg,W,H,inputPoint,row,prescribed);
+  }
+  function guidePose(frame,c){return frame.guide_pulleys||{ratio:2,carrier_angle:frame.upper_angle,hip:{center:frame.hip,angle:0,radius:c.guide_hip_radius||.028,body:'hip'},knee:{center:frame.knee,angle:frame.lower_angle,radius:(c.guide_hip_radius||.028)/2,body:'lower'}};}
+  function drawGuideBelt(svg,frame,row,point,scale,c,engineView){
+    const pose=guidePose(frame,c),initial=guidePose(result.frames[0],c),group=svg.append('g').attr('class','guide-belt-overlay');
+    let geometry;
+    try{geometry=guideModule.openBeltGeometry(pose.hip.center,pose.knee.center,pose.hip.radius,pose.knee.radius);}catch(error){group.append('text').attr('x',12).attr('y',43).text(error.message);return;}
+    const phase=guideModule.beltMaterialPhase(pose.hip.radius,pose.carrier_angle,pose.hip.angle,initial.carrier_angle-initial.hip.angle),difference=Number.isFinite(row.guide_tension_difference_N)?row.guide_tension_difference_N:row.guide_link_torque/pose.knee.radius;
+    group.attr('data-phase-m',phase).attr('data-ratio',pose.ratio).attr('data-tension-difference-N',difference);
+    const stations=Array.from({length:193},(_,i)=>point(guideModule.sampleBelt(geometry,i*geometry.length/192).point));
+    group.append('path').attr('class','guide-belt-loop').attr('d',D.line()(stations)+'Z').attr('fill','none').attr('stroke','var(--muted)').attr('stroke-width',2);
+    for(const [key,body,color] of [['hip','hip','var(--blue)'],['knee','lower','var(--purple)']]){
+      const pulley=pose[key],start=initial[key],center=point(pulley.center),radius=pulley.radius*scale,p=group.append('g').attr('class','guide-pulley-'+key).attr('data-radius-m',pulley.radius);
+      if(!engineView||!frame.guide_pulleys)p.append('circle').attr('cx',center[0]).attr('cy',center[1]).attr('r',radius).attr('fill','var(--panel)').attr('stroke',color).attr('stroke-width',1.5);
+      const marker=point([pulley.center[0]+pulley.radius*.85*Math.cos(pulley.angle),pulley.center[1]+pulley.radius*.85*Math.sin(pulley.angle)]);
+      p.append('line').attr('class','guide-body-mark').attr('data-body',body).attr('data-angle',pulley.angle).attr('data-relative-carrier-angle',pulley.angle-pose.carrier_angle).attr('x1',center[0]).attr('y1',center[1]).attr('x2',marker[0]).attr('y2',marker[1]).attr('stroke',color).attr('stroke-width',2.5);
+      const change=pulley.angle-start.angle;
+      if(Math.abs(change)>1e-7){const arc=Array.from({length:17},(_,i)=>point([pulley.center[0]+pulley.radius*1.2*Math.cos(start.angle+change*i/16),pulley.center[1]+pulley.radius*1.2*Math.sin(start.angle+change*i/16)]));p.append('path').attr('class','guide-body-angle-arc').attr('data-body',body).attr('d',D.line()(arc)).attr('fill','none').attr('stroke',color).attr('stroke-width',1.5);}
+      const pivot=p.append('g').attr('class','guide-pivot-center').attr('data-body',body);pivot.append('path').attr('d',`M${center[0]-4},${center[1]}h8M${center[0]},${center[1]-4}v8`).attr('stroke','var(--text)').attr('stroke-width',1);pivot.append('circle').attr('cx',center[0]).attr('cy',center[1]).attr('r',1.7).attr('fill','var(--text)');
+    }
+    for(const dot of guideModule.beltMaterialDots(geometry,phase,24)){const p=point(dot.point);group.append('circle').attr('class','guide-belt-dot').attr('data-material-index',dot.index).attr('data-station-m',dot.distance).attr('cx',p[0]).attr('cy',p[1]).attr('r',2.1).attr('fill','var(--accent)').attr('stroke','var(--panel)').attr('stroke-width',.7);}
+    const loads=guideModule.guideSpanLoads(geometry,difference,guidePretensionN),state=loads.assumed?`Assumed spans ${fmt(loads.span_tensions_N.plus,1)} / ${fmt(loads.span_tensions_N.minus,1)} N · illustrative`:`Required ΔT ${fmt(difference,1)} N · pretension unspecified`;
+    if($('guide-force-state'))$('guide-force-state').textContent=state+'. No belt bearing forces are included in the solver.';
+    group.append('text').attr('class','guide-ratio-label').attr('x',12).attr('y',43).text(`Guide 2:1 · radii ${fmt(pose.hip.radius*1000,0)} / ${fmt(pose.knee.radius*1000,0)} mm`);
+    group.append('text').attr('class','guide-force-label').attr('x',12).attr('y',59).text(state);
+    group.append('text').attr('class','guide-body-role-label').attr('x',12).attr('y',75).text('Hip → chassis · knee → r₂ · carrier → r₁');
+    if(guideForcesVisible){const max=Math.max(...loads.forces.map(f=>f.magnitude),1);for(const force of loads.forces){if(force.magnitude<1e-8)continue;const p=point(force.point),length=35*force.magnitude/max,end=[p[0]+force.direction[0]*length,p[1]-force.direction[1]*length],angle=Math.atan2(end[1]-p[1],end[0]-p[0]);group.append('path').attr('class','guide-span-force').attr('data-body',force.body).attr('data-span',force.span).attr('data-role',force.role).attr('data-magnitude-N',force.magnitude).attr('d',`M${p[0]},${p[1]}L${end[0]},${end[1]}M${end[0]-5*Math.cos(angle-.5)},${end[1]-5*Math.sin(angle-.5)}L${end[0]},${end[1]}L${end[0]-5*Math.cos(angle+.5)},${end[1]-5*Math.sin(angle+.5)}`).attr('fill','none').attr('stroke',force.span==='plus'?'var(--blue)':'var(--purple)').attr('stroke-width',1.7).attr('stroke-dasharray',force.role==='difference'?'3 2':null);}}
   }
   function drawSpringGeometry(svg,frame,row,point,scale,c){
     const geometry=frame.spring_geometry,a=geometry.anchors?.a?.world,b=geometry.anchors?.b?.world;
@@ -203,7 +245,7 @@
       line([hip[0]+normal[0]*10,hip[1]+normal[1]*10],[pb[0]+normal[0]*10,pb[1]+normal[1]*10],'var(--muted)',1).attr('stroke-dasharray','3 3').attr('class','upper-spring-lever-arm');
       group.append('text').attr('class','spring-lever-radius').attr('x',(hip[0]+pb[0])/2+normal[0]*24).attr('y',(hip[1]+pb[1])/2+normal[1]*24).text(`R ${fmt(Math.hypot(b[0]-frame.hip[0],b[1]-frame.hip[1])*1000,0)} mm`);
     }
-    const coil=(start,end)=>{const delta=[end[0]-start[0],end[1]-start[1]],length=Math.max(Math.hypot(...delta),1),normal=[-delta[1]/length,delta[0]/length];const points=Array.from({length:25},(_,i)=>{const t=i/24,w=i<3||i>21?0:(i%2?5:-5);return[start[0]+t*delta[0]+w*normal[0],start[1]+t*delta[1]+w*normal[1]];});group.append('path').attr('class','spring-coil').attr('d',D.line()(points)).attr('fill','none').attr('stroke','var(--orange)').attr('stroke-width',2);};
+    const coil=(start,end,target=group)=>{const delta=[end[0]-start[0],end[1]-start[1]],length=Math.max(Math.hypot(...delta),1),normal=[-delta[1]/length,delta[0]/length];const points=Array.from({length:25},(_,i)=>{const t=i/24,w=i<3||i>21?0:(i%2?5:-5);return[start[0]+t*delta[0]+w*normal[0],start[1]+t*delta[1]+w*normal[1]];});return target.append('path').attr('class','spring-coil').attr('d',D.line()(points)).attr('fill','none').attr('stroke','var(--orange)').attr('stroke-width',2);};
     if(geometry.kind==='pulley'){
       const center=point(geometry.topology==='hip_pulley'?frame.hip:frame.knee),radius=c.spring_pulley_radius*scale;
       group.append('circle').attr('class','spring-drum').attr('cx',center[0]).attr('cy',center[1]).attr('r',radius).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',2);
@@ -215,7 +257,15 @@
       line(center,pb,'var(--purple)',5);group.append('circle').attr('cx',center[0]).attr('cy',center[1]).attr('r',4).attr('fill','var(--purple)');
     }
     const pullThrough=c.spring_transmission!=='direct',zeroEffective=c.spring_force_law==='zero_effective'||(!c.spring_force_law&&c.spring_topology==='gravity_balance');
-    if(geometry.kind==='direct'&&!pullThrough&&!zeroEffective)coil(pa,pb);
+    if(geometry.topology==='gravity_balance'){
+      // A routed unit symbol joins only its real force anchors. Its drawn span
+      // is not the finite physical coil length, which remains in the readouts.
+      const unit=group.append('g').attr('class','routed-replacement-unit').attr('data-anchor-a',a.join(',')).attr('data-anchor-b',b.join(',')),p=(t,offset)=>[pa[0]+t*dx+n[0]*offset,pa[1]+t*dy+n[1]*offset];
+      coil(pa,pb,unit).attr('class','spring-coil replacement-schematic-coil');
+      unit.append('path').attr('class','replacement-damper').attr('d',D.line()([pa,p(.12,8),p(.38,8)])+D.line()([p(.38,4),p(.62,4),p(.62,12),p(.38,12),p(.38,4)])+D.line()([p(.48,8),p(.85,8),pb])).attr('fill','none').attr('stroke','var(--orange)').attr('stroke-width',1.5);
+      group.append('text').attr('x',12).attr('y',22).attr('class','spring-transfer-label').text('Routed replacement unit (schematic)');
+    }
+    else if(geometry.kind==='direct'&&!pullThrough&&!zeroEffective)coil(pa,pb);
     else{
       line(pa,pb,'var(--orange)',2).attr('stroke-dasharray',c.spring_transmission==='ideal_rope'?'4 3':null);
       // Coil is a separate ideal transfer element; endpoints remain the real force sites.
@@ -226,7 +276,7 @@
       group.append('text').attr('x',zeroEffective?12:(start[0]+end[0])/2+n[0]*18).attr('y',zeroEffective?22:(start[1]+end[1])/2+n[1]*18).attr('class','spring-transfer-label').text(zeroEffective?`Compensated route · finite coil free length ${fmt(c.rest_length*1000,0)} mm`:pullThrough?'Ideal pull-through coil':'Ideal drum coil');
     }
     for(const site of geometry.force_sites||[]){
-      const p=point(site.world||site.point);group.append('circle').attr('class','spring-force-anchor').attr('cx',p[0]).attr('cy',p[1]).attr('r',4).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',1.5);
+      const p=point(site.world||site.point);group.append('circle').attr('class','spring-force-anchor').attr('data-body',site.body).attr('cx',p[0]).attr('cy',p[1]).attr('r',4).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',1.5);
       if($('forces').checked&&Math.abs(row.spring_tension)>1e-8){const length=28*Math.sign(row.spring_tension),end=[p[0]+site.direction[0]*length,p[1]-site.direction[1]*length],angle=Math.atan2(end[1]-p[1],end[0]-p[0]);line(p,end,'var(--orange)',2);group.append('path').attr('d',`M${end[0]-6*Math.cos(angle-.5)},${end[1]-6*Math.sin(angle-.5)}L${end[0]},${end[1]}L${end[0]-6*Math.cos(angle+.5)},${end[1]-6*Math.sin(angle+.5)}`).attr('stroke','var(--orange)').attr('fill','none');}
     }
   }
@@ -284,7 +334,7 @@
     $('pose-values').innerHTML=`<span>θ ${fmt(row.theta_deg,1)}°</span><span>Height ${fmt(row.height*1000,0)} mm</span><span>Input span ${fmt(row.spring_length*1000,1)} mm</span>${Number.isFinite(row.spring_coil_length)?`<span>Coil ${fmt(row.spring_coil_length*1000,1)} mm · ${row.spring_slack?'slack':'engaged'}</span>`:''}`;
     $('joint-values').innerHTML=[1,2,3].map(j=>`<tr><td>J${j}</td><td>${forceCell(row['j'+j+'_fx'])}</td><td>${forceCell(row['j'+j+'_fy'])}</td><td>${forceCell(row['j'+j+'_force'])}</td></tr>`).join('');
     $('equation-values').innerHTML=[['L₂(−Fz cosθ + Fy sinθ): hub lever','ref_Min_wheel_moment','check_lower_moment_Nm','N·m'],['L₂(−Fz cosθ + Fy sinθ) + Fy r_w: contact lever','ref_Min_contact_moment','check_contact_moment_Nm','N·m'],['L₁(Bz cosθ + By sinθ)','ref_Mact_knee_moment','check_upper_moment_Nm','N·m'],['√(By² + Bz²)','ref_Br','check_Br_N','N']].map(([label,key,error,unit])=>`<tr><td>${label}</td><td>${fmt(row[key],3)} ${unit}</td><td>${Number.isFinite(row[error])?row[error].toExponential(2):'—'} ${unit}</td></tr>`).join('');
-    $('torque-values').innerHTML=[...(c.target==='position'?[['Motion fixture reaction','driver_force','N']]:[]),[c.aux_spring_enabled?'Weight support stage tension':'Spring input tension','spring_tension','N'],...(Number.isFinite(row.spring_coil_load)?[[c.aux_spring_enabled?'Weight support coil load':'Coil load','spring_coil_load','N'],[c.aux_spring_enabled?'Weight support stored energy':'Stored spring energy','spring_energy_J','J']]:[]),...(Number.isFinite(row.spring_equivalent_lift_N)?[['Spring + damper equivalent lift','spring_equivalent_lift_N','N'],['Elastic spring equivalent lift','spring_elastic_equivalent_lift_N','N'],['Gravity equivalent load','spring_gravity_equivalent_N','N'],['Balance residual','spring_balance_residual_N','N']]:[]),[c.aux_spring_enabled?'Both spring moments about knee':'Spring moment about knee','spring_knee_moment','N·m'],...(c.aux_spring_enabled?[['Ride coil length','aux_spring_coil_length','mm'],['Ride elastic force','aux_spring_elastic_tension','N'],['Ride damping force','aux_spring_damper_tension','N'],['Ride total force','aux_spring_tension','N'],['Ride spring energy','aux_spring_energy_J','J'],['Both spring energies','total_spring_energy_J','J']]:[]),['Knee actuator','actuator_torque','N·m'],['Guide on lower link','guide_link_torque','N·m'],['Grounded guide at J1','guide_hip_reaction','N·m'],['Knee travel stop','stop_knee_torque','N·m'],['Wheel contact torque','wheel_external_moment','N·m'],['Wheel drive → lower link','wheel_drive_reaction','N·m'],['Wheel angular speed','wheel_speed','rad/s'],[c.fixture==='hip'?'Hub velocity':'Chassis velocity',(c.fixture==='hip'?'hub':'chassis')+'_vy','m/s'],[c.fixture==='hip'?'Hub acceleration':'Chassis acceleration',(c.fixture==='hip'?'hub':'chassis')+'_ay','m/s²']].map(([name,key,unit])=>`<dt>${name}</dt><dd>${unit==='N'?forceFmt(row[key]):unit==='mm'?fmt(row[key]*1000,1)+' mm':fmt(row[key])+' '+unit}</dd>`).join('');
+    $('torque-values').innerHTML=[...(c.target==='position'?[['Motion fixture reaction','driver_force','N']]:[]),[c.aux_spring_enabled?'Weight support stage tension':'Spring input tension','spring_tension','N'],...(Number.isFinite(row.spring_coil_load)?[[c.aux_spring_enabled?'Weight support coil load':'Coil load','spring_coil_load','N'],[c.aux_spring_enabled?'Weight support stored energy':'Stored spring energy','spring_energy_J','J']]:[]),...(Number.isFinite(row.spring_equivalent_lift_N)?[['Spring + damper equivalent lift','spring_equivalent_lift_N','N'],['Elastic spring equivalent lift','spring_elastic_equivalent_lift_N','N'],['Gravity equivalent load','spring_gravity_equivalent_N','N'],['Balance residual','spring_balance_residual_N','N']]:[]),[c.aux_spring_enabled?'Both spring moments about knee':'Spring moment about knee','spring_knee_moment','N·m'],...(c.aux_spring_enabled?[['Ride coil length','aux_spring_coil_length','mm'],['Ride elastic force','aux_spring_elastic_tension','N'],['Ride damping force','aux_spring_damper_tension','N'],['Ride total force','aux_spring_tension','N'],['Ride spring energy','aux_spring_energy_J','J'],['Both spring energies','total_spring_energy_J','J']]:[]),['Knee actuator','actuator_torque','N·m'],...(Number.isFinite(row.guide_tension_difference_N)?[['Guide required ΔT','guide_tension_difference_N','N'],['Belt speed relative to carrier','guide_belt_speed_relative','m/s']]:[]),['Guide on lower link','guide_link_torque','N·m'],['Grounded guide at J1','guide_hip_reaction','N·m'],['Knee travel stop','stop_knee_torque','N·m'],['Wheel contact torque','wheel_external_moment','N·m'],['Wheel drive → lower link','wheel_drive_reaction','N·m'],['Wheel angular speed','wheel_speed','rad/s'],[c.fixture==='hip'?'Hub velocity':'Chassis velocity',(c.fixture==='hip'?'hub':'chassis')+'_vy','m/s'],[c.fixture==='hip'?'Hub acceleration':'Chassis acceleration',(c.fixture==='hip'?'hub':'chassis')+'_ay','m/s²']].map(([name,key,unit])=>`<dt>${name}</dt><dd>${unit==='N'?forceFmt(row[key]):unit==='mm'?fmt(row[key]*1000,1)+' mm':fmt(row[key])+' '+unit}</dd>`).join('');
     // Throttle cursor relayout while the SVG/readouts remain at animation speed.
     if(!playing||Math.abs(time-lastChartTime)>=.1){
       lastChartTime=time;
@@ -301,10 +351,10 @@
     if(!data||!Array.isArray(data.rows)||!data.rows.length||!Array.isArray(data.frames)||!data.frames.length||!data.config)throw Error('This JSON does not contain a playable suspension run.');
     if(data.backend&&data.backend!==backend)throw Error('Open this run in its matching simulation tab. The Pymunk viewer requires a Pymunk result.');
     if(!data.rows.every(r=>Number.isFinite(r.t)))throw Error('Recorded time values must be finite.');
-    pause();result=data;config={...data.config};dirty=false;time=0;runRevision++;if(Number.isFinite(data.auxiliary_spring?.actual_rest_length_m))config.aux_rest_length=data.auxiliary_spring.actual_rest_length_m;if(Number.isFinite(data.spring_mechanism?.resolved_stiffness_N_m))config.stiffness=data.spring_mechanism.resolved_stiffness_N_m;if(!viewer)controls();
-    $('error').hidden=true;
+    pause();result=data;config={...data.config};dirty=false;time=0;runRevision++;restoreReference(data);if(Number.isFinite(data.auxiliary_spring?.actual_rest_length_m))config.aux_rest_length=data.auxiliary_spring.actual_rest_length_m;if(Number.isFinite(data.spring_mechanism?.resolved_stiffness_N_m))config.stiffness=data.spring_mechanism.resolved_stiffness_N_m;if(!viewer)controls();
+    $('error').hidden=true;showPassiveStability(data.passive_stability);showIntegrationWarning();
     $('engine').textContent=(isMath?'':'Pymunk ')+data.engine;
-    const mechanismHeading=document.querySelector('.mechanism-panel h2');if(mechanismHeading)mechanismHeading.textContent=data.config.aux_spring_enabled?'Full suspension · two passive stages':'Mechanism & live loads';
+    const mechanismHeading=document.querySelector('.mechanism-panel h2');if(mechanismHeading)mechanismHeading.textContent=data.config.aux_spring_enabled?'Optional variant · extra tip strut':data.config.spring_topology==='gravity_balance'&&data.config.chassis_shape_enabled?'Replacement suspension · upper link to chassis':'Mechanism & live loads';
     $('model-objects').textContent=JSON.stringify(data.model||{renderer:'Mathematical kinematics'},null,2);
     $('snapshot').textContent=`${data.config.fixture==='floating'?'Floating chassis':data.config.fixture==='hip'?'Hip fixed':'Wheel fixed'} · ${data.config.radius*1000} mm wheel radius · ${fmt(data.config.extension*1000,0)} mm extension`;
     $('status').textContent=`${data.config.target==='position'?'Prescribed position · ':''}Recorded ${data.rows.length.toLocaleString()} ${isMath?'output samples':'solver steps'} · dt ${data.config.dt*1000} ms · actual spring free length ${fmt(data.actual_rest_length*1000,1)} mm${data.spring_mechanism?.automatic_balance==='rate_calibration'?' · calibrated k '+fmt(config.stiffness,2)+' N/m':''}`;
@@ -323,12 +373,27 @@
     $('probe').value=data.config.fixture==='hip'?'j3':'j1';$('time').max=data.rows.at(-1).t;
     for(const id of ['time','play','export','case','save-data'])if($(id))$(id).disabled=false;
     $('model-view').value=isMath?'annotated':$('model-view').value;
-    makePlots();publish('motion-lab-config',{config:{...config}});if(emit)publish('motion-lab-run',{result:{...data,backend}});
+    makePlots();publish('motion-lab-config',{config:{...config},reference_inputs:referenceInputs()});if(emit)publish('motion-lab-run',{result:{...data,backend,reference_inputs:referenceInputs()}});
   }
   async function run(){
     pause();$('run').disabled=true;$('error').hidden=true;$('status').textContent=isMath?'Running independent SciPy equations…':'Running Pymunk rigid-body solver…';
     try{const response=await fetch(isMath?'/api/math/simulate':'/api/simulate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),data=await response.json();if(!response.ok)throw Error(data.error||'Simulation failed.');loadResult(data,{emit:true});}
     catch(error){showError(error);$('status').textContent='Run failed; any previous plots retain their saved inputs.';}finally{$('run').disabled=false;}
+  }
+  function showIntegrationWarning(){
+    const node=$('spring-integration-warning');if(!node)return;
+    node.hidden=config.spring_integration!=='native_legacy';
+    node.textContent='Advanced native_legacy spring diagnostic: the Pymunk DampedSpring/constraint split can bias ride response, especially at high damping. Refine dt and compare point_force and independent SciPy results. '+(isMath?'This tab integrates independent equations; the imported legacy setting remains in the profile.':'The imported legacy setting is preserved; selecting a new preset restores its point-force default.');
+  }
+  function showPassiveStability(stability){
+    const card=$('passive-stability');if(!card)return;
+    const labels={restoring:'Restoring',neutral:'Neutral',unstable:'Unstable',not_applicable:'N/A'},classification=Object.hasOwn(labels,stability?.classification)?stability.classification:'not_applicable';
+    card.dataset.classification=classification;$('stability-classification').textContent=labels[classification];
+    for(const [id,key] of [['stability-mean','net_ride_stiffness_N_m'],['stability-left','left_ride_stiffness_N_m'],['stability-right','right_ride_stiffness_N_m']])$(id).textContent=Number.isFinite(stability?.[key])?fmt(stability[key],2)+' N/m':'—';
+    $('stability-balance').textContent=Number.isFinite(stability?.initial_force_balance_residual_N)?forceFmt(stability.initial_force_balance_residual_N):'—';
+    $('stability-pose').textContent=Number.isFinite(stability?.theta_deg)?`At initial θ = ${fmt(stability.theta_deg,1)}°`:'Initial-pose test';
+    $('stability-reason').textContent=stability?.reason||(stability?'':'Stability metadata is unavailable in this saved run. Run the simulation to calculate it.');
+    $('stability-notes').replaceChildren();for(const text of stability?.notes||[]){const item=document.createElement('li');item.textContent=text;$('stability-notes').append(item);}
   }
   function showError(error){$('error').hidden=false;$('error').textContent=error.message||String(error);}
   function download(data,name,type='application/json'){
@@ -338,16 +403,25 @@
     const profile={schema:'wheel-leg-lab-profile/v1',backend,config:{...config},reference_inputs:referenceInputs()};
     publish('motion-lab-profile',{config:{...config},reference_inputs:profile.reference_inputs});download(profile,backend+'-motion-profile.json');
   }
-  function referenceInputs(){return {T0_N:referenceT0N,T0_kgf:referenceT0N===null?null:referenceT0N/KGF,applied_to_solver:false};}
+  function referenceInputs(){return {T0_N:referenceT0N,T0_kgf:referenceT0N===null?null:referenceT0N/KGF,applied_to_solver:false,guide_visualization:{pretension_N:guidePretensionN,pretension_kgf:guidePretensionN===null?null:guidePretensionN/KGF,show_force_vectors:guideForcesVisible,applied_to_solver:false,tension_convention:'Assumed lower span baseline; other span = baseline + abs(delta).'}};}
   function restoreReference(value){
     const n=value?.reference_inputs?.T0_N;
     if(n===null||(Number.isFinite(n)&&n>=0)){referenceT0N=n;showReferenceT0();}
+    const guide=value?.reference_inputs?.guide_visualization;
+    if(guide){
+      if(guide.pretension_N!==null&&(!Number.isFinite(guide.pretension_N)||guide.pretension_N<0))throw Error('Guide visualization baseline must be finite, nonnegative or unspecified.');
+      guidePretensionN=guide.pretension_N;
+      if(typeof guide.show_force_vectors==='boolean')guideForcesVisible=guide.show_force_vectors;
+      if($('guide-pretension-N'))$('guide-pretension-N').value=guidePretensionN??'';
+      if($('guide-pretension-kgf'))$('guide-pretension-kgf').value=guidePretensionN===null?'':guidePretensionN/KGF;
+      if($('guide-force-vectors'))$('guide-force-vectors').checked=guideForcesVisible;
+    }
   }
   function applyProfile(value){
     const incoming=value?.config||value;if(!incoming||Array.isArray(incoming)||typeof incoming!=='object')throw Error('Profile must contain a configuration object.');
     if(!Object.keys(defaults).length){pendingProfile=value;return;}
     const next={...defaults};
-    const choices={fixture:['floating','hip','wheel'],target:['position','force','knee'],wave:['step','square','pulse','impulse'],ramp_shape:['quintic','linear'],load_point:['hub','contact'],spring_topology:Object.keys(springCatalog),spring_mode:['compression','extension','captured'],spring_transmission:['direct','pullrod','ideal_rope'],spring_force_law:['hooke','zero_effective'],aux_mode:['captured','compression','extension']};
+    const choices={fixture:['floating','hip','wheel'],target:['position','force','knee'],wave:['step','square','pulse','impulse'],ramp_shape:['quintic','linear'],load_point:['hub','contact'],spring_topology:Object.keys(springCatalog),spring_mode:['compression','extension','captured'],spring_transmission:['direct','pullrod','ideal_rope'],spring_force_law:['hooke','zero_effective'],spring_integration:['point_force','native_legacy'],aux_mode:['captured','compression','extension']};
     for(const [key,value] of Object.entries(incoming)){
       if(!Object.hasOwn(defaults,key))throw Error('Unknown profile field: '+key);
       if(typeof value!==typeof defaults[key]||(typeof value==='number'&&!Number.isFinite(value)))throw Error('Invalid profile value for '+key);
@@ -356,17 +430,17 @@
     }
     if(isMath&&(next.fixture!=='floating'||next.target!=='position'||next.ramp_shape!=='quintic'||next.load_point!=='hub'||!['step','square','pulse'].includes(next.wave)))throw Error('The mathematical tab requires a floating chassis, smooth position input and hub loads. Open other profiles in 2D Physics.');
     if(next.aux_spring_enabled&&next.spring_topology!=='gravity_balance')throw Error('The separate ride spring & damper requires the gravity-balance primary preset.');
-    pause();config=next;dirty=true;controls();restoreReference(value);$('error').hidden=true;$('status').textContent='Profile loaded. Run simulation to generate a new result.';publish('motion-lab-config',{config:{...config}});
+    pause();config=next;dirty=true;restoreReference(value);controls();$('error').hidden=true;$('status').textContent='Profile loaded. Run simulation to generate a new result.';publish('motion-lab-config',{config:{...config},reference_inputs:referenceInputs()});
   }
   $('run').onclick=run;
   $('export').onclick=()=>{if(!result)return;const keys=Object.keys(result.rows[0]),csv=keys.join(',')+'\r\n'+result.rows.map(row=>keys.map(key=>row[key]).join(',')).join('\r\n');download(csv,backend+'-linkage-full-trace.csv','text/csv');};
-  $('case').onclick=()=>{if(!result)return;download({engine:result.engine,config:result.config,actual_rest_length:result.actual_rest_length,diagnostics:result.diagnostics,equation_reference:result.equation_reference,equation_check_errors:result.equation_check_errors,reference_inputs:{T0_N:referenceT0N,T0_kgf:referenceT0N===null?null:referenceT0N/KGF,applied_to_solver:false},scope:result.scope},backend+'-linkage-run-config.json');};
+  $('case').onclick=()=>{if(!result)return;download({engine:result.engine,config:result.config,actual_rest_length:result.actual_rest_length,diagnostics:result.diagnostics,equation_reference:result.equation_reference,equation_check_errors:result.equation_check_errors,reference_inputs:referenceInputs(),scope:result.scope},backend+'-linkage-run-config.json');};
   if($('profile'))$('profile').onclick=saveProfile;
   if($('save-data'))$('save-data').onclick=()=>{if(!result)return;const data={...result,backend,reference_inputs:referenceInputs()};publish('motion-lab-save-run',{result:data});download(data,backend+'-motion-run.json');};
   if($('gui'))$('gui').onclick=async()=>{
-    if(parent!==window){publish('motion-lab-show-gui',{config:{...config},result:result?{...result,backend}:null});return;}
+    if(parent!==window){publish('motion-lab-show-gui',{config:{...config},reference_inputs:referenceInputs(),result:result?{...result,backend,reference_inputs:referenceInputs()}:null});return;}
     $('gui').disabled=true;$('error').hidden=true;$('status').textContent='Opening native Pymunk live GUI on the host computer…';
-    try{const response=await fetch('/api/native-gui',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(config)}),data=await response.json();if(!response.ok)throw Error(data.error||'Native GUI could not start.');$('status').textContent=data.message||'Native Pymunk GUI opened on the host computer. Browser playback remains available here.';}
+    try{const payload=config.guide_pulleys_visible||guidePretensionN!==null?{model:'wheel_leg',config:{...config},guide_visualization:referenceInputs().guide_visualization}:config,response=await fetch('/api/native-gui',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}),data=await response.json();if(!response.ok)throw Error(data.error||'Native GUI could not start.');$('status').textContent=data.message||'Native Pymunk GUI opened on the host computer. Browser playback remains available here.';}
     catch(error){showError(error);$('status').textContent='Native GUI launch failed; browser playback remains available.';}
     finally{$('gui').disabled=false;}
   };
@@ -404,12 +478,13 @@
   new ResizeObserver(()=>{cancelAnimationFrame(heightPending);heightPending=requestAnimationFrame(()=>{const height=Math.ceil(document.body.scrollHeight);if(height!==lastHeight){lastHeight=height;publish('motion-lab-height',{height});}});}).observe(document.body);
   new MutationObserver(()=>{if(result)makePlots();}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
   document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});
-  Promise.all([fetch('/api/defaults').then(r=>{if(!r.ok)throw Error('Backend unavailable.');return r.json();}),fetch('/api/spring-presets').then(r=>r.ok?r.json():null),architecture?fetch('/api/suspension-architecture/defaults').then(r=>{if(!r.ok)throw Error('Suspension architecture defaults unavailable; restart the Motion Lab server.');return r.json();}):Promise.resolve(null)]).then(([data,presets,architectureDefaults])=>{
+  Promise.all([fetch('/api/defaults').then(r=>{if(!r.ok)throw Error('Backend unavailable.');return r.json();}),fetch('/api/spring-presets').then(r=>r.ok?r.json():null),architecture?fetch('/api/suspension-architecture/defaults').then(r=>{if(!r.ok)throw Error('Suspension architecture defaults unavailable; restart the Motion Lab server.');return r.json();}):Promise.resolve(null),import('/guide-belt.js')]).then(([data,presets,architectureDefaults,guide])=>{
+    guideModule=guide;
     if(presets){springCatalog=presets.catalog||{};mechanismDefaults=presets.defaults||{};}
     defaults={...data};config={...(architectureDefaults?.config||architectureDefaults||data)};
     if(isMath){config.fixture='floating';config.target='position';config.ramp_shape='quintic';config.load_point='hub';config.wave='step';}
     if(viewer){$('status').textContent='Waiting for a recorded Pymunk run from the main lab.';publish('motion-lab-viewer-ready');publish('motion-lab-ready');return;}
-    controls();publish('motion-lab-config',{config:{...config}});
+    controls();publish('motion-lab-config',{config:{...config},reference_inputs:referenceInputs()});
     if(pendingProfile){applyProfile(pendingProfile);pendingProfile=null;publish('motion-lab-ready');}
     else if(loadOnly){$('status').textContent='Choose or load a profile, then run the simulation.';publish('motion-lab-ready');}
     else run().finally(()=>publish('motion-lab-ready'));

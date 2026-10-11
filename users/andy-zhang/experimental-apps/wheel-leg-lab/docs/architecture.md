@@ -25,8 +25,9 @@ verification are in the [unified workspace record](unified-motion-lab.md).
 
 `spring_mechanisms.py` owns editable preset geometry and passive coil laws;
 `suspension_runtime.py` applies their point forces to actual Pymunk bodies.
-The legacy captured/direct tip spring retains its native DampedSpring. New
-massless mechanisms have force/torque ledgers and require timestep refinement.
+All nine current presets use explicit `point_force` integration and force/torque
+ledgers. `native_legacy` preserves DampedSpring only as an advanced diagnostic
+for the original captured/direct Hooke tip law; all require timestep refinement.
 `math_model.py` integrates the independent SciPy equations with the same
 specified geometry. See [suspension presets](suspension-presets.md).
 
@@ -43,9 +44,24 @@ The native launcher accepts a fixed `model: counterbalance` envelope to select
 `debug_counterbalance_gui.py`; users cannot choose an arbitrary executable.
 The main menu, theme, data library, port and manual restart launcher are shared.
 
-`suspension_architecture.py` builds the two-stage folding-leg profile. The
-auxiliary hip-to-tip ride strut uses the spring kernel, with separate telemetry
-and summed body forces/moments. An architecture-only chassis sensor polygon
-visualizes the existing body without changing its mass/inertia. Cold entry
-loads the profile before solving; the lever bridges to that physical workspace.
-See [suspension architecture](suspension-architecture.md).
+`suspension_architecture.py` builds the replacement folding-leg profile: one
+upper-link/chassis constant-lift unit, primary damping 100 N s/m, auxiliary off
+and no knee controller. The optional earlier hip-to-tip strut stays explicit.
+Chassis/guide sensors visualize existing bodies without changing mass/inertia.
+Cold entry loads the factory profile before solving; the lever bridges to that
+physical workspace. See [suspension architecture](suspension-architecture.md).
+
+`guide_belt.py` and `web/guide-belt.js` compute matching exact tangent loops,
+material motion and ideal torque-equivalent span-force difference;
+`native_guide_belt.py` draws the desktop counterpart. Viewer baseline and force
+visibility live in `reference_inputs.guide_visualization`, separate from solver
+configuration and reference-sheet T₀. They are not applied spring/bearing loads.
+Native wheel launch may use `{model:'wheel_leg',config,guide_visualization}`;
+legacy flat wheel configs remain compatible. Only validated baseline/visibility
+options enter the owned native viewer, and its reuse key includes those options.
+The shell uses the active frame's latest config/references, or an explicit
+selected record. Lever envelopes remain model-specific. Live status and owned
+`/show` restoration are separate from recorded browser playback.
+
+[Mechanism audit](mechanism-audit.md) owns current curated defaults and
+integration rationale; [validation](validation.md) owns actual test evidence.

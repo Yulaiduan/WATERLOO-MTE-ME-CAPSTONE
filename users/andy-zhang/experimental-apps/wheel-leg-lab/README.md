@@ -51,8 +51,8 @@ current wheel-height or constant-lift lever profile. The window opens on the com
 server; a remote browser does not receive that desktop window. Captured engine
 playback remains separately labeled in the browser. The SciPy and independent
 wheel-drive models retain their own identities; launching the native viewer
-runs the corresponding Pymunk model. The independent wheel-drive linkage uses
-the wheel-height fixture because it has no two-axis native counterpart.
+runs the corresponding Pymunk model. The independent wheel-drive linkage has no two-axis native counterpart; select
+the wheel suspension model to launch its physical fixture.
 
 Nine [suspension presets](docs/suspension-presets.md) cover the original spring,
 six sketch mechanisms, internal knee capture and constant-lift gravity balance.
@@ -68,8 +68,9 @@ Zero **effective** free length gives tension proportional to span while the
 physical coil free length stays positive through ideal routing/preload emulation.
 The flat quantity is equivalent lift, not spring tension or torque. An ordinary
 finite-effective-free-length coil leaves angle-dependent residual loads. Exact
-gravity compensation is neutral and supplies no restoring ride height; it needs
-separate suspension stiffness/control and damping.
+gravity compensation is neutral and supplies no restoring ride height. The current
+wheel architecture uses one replacement upper-link/chassis spring with damping;
+it does not silently add a second restoring spring.
 
 ## Position input correction
 
@@ -83,37 +84,36 @@ Shared requirements remain in the [repository research record](../../../../datab
 
 ## Checks and limitations
 
-The [complete constant-lift suspension](docs/suspension-architecture.md) combines
-gravity support with a separate ride spring/damper on the folding leg. Use
+The [replacement constant-lift suspension](docs/suspension-architecture.md) uses
+one upper-link-to-chassis spring/damper on the existing folding leg, with the
+old lower-tip strut disabled. Use
 **Use in wheel-leg suspension** on the lever page, or open
 [the architecture preview](http://127.0.0.1:4186/?tab=physics&architecture=constant-lift).
 
 ```sh
 npm test
-.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance test_suspension_architecture
+.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance test_suspension_architecture test_replacement_suspension test_guide_belt test_native_guide test_mechanism_stability
 npm run test:browser
 node scripts/verify_pymunk.cjs
 node scripts/verify-force-plots.cjs
 node scripts/verify_suspension_ui.cjs
 node scripts/verify_counterbalance_ui.cjs
 node scripts/verify_suspension_architecture_ui.cjs
+node scripts/verify_passive_stability_ui.cjs
 node scripts/verify_motion_lab.cjs
 .venv/Scripts/python.exe scripts/verify_native_gui.py
 ```
 
-The preceding eight-preset release passed 64 Python and 32 JavaScript tests. Its preset/browser checks pass
-both actual backends; native launch verification confirms a real desktop window,
-advancing solver steps, looping and graceful close. Details and numerical
-tolerances are in the [validation record](docs/validation.md). The native renderer can be checked with
+Current solver, browser, native-window and launcher evidence is recorded in
+[validation](docs/validation.md); historical release counts remain there with
+their original scope. The [mechanism audit](docs/mechanism-audit.md) records why
+all nine curated presets now use explicit `point_force` integration and which
+six-second passive demo envelope is tested. `native_legacy` retains the original
+DampedSpring only as an explicitly selected diagnostic. Refine physical timestep
+before interpreting stiff-spring or rigid-stop peaks.
+
+The native renderer can be checked with
 `Open Native Pymunk Debugger.cmd --headless-check`. No canonical robot or hardware
 validation is claimed.
 
-The current suspension architecture passes **90 Python tests** (79 wheel-leg
-and 11 lever) and **33 JavaScript tests**. Real-backend browser checks pass all
-nine presets, both lever APIs, JSON/library integration and the unified menus.
-Actual native runs pass captured-knee, gravity-balance, prescribed-lever and
-free-lever models, including solver stepping, owned-window restoration and
-graceful close. The durable launcher passes fresh start/reuse/scoped-stop/restart
-outside the app directory. See the validation record for full evidence and limits.
-
-The seven animation fragments are retained as editable source under `animations/`. The old high-resolution GIFs, raw frame directories and full traces are not committed; interactive pages retain the motion content and can be rebuilt. The Pymunk bench defaults to a prescribed vertical wheel-height step and floating chassis, with force/torque modes retained as legacy diagnostics. It uses sensor geometry, with no automatically solved tire contact, soil, belt elasticity or structural stress. The fixed 4:1 approximation is not an exact straight full inversion. Missing belt radii/T₀ value, real actuator limits, spring characterization, collision clearance and hardware validation remain open.
+The seven animation fragments are retained as editable source under `animations/`. The old high-resolution GIFs, raw frame directories and full traces are not committed; interactive pages retain the motion content and can be rebuilt. The Pymunk bench defaults to a prescribed vertical wheel-height step and floating chassis, with force/torque modes retained as legacy diagnostics. It uses sensor geometry, with no automatically solved tire contact, soil, belt elasticity or structural stress. The fixed 4:1 approximation is not an exact straight full inversion. Guide radii 28/14 mm are editable demo values; measured belt radii/T₀, real actuator limits, spring characterization, collision clearance and hardware validation remain open.

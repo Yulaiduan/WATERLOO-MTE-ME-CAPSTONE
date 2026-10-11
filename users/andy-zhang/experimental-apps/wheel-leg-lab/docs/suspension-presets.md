@@ -21,7 +21,7 @@ The Mathematical and 2D Physical tabs share this catalog. The original spring re
 | `knee_capture` | Internal knee drum payout pulls a rigid rod through a compression coil; the external load is tension | Compression / pullrod |
 | `gravity_balance` | Downward vertical chassis mount to an upper-link point; zero-effective-length tension converts into constant generalized chassis lift | Extension / direct, `zero_effective` law |
 
-The catalog is defined in [spring_mechanisms.py](../spring_mechanisms.py) and returned by `GET /api/spring-presets`. Demo dimensions include a 40 mm suspension drum radius, 50 mm crank arm, 200 mm input/coil reference spans, midpoint link attachments and a chassis mount at (120, 50) mm relative to its body origin. Hip/knee crank offsets default to 135°/180°. These are editable illustrations; the confirmed fixture inputs remain the 200 mm wheel radius and original 50 mm link extension. They do not establish spring packaging, travel clearance or component ratings.
+The catalog is defined in [spring_mechanisms.py](../spring_mechanisms.py) and returned by `GET /api/spring-presets`. Current curated rates/damping and leverage are listed in the [mechanism audit](mechanism-audit.md). Common illustrative geometry includes 200 mm input/coil reference spans, midpoint attachments and a chassis mount at (120, 50) mm; hip/knee crank offsets are 135°/180°. Hip drum and hip crank now use 80 mm leverage; other mechanism geometry is explicit in the catalog. These are editable illustrations; the confirmed fixture inputs remain the 200 mm wheel radius and original 50 mm link extension. They do not establish spring packaging, travel clearance or component ratings.
 
 ## Coil loading and transmission are separate choices
 
@@ -43,7 +43,14 @@ A rigid rod can transmit either force sign when its selected coil law permits it
 
 Automatic balance solves the initial static support requirement using the selected mechanism's leverage and coil law. Dead centres, incompatible one-sided preload directions, coincident anchors and nonpositive payout/coil/free lengths fail explicitly. A rejected combination is not repaired by inventing a holding torque; change its routing/mounts or disable automatic balance to study the resulting motion.
 
-In Pymunk, `legacy_tip` with captured/direct settings retains the original native `DampedSpring`. All other topology/law/routing combinations use [suspension_runtime.py](../suspension_runtime.py) to apply actual equal-and-opposite forces at direct anchors or drum tangent sites before each `Space.step(dt)`. Their torques arise from those point-force moment arms. Pulley loads therefore contribute to pin/bearing forces as well as joint torque. These spring forces are explicitly integrated, so stiff springs and sharp inputs need timestep refinement; the original native spring's numerical behavior is preserved.
+All nine current Pymunk presets use `spring_integration=point_force`:
+[suspension_runtime.py](../suspension_runtime.py) applies spring force pairs at
+direct anchors or drum tangent sites before `Space.step(dt)`. Their moment arms
+retain spring-transmission pin/bearing loads. Explicit integration requires
+timestep refinement. `native_legacy` retains DampedSpring only for explicitly
+selected `legacy_tip/captured/direct/hooke` diagnostics and warns about
+constraint/spring splitting bias. The separate 2:1 guide belt's optional tension
+arrows are viewer assumptions, not additional solver bearing forces.
 
 The drum, bellcrank and pullrod are ideal massless transmission geometry, not additional inertial bodies with their own bearings or contacts. The model excludes rope stretch/sag, transmission friction, coil solid height/bind, attachment contact and hardware stress. Wheel-height support is prescribed and bilateral; tire contact and terrain compliance are not solved.
 
@@ -53,17 +60,21 @@ The [Python/SciPy energy model](../math/README.md) supports all nine mechanisms 
 
 The MATLAB/Octave companion currently supports **only `legacy_tip` + captured + direct**. Other configurations are explicitly rejected. Saved JSON profiles retain topology, coil mode, transmission, dimensions, direction and preload settings; run data also includes coil travel/load, input tension, engagement/slack and spring energy.
 
-The preceding eight-preset release passed 12 kernel, 15 mathematical and 10 preset-physics tests, together with the 27 existing physical tests. Its real-backend browser tests covered all eight presets, coil charts, geometry, JSON and mobile. Current integration passes 82 Python and 33 JavaScript tests, with real-backend browser coverage of all nine wheel presets and the separate lever. Native API verification confirms actual desktop windows, advancing live solver steps, owned-window restoration, loops and graceful close; see [validation.md](validation.md). These checks concern ideal numerical models, not accepted CAMEL hardware.
+Current actual evidence is centralized in [validation](validation.md).
+The [mechanism audit](mechanism-audit.md) owns curated rates, passive-stability
+classification and the finite six-second demo envelope. Edited profiles are not
+certified by a preset's previous results. Initial balance alone does not prove
+restoring behavior; passive stability excludes any enabled controller.
 
-Initial preload balance does not guarantee passive stability. The 40 mm hip drum
-with the 8 kN/m demo coil is unstable about the 45° ride pose: its linearized
-acceleration slope is approximately +15.63 s⁻². A mild bump can produce sag even
-without a travel-stop impact; increase leverage/rate or change geometry to study
-a stable alternative. This behavior is retained without an artificial holding motor.
+Historical superseded example (2026-10-10): the 40 mm hip drum with an 8 kN/m
+coil was unstable near 45°, with acceleration slope about +15.63 s⁻². The current
+hip demo uses 80 mm leverage and increased damping. This repair is explicit;
+no artificial holding motor hides passive instability. Historical release
+counts and short-step results remain in validation with their original scope.
 
 ## Constant-lift addition
 
-The ninth preset is separate from the original eight-preset validation above.
+The ninth preset is `gravity_balance`.
 Its [full derivation and standalone lever study](constant-lift.md) distinguish
 constant equivalent support from variable spring tension/moment. For the
 vertical-mount wheel geometry, ideal lift is `kHR/(2L)`, including distributed
@@ -77,7 +88,9 @@ ordinary Hooke automatic balance instead adjusts free length/preload. A finite
 effective free length or horizontal chassis-mount offset makes exact lift vary
 with angle, even when the initial pose is calibrated. Exact undamped gravity
 compensation is neutrally balanced without ride-height restoring stiffness, so
-it is not a complete suspension. Latest combined validation is recorded in
+it does not supply restoring ride-height stiffness. The current one-unit
+[replacement architecture](suspension-architecture.md) keeps that limit explicit
+and adds damping to the same unit, with auxiliary off. Validation is recorded in
 [validation.md](validation.md).
 
 Primary API references: [Pymunk body forces and Space](https://www.pymunk.org/en/latest/pymunk.html), [constraints and DampedSpring](https://www.pymunk.org/en/latest/pymunk.constraints.html), and the [official Pygame debug renderer](https://www.pymunk.org/en/latest/pymunk.pygame_util.html).

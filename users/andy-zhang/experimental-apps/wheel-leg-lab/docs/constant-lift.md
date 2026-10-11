@@ -1,6 +1,6 @@
 # Constant-lift gravity compensation
 
-For the complete wheel-leg implementation with a restoring spring and damper,
+For the one-unit upper-link/chassis replacement spring/damper implementation,
 open [the suspension architecture](suspension-architecture.md). The lever page's
 **Use in wheel-leg suspension** button loads that configured physical model.
 
@@ -158,15 +158,15 @@ Exact constant elastic lift requires zero effective input free length, a purely
 downward vertical chassis mount and a compatible tension-producing coil/routing.
 Moving the mount horizontally, choosing a finite effective free length or
 editing the routing breaks the identity. Automatic calibration then balances
-the initial pose only, not every angle. The default construction is a neutral
-gravity compensator, so restoring suspension behavior must be added separately.
+the initial pose only, not every angle. The construction is a neutral
+gravity compensator. The current replacement architecture adds damping to that
+same unit and keeps the auxiliary off; it does not claim restoring ride-height
+stiffness. An earlier separate ride-strut variant remains explicitly optional.
 
-The integrated suite passes 82 Python tests (71 wheel-leg and 11 lever) and 33
-JavaScript tests. Browser checks exercise both lever APIs, profile/run JSON,
-the shared library and all nine wheel presets. Actual native prescribed/free
-lever runs pass live stepping, window restoration and graceful close, alongside
-captured-knee and gravity-balance wheel models. Fresh start/reuse/scoped-stop/
-restart of the durable launcher passes from outside the app directory. Full
-evidence and tolerances are retained in [validation.md](validation.md).
-These are ideal mathematical/solver checks, not acceptance of the image's
-hardware or a canonical CAMEL robot.
+Historical constant-lift release (2026-10-10) passed 82 Python and 33 JavaScript
+tests, both lever APIs, JSON/library flow and four live native model cases.
+Those results retain their original scope. Latest solver, browser, native-window,
+MATLAB and launcher evidence is in [validation](validation.md); current curated
+passive defaults and integration changes are in [mechanism audit](mechanism-audit.md).
+These are ideal numerical checks, not acceptance of the sketch's hardware or a
+canonical CAMEL robot.

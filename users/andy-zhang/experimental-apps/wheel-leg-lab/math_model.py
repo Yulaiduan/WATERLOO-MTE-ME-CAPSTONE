@@ -25,7 +25,8 @@ from motion_input import position_state
 from spring_mechanisms import (CATALOG, MECHANISM_DEFAULTS, apply_preset, equal_poses,
                                geometry, geometry_from_bodies, mechanism_config,
                                spring_law, calibrate_zero_effective_rate, mechanism_metadata,
-                               auxiliary_parameters, auxiliary_metadata, generalized)
+                               auxiliary_parameters, auxiliary_metadata, generalized,
+                               guide_pulley_frame, passive_stability)
 
 # Experimental defaults shared by value, independently resolved without importing
 # the Pymunk fixture. Non-mathematical fields remain in exported profiles so the
@@ -35,7 +36,7 @@ DEFAULTS = {
     'load_point': 'hub', 'wheel_drive_locked': False,
     'theta_min': 15., 'theta_max': 80., 'upper_mass': .6, 'lower_mass': .65,
     'wheel_mass': 1.5, 'chassis_mass': 8., 'gravity': 9.80665,
-    'fixture': 'floating', 'stiffness': 8000., 'damping': 100.,
+    'fixture': 'floating', 'stiffness': 20000., 'damping': 500.,
     'rest_length': .23, 'balance_spring': True, 'bias_force': 0.,
     'bias_force_x': 0., 'preload_force': 80., 'knee_kp': 0., 'knee_kd': 0.,
     'torque_limit': 80., 'target': 'position', 'wave': 'step', 'amplitude': 5.,
@@ -58,7 +59,7 @@ def config(values=None):
         c.update(values)
         if 'spring_topology' in values:
             seeded = apply_preset(DEFAULTS, values['spring_topology'])
-            for key in MECHANISM_DEFAULTS:
+            for key in set(MECHANISM_DEFAULTS) | {'stiffness', 'damping'}:
                 if key not in values:
                     c[key] = seeded[key]
     for key, default in DEFAULTS.items():
@@ -282,6 +283,8 @@ def observe(t, q, velocity, c, p):
         'spring_tension': elastic+damper, 'spring_length': length,
         'spring_elastic_tension': elastic, 'spring_damper_tension': damper,
         'spring_knee_moment': lower_spring_about_knee,
+        'guide_tension_difference_N': guide/(c['guide_hip_radius']/2),
+        'guide_belt_speed_relative': c['guide_hip_radius']*velocity,
         'spring_coil_length': law['coil_length'], 'spring_coil_load': law['coil_load'],
         'spring_coil_tension': law['coil_tension'], 'spring_energy_J': law['energy'],
         'spring_engaged': float(law['engaged']), 'spring_slack': float(law['slack']),
@@ -350,6 +353,8 @@ def observe(t, q, velocity, c, p):
              'hub': C.tolist(), 'tip': E.tolist(), 'upper_angle': -q,
              'lower_angle': q-math.pi, 'position_target': C.tolist(), 'debug_draw': [],
              'spring_geometry': spring_geom, 'spring_coil_length': law['coil_length']}
+    if c['guide_pulleys_visible']:
+        frame['guide_pulleys']=guide_pulley_frame(c,A,B,0.,-q,q-math.pi)
     if auxiliary_geometry:
         frame['auxiliary_spring_geometry']=auxiliary_geometry
         frame['auxiliary_spring_coil_length']=auxiliary_law['coil_length']
@@ -395,7 +400,8 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
         if index % frame_stride == 0 or index == len(times)-1:
             frame['index'] = index
             frames.append(frame)
-    warnings = []
+    stability = passive_stability(c, p['rest'], p['input_ref'], p['auxiliary'])
+    warnings = list(stability.get('notes', []))
     spring_meta = mechanism_metadata({**c, 'rest_length': p['rest']}, p['input_ref'])
     aux_meta = auxiliary_metadata(c,p['auxiliary'])
     warnings.extend(spring_meta['notes'])
@@ -447,7 +453,8 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
                                   'Mechanical energy = body kinetic + gravitational potential + primary spring energy + auxiliary spring energy; dissipated power sums both passive dampers',
                                   'S = 1.5 m_upper L + 0.5 m_lower (L+e) + 2 m_chassis L',
                                   'M = I_upper + I_lower [+ I_wheel if locked] + m_upper[(L/2)^2 sin^2(theta)+(3L/2)^2 cos^2(theta)] + m_lower[(L+e)/2]^2 + 4 m_chassis L^2 cos^2(theta)',
-                                  'Joint forces: individual body momentum balances; guide torque: independent upper/lower angular balances.']},
+                                  'Joint forces: individual body momentum balances; guide torque: independent upper/lower angular balances.',
+                                  'Visible ideal guide: r_hip=2 r_knee; (omega_lower-omega_upper)=2(omega_hip-omega_upper). Torque-implied signed tension difference=guide_link_torque/r_knee; no belt bearing forces are applied.']},
         'equation_check_errors': checks,
         'diagnostics': {'max_pin_error_m': 0., 'max_guide_error_rad': 0.,
                         'max_force_check_N': 0.,
@@ -463,6 +470,7 @@ def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
                    'max_step_s': max_step, 'output_step_s': c['dt'], 'stop_event': stop_event},
         'warnings': warnings,
         'spring_mechanism': spring_meta,
+        'passive_stability': stability,
         'auxiliary_spring': aux_meta,
         'scope': 'Independent Python/SciPy scalar-energy model, exact equal-link 2:1 guide, selected direct/crank/ideal-pulley spring topology and optional independent original-tip ride strut, floating chassis with pitch held, and prescribed bilateral wheel height. Primary spring telemetry describes the support stage; spring_knee_moment and body spring loads include both passive stages when enabled. Smooth C2 input only. Reactions are instantaneous Newton-Euler loads, including physical tangent/mount force pairs; mathematical support tracks exactly. Stops terminate the run before impact. No tire contact, rope stretch/friction, coil solid-height limit, stress or hardware calibration. Legacy amplitude/impulse, fixed-hip preload and Pymunk iterations are preserved in profiles but do not drive this model.',
     }

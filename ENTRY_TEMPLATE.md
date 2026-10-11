@@ -1341,3 +1341,81 @@ Weight compensation, ride restoration and damping have separate visible geometry
 Continue from the suspension-architecture and validation records, use the project-local restart launcher and preserve archives while confirming real mechanical packaging/contact before promotion.
 
 ---
+
+## Entry: 2026-10-10 — Andy Zhang — replacement suspension, guide visualization and passive mechanism audit
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's isolated Motion Lab / Wheel Leg Lab member experiment.
+- **Associated Issue/Task:** Latest user clarification replaces the original lower-tip spring with one r1-to-chassis spring/damper, requests visible 2:1 guide belt markers/tension vectors, and explicitly requests an Astra audit of mechanisms whose chassis fell. Continue authorized documentation and direct publication; preserve original archives.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths for this correction are listed below; the preceding entry records the earlier unpublished architecture contribution.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/constant-lift.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/decisions.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/design.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/mechanism-audit.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/guide_belt.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math/wheel_leg_ode45.m`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_guide_belt.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_suspension.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_viewer.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_native_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_passive_stability_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_pymunk.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suspension_architecture_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suspension_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/suspension_architecture.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/suspension_runtime.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_equation_checks.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_guide_belt.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_mechanism_stability.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_native_guide.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_position_input.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_replacement_suspension.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_suspension_physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/guide-belt.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/guide-belt.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/mathematical/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/physics/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/style.css`
+- **API/Interface Changes:** The architecture factory now disables the auxiliary strut, uses primary damping100 N s/m and one upper-link/chassis force pair, and enables a massless chassis sensor plus28/14mm guide sensors. Browser and native views show actual anchors/bracket, moving no-slip belt dots, body rotation/pivots and torque-derived DeltaT arrows. Guide viewer baseline in N/kgf stays independent of sheet T0 and solver config; absolute span forces remain unknown without an assumption and inferred guide bearing forces are not applied to engine pin loads. Add guide geometry helpers/tests and wheel_leg native envelope with separately validated guide_visualization; native reuse keys include viewer assumptions. All nine spring presets now default to common explicit point_force integration. Restricted native_legacy remains opt-in with a splitting-bias warning; historical reference tests explicitly preserve old settings. Both config resolvers seed catalog geometry/rate/damping only when absent and retain explicit overrides. Curate legacy20k/d500, hip pulley80mm/d500, hip crank80mm/d500, knee pulley/capture d500 and knee crank24k/d1000; remaining settings retain their documented rates. Both backends export passive_stability with mean/one-sided vertical stiffness, initial balance residual, classification and local scope; both benches display it and preserve JSON provenance. MATLAB parses the integration selector and updated legacy rate/damping, while unsupported mechanisms/laws/auxiliary stage remain rejected. Update14 app documents with corrected architecture, before/after audit, assumptions, migration, historical evidence and reproducible validation. No canonical assets, shared runtime/interfaces, rules or checks changed.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** App-local unittest discovery passes114 tests in299.557s, including six new stability tests and108 full six-second backend cases (nine presets x30/45/60deg x step/square x SciPy/Pymunk),30mm displacement with250ms quintic ramps. All108 complete with finite state, no stop/slack/actuator torque, force/moment closure below1e-7 and positive signed support; minimum49.65184N in chassis_direct30deg square Pymunk. Final30deg square angle errors at1/.5/.25ms refine: legacy .465685/.262895/.133506deg, hip pulley .003096/.001546/.000773, hip crank .000498/.000240/.000117, knee crank .012975/.006191/.003024. Astra independently checked1404 valid mechanism/mode/routing/law/pose/speed combinations: no negative dissipation or compressive rope force, virtual-power residual<=6.9e-13W, energy-gradient residual<=1.64e-7Nm;54 impossible coil lengths reject explicitly. All43 JavaScript tests pass. Five current live browser suites pass: passive stability/provenance, all-nine presets on both backends, full Pymunk controls/exports/offline/mobile, corrected architecture deep-entry/library/guide/native-envelope flow, and unified Motion Lab menus/comparison/data. Actual five-case native API suite passes knee capture, gravity balance, six-shape/six-constraint replacement and prescribed/free lever: owned Windows HWND/PID, advancing1500+steps, loops, show/reuse and zero-exit close; replacement viewer baseline is saved outside config. Final corrected native GUI is running and snapshot inspected. MATLAB R2025b updated1.2s legacy profile agrees at matched times with SciPy within2.5674e-8deg and1.0209e-6N J2 load, and explicitly rejects zero-effective law; both integration selector strings parse without changing the independent ODE. Actual project-local CMD passes scoped stop/start/reuse from an unrelated Windows directory; prior fresh-start/restart evidence remains valid and port4186 is preserved. In-app final architecture preview is verified and retained. All14 changed-doc relative links/fences and git diff hygiene pass. Working/staged structure and scoped publication gates are run before publication; raw runs/screenshots remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is NOT APPLICABLE to this member-app contribution. The original audit reproduced unstable hip pulley/hip bellcrank and repeated-input lower-stop escape in older tip/knee-crank settings. The first expanded candidate sweep caught marginal60deg knee pulley/capture and30deg knee-crank cases; final damping500/1000 revisions pass the full envelope without tolerance loosening or a hidden controller. The old knee-crank24k/d500 configuration converges before escape but lacks converged six-second behavior; this is retained as a limitation rather than a proof that SciPy's bounded result is wrong. Native DampedSpring splitting bias remains an explicitly selectable diagnostic. Exact constant lift is neutral, not a unique restoring ride height. Edited profiles, tire/soil contact, whole-vehicle dynamics, spring/cable packaging, structural ratings, hardware and other desktop OS/GPU performance remain unverified. Guide-bearing loads are outside the GearJoint model. Historical tests now declare historical settings, not weakened assertions; no failed intermediate check was counted as final success, no original file was deleted, and no hook is bypassed.
+
+## 4. Compute Saving Handoff State
+
+Motion Lab now defaults to the requested single upper-link/chassis replacement unit with visible2:1 guide material marks, torque-derived tension vectors and independent viewer assumptions.
+The revised nine-preset demos pass the documented108-case envelope and display local restoring/neutral/unstable diagnostics, while exact constant lift stays neutral and native_legacy remains an advanced diagnostic.
+Continue from the mechanism-audit, suspension-architecture and validation documents, use the project-local Start Motion Lab.cmd at port4186, and preserve archives while confirming real routing/contact/component limits before canonical promotion.
+
+---

@@ -67,8 +67,9 @@ Fixed-hip wheel motion and fixed-wheel chassis motion use a horizontal GrooveJoi
 ### Physical spring and loads
 
 The original lower rod extends e = 50 mm beyond the knee away from the wheel,
-and the native DampedSpring joins the hip to that tip for `legacy_tip` with
-captured/direct settings. With equal L, its anchor distance is
+and `legacy_tip` joins the hip to that tip. Current presets apply point forces;
+the original native DampedSpring is selectable only as `native_legacy` for
+`legacy_tip/captured/direct/hooke` diagnostic comparison. With equal L, its anchor distance is
 `sqrt(L²+e²+2Le cos(2θ))`; forces and moments use the actual anchor geometry.
 Default masses/inertias and spring values are explicit assumptions. Spring
 auto-balance chooses a free length for the initial load and pose; it is not an
@@ -85,8 +86,8 @@ only, with zero stretch and 100% transmission efficiency. Drums and crank arms
 are massless ideal geometry; no transmission friction, coil bind, contact or
 hardware packaging is resolved.
 
-Except for the original captured/direct tip combination, Pymunk applies the
-selected spring's equal-and-opposite forces at actual world anchor/tangent
+All nine current presets use `spring_integration=point_force`. Pymunk applies
+the selected spring's equal-and-opposite forces at actual world anchor/tangent
 sites before stepping the Space. Lever-arm torques and pin loads therefore
 retain the transmission force path. These spring forces use explicit timestep
 integration and require refinement for stiff/abrupt cases. Dead centres,
@@ -134,13 +135,30 @@ gives the same span identity. With `h=2L sin θ`, generalized elastic chassis
 lift is `kHR/(2L)` and required support is
 `g[m_chassis+0.75m_upper+0.25(1+e/L)m_lower]`. Zero-effective automatic balance
 calibrates stiffness; Hooke automatic balance continues to calibrate free
-length/preload. Horizontal mount offset, nonzero effective input free length
-and damping break exact constant elastic lift. The fully calibrated undamped
-case is neutral, so it supplies gravity compensation without restoring ride
-height or a complete suspension.
+length/preload. Horizontal mount offset and nonzero effective input free length
+break exact constant elastic lift. Damping adds a velocity-dependent force; it
+does not alter the static elastic identity. Exact compensation is neutral and
+supplies no restoring ride-height stiffness, with or without damping.
 
-The [two-stage architecture](suspension-architecture.md) adds an independent
-hip-to-lower-extension strut. Its energy and generalized force add to the gravity
-stage, and pin-force/moment ledgers include both sets of actual force sites.
-Automatic auxiliary free length gives zero elastic force at the initial pose;
-captured behavior restores either side. Per-stage telemetry stays separate.
+The [current replacement architecture](suspension-architecture.md) uses only
+that upper-link/chassis spring/damper. Its force sites belong to the hip/chassis
+body and upper link; no primary force acts directly on the lower extension.
+Primary damping is 100 N s/m and `aux_spring_enabled=false`. The earlier
+hip-to-lower-tip ride strut remains an explicitly enabled optional variant;
+its energy, generalized force and actual force sites add only when enabled.
+
+## Guide visualization boundary
+
+The ideal guide uses a 28 mm hip drum fixed to the chassis and a 14 mm knee drum
+fixed to the lower link; the upper link is their moving carrier. Exact tangent
+geometry, rotating spokes and belt material marks follow the recorded body
+angles. These drums and the chassis polygon are sensors, adding neither mass
+nor contact. Guide torque gives the signed difference
+`DeltaT=tau_K/r_K=-tau_H/r_H`, not two absolute belt tensions.
+
+Without pretension, span-force arrows show only torque-equivalent difference.
+An optional nonnegative viewer baseline assigns one assumed span tension and
+the other `baseline+abs(DeltaT)`; it does not add belt forces to solver pin loads.
+Saved `reference_inputs.guide_visualization` stays separate from reference-sheet
+T₀. See the [architecture](architecture.md) for native envelopes and the
+[mechanism audit](mechanism-audit.md) for passive/integration checks.

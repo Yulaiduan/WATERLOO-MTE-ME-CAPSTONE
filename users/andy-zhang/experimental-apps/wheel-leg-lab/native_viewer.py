@@ -6,6 +6,7 @@ No requested script/path is executed; this opens on the simulation host desktop.
 Standard library plus the app-local installed Pymunk/Pygame runtime.
 """
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -20,17 +21,29 @@ LOCK=threading.Lock()
 
 def launch(values):
     study=isinstance(values,dict) and values.get('model')=='counterbalance'
+    wheel_envelope=isinstance(values,dict) and values.get('model')=='wheel_leg'
+    viewer={'pretension_N':None,'show_force_vectors':True}
+    if wheel_envelope:
+        if set(values)-{'model','config','guide_visualization'}:raise ValueError('Unknown wheel native envelope field.')
+        raw=values.get('guide_visualization') or {}
+        if not isinstance(raw,dict):raise ValueError('Guide viewer options must be an object.')
+        tension=raw.get('pretension_N')
+        if tension is not None and (isinstance(tension,bool) or not isinstance(tension,(int,float)) or not math.isfinite(tension) or tension<0):raise ValueError('Guide viewer pretension must be nonnegative finite N or null.')
+        visible=raw.get('show_force_vectors',True)
+        if not isinstance(visible,bool):raise ValueError('Guide force-vector visibility must be boolean.')
+        if raw.get('applied_to_solver',False) is not False:raise ValueError('Guide viewer forces cannot be applied to the engine.')
+        viewer={'pretension_N':tension,'show_force_vectors':visible}
     if study:
         if set(values)!={'model','config'}:raise ValueError('Counterbalance native launch needs only model/config fields.')
         import counterbalance
         resolved=counterbalance.config(values['config']);counterbalance.build(resolved)
         program='debug_counterbalance_gui.py'
     else:
-        resolved=validate_config(values)
+        resolved=validate_config(values.get('config') if wheel_envelope else values)
         build(resolved)  # Resolve preload/geometry errors before opening a window.
         program='debug_gui.py'
     with LOCK:
-        reusable=next((key for key,process in PROCESSES.items() if process.poll() is None and CASES.get(key)==(program,resolved)),None)
+        reusable=next((key for key,process in PROCESSES.items() if process.poll() is None and CASES.get(key)==(program,resolved,viewer)),None)
     if reusable:
         existing=show(reusable)
         if existing['status'] in ('starting','ready','running'):
@@ -38,12 +51,12 @@ def launch(values):
     identifier=str(uuid.uuid4())
     DIRECTORY.mkdir(parents=True,exist_ok=True)
     case=DIRECTORY/(identifier+'.config.json');state=DIRECTORY/(identifier+'.state.json');log=DIRECTORY/(identifier+'.log')
-    case.write_text(json.dumps({'config':resolved}),encoding='utf-8')
+    case.write_text(json.dumps({'config':resolved,'guide_visualization':viewer}),encoding='utf-8')
     python=ROOT/'.venv/Scripts/python.exe' if os.name=='nt' else ROOT/'.venv/bin/python'
     if not python.is_file():raise ValueError('Native runtime missing. Run Setup Motion Lab.cmd.')
     with log.open('wb') as output:
         process=subprocess.Popen([str(python),str(ROOT/program),'--config',str(case),'--run','--loop','--state-file',str(state),'--snapshot-file',str(DIRECTORY/(identifier+'.png'))],cwd=ROOT,stdout=output,stderr=subprocess.STDOUT,creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0)
-    with LOCK:PROCESSES[identifier]=process;CASES[identifier]=(program,resolved)
+    with LOCK:PROCESSES[identifier]=process;CASES[identifier]=(program,resolved,viewer)
     return {'id':identifier,'pid':process.pid,'status':'starting','mode':'native-live','message':'Opening the live Pymunk desktop window on this computer.'}
 
 def status(identifier):

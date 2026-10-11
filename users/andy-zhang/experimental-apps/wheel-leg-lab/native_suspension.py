@@ -27,7 +27,7 @@ def draw(screen, model, c, project, font):
     L=c['length'];hip=model['upper'].local_to_world((-L/2,0));knee=model['upper'].local_to_world((L/2,0))
     if c['spring_topology']=='gravity_balance':
         cp=project(model['hip'].position);segment(cp,a,3,(155,170,157))
-        if c['aux_spring_enabled']:screen.blit(font.render(f'Floating chassis: {c["chassis_mass"]:.1f} kg',True,(195,214,200)),(cp[0]-70,cp[1]-48))
+        if c['aux_spring_enabled'] or c['chassis_shape_enabled']:screen.blit(font.render(f'Chassis / J1 mass: {c["chassis_mass"]:.1f} kg',True,(195,214,200)),(cp[0]-70,cp[1]-48))
         screen.blit(font.render(f'H {-c["spring_chassis_y"]*1000:.0f} mm',True,(170,188,175)),(cp[0]-78,(cp[1]+a[1])//2))
         screen.blit(font.render(f'R {c["spring_upper_fraction"]*L*1000:.0f} mm',True,(170,188,175)),(b[0]+12,b[1]-19))
     if g['kind']=='pulley':

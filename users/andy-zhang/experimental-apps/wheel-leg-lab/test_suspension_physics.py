@@ -101,11 +101,11 @@ class SuspensionPhysicsTests(unittest.TestCase):
                 c = config({'spring_topology': topology})
                 model = build(c)
                 self.assertEqual(len(model['space'].shapes), 3)
-                self.assertEqual(len(model['space'].constraints), 7 if topology == 'legacy_tip' else 6)
+                self.assertEqual(len(model['space'].constraints), 6)
                 self.assertEqual(model['guide'].ratio, -1.)
                 self.assertEqual(model['guide'].phase, math.pi)
-                self.assertEqual(model['manual_spring'], topology != 'legacy_tip')
-                self.assertEqual(model['spring'] is None, topology != 'legacy_tip')
+                self.assertTrue(model['manual_spring'])
+                self.assertIsNone(model['spring'])
                 self.assertTrue(all(shape.sensor for shape in model['space'].shapes))
 
     def test_all_presets_timestep_refinement_toward_independent_scipy(self):
@@ -171,7 +171,7 @@ class SuspensionPhysicsTests(unittest.TestCase):
         # With fixed wheel height, zero gravity/damping and no actuator, the
         # imposed support performs no work. Use actual body energy rather than
         # inverse joint balances; explicit spring integration should converge.
-        values = {'spring_topology': 'knee_bellcrank', 'gravity': 0., 'damping': 0.,
+        values = {'spring_topology': 'knee_bellcrank', 'stiffness': 8000., 'gravity': 0., 'damping': 0.,
                   'balance_spring': False, 'position_amplitude': 0., 'duration': .5}
         initial = config(values)
         span = geometry(math.radians(initial['theta']), initial)['input_length']
@@ -193,7 +193,8 @@ class SuspensionPhysicsTests(unittest.TestCase):
         self.assertLess(errors[2], .0015)
 
     def test_hip_demo_passive_instability_is_not_hidden_by_a_hold_motor(self):
-        values = {'spring_topology': 'hip_pulley', 'duration': 2., 'position_amplitude': .002}
+        values = {'spring_topology': 'hip_pulley', 'spring_pulley_radius': .04,
+                  'stiffness': 8000., 'damping': 100., 'duration': 2., 'position_amplitude': .002}
         c = math_config(values)
         p = parameters(c)
         eps = 1e-6

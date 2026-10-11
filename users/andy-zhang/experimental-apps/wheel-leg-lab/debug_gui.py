@@ -21,6 +21,7 @@ import pymunk
 import pymunk.pygame_util
 from physics import config, build, drive
 from native_suspension import draw as draw_suspension
+from native_guide_belt import draw as draw_guide, capture_torque
 
 def main():
     parser=argparse.ArgumentParser()
@@ -34,7 +35,8 @@ def main():
     args=parser.parse_args()
     values=json.loads(args.config.read_text()) if args.config else None
     c=config(values.get('config',values) if values else None)
-    pygame.init();screen=pygame.display.set_mode((1180,1020 if c['aux_spring_enabled'] else 940),pygame.RESIZABLE)
+    viewer=values.get('guide_visualization',{}) if values else {}
+    pygame.init();screen=pygame.display.set_mode((1180,1020 if c['aux_spring_enabled'] or c['chassis_shape_enabled'] or c['guide_pulleys_visible'] else 940),pygame.RESIZABLE)
     pygame.display.set_caption('Pymunk live model - Capstone suspension')
     font=pygame.font.SysFont('Segoe UI',16);small=pygame.font.SysFont('Segoe UI',14);title=pygame.font.SysFont('Segoe UI',23)
     clock=pygame.time.Clock();model=build(c);t=0.;paused=not args.run;accumulator=0.;selected='lower';command=0.;steps=0;loops=0
@@ -44,7 +46,9 @@ def main():
     def step():
         nonlocal t,command,steps
         previous={key:model[key].velocity for key in ('upper','lower','hip','wheel')}
+        spins={key:model[key].angular_velocity for key in ('upper','lower','wheel')}
         command,actuator,*_=drive(model,c,t,c['dt']);model['live_actuator']=actuator;model['space'].step(c['dt']);t+=c['dt'];steps+=1
+        model['native_guide_torque']=capture_torque(model,c,previous,spins,c['dt'])
         model['live_acceleration']={key:(model[key].velocity-value)/c['dt'] for key,value in previous.items()}
     def report(status='running'):
         if args.state_file:
@@ -63,13 +67,14 @@ def main():
         L=c['length'];max_height=2*L*math.sin(math.radians(c['theta_max']))+c['radius']
         min_y=-max_height if c['fixture']=='hip' else -c['radius']
         max_y=.10 if c['fixture']=='hip' else 2*L+.08
-        scale=min((side-100)/(L+c['radius']+.15),(H-330)/(max_y-min_y))
-        ox=side*.38;oy=285+max_y*scale
+        scale=min((side-100)/(L+c['radius']+.15),(H-(380 if c['guide_pulleys_visible'] else 330))/(max_y-min_y))
+        ox=side*.38;oy=(335 if c['guide_pulleys_visible'] else 285)+max_y*scale
         options=pymunk.pygame_util.DrawOptions(screen)
         options.transform=pymunk.Transform(a=scale,d=-scale,tx=ox,ty=oy)
         model['space'].debug_draw(options)
         draw_suspension(screen,model,c,lambda p:(round(ox+p[0]*scale),round(oy-p[1]*scale)),small)
-        for name in ['upper','lower', 'moving']+(['hip'] if c['aux_spring_enabled'] else []):
+        draw_guide(screen,model,c,lambda p:(round(ox+p[0]*scale),round(oy-p[1]*scale)),small,viewer)
+        for name in ['upper','lower', 'moving']+(['hip'] if c['aux_spring_enabled'] or c['chassis_shape_enabled'] else []):
             b=model[name];p=(round(ox+b.position.x*scale),round(oy-b.position.y*scale))
             pygame.draw.line(screen,(220,105,168),(p[0]-4,p[1]),(p[0]+4,p[1]),1)
             pygame.draw.line(screen,(220,105,168),(p[0],p[1]-4),(p[0],p[1]+4),1)
@@ -113,7 +118,7 @@ def main():
     if args.headless_check:
         for _ in range(1200):step()
         paint();args.screenshot.parent.mkdir(parents=True,exist_ok=True);pygame.image.save(screen,str(args.screenshot))
-        assert len(model['space'].shapes)==3+int(c['aux_spring_enabled']) and len(model['space'].constraints)==6-int(model['manual_spring'])+int(c['wheel_drive_locked'])+int(c['target']=='position')
+        assert len(model['space'].shapes)==3+int(c['aux_spring_enabled'] or c['chassis_shape_enabled'])+2*int(c['guide_pulleys_visible']) and len(model['space'].constraints)==6-int(model['manual_spring'])+int(c['wheel_drive_locked'])+int(c['target']=='position')
         assert math.isfinite(model['lower'].angle)
         print(f"PASS: live Pymunk stepped, official pygame debug_draw rendered {len(model['space'].shapes)} shapes and {len(model['space'].constraints)} constraints.")
         pygame.quit();return

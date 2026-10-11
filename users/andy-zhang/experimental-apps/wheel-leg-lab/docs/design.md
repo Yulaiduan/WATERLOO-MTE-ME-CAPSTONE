@@ -21,7 +21,7 @@ familiar browser launchers are aliases and the native debugger is preserved
 separately. Full workflow, JSON contracts, MATLAB/SciPy agreement and current
 verification are in the [unified workspace record](unified-motion-lab.md).
 
-The shared Math/Physics controls now expose [eight suspension presets](suspension-presets.md),
+The shared Math/Physics controls now expose [nine suspension presets](suspension-presets.md),
 coil behavior and independent direct/rod/ideal-rope transmission. Demo dimensions
 are labeled editable, and drawings use the actual recorded force sites with
 coil travel/load/energy charts. A topology selection resets mechanism geometry;
@@ -34,8 +34,18 @@ moment from equivalent lift, and compare ideal compensation with an ordinary
 finite-free-length coil. Its wheel adaptation is the ninth suspension preset.
 Each model keeps its own runnable profiles and native solver geometry.
 
-The lever's **Use in wheel-leg suspension** action opens the complete 2:1
-architecture: constant support, a restoring ride spring, damping, floating
-chassis and prescribed wheel height. Distinct colors/labels and per-stage
-Plotly traces preserve their roles. The native view includes the actual chassis
-shape and both applied force paths.
+The lever's **Use in wheel-leg suspension** action loads one replacement
+upper-link/chassis spring/damper on the 2:1 folding leg, with floating chassis
+and prescribed wheel height. The lower-tip spring is disabled. The schematic
+coil/damper ends at the recorded primary anchors; ideal routing is not a
+collision or coil-packaging claim. Twelve Plotly charts separate elastic
+constant support from variable damping and dynamic reactions. Six actual sensor
+shapes include the chassis and 28/14 mm guide drums.
+
+Guide belt dots/spokes show actual recorded carrier/body rotation. Tangent
+vectors state the known ideal torque-equivalent tension difference. Optional
+N/kgf baseline tension is a viewer assumption, independent of reference T₀
+and not applied to solver pin/bearing loads. Profiles, full runs and native
+launches preserve these references outside solver configuration. The visible
+frame supplies global native configuration; an inactive Math/Misc frame cannot
+overwrite it. Explicit record or child-launch profiles remain authoritative.
