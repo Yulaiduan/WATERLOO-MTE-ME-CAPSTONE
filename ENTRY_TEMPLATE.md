@@ -1557,3 +1557,45 @@ The packet preserves plant-boundary, outer-command, impedance/damping, geometry,
 Continue from the overview and the selected open questions, and record accepted engineering decisions in their existing owning documents with supporting evidence.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — smooth physical playback and architecture setup previews
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab wheel-model browser playback and architecture selection.
+- **Associated Issue/Task:** User reported laggy 2D physical playback and requested a system preview when selecting a linkage architecture before clicking Run.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_playback_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_setup_preview_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/setup_preview.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_setup_preview.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/style.css`
+- **API/Interface Changes:** Cache recording bounds, input extrema and decimated disturbance samples once per loaded run. Move existing Plotly cursor SVG paths with the pinned axis conversion while keeping raw/full layout shape coordinates current for zoom/redraw/export; remove repeated Plotly.relayout calls from playback. Keep animation/cursors on the display clock, throttle HTML readouts to15Hz during playback and refresh exact samples on pause/scrub/end. Pause inactive wheel tabs and closed recorded-viewer dialogs. Add POST /api/setup-preview and isolated setup_preview.py: validate/build initial body/anchor/coil geometry through the existing fixture builder, never Space.step, and return kind=setup-preview, solver_steps=0 without trace/load rows. Both benches debounce and cancel superseded setup requests, show initial architecture/geometry edits independently of prior results, hide unsolved loads and offer Show last recording without discarding edits. A completed run cancels setup state and restores normal playback/export. Update documentation and add three Python preview tests plus browser playback/setup regressions. Numerical solver equations, timesteps, recorded samples and original exports remain unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Three setup-preview Python tests pass, covering all9 catalog presets under a Space.step mock that raises if called, replacement upper/chassis sites and sensors, geometry edits, finite JSON and invalid-config rejection. All56 JavaScript tests pass. Six real-browser suites pass: verify_pymunk, verify_playback_ui, verify_setup_preview_ui, verify_suspension_ui, verify_suspension_architecture_ui and verify_motion_lab. They cover actual playback, all9 presets in both backends, setup selection without simulation requests or invented loads, cancelled/superseded preview state, returning to prior data without losing edits, exact scrub/pause/end values, wall-clock advance, inactive-tab pause, zoom/pan/theme, SVG export and main-shell/library/native routing. Comparative headless Edge1400x1000 instrumentation used identical six-second6000-row/668-frame profiles and four-second playback intervals: default11plot p95frame interval50.1→4.3ms, replacement12plot62.5→4.3ms; each38gaps>33ms→0. Mean callback CPU6.33→.782ms and8.25→1.149ms. Actual fixed code has0Plotly.relayout calls during playback, versus429/468 calls over4s. Every11/12cursor matches raw/full layout and axis-transformed SVG coordinates; zoom/pan/dark redraw and SVG export retain the selected marker, including the angle plot. Fixed renderer SHA2561efac9cbaae8a02c4b7812142db50a3b6b4f6535f4b9493fd9a6230d0caf5eaa and full raw benchmark evidence stay in ignored artifacts. Node syntax, Python compilation, edited Markdown links/fences and diff hygiene pass. The actual project-local stop/start CMD launchers restart the new server from an unrelated Windows directory at127.0.0.1:4186; a setup-only preview route is available at /physics/?loadOnly=1. Repository working/staged/publication gates run before push. Remote controls-context documentation ca5fb13 was integrated by fast-forward, with every local app edit verified byte-identical and both independent contribution entries retained.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE. Headless frame intervals measure this local comparative workload, not remote-display FPS or hardware performance. The earlier ablation only located the bottleneck; the reported final timings are the actual edited renderer. A benchmark harness initially exceeded Chromium inspector response-body cache while retrieving a large run; acquisition moved to APIRequestContext without changing the workload, and final checks passed. Cached bounds preserve the original complete recording extent; no raw results or solver sampling were decimated for performance. Setup geometry is not a simulated equilibrium/load report and cannot be exported as a recorded run. Pinned Plotly shape/axis internals need the retained cursor tests on a dependency upgrade. No shared assets, production physics, existing records or original archives were changed/deleted.
+
+## 4. Compute Saving Handoff State
+
+Wheel playback now avoids repeated chart rebuilds and recording-wide scans while retaining synchronized poses, cursor positions and exact paused readouts.
+Both wheel-model tabs show separate zero-step architecture previews before Run and preserve the previous recording and edited controls without mixing their load data.
+Use the project-local launcher and the new playback/setup browser checks before changing renderers, Plotly versions or preview/record state handling.
+
+---

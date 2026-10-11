@@ -1,5 +1,51 @@
 # Validation record
 
+Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
+
+## Playback performance and setup previews, 2026-10-11
+
+The cause was 11/12 Plotly cursor relayouts every 0.1 simulation seconds, each
+costing about 4.63 ms synchronously: approximately 51–56 ms redraw bursts.
+Bounds, input extrema and disturbance decimation were also recomputed each frame.
+The fix caches those recording-wide quantities, moves only the existing cursor
+SVG path and its serializable Plotly shape coordinates, and updates HTML load
+readouts at 15 Hz while motion/cursors follow animation frames. Pause and scrub
+refresh exact selected-sample values. No numerical solver or data sampling changed.
+
+Same headless Edge (1400×1000), four-second playback, six-second/6000-row runs,
+668 geometry frames, with the same RAF/Plotly/SVG/CPU-profiler instrumentation:
+
+| Case | p95 frame interval before → after | Gaps over 33 ms before → after | Mean callback CPU before → after |
+| --- | --- | --- | --- |
+| Original tip / 11 plots | 50.1 → 4.3 ms | 38 → 0 | 6.33 → 0.78 ms |
+| Replacement / 12 plots | 62.5 → 4.3 ms | 38 → 0 | 8.25 → 1.15 ms |
+
+The actual fixed code makes zero Plotly.relayout calls during playback; these
+are measured fixes, not the earlier diagnostic ablation. Headless cadence is
+comparative evidence and does not certify remote display FPS. Paused 1.5-second
+cursors match raw/complete layout and transformed SVG coordinates across every
+plot, including angle axes. Zoom/pan, dark redraw and SVG export retain correct
+cursor positions. Evidence stays in ignored artifacts/playback-baseline and
+artifacts/playback-fixed; `scripts/verify_playback_ui.cjs` reproduces regression
+checks without imposing a hardware-dependent frame-rate threshold.
+
+`/api/setup-preview` returns initial bodies, anchors and coil geometry with
+solver_steps=0 and no trace/load rows. Three Python tests cover all nine presets,
+replacement force sites/sensor geometry, edits and validation; a mocked Space.step
+raises if preview construction ever integrates. Real-browser setup tests pass
+all nine presets in both tabs with no simulation requests before Run, no fake
+loads, geometry changes, guide drawing, superseded selections, immediate Run
+cancellation and previous-recording separation. Pending responses cannot replace
+completed recorded results.
+
+All 56 JavaScript tests pass. Browser suites `verify_pymunk.cjs`,
+`verify_playback_ui.cjs`, `verify_setup_preview_ui.cjs`, `verify_suspension_ui.cjs`,
+`verify_suspension_architecture_ui.cjs` and `verify_motion_lab.cjs` pass. Existing independent numerical
+audits remain scoped historical evidence; they were not rerun for the renderer.
+The actual project-local stop/start launchers restart the updated server from
+an unrelated Windows directory and preserve port4186. Canonical robot physics
+is not applicable to this isolated member-app work.
+
 ## Compact comparison follow-up, 2026-10-10
 
 The later UI request collapses per-plot controls and source/help sections,
@@ -17,7 +63,6 @@ layout, preserving the prior trace visibility alongside added channel selections
 The original backup remains intact. No numerical solver changed
 in this UI follow-up.
 
-Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: locally checked member experiment, not canonical robot or hardware validation.
 
 ## Current contract and evidence scope
 

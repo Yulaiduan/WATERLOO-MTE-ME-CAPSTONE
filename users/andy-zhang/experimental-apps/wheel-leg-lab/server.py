@@ -16,6 +16,7 @@ from math_model import simulate_math
 from native_viewer import launch as launch_native, status as native_status, show as show_native
 from spring_mechanisms import CATALOG, MECHANISM_DEFAULTS
 import counterbalance
+from setup_preview import preview as setup_preview
 from suspension_architecture import constant_lift_profile
 import pymunk
 
@@ -57,12 +58,13 @@ class Handler(SimpleHTTPRequestHandler):
         super().do_GET()
     def do_POST(self):
         native_show=self.path.startswith('/api/native-gui/') and self.path.endswith('/show')
-        if self.path not in ['/api/simulate','/api/pymunk/simulate','/api/math/simulate','/api/counterbalance/math','/api/counterbalance/pymunk','/api/counterbalance/advance','/api/native-gui'] and not native_show:
+        if self.path not in ['/api/simulate','/api/pymunk/simulate','/api/math/simulate','/api/setup-preview','/api/counterbalance/math','/api/counterbalance/pymunk','/api/counterbalance/advance','/api/native-gui'] and not native_show:
             return self.json({'error':'Unknown endpoint.'},404)
         try:
             count=int(self.headers.get('Content-Length','0'))
             if count<=0 or count>50000: return self.json({'error':'Invalid request size.'},413)
             value=json.loads(self.rfile.read(count))
+            if self.path=='/api/setup-preview':return self.json(setup_preview(value))
             if self.path=='/api/native-gui' or native_show or self.path=='/api/counterbalance/advance':
                 origin=self.headers.get('Origin');allowed={f'http://127.0.0.1:{self.server.server_port}',f'http://localhost:{self.server.server_port}'}
                 if (origin and origin not in allowed) or self.headers.get('Sec-Fetch-Site')=='cross-site':return self.json({'error':'Native launch and live interaction require this local application.'},403)

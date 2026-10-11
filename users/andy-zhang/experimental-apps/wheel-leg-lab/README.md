@@ -1,6 +1,6 @@
 # Wheel Leg Lab
 
-Owner: Andy Zhang. Updated: 2026-10-10. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
+Owner: Andy Zhang. Updated: 2026-10-11. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
 
 ## Unified browser workspace
 
@@ -79,6 +79,17 @@ it does not silently add a second restoring spring.
 
 ## Position input correction
 
+Selecting a spring architecture or editing its dimensions now draws a labeled
+**setup preview before Run** in both wheel-model tabs. It builds initial geometry
+without stepping a solver or reporting joint loads. Existing plots belong to
+the last recording; **Show last recording** returns to it without discarding
+edited inputs. Run generates the new motion/force data.
+
+Recorded playback moves the chart cursors without recalculating every Plotly
+chart each frame. Bounds and disturbance samples are cached per recording;
+readouts refresh at 15 Hz during motion and exactly on pause/scrub. Solver data,
+timestamps and exported traces keep their original resolution.
+
 The user clarified on 2026-10-10 that the disturbance is **position**, not force. Default: an illustrative 30 mm upward wheel-hub step, starting at 0.5 s with a 250 ms smooth C2 rise; these values are editable, not confirmed hardware inputs. The floating chassis has an 8 kg corner mass with pitch held and heave free. Its displacement, velocity and acceleration are outputs, alongside pin forces, spring/guide torques and the signed vertical reaction needed to impose the wheel motion. Fixed-hip wheel motion and fixed-wheel chassis motion are alternative fixture tests. Position square waves and finite bump pulses have independent rise/fall times. A zero-duration position jump is rejected; linear joins still give timestep-dependent acceleration/load peaks.
 
 ## Model, decisions and continuation
@@ -97,9 +108,11 @@ old lower-tip strut disabled. Use
 
 ```sh
 npm test
-.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance test_counterbalance_force test_suspension_architecture test_replacement_suspension test_guide_belt test_native_guide test_mechanism_stability
+.venv/Scripts/python.exe -m unittest -v test_physics test_equation_checks test_position_input test_math_model test_spring_mechanisms test_suspension_physics test_gravity_balance test_counterbalance test_counterbalance_force test_suspension_architecture test_replacement_suspension test_guide_belt test_native_guide test_mechanism_stability test_setup_preview
 npm run test:browser
 node scripts/verify_pymunk.cjs
+node scripts/verify_playback_ui.cjs
+node scripts/verify_setup_preview_ui.cjs
 node scripts/verify-force-plots.cjs
 node scripts/verify_suspension_ui.cjs
 node scripts/verify_counterbalance_ui.cjs

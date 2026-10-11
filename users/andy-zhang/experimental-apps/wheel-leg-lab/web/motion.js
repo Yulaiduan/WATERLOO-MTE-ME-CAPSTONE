@@ -265,6 +265,7 @@ document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>selec
 for(const [id,title] of studies){const option=document.createElement('option');option.value=id;option.textContent=title;$('study-select').append(option);}
 $('study-select').onchange=()=>openStudy($('study-select').value);$('theme-toggle').onclick=()=>changeTheme(theme==='dark'?'light':'dark');$('show-gui').onclick=()=>showNativeGui();$('show-playback').onclick=()=>showPlayback(null,tab==='physics'?runs.pymunk:null);$('close-gui').onclick=()=>$('gui-dialog').close();$('save-profile').onclick=requestProfile;$('physics-save-profile').onclick=requestProfile;$('open-data').onclick=()=>selectTab('data');
 $('save-study').onclick=()=>saveStudy(false);$('save-study-data').onclick=()=>saveStudy(true);
+$('gui-dialog').addEventListener('close',()=>send('gui',{type:'motion-lab-deactivate'}));
 for(const host of [document.querySelector('.home-secondary'),document.querySelector('[data-panel="physics"] .workspace-actions')]){
  const button=document.createElement('button');button.dataset.openArchitecture='constant-lift';button.textContent='Open constant-lift wheel-leg suspension';button.onclick=()=>openArchitecture();host.append(button);
 }

@@ -1,6 +1,22 @@
 # Wheel Leg Lab context
 
-Owner: Andy Zhang. Updated: 2026-10-10. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
+Owner: Andy Zhang. Updated: 2026-10-11. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
+
+## Playback and setup previews, 2026-10-11
+
+`web/app.js` caches recording bounds/input samples and updates the existing
+Plotly cursor SVG plus its layout coordinates without per-frame relayout calls.
+The pinned Plotly 3.1.0 shape/axis mapping is covered by zoom/scrub/export tests;
+rerun those checks before upgrading Plotly. Recorded time still follows the
+animation clock, data stays full resolution, and readouts are exact on pause.
+Inactive wheel tabs pause their playback.
+
+`setup_preview.py` and `/api/setup-preview` reuse the wheel builder but never
+call Space.step. Separate preview state renders architecture/geometry edits
+before Run without invented loads or a saved run. Pending preview requests are
+cancelled/superseded, including when Run completes; returning to the previous
+recording preserves unsimulated edits. See latest [validation](../docs/validation.md).
+
 
 ## Sources and scope
 
