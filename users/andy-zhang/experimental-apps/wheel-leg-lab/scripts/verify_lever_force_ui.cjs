@@ -14,7 +14,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   const out=path.join(__dirname,'../artifacts/lever-force-ui');fs.mkdirSync(out,{recursive:true});
   await page.goto('http://127.0.0.1:4186/counterbalance/?loadOnly');
   await page.locator('#c-mode').waitFor();
-  assert.equal(await page.locator('#c-mode').inputValue(),'free');assert.equal(await page.locator('#c-damping').inputValue(),'0');
+  assert.equal(await page.locator('#c-mode').inputValue(),'free');assert.equal(await page.locator('#c-damping').count(),0);
   assert.match(await page.locator('.formula').textContent(),/θ̈/);
   assert.match(await page.locator('.formula').textContent(),/F.*L cos θ/);
   await page.locator('#c-initial_angle_deg').fill('45');await page.locator('#c-initial_angle_deg').dispatchEvent('change');

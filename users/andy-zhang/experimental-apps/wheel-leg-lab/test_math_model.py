@@ -168,7 +168,15 @@ class MathModelTests(unittest.TestCase):
             with self.subTest(topology=name):
                 result = simulate_math(apply_preset({'duration': .9, 'position_amplitude': .008}, name))
                 self.assertIsNone(result['solver']['stop_event'])
-                self.assertGreater(abs(result['rows'][-1]['chassis_displacement']), .0001)
+                if name == 'gravity_balance':
+                    # An undamped ideal compensator largely isolates absolute
+                    # chassis height; relative leg travel still responds.
+                    self.assertEqual(result['config']['damping'], 0.)
+                    self.assertGreater(max(abs(row['theta_deg']-result['config']['theta']) for row in result['rows']), .1)
+                    self.assertLess(max(abs(row['chassis_displacement']) for row in result['rows']), .1*result['config']['position_amplitude'])
+                    self.assertTrue(all(row['dissipation_power_W'] == 0. for row in result['rows']))
+                else:
+                    self.assertGreater(abs(result['rows'][-1]['chassis_displacement']), .0001)
                 self.assertLess(abs(result['diagnostics']['energy_balance_error_J']), 2e-6)
                 self.assertLess(result['diagnostics']['max_torque_check_Nm'], 1e-9)
                 self.assertTrue(all(value < 1e-9 for value in result['equation_check_errors'].values()))

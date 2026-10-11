@@ -1,8 +1,8 @@
 # Constant-lift replacement wheel-leg suspension
 
-Owner: Andy Zhang. Updated: 2026-10-10. Status: editable member experiment.
+Owner: Andy Zhang. Updated: 2026-10-11. Status: editable member experiment.
 The latest clarification replaces the original spring with **one upper-r1
-spring/damper attached to the chassis massblock rigidly mounted at J1**.
+undamped spring attached to the chassis massblock rigidly mounted at J1**.
 The earlier two-stage factory is superseded; no canonical hardware is selected.
 
 Start **Start Motion Lab.cmd** and open
@@ -17,13 +17,13 @@ The lever bridge and main/Physical menus load this profile before the first solv
 | Chassis mount below J1 / upper attachment radius | H=150 mm / R=136.5 mm |
 | Topology / elastic law | `gravity_balance` / `zero_effective` |
 | Effective / physical coil free length | 0 / 230 mm |
-| Auto-calibrated rate / primary damping | about 2260.04367 N/m / 100 N s/m |
+| Auto-calibrated rate / primary damping | about 2260.04367 N/m / 0 N s/m |
 | Auxiliary / knee impedance | Disabled / kp=kd=0 |
 | Guide hip / knee radii | 28 / 14 mm |
 
 The primary force pair acts on the chassis/hip body and upper link. The old
 hip-to-lower-extension strut is disabled. The chassis heaves freely with pitch
-held; wheel height is prescribed. The drawn coil/damper uses actual primary
+held; wheel height is prescribed. The cylinder/routing overlay identifies the actual primary
 anchors. Positive physical coil length emulates the zero-effective law through
 ideal routing/preload; the drawing does not establish real package fit.
 
@@ -31,9 +31,9 @@ For theta from horizontal, `h=2L sin(theta)` and
 `d²=H²+R²-2HR sin(theta)`. Elastic tension `T=k*d` gives moment
 `kHR cos(theta)` and equivalent support `kHR/(2L)`, about 84.751637708 N with
 the demo masses. Tension and moment vary; elastic equivalent support is constant.
-Damping adds velocity-dependent load. Exact compensation is **neutral**: it has
-no positive elastic ride-height stiffness. Damping stops motion but does not
-select a unique static height. No hidden spring or controller repairs that limit.
+The current profile has zero damping. Exact compensation is **neutral**: it has
+no positive elastic ride-height stiffness. A balanced pose at rest can remain
+there; motion is not automatically braked or restored. No hidden spring or controller repairs that limit.
 
 ## Guide belt, solvers and records
 
@@ -62,8 +62,10 @@ See [audit](mechanism-audit.md) and [validation](validation.md).
 ## Optional earlier two-stage variant (superseded factory, 2026-10-10)
 
 The earlier factory added a captured hip-to-lower-tip strut, k8000 N/m and
-c500 N s/m, zero initial elastic preload. It remains explicit via
-`aux_spring_enabled=true`, never auto-enabled. Its actual forces and energy add
+c500 N s/m, zero initial elastic preload. Its legacy solver API remains readable via
+`aux_spring_enabled=true` for historical reproduction, but the current browser
+controls no longer offer it. Profile import into current controls disables it;
+old recorded data is retained. Its actual forces and energy add
 only when selected; extra channels expand the charts to fifteen.
 
 ```text
@@ -74,7 +76,8 @@ K_vertical_at_reference=k_aux (ds/dtheta)²/(dh/dtheta)²
 
 Captured behavior restores either side near reference; one-sided modes can slack.
 Manual preload shifts equilibrium and is not silently removed by primary balance.
-Historical evidence remains in validation.
+Historical evidence remains in validation. The 2026-10-11 user correction also
+removes primary damping from the current factory/catalog and both browser tools.
 
 The wheel-height fixture is bilateral; negative reaction implies ground may detach.
 Tire/terrain contact, pitch/roll, spring implementation, routing/clearance, friction

@@ -49,7 +49,7 @@ Math runs only the 2D SciPy wheel suspension and retains the
 [Comparison workspace](docs/comparison-workspace.md), alongside Profiles & data.
 The standalone lever is in Miscellaneous only. Its default is one free link,
 zero damping and no motor/controller; release preserves velocity. This does not
-change the wheel replacement unit's damping of 100 N s/m.
+add damping to the wheel replacement unit, which is also undamped.
 
 **Show Pymunk visual GUI** starts a live native Pygame simulation using the
 current wheel-height or constant-lift lever profile. The window opens on the computer running this
@@ -74,8 +74,22 @@ physical coil free length stays positive through ideal routing/preload emulation
 The flat quantity is equivalent lift, not spring tension or torque. An ordinary
 finite-effective-free-length coil leaves angle-dependent residual loads. Exact
 gravity compensation is neutral and supplies no restoring ride height. The current
-wheel architecture uses one replacement upper-link/chassis spring with damping;
+wheel architecture uses one undamped replacement upper-link/chassis spring;
 it does not silently add a second restoring spring.
+
+## Cylinder preview and tab memory
+
+The spring preview shows a cylinder, fixed seat, moving end cap and routed
+cable/rod, plus an enlarged cross-section at the upper right. Expand Compare the
+three transmissions to see direct, rigid pull-through and ideal-rope diagrams.
+Recorded cap travel uses the actual saved coil length, including preload and
+slack; housing/idler dimensions are illustrative, not added solver bodies.
+
+Wheel settings and view selections survive tab changes and page refresh in the
+same browser session. Misc studies remember inputs when returning to a study,
+including sliders and checkboxes. Changed input contracts are skipped; explicitly
+loaded profiles win. Constant-lift controls have no damper or extra tip strut.
+Original saved runs/API diagnostics remain available without rewriting their data.
 
 ## Position input correction
 
@@ -101,7 +115,7 @@ Shared requirements remain in the [repository research record](../../../../datab
 ## Checks and limitations
 
 The [replacement constant-lift suspension](docs/suspension-architecture.md) uses
-one upper-link-to-chassis spring/damper on the existing folding leg, with the
+one undamped upper-link-to-chassis spring on the existing folding leg, with the
 old lower-tip strut disabled. Use
 **Use in wheel-leg suspension** on the lever page, or open
 [the architecture preview](http://127.0.0.1:4186/?tab=physics&architecture=constant-lift).

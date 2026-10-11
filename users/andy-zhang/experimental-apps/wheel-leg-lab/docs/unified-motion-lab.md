@@ -244,3 +244,18 @@ explicitly resets angle/speed. Stateless SciPy
 wall time, capped at a 20-second recording. Force intervals export for replay.
 Prescribed angular motion remains an explicit motor diagnostic. Wheel
 suspension damping remains 100 N s/m.
+
+## UI memory and cylinder display, 2026-10-11
+
+Math and Physics keep their frames when switching top-level tabs. Versioned
+session storage remembers their configurations/view controls after refreshing
+the same browser tab. Miscellaneous study navigation snapshots inputs, sliders,
+checkboxes and disclosures; only matching field contracts are restored. An
+explicit imported profile or study setting overrides memory. Session storage
+is not a portable profile or a recorded run: use JSON for durable backup.
+
+Both wheel previews include an enlarged spring-cylinder cross-section and
+three transmission diagrams. The selected end cap follows actual recorded
+coil length, while the package drawing remains schematic. Current constant
+lift has no damper or extra tip strut option; earlier API/run diagnostics are
+retained.

@@ -2,6 +2,63 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
 
+## Cylinder/routing, UI memory and undamped constant lift, 2026-10-11
+
+Current gravity-balance factory/catalog damping is **0 N s/m**; auxiliary is off.
+The browser has no constant-lift damping field or optional tip-strut controls.
+The standalone lever's damping control is also retired. Legacy backend fields
+and original saved recordings remain available for historical reproduction;
+loading a profile into current controls selects the undamped, one-spring form.
+
+- 58 JavaScript tests pass, including the recorded-length/slack adapter checks.
+- The full 125-test Python run initially passed 123 tests and the six-second
+  108-backend-case catalog sweep (no stops/slack/nonfinite state/actuator, positive
+  prescribed support). Two old assumptions failed after the intended damping
+  change: a minimum chassis response and a damped final-angle error budget.
+  Current undamped chassis isolation is now checked using actual relative leg
+  travel, low absolute chassis motion, zero dissipation and energy closure;
+  the historical damping-ledger test explicitly selects damping100. All31 tests
+  in the four affected modules pass on rerun; the full125 suite was not repeated.
+  The unchanged other modules' initial passes remain scoped to that run.
+- Actual current undamped 1.2s/8mm case Pymunk/SciPy angle discrepancies at
+  1/.5/.25ms were .0315123/.0133835/.0061061deg; the retained explicit damping100
+  diagnostic refines to .0158129/.0065896/.0029694deg. These are experimental
+  numerical comparisons, not hardware accuracy or a new6mdeg acceptance claim.
+- Seven browser suites pass: transmission_memory, suspension_architecture,
+  playback, setup_preview, lever_force, counterbalance and motion_lab. Real
+  recorded end-cap positions match captured coil length and sign, including the
+  three routes and rope idler. Tests cover tab/refresh/study number, checkbox,
+  slider and view memory, changed-field exclusion, explicit profile precedence,
+  old-record library/native routing, mobile/theme and no per-frame Plotly relayout.
+- The early transmission harness used direct compression with incompatible
+  automatic support preload, correctly rejected by the backend; it now uses
+  a bilateral coil to compare routes. A later harness assumed a select existed
+  in the ratio study, corrected to its actual number/checkbox/slider controls.
+  Playback's second case initially restored the previous case's2x speed through
+  the new memory; its strict wall-clock check now explicitly sets1x and passes.
+  This failure was initially suspected to be concurrent CPU load, then traced
+  to the retained speed. No timing assertion was loosened.
+- The cylinder was initially offset below the upper link. User feedback moved
+  it above r1 and removed the old duplicate straight orange tangent-span line.
+  Gray is the mounting bracket, purple the rod/cable, orange coil/drum, green cap.
+  The current in-app preview was refreshed and visually inspected with settings
+  preserved. Three comparison examples use a positive200mm reference coil and
+  +20mm input travel, independently of edited solver preload.
+- Actual project-local CMD stop/start/reuse succeeds from C:/Windows at the
+  original127.0.0.1:4186. Node syntax, Python compilation, Markdown links/fences,
+  diff hygiene and repository gates are checked before publication.
+
+Housing/bracket/idler packaging is an explanatory massless drawing, not added
+solver inertia/contact, cable inventory, solid-height or clearance validation.
+The selected moving cap uses actual resolved physical free length and captured
+coil length, not a second integration. Zero-effective compensation is still an
+ideal offset/preload emulation. New full desktop-window lifecycle tests were
+not run; browser native endpoint routing was checked with the existing mocks.
+Earlier live-window evidence remains historical. Canonical physics is NOT
+APPLICABLE to this member workspace. Historical performance timings below
+predate this additional cylinder overlay; only the current playback regression,
+not a new FPS benchmark, is claimed here.
+
 ## Playback performance and setup previews, 2026-10-11
 
 The cause was 11/12 Plotly cursor relayouts every 0.1 simulation seconds, each

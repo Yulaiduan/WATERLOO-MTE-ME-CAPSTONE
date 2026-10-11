@@ -25,7 +25,7 @@ class ReplacementSuspensionTests(unittest.TestCase):
         c = constant_lift_profile()
         self.assertEqual(c['spring_topology'], 'gravity_balance')
         self.assertEqual(c['spring_force_law'], 'zero_effective')
-        self.assertEqual(c['damping'], 100.)
+        self.assertEqual(c['damping'], 0.)
         self.assertFalse(c['aux_spring_enabled'])
         self.assertEqual(c['knee_kp'], 0.)
         self.assertEqual(c['knee_kd'], 0.)
@@ -53,7 +53,7 @@ class ReplacementSuspensionTests(unittest.TestCase):
             for speed in (-.4, .3):
                 moving = generalized(q, speed, p['spring_config'], p['input_ref'])
                 law = moving['law']
-                self.assertGreater(law['dissipation_rate'], 0.)
+                self.assertEqual(law['dissipation_rate'], 0.)
                 bodies = equal_poses(q, c, theta_speed=speed, base_speed=.2)
                 geometry = geometry_from_bodies(bodies, c)
                 self.assertAlmostEqual(force_pair_power(geometry['force_sites'], bodies, law['tension']),

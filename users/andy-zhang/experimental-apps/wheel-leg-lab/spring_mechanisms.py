@@ -68,6 +68,7 @@ CATALOG = {
 for _entry in CATALOG.values():
     _entry['status'] = 'Illustrative editable preset; dimensions are not confirmed hardware.'
     _entry['defaults'].update(stiffness=8000., damping=100.)
+CATALOG['gravity_balance']['defaults'].update(damping=0.)
 CATALOG['legacy_tip']['defaults'].update(stiffness=20000., damping=500.)
 CATALOG['hip_pulley']['defaults'].update(spring_pulley_radius=.08, damping=500.)
 CATALOG['knee_pulley']['defaults'].update(damping=500.)

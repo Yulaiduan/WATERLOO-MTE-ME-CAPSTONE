@@ -1,13 +1,13 @@
 # Suspension spring presets
 
-Owner: Andy Zhang. Updated: 2026-10-10. Status: editable experimental interpretations of the user's sketches, not selected or measured hardware.
+Owner: Andy Zhang. Updated: 2026-10-11. Status: editable experimental interpretations of the user's sketches, not selected or measured hardware.
 
 Source sketches: [six suspension layouts](../references/suspension-layouts.png)
 and [internal pulley / pull-through capture](../references/pull-through-capture.png).
 
 ## Nine mechanisms
 
-The Mathematical and 2D Physical tabs share this catalog. The original spring remains available alongside six sketch mechanisms, the internal knee capture arrangement and the later constant-lift gravity compensator. Selecting a preset loads demo geometry and a default coil/routing law; mounts, lengths, radius, direction, free length, stiffness and damping remain editable. The leg's physical 2:1 guide remains separate from the suspension drum.
+The Mathematical and 2D Physical tabs share this catalog. The original spring remains available alongside six sketch mechanisms, the internal knee capture arrangement and the later constant-lift gravity compensator. Selecting a preset loads demo geometry and a default coil/routing law; mounts, lengths, radius, direction, free length, stiffness and damping remain editable (constant lift is undamped in the current UI). The leg's physical 2:1 guide remains separate from the suspension drum.
 
 | Preset ID | Mechanism and physical force sites | Default coil / transmission |
 | --- | --- | --- |
@@ -90,7 +90,26 @@ with angle, even when the initial pose is calibrated. Exact undamped gravity
 compensation is neutrally balanced without ride-height restoring stiffness, so
 it does not supply restoring ride-height stiffness. The current one-unit
 [replacement architecture](suspension-architecture.md) keeps that limit explicit
-and adds damping to the same unit, with auxiliary off. Validation is recorded in
+and is now undamped, with the extra-tip option removed from current controls. Validation is recorded in
 [validation.md](validation.md).
 
 Primary API references: [Pymunk body forces and Space](https://www.pymunk.org/en/latest/pymunk.html), [constraints and DampedSpring](https://www.pymunk.org/en/latest/pymunk.constraints.html), and the [official Pygame debug renderer](https://www.pymunk.org/en/latest/pymunk.pygame_util.html).
+
+## Cylinder and routing preview, 2026-10-11
+
+`web/spring-transmission.js` draws the housing, fixed seat, moving end cap and
+rod/cable in the leg overlay and an enlarged cross-section at the upper right.
+Direct transmission moves the cap with the coil span; pull-through reverses
+coil travel. The rope diagram turns over an ideal idler and never depicts a
+compressive cable force. Coil length is taken from the actual saved/setup
+frame, with resolved physical free length (including automatic preload), not
+inferred from the picture. Disengagement uses the saved relaxed coil length.
+The three comparison diagrams show the same illustrative +20 mm input travel and 200 mm reference coil;
+coil engagement and force are separate from those kinematic examples.
+
+These are massless explanatory package/routing drawings. No housing inertia,
+contact, cable sag/friction/inventory or solid-height limit is added to the
+solver. Zero-effective compensation still requires ideal preload/offset
+emulation; depicting a cylinder does not turn an ordinary finite-free coil
+into an exact constant-lift device. Invalid preload/routing combinations remain
+explicit errors. The separate 2:1 guide belt is unchanged.

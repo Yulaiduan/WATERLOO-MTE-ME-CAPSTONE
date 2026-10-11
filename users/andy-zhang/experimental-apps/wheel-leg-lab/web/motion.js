@@ -4,6 +4,7 @@
  * Browser playback is recorded; native GUI physics runs on the simulation host desktop.
  * Local loopback app only, no remote data upload or browser-to-host screen streaming.
  */
+import {captureForm,restoreForm} from './form-memory.js';
 import {saveRecord,downloadJSON} from './library.js';
 import {mountDataBrowser} from './data-browser.js';
 import {mountComparison} from './comparison.js';
@@ -11,6 +12,10 @@ const $=id=>document.getElementById(id),frames=new Map(),pending=new Map(),ready
 let tab='home',mathModel='scipy',theme=document.documentElement.dataset.theme||'light',guiResult=null;
 let nativeSession=null,nativeConfig=null,nativePoll=0,nativeGeneration=0;
 let architectureLoading=false;
+const studyMemory=new Map();
+function rememberStudy(){const f=frames.get('studies');if(f?.dataset.study&&f.contentDocument&&new URL(f.contentDocument.URL).pathname===studies.find(s=>s[0]===f.dataset.study)?.[2]){const snapshot=captureForm(f.contentDocument);studyMemory.set(f.dataset.study,snapshot);try{sessionStorage.setItem('motion-lab-study/v1:'+f.dataset.study,JSON.stringify(snapshot));}catch{}}}
+function restoreStudy(frame,id){if(frame.dataset.study!==id)return;let saved=studyMemory.get(id);if(!saved)try{saved=JSON.parse(sessionStorage.getItem('motion-lab-study/v1:'+id)||'null');}catch{}restoreForm(frame.contentDocument,saved,{dispatch:true});}
+
 const studies=[['gallery','All motion studies','/animations/'],['counterbalance','Constant-lift lever','/counterbalance/'],['ratio','Wheel / link force & travel','/force-plots/'],['linear','Straight 2:1 leg','/animations/linear-leg/'],['coaxial','Independent coaxial wheel drive','/animations/coaxial-wheel-leg/'],['tilt','Tilted invertible leg','/animations/tilted-invertible-leg/'],['mirror','Mirrored left tilt','/animations/left-tilted-leg/'],['reindex','Historical reindexing alternative','/animations/two-position-left-leg/'],['fixed','Fixed 4:1 working strokes','/animations/fixed-ratio-left-leg/'],['paths','Mathematical path family','/animations/leg-path-family/'],['recorded','Recorded Pymunk playback','/recorded/'],['legacy-linkage','Archive · detailed linkage (retired)','/linkage/']];
 const counterbalanceBackend=backend=>['counterbalance_math','counterbalance_pymunk'].includes(backend);
 const activeCounterbalance=()=>tab==='studies'&&$('study-select').value==='counterbalance';
@@ -52,6 +57,7 @@ function selectTab(next){
  const url=new URL(location.href);url.searchParams.set('tab',tab);if(tab==='math')url.searchParams.set('model',mathModel);else url.searchParams.delete('model');if(tab==='studies')url.searchParams.set('study',$('study-select').value);else url.searchParams.delete('study');if(tab!=='physics')url.searchParams.delete('architecture');history.replaceState(null,'',url);
 }
 function openStudy(id,loadOnly=false){
+ rememberStudy();
  const study=studies.find(s=>s[0]===id)||studies[0];$('study-select').value=study[0];
  const key=study[0]==='counterbalance'?'counterbalance':study[0]==='legacy-linkage'?'linkage':'studies';if(key!=='counterbalance'&&frames.has('counterbalance'))send('counterbalance',{type:'motion-lab-deactivate'});
  const model=key!=='studies';$('save-study').disabled=study[0]==='gallery';$('save-study-data').disabled=model||!['ratio','paths','recorded'].includes(study[0]);
@@ -59,6 +65,7 @@ function openStudy(id,loadOnly=false){
  let frame=frames.get(key);
  if(!frame)frame=ensureFrame(key,'studies-host',study[2]+'?embedded=1'+(loadOnly?'&loadOnly=1':''),study[1]);
  else if(key==='studies'&&frame.dataset.study!==study[0]){frameConfigs.delete(key);ready.delete(key);pending.delete(key);frame.src=study[2]+'?embedded=1';frame.title=study[1];}
+ if(key==='studies'&&frame.dataset.study!==study[0])frame.addEventListener('load',()=>restoreStudy(frame,study[0]),{once:true});
  frame.dataset.study=study[0];for(const item of ['studies','counterbalance','linkage'])if(frames.has(item))frames.get(item).hidden=item!==key;
  if(tab==='studies'){const url=new URL(location.href);url.searchParams.set('study',study[0]);history.replaceState(null,'',url);}
  return frame;
@@ -90,7 +97,7 @@ async function openArchitecture(){
  if(architectureLoading)return;architectureLoading=true;clearError();
  const buttons=document.querySelectorAll('[data-open-architecture]');buttons.forEach(button=>button.disabled=true);
  try{
-  status('Loading the upper-link ↔ chassis constant-lift spring/damper on the 2:1 wheel leg…');
+  status('Loading the upper-link ↔ chassis constant-lift undamped spring on the 2:1 wheel leg…');
   const response=await fetch('/api/suspension-architecture/defaults');let value;
   try{value=await response.json();}catch{throw Error('Suspension architecture endpoint unavailable. Restart Motion Lab with its project launcher.');}
   if(!response.ok)throw Error(value.error||'Could not load the suspension architecture.');
@@ -99,20 +106,23 @@ async function openArchitecture(){
   loadProfile({backend:'pymunk',name:'Constant-lift suspension',config},'pymunk');
   send('physics',{type:'motion-lab-run'});
   const url=new URL(location.href);url.searchParams.set('architecture','constant-lift');history.replaceState(null,'',url);
-  status('Replacement spring/damper loaded. Running the floating chassis, 200 mm wheel and 2:1 guide with one upper-link-to-chassis unit replacing the original lower-link strut.');
+  status('Replacement spring loaded. Running the floating chassis, 200 mm wheel and 2:1 guide with one upper-link-to-chassis unit replacing the original lower-link strut.');
  }catch(cause){error(cause);}finally{architectureLoading=false;buttons.forEach(button=>button.disabled=false);}
 }
 function loadStudy(record){
  const settings=record.result?.study_settings;if(!settings||!studies.some(study=>study[0]===settings.id))throw Error('Unknown motion study.');
+ const old=frames.get('studies'),alreadyLoaded=old?.dataset.study===settings.id&&old.contentDocument?.readyState==='complete';
  $('study-select').value=settings.id;selectTab('studies');
- const frame=frames.get('studies');frame.addEventListener('load',()=>requestAnimationFrame(()=>{
+ const frame=frames.get('studies');
+ const apply=()=>requestAnimationFrame(()=>{
   for(const control of settings.controls){const node=frame.contentDocument.getElementById(control.id);if(!node||!['INPUT','SELECT'].includes(node.tagName)||node.type==='file')continue;
    if(node.type==='checkbox')node.checked=Boolean(control.value);else node.value=String(control.value);
    node.dispatchEvent(new Event('input',{bubbles:true}));node.dispatchEvent(new Event('change',{bubbles:true}));
   }
   if(settings.widget_state)frame.contentWindow.dispatchEvent(new CustomEvent('openai:set_globals',{detail:{globals:{widgetState:settings.widget_state}}}));
-  status('Motion-study settings restored. Plotly data remains available in the saved JSON.');
- }),{once:true});
+  rememberStudy();status('Motion-study settings restored. Plotly data remains available in the saved JSON.');
+ });
+ if(alreadyLoaded)apply();else frame.addEventListener('load',apply,{once:true});
 }
 async function saveStudy(withData){
  clearError();try{
@@ -275,4 +285,4 @@ if(query.get('architecture')==='constant-lift'){
  ensureFrame('physics','physics-host','/physics/?embedded=1&loadOnly=1','Actual 2D Pymunk physical model');selectTab('physics');void openArchitecture();
 }else selectTab(query.get('tab')||'home');
 if(query.get('gui')==='1'){let config=null;try{config=JSON.parse(sessionStorage.getItem('motion-lab-gui-profile')||'null');}catch{}void showNativeGui(config);}
-window.addEventListener('pagehide',()=>{nativeGeneration++;clearTimeout(nativePoll);});
+window.addEventListener('pagehide',()=>{rememberStudy();nativeGeneration++;clearTimeout(nativePoll);});

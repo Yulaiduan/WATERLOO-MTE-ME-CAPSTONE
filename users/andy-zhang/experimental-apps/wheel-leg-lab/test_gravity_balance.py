@@ -121,7 +121,9 @@ class GravityBalanceTests(unittest.TestCase):
         json.dumps(result, allow_nan=False)
 
     def test_dynamic_refinement_matches_independent_energy_and_damping_ledger(self):
-        values = {'spring_topology': 'gravity_balance', 'duration': 1.2, 'position_amplitude': .008}
+        # Retain the historical damped diagnostic's ledger and error budget.
+        # The current undamped factory is covered by replacement/energy tests.
+        values = {'spring_topology': 'gravity_balance', 'damping': 100., 'duration': 1.2, 'position_amplitude': .008}
         reference = simulate_math(values)
         self.assertLess(abs(reference['diagnostics']['energy_balance_error_J']), 1e-7)
         elastic = reference['spring_mechanism']['constant_elastic_lift_N']

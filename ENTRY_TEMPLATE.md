@@ -1599,3 +1599,59 @@ Both wheel-model tabs show separate zero-step architecture previews before Run a
 Use the project-local launcher and the new playback/setup browser checks before changing renderers, Plotly versions or preview/record state handling.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — cylinder transmissions, tab memory and undamped constant lift
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab browser suspension/lever preview and control memory.
+- **Associated Issue/Task:** Show a cylinder, cable/rod routing and compressing end cap on the leg and an enlarged upper-right view; distinguish all three transmissions; retain unchanged form inputs across tabs; remove constant-lift damping and the optional extra tip strut. User feedback also requested a clearer cylinder placement and explanation of the old orange span.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/constant-lift.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-architecture.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_lever_force_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_playback_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suspension_architecture_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_transmission_memory_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/setup_preview.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/suspension_architecture.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_gravity_balance.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_replacement_suspension.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/spring-transmission.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/counterbalance/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/form-memory.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/spring-transmission.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/style.css`
+- **API/Interface Changes:** Add spring-transmission SVG adapter using captured/setup coil length, resolved free length, input travel and engagement; keep explanatory package/routing dimensions separate from solver bodies. Show fixed seat, green moving cap, rod/rope/idler and rotating spring drum plus three200mm-reference/+20mm comparison diagrams; cache the static comparisons during playback. Place the cylinder above r1 after user feedback and remove the duplicate straight orange span. Setup-preview adds actual_rest_length and frame spring_slack while remaining zero-step/no-load. Add contract-matched form memory; wheel config/views persist in backend-specific session storage and Misc study inputs/disclosures restore after navigation. Explicit profile/study loads take precedence; fix loading a profile into an already-loaded study. Preserve guide geometry/visibility on preset changes. Set current gravity-balance factory/catalog damping0, auxiliary off, remove constant-lift damper controls and all extra-strut UI; retain historical solver APIs and saved run data. Update current docs and scoped regression checks. No shared assets/runtime/interfaces/rules are changed or original files deleted.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 58 JavaScript tests pass. Full125 Python run initially passed123 and the complete108 six-second catalog backend cases, including current undamped constant lift with no stops/slack/nonfinite state/actuator and positive support. Two older assertions failed after the requested change: minimum absolute chassis movement and a damped error budget. The undamped isolation test now checks actual relative travel, low absolute chassis movement, zero dissipation and energy closure; the historical damping-ledger test explicitly selects damping100. All31 tests in the four affected Python modules pass on rerun; the full125 suite was not repeated. Current undamped1.2s/8mm Pymunk/SciPy final-angle errors refine .0315123/.0133835/.0061061deg at1/.5/.25ms, reported without calling them a6mdeg pass; explicit damping100 historical case refines .0158129/.0065896/.0029694deg. Seven actual browser suites pass transmission_memory, suspension_architecture, playback, setup_preview, lever_force, counterbalance and motion_lab. Coverage includes actual saved coil/cap travel/sign, three routes and rope idler, setup beforeRun, no unsolved forces, current damping0 and extra controls absent, N/kgf, live force/release, profile/library/native mock routing, tab/refresh/study numbers/checkboxes/sliders/views, contract mismatch exclusion, explicit import precedence, Plotly cursor/zoom/export/pause and mobile/theme. Native desktop-window lifecycle was not rerun; earlier live-window evidence remains historical. Actual project-local CMD stop/start/reuse from C:/Windows verifies the unchanged127.0.0.1:4186 preview. Node syntax, Python compilation, edited Markdown links/fences and diff hygiene pass; fetched-base working/staged/publication checks run before push. Raw traces/screenshots and environments remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Housing/idler/bracket drawings are massless explanatory packaging, not contact, cable inventory, solid-height, hardware or clearance validation; zero-effective balance still requires ideal offset/preload emulation. Old recorded runs retain their original config/data; new controls normalize constant lift to undamped and no auxiliary. Session memory is not portable JSON or a durable saved run. An early route-comparison harness selected incompatible automatic compression/direct preload, correctly rejected; it now uses captured coil behavior. Another harness expected a select absent from the actual ratio study and was corrected to its number/checkbox/slider controls. Playback initially restored the prior case's2x speed; its strict wall-clock test now explicitly selects1x, with no loosened bound. That failure was first suspected as concurrent CPU load before finding speed memory. A doc-edit command was issued from C:/Windows with a relative Python path, failed without modifying files, and was rerun from the app root; the launcher lifecycle itself passed. The in-app current preview was refreshed and visually checked with settings retained. Historical FPS measurements predate the additional cylinder overlay; current no-relayout/timing regression is the scoped claim.
+
+## 4. Compute Saving Handoff State
+
+The wheel preview now shows leg-mounted cylinder/rod/cable routing and an enlarged moving-cap cross-section, with separate diagrams explaining the three transmissions.
+Current constant lift is undamped with no extra-tip spring option, while versioned contract-matched session/study memory keeps controls across navigation and explicit imports retain authority.
+Continue from the updated preset/architecture/validation records, preserve original runs and legacy reproduction APIs, and use Start Motion Lab.cmd at port4186 with the transmission-memory and playback checks.
+
+---

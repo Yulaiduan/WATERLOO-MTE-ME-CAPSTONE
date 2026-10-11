@@ -24,7 +24,7 @@ def preview(values=None):
     frame = {'t': 0., 'hip': list(A), 'knee': list(B), 'hub': list(C), 'tip': list(E),
              'upper_angle': u.angle, 'lower_angle': l.angle,
              'debug_draw': capture(model['space']), 'spring_geometry': geometry,
-             'spring_coil_length': law['coil_length']}
+             'spring_coil_length': law['coil_length'], 'spring_slack': law['slack']}
     if c['guide_pulleys_visible']:
         frame['guide_pulleys'] = guide_pulley_frame(c, A, B, h.angle, u.angle, l.angle)
     if model['auxiliary']['enabled']:
@@ -33,7 +33,7 @@ def preview(values=None):
         frame['auxiliary_spring_geometry'] = g
         frame['auxiliary_spring_coil_length'] = spring_law(g['input_length'], 0., aux['config'], aux['input_ref'])['coil_length']
     return {'kind': 'setup-preview', 'solver_steps': 0, 'config': c,
-            'model': describe(model), 'frame': frame,
+            'actual_rest_length': model['rest'], 'model': describe(model), 'frame': frame,
             'geometry': {'theta_deg': c['theta'], 'height': A.y-C.y,
                          'spring_length': geometry['input_length'],
                          'spring_coil_length': law['coil_length']},

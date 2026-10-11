@@ -17,7 +17,9 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
    await page.evaluate(run=>window.postMessage({type:'motion-lab-load-result',result:run},location.origin),run);
    await page.locator('#status').filter({hasText:'Recorded'}).waitFor();await page.waitForFunction(()=>[...document.querySelectorAll('.chart')].every(n=>n._fullLayout?.shapes?.[0]));
    await page.evaluate(()=>{window.playbackProbe={relayouts:0,intervals:[]};const original=Plotly.relayout;Plotly.relayout=function(...args){window.playbackProbe.relayouts++;return original.apply(this,args);};let last=0;function sample(t){if(window.playbackProbe.stopped)return;if(last)window.playbackProbe.intervals.push(t-last);last=t;requestAnimationFrame(sample);}requestAnimationFrame(sample);});
-   await page.locator('#play').click();await page.waitForTimeout(900);await page.locator('#play').click();
+   // Tab memory deliberately retains the previous case's final 2x selection.
+   // Set the rate explicitly for this one-times wall-clock assertion.
+   await page.locator('#speed').selectOption('1');await page.locator('#play').click();await page.waitForTimeout(900);await page.locator('#play').click();
    const measured=await page.evaluate(()=>{window.playbackProbe.stopped=true;return {...window.playbackProbe,time:Number(document.querySelector('#time').value)};});
    assert.equal(measured.relayouts,0,'Playback must not repeatedly recalculate all Plotly charts');assert.ok(measured.time>.6&&measured.time<1.3);
    const scrub=async t=>page.locator('#time').evaluate((n,t)=>{n.value=t;n.dispatchEvent(new Event('input',{bubbles:true}));},t);

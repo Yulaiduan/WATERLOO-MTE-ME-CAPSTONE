@@ -96,15 +96,15 @@ evidence and numerical limits are recorded in [validation](../docs/validation.md
 The user clarified that constant lift **replaces the original spring**: one unit
 runs from upper r1 to the chassis massblock rigidly mounted at J1. The current
 [architecture](../docs/suspension-architecture.md) disables the auxiliary strut,
-uses primary damping 100 N s/m and keeps the knee controller disabled. Elastic
+now uses zero primary damping and keeps the knee controller disabled (2026-10-11 correction). Elastic
 balance is neutral; damping does not create a unique static ride height.
 
 The chassis and 28/14 mm guide drums are real massless sensor geometry. Belt
 marks and tangent vectors visualize the ideal guide's torque-equivalent tension
 difference, not additional solver bearing forces. Optional viewer baseline N/kgf
 is saved separately from reference-sheet T₀ and solver config. The earlier
-two-stage factory is superseded; its explicit optional variant and validation
-history remain documented. Continue from the architecture, mechanism audit and
+two-stage factory is superseded; its legacy API and validation
+history remain documented, but its browser option is retired. Continue from the architecture, mechanism audit and
 latest validation, not an older release's test count.
 
 ## Comparison and free single-link interaction, 2026-10-10
@@ -119,6 +119,25 @@ active plot and supports independent trace visibility/splits and signed deltas.
 The standalone default is free, undamped and uncontrolled. Up/Down applies
 vertical end force; release leaves angular velocity intact. Place at rest is
 an explicit zero-speed reset, not a holding controller. Live stateless SciPy
-advances preserve state/force history for replay. The wheel model remains the
-upper-link/chassis replacement spring with damping 100 N s/m. Latest scoped
+advances preserve state/force history for replay. The wheel model now uses an
+undamped upper-link/chassis replacement spring (2026-10-11 correction). Latest scoped
 checks are in validation; the unchanged wheel core's full audit was not rerun.
+
+## Cylinder visualization and setting memory, 2026-10-11
+
+The user requested cylinders and cable/end-cap routing instead of an ideal-coil
+symbol. `web/spring-transmission.js` renders actual captured coil length and
+resolved free length with a constant display scale, plus enlarged top-right
+geometry and three illustrative +20mm travel comparisons. Housing and routing
+are explanatory geometry only; no solver bodies/contact are added.
+
+`web/form-memory.js` matches control identity, type, options, units/scale and
+bounds before restoring values. Wheel controls/views use backend-specific
+session memory; Misc snapshots a study before its shared iframe navigates and
+restores matching fields after load. Explicit imported profiles/settings win.
+
+The current gravity-balance catalog/factory has damping0 and auxiliary off.
+The browser removes constant-lift damping and all extra-tip strut controls;
+legacy solver fields and previously recorded runs remain reproducible. Continue
+from current validation rather than applying historical damping100 evidence to
+this undamped profile.

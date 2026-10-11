@@ -1,6 +1,6 @@
 # Constant-lift gravity compensation
 
-For the one-unit upper-link/chassis replacement spring/damper implementation,
+For the one-unit upper-link/chassis replacement undamped spring implementation,
 open [the suspension architecture](suspension-architecture.md). The lever page's
 **Use in wheel-leg suspension** button loads that configured physical model.
 
