@@ -1520,3 +1520,40 @@ Sidebar and focus toggles resize Plotly while preserving selected channels, lege
 Use Sources & help for portable compact JSON, Controls for plot configuration and Exit focus or Escape to return to the compact workspace.
 
 ---
+
+## Entry: 2026-10-10 — Andy Zhang — Capstone controls conversation context
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy Zhang's shared member controls context.
+- **Associated Issue/Task:** The user requested a scan of Capstone robot-controls chats and publication of organized context notes, explored topics, floating problems and questions in context/users/andy-zhang. Curate available project excerpts, targeted earlier conversation retrieval and current repository evidence while preserving their different evidentiary status.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `context/users/andy-zhang/README.md`
+- `context/users/andy-zhang/2026-10-10-chatgpt-controls-overview.md`
+- `context/users/andy-zhang/2026-10-10-chatgpt-controls-topics.md`
+- `context/users/andy-zhang/2026-10-10-chatgpt-controls-open-questions.md`
+- `context/users/andy-zhang/2026-10-10-chatgpt-controls-model-reference.md`
+- `context/users/andy-zhang/2026-10-10-chatgpt-controls-sources.md`
+- **API/Interface Changes:** None. Add five linked, dated Markdown notes and an entry section in Andy's README. Record twelve core project-thread excerpts, separately attributed earlier context, fifteen open questions and illustrative equations. Distinguish historical knee-spring discussions, current passive prescribed-wheel-motion experiments and proposed outer/MIT whole-robot control. Preserve earlier handoffs and all app/canonical files. No raw private transcripts, account exports, partner correspondence or unrelated personal context are imported.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Targeted Markdown validation passes across the five notes and member README: 99 relative links/anchors resolve, code and display-math fences balance, and all files have final newlines. Git diff whitespace check passes. Independent analytical review confirms the illustrative fixed-MIT plant, spring-energy derivatives, coordinate/Jacobian mapping and moving-base equation under their stated assumptions; review clarifications distinguish inertial chassis motion from relative extension, loaded geometric stiffness and net support from active force. Independent coverage review found no major missing topic in the available core excerpts. Source and public-project scope were reviewed against base 7c5cbc76efd36876e829803efc49578bea24f7fa; full-transcript/image coverage limits are explicit. The commands python tools/check_entry.py --base origin/main, python tools/check_entry.py --base origin/main --require-passed and python tools/check_entry.py --staged --base origin/main all pass (482 files, seven changed paths, workspace scope). python tools/physics_gate.py --base origin/main exits successfully and reports canonical physics NOT APPLICABLE, with no app execution or gate regressions.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this Markdown-only member context contribution. No controller implementation, simulator run, hardware test, new performance result or current vendor-capability verification is claimed. Existing Motion Lab numerical/GUI/launcher evidence remains in its owning records and was not rerun. Publication uses the connected GitHub tools with the locally checked staged tree and an expected-head ref update; no shared history is rewritten.
+
+## 4. Compute Saving Handoff State
+
+Andy's member README now links a controls overview, explored topics, fifteen open questions, an illustrative modeling reference and a dated source map.
+The packet preserves plant-boundary, outer-command, impedance/damping, geometry, simulation, sensing and timing questions while separating proposals from the current passive app and disclosing incomplete transcript retrieval.
+Continue from the overview and the selected open questions, and record accepted engineering decisions in their existing owning documents with supporting evidence.
+
+---
