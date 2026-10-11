@@ -1655,3 +1655,47 @@ Current constant lift is undamped with no extra-tip spring option, while version
 Continue from the updated preset/architecture/validation records, preserve original runs and legacy reproduction APIs, and use Start Motion Lab.cmd at port4186 with the transmission-memory and playback checks.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — correct the three spring transmission assemblies
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab spring transmission hardware choices and preview.
+- **Associated Issue/Task:** User clarified three assemblies: normal bare inline spring, behavior-reversing cylinder/piston, and that piston pulled by rope attached at its end. Pulley mechanisms require cylinder plus rope; other layouts offer inline or rigid reversing piston.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_suspension_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_transmission_memory_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_suspension_physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/spring-transmission.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/spring-transmission.js`
+- **API/Interface Changes:** Keep existing direct/pullrod/ideal_rope JSON IDs and force law definitions. Hip/knee pulley and knee-capture catalog defaults now select compression/ideal_rope. Restrict current pulley UI to type3 and non-pulley UI to type1/type2; adapt old incompatible choices during current profile/session import while retaining legacy explicit solver fields and original recorded data. Restore config from its authoritative object, then only raw view controls/disclosures, preventing old remembered dropdowns from undoing migration. Remove all housing/piston-rod symbols from inline preview; reversing piston has a fixed-length rigid rod with moving end eye; rope starts at that outside eye, turns around an external idler and never goes through the coil/cap. Use these distinct assemblies in leg/enlarged/comparison views. Keep current undamped constant lift, removed aux UI, guide geometry and recorded force data. Update current docs and existing scoped tests; no shared assets/runtime/interfaces/enforcement or original archives are changed.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All60 JavaScript tests pass, including new SVG assembly/rod/cable attachment/travel checks. All40 affected Python tests pass across test_spring_mechanisms, test_suspension_physics, test_setup_preview and test_math_model. They check nine force/work/energy models, actual independent SciPy/Pymunk loads/refinement, historical inline-pulley versus reversing-piston external compliance, internal coil travel sign and legacy explicit routes. Updated pulley1.2s Pymunk/SciPy angle errors at1/.5/.25ms remain .0024606/.0012375/.0006206deg hip and .0089326/.0045268/.0022777deg knee/capture. Four browser suites pass verify_transmission_memory_ui, verify_setup_preview_ui, verify_suspension_ui and verify_playback_ui: all9 presets on both actual backends, distinct assembly drawings, rope/rod-eye attachment, setup without loads, recorded coil/cap motion, route restrictions, profile/session/view/tab memory, unaffected 2:1 guide and Plotly pause/zoom/export/mobile. Updated in-app preview is visually inspected and retained. Actual project-local CMD stop/start/reuse works from C:/Windows at127.0.0.1:4186. Node syntax/Python compilation, edited Markdown links/fences and diff hygiene pass; fetched-base working/staged/publication checks run before push. Raw screenshots/results/environments stay ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated workspace. Housing/rod/idler mounting dimensions remain explanatory, not added solver contact/inertia, actual package fit, cable inventory or hardware/structural validation. Rope cannot push; incompatible coil/preload combinations still fail explicitly. New default routing preserves tested external compliance while internal coil motion reverses; old runs are not silently rewritten. Two initial Python comparison assertions assumed old knee-pulley defaults; their legacy reference cases now explicitly select extension/direct. One intermediate rerun had loaded the old assertion before the edit; final full40 affected tests pass with original numerical tolerances retained. An overly broad documentation table replacement briefly misclassified bellcranks, corrected to unchanged extension/inline before publication. The full125 tests,108 six-second envelope and native-window lifecycle were not rerun; earlier evidence retains historical scope.
+
+## 4. Compute Saving Handoff State
+
+Current previews distinguish a bare inline spring, a reversing rigid piston, and a piston whose external rod end is pulled by routed rope.
+Pulley presets/UI now use the cylinder-plus-rope assembly while non-pulley layouts offer inline or rigid piston, with coil law independent and session/profile memory respecting migration.
+Continue from the corrected preset/validation records and transmission-memory tests, preserve old recorded data and legacy solver IDs, and restart with Start Motion Lab.cmd at port4186.
+
+---

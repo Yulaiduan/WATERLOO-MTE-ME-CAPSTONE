@@ -141,3 +141,18 @@ The browser removes constant-lift damping and all extra-tip strut controls;
 legacy solver fields and previously recorded runs remain reproducible. Continue
 from current validation rather than applying historical damping100 evidence to
 this undamped profile.
+
+## Corrected transmission taxonomy, 2026-10-11
+
+Latest user clarification: type1 is a bare inline spring with normal travel;
+type2 is a reversing cylinder/piston with rigid rod; type3 is that piston with
+rope attached at the external rod end. All pulley mechanisms now use type3 in
+current catalog/UI. Non-pulley mechanisms offer type1 or type2. Coil law remains
+separate, and rope is tension-only. See the current [preset record](../docs/suspension-presets.md).
+
+`web/spring-transmission.js` no longer draws a housing around type1 or a rope
+through the coil in type3. Rod eye and cap move equally with fixed rigid rod
+length; cable starts at the exterior eye and turns around a separate idler.
+Session imports restore configuration from the config object, then only view
+fields/disclosures, so an older remembered dropdown cannot undo route migration.
+Legacy API/config IDs remain for reproduction; recorded data is not rewritten.

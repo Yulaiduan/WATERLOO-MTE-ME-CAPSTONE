@@ -62,7 +62,8 @@ the wheel suspension model to launch its physical fixture.
 Nine [suspension presets](docs/suspension-presets.md) cover the original spring,
 six sketch mechanisms, internal knee capture and constant-lift gravity balance.
 Choose compression, extension or a bilateral captured coil, independently of
-direct, rigid-pullrod or ideal-rope routing. Increasing pull-through input span
+inline spring or reversing piston on non-pulley layouts; pulley layouts use
+a reversing piston with rope attached to its rod end. Increasing pull-through input span
 compresses the coil; the leg motion that produces that span change depends on
 mounts and wrap direction. Rope is tension-only, zero-stretch and 100% efficient.
 All new mechanism dimensions are editable demonstrations, not measured hardware.
@@ -79,8 +80,9 @@ it does not silently add a second restoring spring.
 
 ## Cylinder preview and tab memory
 
-The spring preview shows a cylinder, fixed seat, moving end cap and routed
-cable/rod, plus an enlarged cross-section at the upper right. Expand Compare the
+The spring preview shows a bare inline coil, reversing cylinder/piston, or
+a cylinder with rope attached at its external rod end, plus an enlarged view
+at the upper right. Expand Compare the
 three transmissions to see direct, rigid pull-through and ideal-rope diagrams.
 Recorded cap travel uses the actual saved coil length, including preload and
 slack; housing/idler dimensions are illustrative, not added solver bodies.

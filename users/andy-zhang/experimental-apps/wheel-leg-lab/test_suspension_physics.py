@@ -136,8 +136,8 @@ class SuspensionPhysicsTests(unittest.TestCase):
 
     def test_pullthrough_coil_compresses_with_identical_external_compliance(self):
         values = {'duration': 1.2, 'position_amplitude': .008, 'dt': .0005}
-        extension = simulate(dict(values, spring_topology='knee_pulley'))
-        pullrod = simulate(dict(values, spring_topology='knee_capture'))
+        extension = simulate(dict(values, spring_topology='knee_pulley', spring_mode='extension', spring_transmission='direct'))
+        pullrod = simulate(dict(values, spring_topology='knee_capture', spring_transmission='pullrod'))
         rope = simulate(dict(values, spring_topology='knee_capture', spring_transmission='ideal_rope'))
         captured = simulate(dict(values, spring_topology='knee_capture', spring_mode='captured'))
         for result in (pullrod, rope, captured):

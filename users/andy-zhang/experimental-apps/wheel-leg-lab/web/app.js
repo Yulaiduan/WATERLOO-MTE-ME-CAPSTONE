@@ -9,10 +9,15 @@
   let config={},defaults={},result=null,charts=[],time=0,playing=false,raf=0,last=0,dirty=false,runRevision=0,lastReadoutStamp=-Infinity,pendingProfile=null,springCatalog={},mechanismDefaults={},guideModule=null,playbackCache=null;
   let setupPreview=null,setupCache=null,inSetupMode=false,previewTimer=0,previewGeneration=0,previewAbort=null,recordedHeading='Mechanism & live loads',transmissionModule=null,memoryModule=null;
   const memoryKey='motion-lab-bench/v1:'+backend;
-  const cylinderPanel=document.createElement('section');cylinderPanel.className='transmission-panel';cylinderPanel.hidden=true;cylinderPanel.innerHTML='<h3>Spring cylinder & routing</h3><svg id="transmission-detail" viewBox="0 0 350 190" role="img" aria-label="Enlarged moving spring cylinder and transmission"></svg><p class="transmission-key">Orange: coil / spring drum · purple: rod or cable · gray: mounting bracket · green: moving cap</p><details><summary>Compare the three transmissions</summary><div id="transmission-comparison"></div><p class="hint">Same +20 mm input travel, 200 mm reference coil. Coil behavior is selected separately. Housing and routing are explanatory, massless diagrams; they add no solver contact or packaging dimensions.</p></details>';
+  const cylinderPanel=document.createElement('section');cylinderPanel.className='transmission-panel';cylinderPanel.hidden=true;cylinderPanel.innerHTML='<h3>Spring transmission & routing</h3><svg id="transmission-detail" viewBox="0 0 350 190" role="img" aria-label="Enlarged moving spring cylinder and transmission"></svg><p class="transmission-key">Orange: coil / spring drum · purple: rod or cable · gray: mounting bracket · green: moving cap</p><details><summary>Compare the three transmissions</summary><div id="transmission-comparison"></div><p class="hint">Same +20 mm input travel, 200 mm reference coil. Coil behavior is selected separately. Housing and routing are explanatory, massless diagrams; they add no solver contact or packaging dimensions.</p></details>';
   document.querySelector('.live').prepend(cylinderPanel);
   function rememberBench(){if(viewer||!memoryModule||!Object.keys(config).length)return;try{sessionStorage.setItem(memoryKey,JSON.stringify({config,reference_inputs:referenceInputs(),form:memoryModule.captureForm(document.body)}));}catch{}}
-  function enforceCurrentArchitecture(){config.aux_spring_enabled=false;if(config.spring_topology==='gravity_balance')config.damping=0;}
+  function enforceCurrentArchitecture(){
+    config.aux_spring_enabled=false;if(config.spring_topology==='gravity_balance')config.damping=0;
+    if(springCatalog[config.spring_topology]?.kind==='pulley'){
+      if(config.spring_transmission!=='ideal_rope'){config.spring_transmission='ideal_rope';if(config.spring_mode==='extension')config.spring_mode='compression';}
+    }else if(config.spring_transmission==='ideal_rope')config.spring_transmission='pullrod';
+  }
   const previewNotice=document.createElement('p');previewNotice.className='setup-preview-note';previewNotice.hidden=true;previewNotice.setAttribute('role','status');$('mechanism').before(previewNotice);
   const showRecording=document.createElement('button');showRecording.textContent='Show last recording';showRecording.hidden=true;$('play').after(showRecording);
   const fmt=(v,n=2)=>Number.isFinite(Number(v))?Number(v).toFixed(n):'—',colors=['var(--blue)','var(--orange)','var(--accent)','var(--purple)','var(--red)','var(--muted)'];
@@ -71,8 +76,8 @@
   }
   function springControls(){
     if(!Object.keys(springCatalog).length)return '';
-    const entry=springCatalog[config.spring_topology]||springCatalog.legacy_tip,gravityBalance=config.spring_topology==='gravity_balance';
-    return `<details open class="spring-preset"><summary>Spring mechanism preset</summary><div class="fields">${select('spring_topology','Attachment / mechanism',Object.entries(springCatalog).map(([id,preset])=>[id,preset.label]))}${config.spring_force_law!==undefined?select('spring_force_law','Effective force law',[['hooke','Ordinary Hooke spring'],['zero_effective','Zero effective length · compensation route']]):''}${config.spring_effective_free_length!==undefined?field('spring_effective_free_length','Effective free length','mm · zero for exact balance',1000,0,500):''}${select('spring_mode','Coil law',[['compression','Compression only'],['extension','Extension only'],['captured','Captured · bilateral']])}${select('spring_transmission','Transmission',[['direct','Direct coil'],['pullrod','Rigid pull-through rod'],['ideal_rope','Ideal zero-stretch rope']])}${select('spring_direction','Pulley payout sign',[[1,'+1 · default tangent'],[-1,'−1 · opposite tangent']])}${field('spring_pulley_radius','Spring drum radius','mm',1000,1,250)}${field('spring_bellcrank_radius','Crank arm radius','mm',1000,1,250)}${field('spring_bellcrank_offset_deg','Crank offset','°',1,-360,360)}${gravityBalance?field('spring_upper_fraction','Upper arm anchor R','mm from hip',1000*config.length,1,1000*config.length):field('spring_upper_fraction','Upper attachment from hip','% of link',100,0,100)}${field('spring_lower_fraction','Lower attachment from knee','% of link',100,0,100)}${field('spring_chassis_x','Chassis mount x','mm, right +',1000,-500,500)}${gravityBalance?field('spring_chassis_y','Mount below hip H','mm, down +',-1000,1,500):field('spring_chassis_y','Chassis mount y','mm, up +',1000,-500,500)}${field('spring_input_ref','Initial drum payout','mm',1000,1,1500)}${field('spring_coil_ref','Pull-through coil reference','mm',1000,1,1500)}</div><p class="hint" id="spring-preset-description">${entry.description}</p><p class="hint">Illustrative editable dimensions. Selecting a preset resets its demo geometry, spring rate, damping and integration setting; link geometry and mass stay as entered. Ideal transmission is massless and 100% efficient.</p></details>`;
+    const entry=springCatalog[config.spring_topology]||springCatalog.legacy_tip,gravityBalance=config.spring_topology==='gravity_balance',pulley=entry.kind==='pulley';
+    return `<details open class="spring-preset"><summary>Spring mechanism preset</summary><div class="fields">${select('spring_topology','Attachment / mechanism',Object.entries(springCatalog).map(([id,preset])=>[id,preset.label]))}${config.spring_force_law!==undefined?select('spring_force_law','Effective force law',[['hooke','Ordinary Hooke spring'],['zero_effective','Zero effective length · compensation route']]):''}${config.spring_effective_free_length!==undefined?field('spring_effective_free_length','Effective free length','mm · zero for exact balance',1000,0,500):''}${select('spring_mode','Coil law',[['compression','Compression only'],['extension','Extension only'],['captured','Captured · bilateral']])}${select('spring_transmission','Transmission',pulley?[['ideal_rope','3 · Cylinder piston + rope / pulley']]:[['direct','1 · Inline spring · normal behavior'],['pullrod','2 · Cylinder piston · reversed behavior']])}${select('spring_direction','Pulley payout sign',[[1,'+1 · default tangent'],[-1,'−1 · opposite tangent']])}${field('spring_pulley_radius','Spring drum radius','mm',1000,1,250)}${field('spring_bellcrank_radius','Crank arm radius','mm',1000,1,250)}${field('spring_bellcrank_offset_deg','Crank offset','°',1,-360,360)}${gravityBalance?field('spring_upper_fraction','Upper arm anchor R','mm from hip',1000*config.length,1,1000*config.length):field('spring_upper_fraction','Upper attachment from hip','% of link',100,0,100)}${field('spring_lower_fraction','Lower attachment from knee','% of link',100,0,100)}${field('spring_chassis_x','Chassis mount x','mm, right +',1000,-500,500)}${gravityBalance?field('spring_chassis_y','Mount below hip H','mm, down +',-1000,1,500):field('spring_chassis_y','Chassis mount y','mm, up +',1000,-500,500)}${field('spring_input_ref','Initial drum payout','mm',1000,1,1500)}${field('spring_coil_ref','Pull-through coil reference','mm',1000,1,1500)}</div><p class="hint" id="spring-preset-description">${entry.description}</p><p class="hint">${pulley?'Pulley mechanisms require a cylinder/piston with rope attached at the rod end. Pulling pays out the rope and compresses the coil.':'Inline springs follow attachment separation. A reversing piston makes outward travel compress the coil.'} Coil law is selected separately; a single rope cannot push.</p><p class="hint">Illustrative editable dimensions. Selecting a preset resets its demo geometry, spring rate, damping and integration setting; link geometry and mass stay as entered. Ideal transmission is massless and 100% efficient.</p></details>`;
   }
   function updateControls(){
     const position=config.target==='position',find=k=>$('controls').querySelector(`[data-key="${k}"]`);
@@ -96,6 +101,7 @@
       const topology=config.spring_topology,pulley=springCatalog[topology]?.kind==='pulley';
       for(const key of ['spring_pulley_radius','spring_direction','spring_input_ref'])find(key).disabled=!pulley;
       for(const key of ['spring_bellcrank_radius','spring_bellcrank_offset_deg'])find(key).disabled=!topology.includes('bellcrank');
+      find('spring_transmission').disabled=pulley;
       find('spring_coil_ref').disabled=config.spring_transmission==='direct';
       if(find('spring_effective_free_length'))find('spring_effective_free_length').disabled=config.spring_force_law!=='zero_effective';
     }
@@ -314,11 +320,10 @@
       cylinderPanel.hidden=false;
       const display=setupPreview||result,initial=display.frames[0],state=transmissionModule.transmissionState({...c,rest_length:display.actual_rest_length||c.rest_length},frame,row,initial);
       const unit=group.append('g').attr('class','routed-replacement-unit').attr('data-anchor-a',a.join(',')).attr('data-anchor-b',b.join(','));
-      if(geometry.kind==='direct'&&c.spring_transmission==='direct'&&c.spring_force_law!=='zero_effective'){
-        // The direct cylinder sits on the real span: both eyes follow its actual anchors.
-        const angle=Math.atan2(dy,dx)*180/Math.PI,local=unit.append('g').attr('transform',`translate(${pa}) rotate(${angle})`);
-        local.append('rect').attr('class','direct-cylinder-housing').attr('x',span*.12).attr('y',-11).attr('width',span*.62).attr('height',22).attr('fill','var(--panel)').attr('fill-opacity',.75).attr('stroke','var(--blue)').attr('stroke-width',1.5);
-        coil(pa,pb,unit);line(pa,pb,'var(--muted)',1);line([pb[0]-n[0]*10,pb[1]-n[1]*10],[pb[0]+n[0]*10,pb[1]+n[1]*10],'var(--accent)',3).attr('class','moving-end-cap');
+      if(geometry.kind==='direct'&&c.spring_transmission==='direct'){
+        // Type1 is a bare inline spring, never a piston housing/rod.
+        coil(pa,pb,unit).attr('class','spring-coil inline-coil');
+        for(const end of [pa,pb])unit.append('circle').attr('class','inline-spring-eye').attr('cx',end[0]).attr('cy',end[1]).attr('r',4).attr('fill','var(--panel)').attr('stroke','var(--orange)').attr('stroke-width',1.5);
       }else{
         // Pulley reaction anchor is the carrier mount; direct pull-through uses A.
         const mount=geometry.kind==='pulley'?pb:pa,toward=geometry.kind==='pulley'?pa:pb,angle=Math.atan2(toward[1]-mount[1],toward[0]-mount[0]),width=190,offset=-.65*70*.48;
@@ -536,7 +541,7 @@
     showReferenceT0(unit);try{localStorage.setItem('pymunk-reference-T0-N',JSON.stringify(referenceT0N));}catch{}
   });
   function restoreBench(){
-    try{const saved=JSON.parse(sessionStorage.getItem(memoryKey)||'null');if(!saved?.config)return false;applyProfile(saved);memoryModule.restoreForm(document.body,saved.form);if(saved.form?.fields?.some(f=>f.id==='id:probe'))$('probe').dataset.chosen='true';rememberBench();requestSetupPreview();return true;}catch{return false;}
+    try{const saved=JSON.parse(sessionStorage.getItem(memoryKey)||'null');if(!saved?.config)return false;applyProfile(saved);memoryModule.restoreForm(document.body,{...saved.form,fields:(saved.form?.fields||[]).filter(f=>!f.id.startsWith('key:'))});if(saved.form?.fields?.some(f=>f.id==='id:probe'))$('probe').dataset.chosen='true';rememberBench();requestSetupPreview();return true;}catch{return false;}
   }
   document.addEventListener('change',()=>rememberBench());document.addEventListener('toggle',()=>rememberBench(),true);addEventListener('pagehide',rememberBench);
   showReferenceT0();

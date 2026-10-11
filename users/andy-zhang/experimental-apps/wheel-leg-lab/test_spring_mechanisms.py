@@ -31,7 +31,7 @@ class SpringMechanismTests(unittest.TestCase):
         self.assertNotIn('spring_topology', BASE)
         captured = apply_preset(BASE, 'knee_capture')
         self.assertEqual(captured['spring_mode'], 'compression')
-        self.assertEqual(captured['spring_transmission'], 'pullrod')
+        self.assertEqual(captured['spring_transmission'], 'ideal_rope')
         self.assertEqual(apply_preset(BASE, 'knee_bellcrank')['spring_bellcrank_offset_deg'], 180.)
 
     def test_every_jacobian_matches_finite_difference(self):

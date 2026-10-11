@@ -195,7 +195,7 @@ class MathModelTests(unittest.TestCase):
 
     def test_captured_knee_pullthrough_and_extension_payout_have_equal_external_dynamics(self):
         values = {'duration': .9, 'position_amplitude': .008}
-        extension = simulate_math(apply_preset(values, 'knee_pulley'))
+        extension = simulate_math({**apply_preset(values, 'knee_pulley'), 'spring_mode': 'extension', 'spring_transmission': 'direct'})
         capture = simulate_math(apply_preset(values, 'knee_capture'))
         for key in ('theta_deg', 'driver_force', 'j2_force', 'guide_hip_reaction'):
             self.assertAlmostEqual(extension['rows'][-1][key], capture['rows'][-1][key], places=9)

@@ -12,13 +12,13 @@ The Mathematical and 2D Physical tabs share this catalog. The original spring re
 | Preset ID | Mechanism and physical force sites | Default coil / transmission |
 | --- | --- | --- |
 | `legacy_tip` | Original hip-to-lower-link extension tip, 50 mm beyond knee | Captured / direct |
-| `hip_pulley` | Ideal drum at hip; tangent force pair on upper link and chassis | Extension / direct |
-| `knee_pulley` | Ideal knee drum using relative link rotation; tangent force pair on lower and upper links | Extension / direct |
+| `hip_pulley` | Ideal drum at hip; tangent force pair on upper link and chassis | Compression / cylinder piston + rope |
+| `knee_pulley` | Ideal knee drum using relative link rotation; tangent force pair on lower and upper links | Compression / cylinder piston + rope |
 | `direct_scissor` | Coil between editable points along the two links | Compression / direct |
 | `hip_bellcrank` | Rigid crank on upper link at hip, connected to an editable chassis mount | Extension / direct |
 | `knee_bellcrank` | Rigid crank on lower link at knee, connected to an editable upper-link point | Extension / direct |
 | `chassis_direct` | Editable lower-link point to an editable chassis mount | Compression / direct |
-| `knee_capture` | Internal knee drum payout pulls a rigid rod through a compression coil; the external load is tension | Compression / pullrod |
+| `knee_capture` | Internal knee drum payout pulls a rope attached at the reversing piston rod end; the external load is tension | Compression / cylinder piston + rope |
 | `gravity_balance` | Downward vertical chassis mount to an upper-link point; zero-effective-length tension converts into constant generalized chassis lift | Extension / direct, `zero_effective` law |
 
 The catalog is defined in [spring_mechanisms.py](../spring_mechanisms.py) and returned by `GET /api/spring-presets`. Current curated rates/damping and leverage are listed in the [mechanism audit](mechanism-audit.md). Common illustrative geometry includes 200 mm input/coil reference spans, midpoint attachments and a chassis mount at (120, 50) mm; hip/knee crank offsets are 135°/180°. Hip drum and hip crank now use 80 mm leverage; other mechanism geometry is explicit in the catalog. These are editable illustrations; the confirmed fixture inputs remain the 200 mm wheel radius and original 50 mm link extension. They do not establish spring packaging, travel clearance or component ratings.
@@ -113,3 +113,33 @@ solver. Zero-effective compensation still requires ideal preload/offset
 emulation; depicting a cylinder does not turn an ordinary finite-free coil
 into an exact constant-lift device. Invalid preload/routing combinations remain
 explicit errors. The separate 2:1 guide belt is unchanged.
+
+## Corrected three hardware types, 2026-10-11
+
+The user clarified that the types are physical assemblies, not just different
+symbols drawn around every spring:
+
+| Type / saved ID | Assembly and motion | Current UI use |
+| --- | --- | --- |
+| 1 / `direct` | Bare inline spring. Increasing attachment separation extends it; decreasing separation compresses it. Compression-only, extension-only and captured/bilateral laws are separate choices. | Non-pulley layouts |
+| 2 / `pullrod` | Reversing cylinder/piston. Pulling the rigid rod outward moves the cap toward a fixed seat and compresses the coil; pushing inward reverses this. The rod-end eye and cap move together with constant rigid rod length. | Non-pulley layouts |
+| 3 / `ideal_rope` | Type2 cylinder with rope attached **outside the housing at the rod end**, then routed through the pulley. The rope does not run through the coil or attach directly to the cap. Pulling the rope pulls the piston outward and compresses the coil. | All pulley layouts |
+
+The rope transmits tension only, with zero stretch and100% ideal efficiency.
+It cannot transmit the outward pushing force of a reversed extension-only coil;
+incompatible preload still fails explicitly rather than adding an actuator.
+The 2:1 guide belt is a separate mechanism from this spring-transmission drum.
+
+Hip pulley, knee pulley and knee-capture defaults now use compression coils
+with type3. UI selection is restricted accordingly; other layouts offer type1
+or type2. Current profile/session imports migrate older pulley selections to
+type3 (older extension defaults become compression) and non-pulley rope routes
+to a rigid piston. Numeric dimensions/preload are retained and validated when
+Run is requested. Explicit old backend fields and original recorded configs
+remain available for historical reproduction; their playback reflects the
+recorded law, not silently reversed coil data. JSON field IDs remain unchanged.
+
+The corrected enlarged and comparison diagrams distinguish a **bare** inline
+coil from a housing/piston and from the external rod-eye/cable/idler assembly.
+The drawings still use the actual captured coil lengths and resolved free
+length; illustrative housing/rod/idler sizes do not add contact or inertia.

@@ -2,6 +2,51 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
 
+## Three physical transmission assemblies, 2026-10-11
+
+The user's follow-up distinguishes bare inline spring, reversing cylinder/piston,
+and that piston pulled by a rope attached at its external rod end. The current
+preview follows these assemblies. Type1 has no housing or piston rod. Type2
+keeps a rigid rod's length fixed while rod eye and cap move together. Type3
+adds rope starting at the outside eye, with an external idler and routed tail;
+it does not run through the coil or attach directly to the cap.
+
+Hip/knee pulley and knee-capture catalog defaults use compression/type3. Their
+current UI offers only that route; non-pulley layouts offer inline or rigid
+reversing piston. Coil law remains separate and rope remains tension-only.
+Legacy solver IDs/explicit routes and saved recordings remain available. Current
+profile/session imports adapt incompatible old route choices and show the new
+selection; configuration fields are restored from config, with only matching
+view controls/disclosures subsequently restored from raw form memory.
+
+60 JavaScript tests pass, including structural SVG checks for no inline housing,
+external cable/rod-eye attachment, a constant rod length and reversed cap travel.
+All40 Python tests in spring_mechanisms, suspension_physics, setup_preview and
+math_model pass. They cover nine actual force/work/energy models, independent
+SciPy/Pymunk loads and refinement, old/new routing compliance equivalence and
+reversed internal coil travel. The Pymunk/SciPy errors for the updated pulley
+presets at1/.5/.25ms remain .0024606/.0012375/.0006206deg (hip) and
+.0089326/.0045268/.0022777deg (knee/capture) in the tested1.2s case.
+Four browser suites pass transmission_memory, setup_preview, suspension_ui and
+playback: all9 presets run both backends, three hardware drawings/options,
+recorded cap travel, cable eye, profile/refresh/tab memory and Plotly behavior.
+
+Initial Python route-comparison assertions assumed knee-pulley defaults were
+still extension/direct; those legacy reference cases now select that combination
+explicitly. An interim rerun had imported the old assertion before the edit;
+the final full40 affected-test run passes without relaxing tolerances. A broad
+doc-table edit briefly described bellcranks as rope layouts; it was corrected
+to their unchanged extension/inline defaults before publication.
+
+The actual project-local CMD launcher passes stop/start/reuse from C:/Windows,
+at127.0.0.1:4186. Syntax/compilation, edited Markdown links/fences, diff hygiene
+and repository gates are checked. The updated in-app preview was visually
+inspected and retained. No additional full125-test/108-six-second audit or native
+window lifecycle is claimed for this correction. Earlier evidence keeps its
+original scope. Package sizes, idler positions and mounting fit remain schematic;
+no extra solver masses/contact/structural or hardware validation is implied.
+Canonical robot physics is NOT APPLICABLE to this member app.
+
 ## Cylinder/routing, UI memory and undamped constant lift, 2026-10-11
 
 Current gravity-balance factory/catalog damping is **0 N s/m**; auxiliary is off.

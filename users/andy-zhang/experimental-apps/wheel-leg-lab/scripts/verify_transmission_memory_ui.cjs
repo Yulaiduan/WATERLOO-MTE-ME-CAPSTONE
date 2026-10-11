@@ -10,14 +10,23 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   const page=await browser.newPage({viewport:{width:1500,height:1000}}),errors=[];page.on('pageerror',e=>errors.push(e.message));
   const origin='http://127.0.0.1:4186',out=path.join(__dirname,'../artifacts/transmission-memory');fs.mkdirSync(out,{recursive:true});
   await page.goto(origin+'/physics/?loadOnly=1');await page.locator('#mechanism[data-mode="setup-preview"]').waitFor();
-  await page.locator('[data-key="spring_topology"]').selectOption('knee_capture');await page.locator('#transmission-detail .pullrod').waitFor();
+  await page.locator('[data-key="spring_topology"]').selectOption('knee_capture');await page.locator('#transmission-detail .ideal_rope').waitFor();
   await page.locator('[data-key="spring_mode"]').selectOption('captured');
-  const capsule=()=>page.locator('#transmission-detail .spring-cylinder').evaluate(n=>({coil:Number(n.dataset.coilLengthM),cap:Number(n.dataset.capX),seat:Number(n.dataset.seatX),scale:Number(n.dataset.scalePxM),method:n.dataset.transmission}));
-  for(const method of ['direct','pullrod','ideal_rope']){
+  const capsule=()=>page.locator('#transmission-detail .spring-transmission').evaluate(n=>({coil:Number(n.dataset.coilLengthM),cap:Number(n.dataset.capX),seat:Number(n.dataset.seatX),scale:Number(n.dataset.scalePxM),method:n.dataset.transmission}));
+  // Non-pulley: inline or rigid reversing piston. Pulley: rope+piston only.
+  await page.locator('[data-key="spring_topology"]').selectOption('legacy_tip');
+  for(const method of ['direct','pullrod']){
    await page.locator('[data-key="spring_transmission"]').selectOption(method);await page.locator('#transmission-detail .'+method).waitFor();
-   assert.equal(await page.locator('#transmission-detail .moving-end-cap').count(),1);
-   assert.equal(await page.locator('#transmission-detail .routing-idler').count(),method==='ideal_rope'?1:0);
+   assert.equal(await page.locator('#transmission-detail .cylinder-housing').count(),method==='direct'?0:1);
+   assert.equal(await page.locator('#mechanism .direct-cylinder-housing').count(),0);
+   assert.equal(await page.locator('#transmission-detail .routing-idler').count(),0);
    assert.equal(await page.locator('#transmission-comparison svg').count(),3);
+  }
+  for(const topology of ['hip_pulley','knee_pulley','knee_capture']){
+   await page.locator('[data-key="spring_topology"]').selectOption(topology);await page.locator('#transmission-detail .ideal_rope').waitFor();
+   assert.equal(await page.locator('[data-key="spring_transmission"]').isDisabled(),true);assert.equal(await page.locator('[data-key="spring_transmission"] option').count(),1);
+   assert.equal(await page.locator('#mechanism .cylinder-housing').count(),1);assert.equal(await page.locator('#mechanism .pull-cable').count(),1);
+   assert.equal(await page.locator('#transmission-detail .piston-rod-eye').count(),1);
   }
   // Full recording: both main and detail consume the captured coil length, cap
   // motion has opposite sign under pull-through, and no per-frame plot rebuild.
@@ -30,7 +39,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
    assert.ok(Math.abs(current.coil-nearest.spring_coil_length)<1e-12);assert.ok(Math.abs(current.seat-current.cap-current.coil*current.scale)<1e-8);poses.push(current);
   }
   assert.ok(Math.max(...poses.map(p=>p.cap))-Math.min(...poses.map(p=>p.cap))>.1,'Recorded end cap actually moves');
-  await page.locator('.transmission-panel summary').click();await page.screenshot({path:path.join(out,'rope-and-three-transmissions.png'),fullPage:true});
+  await page.locator('.transmission-panel summary').click();await page.locator('.mechanism-panel').screenshot({path:path.join(out,'rope-and-three-transmissions.png')});
   await page.locator('#model-view').selectOption('annotated');await page.locator('#force-view').selectOption('fy');await page.locator('#probe').selectOption('j2');await page.locator('#forces').check();
   await page.locator('[data-key="length"]').fill('281');await page.locator('[data-key="length"]').dispatchEvent('change');
   await page.reload();await page.locator('#mechanism[data-mode="setup-preview"]').waitFor();
@@ -40,7 +49,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   await page.locator('#status').filter({hasText:'Profile loaded'}).waitFor();assert.equal(await page.locator('[data-key="length"]').inputValue(),'300');
   await page.goto(origin+'/?tab=physics&architecture=constant-lift');const bench=page.frameLocator('iframe[data-key="physics"]');await bench.locator('#status').filter({hasText:'Recorded'}).waitFor({timeout:30000});
   assert.equal(await bench.locator('[data-key="damping"]').count(),0);assert.equal(await bench.locator('[data-key="aux_spring_enabled"]').count(),0);assert.equal(await bench.locator('.replacement-damper').count(),0);
-  await bench.locator('[data-key="spring_topology"]').selectOption('knee_capture');await bench.locator('#transmission-detail .pullrod').waitFor();
+  await bench.locator('[data-key="spring_topology"]').selectOption('knee_capture');await bench.locator('#transmission-detail .ideal_rope').waitFor();
   assert.equal(await bench.locator('[data-key="guide_pulleys_visible"]').isChecked(),true,'Unchanged guide checkbox survives a preset rebuild');
   await bench.locator('[data-key="spring_topology"]').selectOption('gravity_balance');await bench.locator('#transmission-detail .direct').waitFor();
   await bench.locator('[data-key="theta"]').fill('48');await bench.locator('[data-key="theta"]').dispatchEvent('change');await bench.locator('#forces').check();
