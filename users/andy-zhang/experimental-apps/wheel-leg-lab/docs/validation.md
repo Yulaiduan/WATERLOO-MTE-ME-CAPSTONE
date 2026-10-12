@@ -756,3 +756,46 @@ window must not replace the full result without disclosure. These compare
 physical step-averaged impulse loads to instantaneous mathematical loads,
 not measured hardware. The script summary retains RMS and signed final values
 for every listed channel as well as the complete configs.
+
+## Link sizing / torque sweep, 2026-10-12
+
+The user confirmed the starting case as 200 mm radius / 400 mm diameter and
+200 mm usable lift. The [sizing study](link-sizing.md) adds constant-net-load
+analytical enumeration to /force-plots/; no wheel dynamic solver is changed.
+
+- All70 JavaScript tests pass with npm test, including seven new sizing checks.
+  Torque agrees with the existing linkage Jacobian and an independent finite
+  height derivative. Both exact mean/RMS/CV integrals agree with20,000-point
+  midpoint quadrature; work conservation, half-sized knee torque, degree/mm
+  round trips, boundaries, feasibility and objective ranking also pass.
+- node scripts/verify_link_sweep.cjs passes actual browser tests of both wheel
+  dimensions, nominal/custom angular ROM, all three buffer/ROM conversions,
+  both torque coordinates/weightings, objectives, reference-link selection,
+  stricter chassis clearance, infeasible searches, all-candidate CSV and JSON
+  config import/export, refresh and Motion Lab study-switch memory, Plotly zoom,
+  dark theme,360px layout, locally served assets and zero browser errors. An
+  infeasible config export correctly carries no selected candidate. Raw evidence
+  stays ignored under artifacts/link-sweep/; screenshots were visually inspected.
+- The existing node scripts/verify-force-plots.cjs suite passes force/Jacobian
+  averages, controls, projections, animation/full-cycle, zoom/theme, mobile and
+  extreme geometries, and offline assets. The original numerical calculator
+  and dynamic solvers are preserved.
+- npm run build passes Vite and the seven-study/gallery build. The real app-local
+  Start Motion Lab.cmd / Stop Motion Lab.cmd pass verified scoped stop, fresh
+  start, stop/restart and running-server reuse from C:/Users/zhang, with sizing
+  HTML and model HTTP readiness on the original127.0.0.1:4186 route. The original
+  Motion Lab URL remains usable; errors remain in the launcher/.preview logs.
+
+A browser rerun initially caught conversion rounding excluding the exact120mm
+feasibility boundary. Millimetre UI conversion now rounds to six decimals while
+degree conversion keeps ten; the complete sizing browser suite passes after the
+fix. Earlier passing records remain historical, with their original scope.
+
+Initial uniform-travel hip example:2,586 candidates /97 lengths, minimum peak
+and mean at120mm links,19.5773N m mean /23.9165N m peak. Lowest CV is at the600mm
+search boundary with119.9833N m peak; expand/refine before treating it as an
+optimum.20mm buffers/gap,200mm chassis depth and100N load are editable demo
+assumptions. No spring-force/preload law, distributed link weight, dynamic motor
+load, actual3Dclearance, strength, hardware or canonical robot validation is
+claimed. Python/native/physics solvers are not rerun for this analytical UI change;
+canonical physics is not applicable to the isolated member workspace.

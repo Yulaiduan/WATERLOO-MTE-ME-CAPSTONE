@@ -2,6 +2,22 @@
 
 Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
 
+## Link sizing / torque sweep, 2026-10-12
+
+The force calculator at /force-plots/ now includes [link sizing](../docs/link-sizing.md).
+It starts with the existing 200mm radius (400mm diameter), nominal200mm lift,
+editable demo20mm start/end reserves and air gap,200mm chassis depth and100N
+constant net load. Diameter/radius are distinct synchronized inputs. Custom ROM
+and both buffers convert degrees/mm at a reference link; units stay fixed while
+sweeping. Fold q is from downward vertical, theta=90deg−q for the old calculator.
+Peak/mean/CV objectives are separate, averages explicitly use uniform travel or
+angle, and torque can be hip-equivalent or half-sized relative-knee. No actual
+spring law/preload/assistance or dynamic optimization is inferred. Original force
+animation/math and solvers are preserved; new config JSON is calculator-specific.
+Actual analytical/browser and launcher checks are recorded in validation. Continue
+by supplying real net-load, chassis/spring and speed/strength inputs before using
+the sampled winners as hardware decisions. Start Motion Lab.cmd remains canonical.
+
 ## Playback and setup previews, 2026-10-11
 
 `web/app.js` caches recording bounds/input samples and updates the existing

@@ -2027,3 +2027,49 @@ The symmetric knee bellcrank and ordinary2:1guide are separate, while numerical 
 Continue from the latest status note without treating historical numerical passes as buildability evidence, preserve source/data, and restart with Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-12 — Andy Zhang — wheel/link sizing and torque sweep
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab member wheel/link calculator.
+- **Associated Issue/Task:** User requested configurable wheel-based lift, extension/preload and compression/clearance buffers, degree/mm conversion at an entered link length, and link/angle sweeps comparing average and peak torque. User confirmed200mm radius /400mm diameter /200mm nominal lift.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/link-sizing.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_animations.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_link_sweep.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/link-sweep.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/link-sweep-model.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/link-sweep.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/link-sweep.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- **API/Interface Changes:** New app-local analytical calculator, served directly at /force-plots/, preserving the existing constant-torque study and solver APIs/data. Equal-link2:1guided geometry uses foldqfrom downward vertical,theta=90deg−q. Buffers are minimum unused height/angle reserves,customROMmay be mm/degrees,nominal lift tracks radius. Chassis depth/minimum air gap enforce independent flat-ground clearance. Enumerate lengths/start placements including limiting endpoints; reject malformed/nonfinite/oversized searches. Exact uniform-travel or uniform-angle mean/RMS/CV,peak/minimum hip-equivalent or half-sized relative-knee torque; separate magnitude/flatness rankings,winner cards,Plotly,selected geometry/reference-link inspection,all-candidate CSV. Calculator-specific motion-lab-link-sweep/v1JSON and session/study memory remain separate from solver profiles/recordings. No shared interface,asset,dependency,enforcement or agent rule changes. Default20mm reserves/gap,200mm chassis depth and100Nnet load are explicitly demo assumptions; spring preload/assistance and link weight/dynamics are not invented.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** npm test passes70tests including seven sizing checks against existing linkage Jacobian,finite height derivative,work conservation,knee scaling and20,000-point independent quadrature for both weightings; unit roundtrips,clearance/ROM/buffer feasibility,exact endpoints,ranking/tradeoff and malformed/infeasible searches pass. node scripts/verify_link_sweep.cjs passes actual standalone/embedded browser controls,custom degreeROM,conversions,coordinates/weightings,selection/objectives,ground-gap enforcement,empty search/no stale selected export,CSV/JSON import/export,refresh/study memory,Plotlyzoom/dark,360pxlayout,local-only assets and zero browser errors. Existing node scripts/verify-force-plots.cjs passes its complete original analytical/UI/animation suite. npm run build passes Vite/gallery. Actual project-local CMD stop/start/stop/restart/reuse from unrelatedcwd verifies sizing page/model at127.0.0.1:4186; retained launcher has readable failures and independent installed runtimes. JavaScript/Python syntax,Markdownlinks/fences and diff hygiene are checked before publication; fetched-base working/publication/staged checks run with hooks enabled. Ignored raw screenshots/exports/logs remain local. Python/native/dynamic wheel solvers are unchanged and not rerun; no hardware/canonical physics claim.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member analytical workspace. A browser rerun caught millimetre conversion rounding excluding an exact feasibility endpoint; precision handling was fixed and the full sizing browser suite then passed. Initial sampled100Nhip example finds120mm links for minimum peak23.9165N m/mean19.5773N m,while600mm boundary links minimizeCVwith119.9833N mpeak. These are scoped sample optima,not hardware selections. Spring law/preload,distributed link weight,dynamics,speed/strength,tire/terrain effects and real3Dclearance remain unverified; preserve prior physics failures and historical records.
+
+The first commit attempt stopped before committing because the hook's default python3 resolved to the Windows Store alias. Retry uses the existing supported CAMEL_PYTHON environment override pointing to installedPython3.13,with the normal hooks enabled; no hook or enforcement change/bypass is made.
+
+## 4. Compute Saving Handoff State
+
+Motion Lab's wheel/link calculator now sweeps configurable equal-link lengths and angle windows for the confirmed200mm-radius/200mm-lift starting case, with degree/mm reserves and independent chassis air gap.
+Exact constant-net-load torque statistics separate minimum peak/mean from flatness, with candidate inspection,CSV/configJSON and remembered inputs; original mechanics and solver data remain unchanged.
+Continue from docs/link-sizing.md and the latest validation, enter real load/chassis/spring constraints before selecting hardware, refine boundary winners, and restart with the actual app-root Start Motion Lab.cmd at127.0.0.1:4186.
+
+---

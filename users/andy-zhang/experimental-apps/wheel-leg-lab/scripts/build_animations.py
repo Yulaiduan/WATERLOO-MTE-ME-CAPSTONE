@@ -38,7 +38,7 @@ def main():
  folder=ROOT/'web/recorded';folder.mkdir(parents=True,exist_ok=True)
  (folder/'index.html').write_text(page('Recorded Pymunk playback',(ROOT/'animations/pymunk-remote-preview.html').read_text(encoding='utf-8')),encoding='utf-8')
  cards=''.join(f'<a href="/animations/{slug}/"><h2>{escape(title)}</h2><p>{escape(detail)}</p></a>' for slug,title,detail in STUDIES)
- cards+='<a href="/force-plots/"><h2>Wheel / link force calculator</h2><p>Radius, required travel, angles, force and synchronized equal-link animation.</p></a>'
+ cards+='<a href="/force-plots/"><h2>Wheel / link sizing & force calculator</h2><p>Diameter, lift and buffers; sweep link lengths and angle windows for peak, average and flatness of torque. Includes the original force animation.</p></a>'
  cards+='<a href="/linkage/"><h2>Detailed linkage bench</h2><p>Two-coordinate drive, spring, impedance, finite actuator response and local analysis.</p></a>'
  cards+='<a href="/physics/"><h2>Pymunk spring bench</h2><p>Actual engine, 50 mm extension spring, joint loads, pulse inputs and native debug view.</p></a>'
  cards+='<a href="/recorded/"><h2>Recorded remote preview</h2><p>Offline playback with moving disturbance profile and force values in N / kgf.</p></a>'

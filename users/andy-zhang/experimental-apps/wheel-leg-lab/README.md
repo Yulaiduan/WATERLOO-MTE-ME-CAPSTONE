@@ -9,6 +9,16 @@ for the shared main menu, dark-mode toggle and always-available Pymunk visual GU
 Read the [workflow and data contracts](docs/unified-motion-lab.md),
 [spring presets](docs/suspension-presets.md) and [current validation](docs/validation.md).
 
+The [wheel/link sizing calculator](docs/link-sizing.md) now sweeps link lengths
+and working-angle windows for a specified wheel diameter/radius, usable lift,
+extension/compression buffers and chassis air gap. Start at 200 mm radius / 400 mm
+diameter; edit either. Buffers and custom ROM accept mm or degrees and convert at
+an entered link length. Compare minimum peak/average torque and torque flatness,
+inspect individual lengths, and export CSV/config JSON. Open Miscellaneous →
+Wheel / link sizing, torque & travel, or http://127.0.0.1:4186/force-plots/.
+This is a constant-net-load analytical screen; preload geometry is reserved,
+while actual spring assistance, dynamics and hardware clearance remain separate.
+
 | Tool | Route | Content |
 | --- | --- | --- |
 | Main menu | `/` | Mathematical / physical / miscellaneous / comparison / profiles and data |
@@ -164,6 +174,7 @@ node scripts/verify_pymunk.cjs
 node scripts/verify_playback_ui.cjs
 node scripts/verify_setup_preview_ui.cjs
 node scripts/verify-force-plots.cjs
+node scripts/verify_link_sweep.cjs
 node scripts/verify_suspension_ui.cjs
 node scripts/verify_counterbalance_ui.cjs
 node scripts/verify_suspension_architecture_ui.cjs
