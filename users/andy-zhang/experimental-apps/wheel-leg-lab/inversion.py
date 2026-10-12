@@ -20,23 +20,12 @@ from angle_stops import integrate as integrate_stops
 DEFAULTS={'preset':'dual_rope','fixture':'ground','start_inverted':True,'initial_angle_deg':45.,
  'angle_limit_enabled':True,'angle_min_deg':-80.,'angle_max_deg':80.,
  'length':.273,'extension':.05,'radius':.2,'upper_mass':.6,'lower_mass':.65,'wheel_mass':1.5,'chassis_mass':8.,
- 'gravity':9.80665,'stiffness':5000.,'auto_rate':True,'ride_angle_deg':45.,'damping':0.,'preload':0.,
- 'coil_free_length':.12,'cap_reference_distance':.1,'rod_length':.13,'pulley_radius':.03,'routing_radius':.01,'routing_distance':.06,'routing_offset':.0101,
- 'rope_routing':'central_wrap','rope_eye_offset':.00002,'rope_neutral_pose':'folded',
+ 'gravity':9.80665,'stiffness':5000.,'auto_rate':True,'ride_angle_deg':45.,'damping':0.,'preload':.01,
+ 'coil_free_length':.12,'cap_reference_distance':.1,'rod_length':.12,'pulley_radius':.03,'routing_radius':.01,'routing_distance':.06,'routing_offset':.0101,
+ 'rope_routing':'central_wrap','rope_eye_offset':.00002,
  'attachment_offset_deg':5.,'femur_anchor_distance':.05,'crank_radius':.05,
  'femur_torque':100.,'torque_start':.1,'torque_width':.24,'torque_rise':.04,'torque_fall':.04,
  'duration':1.,'dt':.00025,'iterations':400}
-
-def resolve_saved_profile(values):
-    """Resolve missing historical markers without modifying saved JSON."""
-    c=deepcopy(values)
-    archived='rope_neutral_pose' not in c
-    c.setdefault('rope_neutral_pose','straight')
-    c.setdefault('rope_routing','outer_rim')
-    c.setdefault('angle_limit_enabled',False)
-    c.setdefault('preload',.01 if archived or c.get('preset')=='knee_bellcrank' else 0.)
-    c.setdefault('rod_length',.12 if archived else .13)
-    return c
 
 def config(values=None):
     c=deepcopy(DEFAULTS)
@@ -44,7 +33,6 @@ def config(values=None):
         if not isinstance(values,dict) or set(values)-set(c):raise ValueError('Unknown inversion configuration field.')
         c.update(values)
         if c['preset']=='knee_bellcrank' and 'torque_width' not in values:c['torque_width']=.17
-        if c['preset']=='knee_bellcrank' and 'preload' not in values:c['preload']=.01
         if not c['start_inverted'] and 'initial_angle_deg' not in values:c['initial_angle_deg']=45.
     for key,default in DEFAULTS.items():
         if isinstance(default,bool):
@@ -54,8 +42,7 @@ def config(values=None):
     if c['preset'] not in ('dual_rope','knee_bellcrank'):raise ValueError('Select dual_rope or knee_bellcrank.')
     if c['fixture'] not in ('ground','hip_fixed'):raise ValueError('Select ground or hip_fixed fixture.')
     if c['rope_routing'] not in ('central_wrap','central_face','outer_rim'):raise ValueError('Select central_wrap routing, or an explicit archived route.')
-    if c['rope_neutral_pose'] not in ('folded','straight'):raise ValueError('Select folded neutral pose, or the archived straight pose.')
-    limits={'length':(.15,.8),'extension':(.005,.15),'radius':(.05,.4),'initial_angle_deg':(0,175),'ride_angle_deg':(10,80),
+    limits={'length':(.15,.8),'extension':(.005,.15),'radius':(.05,.4),'initial_angle_deg':(5,175),'ride_angle_deg':(10,80),
       'angle_min_deg':(-89,-5),'angle_max_deg':(5,89),
       'upper_mass':(.01,20),'lower_mass':(.01,20),'wheel_mass':(.01,30),'chassis_mass':(.1,100),'gravity':(0,20),
       'stiffness':(0,100000),'damping':(0,2000),'preload':(0,.1),'coil_free_length':(.02,1),
@@ -79,12 +66,8 @@ def config(values=None):
     if c['auto_rate']:
         q=math.radians(c['ride_angle_deg']);trial=springs.state(q,0.,dict(c,stiffness=1.,damping=0.),p)
         needed=c['gravity']*(2*c['length']*c['chassis_mass']+1.5*c['length']*c['upper_mass']+.5*(c['length']+c['extension'])*c['lower_mass'])*math.cos(q)
-        folded=c['preset']=='dual_rope' and c['rope_neutral_pose']=='folded'
-        reference_torque=abs(trial['torque']) if folded else trial['torque']
-        if reference_torque<=1e-10:raise ValueError('This geometry has no usable spring torque at the calibration pose; disable auto rate or change mounts.')
-        # A folded-neutral coil resists opening. Magnitude calibration does not
-        # claim it balances gravity: both torques may act toward contraction.
-        c['stiffness']=needed/reference_torque
+        if trial['torque']<=1e-10:raise ValueError('This geometry cannot support the normal ride pose with positive compression; disable auto rate or change mounts.')
+        c['stiffness']=needed/trial['torque']
         if c['stiffness']>100000:raise ValueError('Required automatic spring rate exceeds the demo bound.')
     # Check a full revolution, not just the initial pose.
     for q in np.linspace(-math.pi,math.pi,181):springs.state(float(q),0.,c,p)

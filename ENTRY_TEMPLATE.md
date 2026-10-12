@@ -1937,3 +1937,49 @@ Opening compresses the coil and produces closing torque, while saved old profile
 Continue from the latest invertible model/validation docs, preserve prior records, refine edited high-torque impacts before interpreting peaks, and restart with Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — revert unloaded contraction correction
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Member invertible suspension model and preview.
+- **Associated Issue/Task:** User explicitly withdrew the last change (1ecff9f), saying it was wrong. Restore the preceding7bbbceb model while preserving tight rollers, knee-rim wrap and right-side angle limits.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_inversion_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/invertible-suspension.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/invertible_spring.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_viewer.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_inversion_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/inversion-library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- **API/Interface Changes:** Restore the15 app paths changed by1ecff9f to7bbbceb, with focused browser session rollback and updated context/validation notes. Remove the temporary rope_neutral_pose model field,180deg phase shift,zero-preload contraction reference and magnitude-only calibration. Restore phi±delta anchors,phi=pi inventory,10mm preload,120mm rod, original initial-angle limits and signed gravity calibration. Model, native bridge/debugger and library sources are byte-identical to7bbbceb. At browser startup, remove the temporary neutral marker, restore reverted demo preload/rod/zero-angle values, and preserve unrelated controls. Existing contribution entries remain byte-for-byte; no history reset/force push, data rewrite or file deletion. Temporary folded runs remain historical JSON/frames; reproducing their removed solver configuration requires its historical Git revision. No canonical/shared component, dependency, asset or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All23 scoped Python tests pass via .venv/Scripts/python.exe -m unittest -q test_inversion test_angle_stops test_replacement_suspension test_setup_preview. All63 JavaScript tests pass with npm test. Actual node scripts/verify_inversion_ui.cjs passes added folded-session rollback assertions (10mm preload,120mm rod,45deg start,neutral marker removed,custom0.7kg femur preserved), then the original two ground flips, actual wrapped diagrams, ten Plotly charts, JSON/library/tab memory/native request envelopes and fixed-J1 math/Pymunk comparison. Five core/model/native/library files are byte-identical to7bbbceb, and changed Python AST/JavaScript syntax, Markdown links/fences and git diff hygiene pass. Actual app-local CMD stop/start/restart/reuse from an unrelated directory verifies restored backend defaults at127.0.0.1:4186. In-app controls show restored10mm/120mm/k10848.294N/m and the actual run is verified. Fetched-base working/publication/staged checks run before commit/push; raw evidence remains ignored. Previous native-window evidence belongs to7bbbceb and is not rerun or relabeled as a new desktop test.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. This rollback restores a previously tested experimental model, not a hardware baseline. Existing limitations in cable winding/groove/contact history, rope diameter/fit,3Dclearance, fixed chassis pitch and timestep-dependent rigid impacts remain. Original saved records are preserved; the withdrawn folded variant is not silently rerun as another model. Previous failures remain in the append-only contribution history.
+
+## 4. Compute Saving Handoff State
+
+The user withdrew the unloaded-contraction correction, and current mechanics again match7bbbceb with wrapped cables, tight rollers and knee-right stops.
+Browser session migration restores only the reverted demo values and strips the removed field while preserving unrelated inputs and all stored recordings.
+Continue from the restored model/current rollback validation note, preserve append-only history and original data, and restart with Start Motion Lab.cmd at port4186.
+
+---

@@ -37,7 +37,7 @@ def launch(values):
     if invertible:
         if set(values)!={'model','config'}:raise ValueError('Inversion native launch needs only model/config fields.')
         import inversion
-        resolved=inversion.config(inversion.resolve_saved_profile(values['config']));inversion.build(resolved)
+        resolved=inversion.config(values['config']);inversion.build(resolved)
         program='debug_inversion_gui.py'
     elif study:
         if set(values)!={'model','config'}:raise ValueError('Counterbalance native launch needs only model/config fields.')

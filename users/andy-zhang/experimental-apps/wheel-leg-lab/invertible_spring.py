@@ -22,10 +22,6 @@ def norm(a): return math.hypot(*a)
 def unit(a): return mul(a,1/norm(a))
 def polar(q): return (math.cos(q),math.sin(q))
 
-def attachment_phase(c):
-    # Old exported profiles lack the marker and retain their original phase.
-    return math.pi if c.get('rope_neutral_pose','straight')=='folded' else 0.
-
 def _line_clear(a,b,R):
     v=sub(b,a);t=max(0,min(1,dot(mul(a,-1),v)/dot(v,v)))
     return norm(add(a,mul(v,t)))>=R-1e-9
@@ -45,7 +41,7 @@ def _outer_route(phi,c,side):
     R,r=c['pulley_radius'],c['routing_radius'];sgn=1 if side=='red' else -1
     G=(-c['routing_distance'],sgn*c['routing_offset']);S=add(G,(0,sgn*r))
     winding=-sgn;start=sgn*math.pi/2
-    angle=phi+attachment_phase(c)+sgn*math.radians(c['attachment_offset_deg']);E=mul(polar(angle),R)
+    angle=phi+sgn*math.radians(c['attachment_offset_deg']);E=mul(polar(angle),R)
     candidates=[]
     def candidate(N,T,end,arc_main=None):
         v=sub(end,T);distance=norm(v)
@@ -91,7 +87,7 @@ def _central_route(phi,c,side,cap_x):
     derivatives so cap travel and cable tension account for the lead angle.
     """
     sign=1 if side=='red' else -1
-    angle=phi+attachment_phase(c)+sign*math.radians(c['attachment_offset_deg'])
+    angle=phi+sign*math.radians(c['attachment_offset_deg'])
     E=mul(polar(angle),c['pulley_radius']);P=(cap_x,sign*c['rope_eye_offset'])
     radius=c['routing_radius'];gap=c['routing_offset']-radius
     guides={key:(-c['routing_distance'],s*c['routing_offset']) for key,s in [('red',1),('blue',-1)]}
@@ -185,8 +181,7 @@ def prepare(c):
             raise ValueError('Both rope eyes must lie inside the central gap between the rollers.')
         if math.hypot(c['routing_distance'],c['routing_offset'])<=c['pulley_radius']+c['routing_radius']:
             raise ValueError('The two routing pulleys must clear the knee drum.')
-        p['reference_phi']=0. if c.get('rope_neutral_pose','straight')=='folded' else math.pi
-        p['reference']={colour:route(p['reference_phi'],c,colour)['length'] for colour in ('red','blue')}
+        p['reference']={colour:route(math.pi,c,colour)['length'] for colour in ('red','blue')}
     else:
         p['minimum']=abs(p['arm']-c['crank_radius'])
         if p['minimum']<.005:raise ValueError('Bellcrank tip must not coincide with femur anchor at straight knee.')
