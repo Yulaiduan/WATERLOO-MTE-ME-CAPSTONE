@@ -1840,3 +1840,54 @@ The one-cap solver uses actual cable inventory and lead-angle tension projection
 Continue from the corrected invertible model/validation docs, preserve existing records and session numbers, interpret post-impact ground peaks cautiously until refined, and restart with Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — tight wrapped ropes and knee-right inversion demo
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Invertible suspension transmission, angle limits, live/debug UI and data.
+- **Associated Issue/Task:** User requested much tighter rollers, an angle-limited above/below-chassis demo with the knee staying on the right, then clarified that the cables must wrap around the knee pulley. The latest wrap clarification supersedes the earlier no-wrap interpretation.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/angle_stops.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_inversion_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/invertible-suspension.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/invertible_spring.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_inversion_native.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_inversion_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_angle_stops.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/inversion-library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- **API/Interface Changes:** Add angle_limit_enabled/angle_min_deg/angle_max_deg to inversion configs; default |theta|45 and ±80 degree limits. Pymunk adds a real RotaryLimitJoint (five constraints), records signed averaged stop torque and fails runs crossing the knee to the left rather than clipping poses. Independent SciPy uses new angle_stops.py event integration, inelastic impact energy, held-stop reaction and release under inward acceleration. Defaults use400iterations to preserve the guide error budget. Add cable lead angle, stop torque and math impact-loss units/channels; physical mechanical_energy_minus_work_J explicitly includes unisolated constraint losses instead of claiming a closed stop-energy ledger. New central_wrap mode uses centre-fed roller tangents, common tangents and knee-rim arcs, with no straight span through pulley material; rim length and ±R angular derivative affect the one-cap inventory, tension and physical force sites. Current editable demo drum30mm/gap0.2mm/eyes±0.02mm fits existing120mm coil/rod and100mm eye mount; infeasible40mm wrapping travel is rejected. Current session migration adopts requested roller/pose/wrap settings while retaining unrelated dimensions/input fields. Original saved central_face/outer_rim profiles and frames retain reproduction, including explicit unrestricted angles for old profiles without stop metadata. UI shows derived gap that stays fixed during roller-radius edits, bounds, real wrap/stop indicators, alignment/stop readouts and ten Plotly charts. Native renderer uses computed paths and tracks every-step knee-right/bounds; original JSON/frames are not rewritten and absent historical channels are not fabricated. Update model/context/preset/workflow/validation docs and the root run-saved label. No canonical assets, shared runtime, dependencies, enforcement or original archives are changed/deleted.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All23 scoped Python tests pass (test_inversion, test_angle_stops, test_replacement_suspension, test_setup_preview). They verify actual knee-rim arcs/tangents, disk clearance, full cable inventory/slack, force-site virtual work and energy gradients, projection, impossible travel, archived no-wrap/outside routes, real above/below ground flips, right-side knees, stop reactions, independent impact/hold/release including zero-force rest without chatter, energy and low-load refinement. All63 JavaScript tests pass with old/new route/profile handling. Actual verify_inversion_ui passes wrapped main/detail geometry, tight gap, initial/bounds indicators, both presets, all recorded knees right, ten Plotly charts, portable JSON/library/current native envelope and fixed-J1 comparison. Actual verify_inversion_native.py passes both4001-step desktop windows with five constraints, expected8dual/5bell shapes, owned handles, every-step angle/knee-right checks and graceful exit0. Current dual k10848.294N/m, peak compression94.761mm/remaining coil25.239mm, maximum cable lead0.244deg and guide error3.35e-9rad. Dual first wheel-below times at.5/.25/.125ms are.3575/.3605/.36075s; final1s angles44.187/42.779/42.487deg. Reversed normal-start pulses reach wheel-above at.24175s dual/.23650s bell, with positive knee-right margins; bell wheel-below remains.39725s. Matched fixed-J1 half-second max angle deltas1.38600/.78804deg and math energy residuals4.62e-4/1.13e-5J retain the actual impact scope. App-local CMD start/stop/restart/reuse from C:/Windows preserves127.0.0.1:4186. In-app session migration, wrap preview and actual run are verified. Syntax/compilation, edited Markdown links/fences, diff hygiene and fetched-base working/publication/staged checks run before push. Raw runs/logs/screenshots/environments remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Initial stop impacts exceeded the old1e-8rad guide budget at100iterations;200/300 improved it but still missed, and400passes without loosening it. The intermediate 1mm/no-wrap bounded demo is documented as superseded after the user's rim-wrap clarification. Wrapping the40mm drum exhausted the existing mount travel, so the clearly editable30mm demo drum is used rather than clipping cable motion or inventing coil capacity. Small numerical angle-stop overshoot and timestep-dependent rigid-contact peaks remain in real data; runs crossing left fail. Shortest ideal cable paths permit lift-off/contact-branch changes and omit captured groove/winding history, cable diameter/fit, stretch/friction, stop compliance,3Dclearance and actual actuator ratings. Chassis pitch remains held; this is not whole-vehicle self-righting, a hidden controller or a settled-pose guarantee. Math ideal impacts have no finite instantaneous peak torque; Pymunk reports impulse/dt. High-torque impact comparisons do not inherit the separate low-load.1deg claim. Older broad audits and unchanged MATLAB support remain historical/legacy-tip-only.
+
+## 4. Compute Saving Handoff State
+
+Current dual ropes feed through a0.2mm ideal roller gap and wrap the30mm knee drum through real tangent/rim geometry, with one shared cap and nearly axial pull.
+Both new mechanisms use editable±80deg real stops and start at45deg magnitude, keeping the knee right while real femur torque moves the wheel above/below the chassis; independent math models matching rigid stops and impact loss.
+Continue from the latest invertible model/validation records, preserve archived profiles/data and unrelated settings, refine contact timestep before interpreting peaks, and restart with Start Motion Lab.cmd at port4186.
+
+---

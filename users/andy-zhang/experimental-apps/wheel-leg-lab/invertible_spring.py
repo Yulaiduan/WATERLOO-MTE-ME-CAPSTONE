@@ -5,7 +5,7 @@ Inputs: SI lengths/rates, degrees only for configured attachment offset.
 Outputs: routed red/blue cable paths, slack/tension, cap travel, spring energy,
 and conservative generalized torque. No Pymunk/ODE dependency.
 Limitations: massless piston/ropes; central leads between two rollers, with
-outward flare to anchors on the knee face (no outer-rim wrap). No rope crossover,
+outward flare, tangent spans and knee-rim wrap to the anchors. No rope crossover,
 groove friction/stretch, piston binding, structural or packaging validation.
 One taut rope selects the common cap; exact ties use the outgoing branch.
 """
@@ -79,11 +79,11 @@ def _outer_route(phi,c,side):
     return {**result,'anchor':E,'guide_center':G,'feed':S,'colour':side,'attachment_angle':angle}
 
 def _central_route(phi,c,side,cap_x):
-    """Shortest centre-channel cable to an anchor on the pulley face.
+    """Shortest centre-channel cable to a knee attachment, with optional rim wrap.
 
     The cap eye translates along x. Either small roller can guide an outward
-    flare; a rope inside the channel can lose roller contact. The knee face
-    is not an obstacle and never receives a rim arc. Return both length partial
+    flare; a rope inside the channel can lose roller contact. Current central_wrap treats the knee circle as an obstacle and adds rim arcs;
+    explicit central_face retains the previous face-crossing study. Return length partial
     derivatives so cap travel and cable tension account for the lead angle.
     """
     sign=1 if side=='red' else -1
@@ -91,19 +91,28 @@ def _central_route(phi,c,side,cap_x):
     E=mul(polar(angle),c['pulley_radius']);P=(cap_x,sign*c['rope_eye_offset'])
     radius=c['routing_radius'];gap=c['routing_offset']-radius
     guides={key:(-c['routing_distance'],s*c['routing_offset']) for key,s in [('red',1),('blue',-1)]}
-    candidates=[]
-    def append(length,pieces,feed,upper_contact,u_in,u_out,roller):
-        candidates.append({'length':length,'derivative':dot(u_out,(-E[1],E[0])),
+    candidates=[];wrapped=c.get('rope_routing')=='central_wrap';R=c['pulley_radius']
+    def append(length,pieces,feed,upper_contact,u_in,u_out,roller,lower_contact=None,derivative=None):
+        candidates.append({'length':length,'derivative':dot(u_out,(-E[1],E[0])) if derivative is None else derivative,
           'cap_projection':u_in[0],'pieces':pieces,'eye':P,'feed':feed,
-          'upper_contact':upper_contact,'lower_contact':E,'direction':mul(u_out,-1),
+          'upper_contact':upper_contact,'lower_contact':E if lower_contact is None else lower_contact,'direction':mul(u_out,-1),
           'contact_roller':roller,'anchor':E,'colour':side,'attachment_angle':angle,
-          'routing':'central_face'})
+          'routing':'central_wrap' if wrapped else 'central_face'})
     straight=sub(E,P)
     if straight[0]<=0:raise ValueError('Cylinder rope eyes must stay before the knee anchors.')
     u=unit(straight)
     gate_y=P[1]+straight[1]*(-c['routing_distance']-P[0])/straight[0]
-    if abs(gate_y)<=gap+1e-10 and all(_clear_other(P,E,G,radius) for G in guides.values()):
+    if abs(gate_y)<=gap+1e-10 and all(_clear_other(P,E,G,radius) for G in guides.values()) and (not wrapped or _line_clear(P,E,R)):
         append(norm(straight),[{'kind':'line','a':P,'b':E}],P,P,u,u,None)
+    if wrapped:
+        distance=norm(P);beta=math.atan2(P[1],P[0]);gamma=math.acos(R/distance)
+        for tangent_angle in (beta-gamma,beta+gamma):
+            N=polar(tangent_angle);T=mul(N,R);incoming=unit(sub(T,P))
+            gate=P[1]+incoming[1]*(-c['routing_distance']-P[0])/incoming[0]
+            if abs(gate)>gap+1e-10 or not all(_clear_other(P,T,G,radius) for G in guides.values()):continue
+            winding=1 if cross(N,incoming)>0 else -1;sweep=(winding*(angle-tangent_angle))%TAU
+            pieces=[{'kind':'line','a':P,'b':T},{'kind':'arc','center':(0,0),'radius':R,'start':tangent_angle,'sweep':winding*sweep}]
+            append(norm(sub(T,P))+R*sweep,pieces,P,P,incoming,incoming,None,T,winding*R)
     for key,G in guides.items():
         winding=1 if key=='red' else -1
         delta_in=sub(P,G);delta_out=sub(E,G);din,dout=norm(delta_in),norm(delta_out)
@@ -114,13 +123,32 @@ def _central_route(phi,c,side,cap_x):
         for qi in (bin-ain,bin+ain):
             Ni=polar(qi);Ti=add(G,mul(Ni,radius));uin=unit(sub(Ti,P))
             if winding*cross(Ni,uin)<.999999 or not _clear_other(P,Ti,other,radius):continue
-            for qo in (bout-aout,bout+aout):
-                No=polar(qo);To=add(G,mul(No,radius));uout=unit(sub(E,To))
+            def outgoing(No,To,end,main=None):
+                uout=unit(sub(end,To));qo=math.atan2(No[1],No[0])
                 arc=(winding*(qo-qi))%TAU
-                if winding*cross(No,uout)<.999999 or arc>math.pi+1e-10 or not _clear_other(To,E,other,radius):continue
+                if winding*cross(No,uout)<.999999 or arc>math.pi+1e-10 or not _clear_other(To,end,other,radius):return
+                if main is None and wrapped and not _line_clear(To,E,R):return
                 pieces=[{'kind':'arc','center':G,'radius':radius,'start':qi,'sweep':winding*arc},
-                        {'kind':'line','a':To,'b':E}]
-                append(norm(sub(Ti,P))+radius*arc+norm(sub(E,To)),pieces,Ti,To,uin,uout,key)
+                        {'kind':'line','a':To,'b':end}]
+                length=norm(sub(Ti,P))+radius*arc+norm(sub(end,To))
+                derivative=None
+                if main:
+                    mainN,main_winding=main;start=math.atan2(mainN[1],mainN[0]);sweep=(main_winding*(angle-start))%TAU
+                    length+=R*sweep;derivative=main_winding*R
+                    pieces.append({'kind':'arc','center':(0,0),'radius':R,'start':start,'sweep':main_winding*sweep})
+                append(length,pieces,Ti,To,uin,uout,key,end if main else None,derivative)
+            for qo in (bout-aout,bout+aout):
+                No=polar(qo);To=add(G,mul(No,radius));outgoing(No,To,E)
+            if wrapped:
+                delta=mul(G,-1);distance=norm(delta);base=unit(delta);perp=(-base[1],base[0])
+                for sign in (1,-1):
+                    projection=(radius-sign*R)/distance
+                    if abs(projection)>=1:continue
+                    for branch in (-1,1):
+                        No=add(mul(base,projection),mul(perp,branch*math.sqrt(1-projection**2)))
+                        To=add(G,mul(No,radius));mainN=mul(No,sign);end=mul(mainN,R);uout=unit(sub(end,To))
+                        main_winding=1 if cross(mainN,uout)>0 else -1
+                        outgoing(No,To,end,(mainN,main_winding))
     if not candidates:raise ValueError('No valid central cable path; adjust roller spacing/placement or cap mount.')
     return min(candidates,key=lambda value:value['length'])
 
@@ -145,11 +173,11 @@ def _cap_demand(phi,c,side,reference,arm):
 def prepare(c):
     p={'arm':c['length']-(c['cap_reference_distance'] if c['preset']=='dual_rope' else c['femur_anchor_distance'])}
     if c['preset']=='dual_rope':
-        if c['routing_offset']<=c['routing_radius']+.001:
+        if c['routing_offset']<=c['routing_radius']+.00001:
             raise ValueError('Red and blue routing pulley circles must be separated.')
         if c.get('rope_routing','central_face')=='outer_rim' and c['routing_offset']+c['routing_radius']<=c['pulley_radius']:
             raise ValueError('Parallel rope feeds must lie outside the knee drum: routing offset + radius > drum radius.')
-        if c.get('rope_routing','central_face')=='central_face' and c['rope_eye_offset']>=c['routing_offset']-c['routing_radius']-.0005:
+        if c.get('rope_routing','central_face')!='outer_rim' and c['rope_eye_offset']>=c['routing_offset']-c['routing_radius']-.00001:
             raise ValueError('Both rope eyes must lie inside the central gap between the rollers.')
         if math.hypot(c['routing_distance'],c['routing_offset'])<=c['pulley_radius']+c['routing_radius']:
             raise ValueError('The two routing pulleys must clear the knee drum.')
@@ -162,7 +190,7 @@ def prepare(c):
 def state(theta,omega,c,p):
     phi=2*theta
     if c['preset']=='dual_rope':
-        central=c.get('rope_routing','central_face')=='central_face'
+        central=c.get('rope_routing','central_face')!='outer_rim'
         takeup={colour:(_cap_demand(phi,c,colour,p['reference'][colour],p['arm']) if central else route(phi,c,colour)['length']-p['reference'][colour]) for colour in ('red','blue')}
         active=max(takeup,key=takeup.get);x=max(0,takeup[active])
         if abs(takeup['red']-takeup['blue'])<1e-10 and abs(omega)>1e-10:

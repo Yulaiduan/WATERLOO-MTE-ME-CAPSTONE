@@ -5,33 +5,42 @@ hardware or canonical robot validation. Source: user's attached sketch and
 clarifications in this task: one cap/one loaded rope, actual±5°attachment points,
 two small rollers near the knee, and bellcrank spring mount 50 mm from J1.
 The later clarification replaces the initial outside-wrap prototype with central
-feeds, outward flare and face anchors, with no knee-rim wrap.
+feeds and outward flare. The latest clarification requires knee-rim wrap and
+supersedes the earlier no-wrap interpretation.
 
 ## Three pulleys, one compression cap
 
 The current dual-rope design has one knee pulley and two small rollers on the
 femur. The cylinder axis is parallel to r1. Red/blue ropes leave close-set eyes
 on one rigid piston rod's yoke, run through the central gap between the rollers,
-and flare outward to the actual ±5° attachments on the knee pulley face.
-There is no wrap around its outer rim. These two rollers are part of this new
+and flare onto tangent spans and rim arcs to the actual ±5° attachments.
+The cable follows the knee circumference instead of crossing its material. These two rollers are part of this new
 design; the earlier single-rope mechanism still has no added piston idler.
 
 Demo dimensions: 273 mm links, 50 mm lower extension, 200 mm wheel radius,
-40 mm knee attachment radius, 10 mm rollers, centres 60 mm before the knee and
-±15 mm to either side. The gap is 10 mm; rope eyes are ±2 mm from the cylinder
+30 mm knee attachment radius, 10 mm rollers, centres 60 mm before the knee and
+±10.1 mm to either side. The ideal gap is 0.2 mm; rope eyes are ±0.02 mm from the cylinder
 centreline. The rod-eye reference is 100 mm from J1, rod length 120 mm, physical
 coil free length 120 mm and preload compression 10 mm. The schematic housing
 extends 20 mm past J1 at its reference cap position; mounting fit is unverified.
-All dimensions are editable demo inputs. Existing remembered dimensions stay
-unchanged; Load selected flip demo explicitly selects these updated defaults.
+All dimensions are editable demo inputs. Wrapping increases cable travel; the
+30 mm drum fits the existing 120 mm coil and rod-eye mount. A 40 mm drum with
+those dimensions exhausts cap travel and is rejected rather than clipped.
+The gap input keeps its value when roller radius changes.
+Current session migration updates the requested roller/pose settings while
+retaining link, wheel, mass and input settings; saved records are unchanged.
 
 For knee opening `phi=2theta`, face attachments rotate at `phi±delta`.
-Geometry evaluates a free straight central path and inner-side tangent/arc
-paths over either roller. The rope can lose roller contact when its face
-anchor remains inside the channel. Paths cannot bypass the outside of the
-roller gate; the knee face is not a circular obstruction. Overlapping rollers,
-rope eyes outside the central gap and exhausted travel are rejected.
-Axle/groove/rope-crossing clearance, friction, stretch and binding are unverified.
+Geometry evaluates straight paths only when they clear the knee circle,
+plus tangent/arc paths over the small rollers and around the knee drum.
+Common circle tangents join roller exit to knee contact; the remaining rim
+arc ends at the rotating anchor. Candidates cannot cross pulley material or
+bypass the outside of the central roller gate. A cable can lift off the rim
+when its attachment directly faces the cylinder. Current central_wrap uses
+this contact geometry; explicit central_face preserves the previous no-wrap
+study and outer_rim preserves the original external-feed prototype.
+Axle/groove/rope-crossing clearance, friction, stretch and winding history are
+unverified. Shortest ideal routing does not model captured multi-turn winding.
 
 Let `ell_i(phi,x)` be the full cable length from the moving cap eye to its
 face anchor. Neutral inventories are measured at `phi=pi, x=0`. Each rope's
@@ -51,13 +60,15 @@ Q_theta = -F_cap*dx/dtheta
 slack_i = ell_i(pi,0) - ell_i(phi,x)
 ```
 
-Angled leads require slightly more cable tension than cap force. Ties use the
+While wrapping, `partial ell_i / partial phi = ±R`; rim arcs contribute real
+cable length and torque. Angled leads require slightly more tension than cap force. Ties use the
 outgoing branch, with deterministic red at rest. At zero take-up a mechanical
 preload/reference stop reacts internal coil force; it is not a controller.
 Energy and cap position are continuous at handoffs; derivatives can be
-nonsmooth. Equal/opposite forces along the outgoing cable span reproduce
-virtual torque and pin loads. The upper force aggregates its massless
-cylinder/roller reactions. Red and blue do not have separate spring energies.
+nonsmooth. Equal/opposite forces along the outgoing tangent span reproduce virtual torque
+and pin loads. The lower force at the rim contact represents the aggregate
+wrapped-drum/anchor reaction; a duplicate anchor force is not added. The upper
+force aggregates its massless cylinder/roller reactions. Red and blue do not have separate spring energies.
 
 ## Symmetric knee bellcrank
 
@@ -80,12 +91,21 @@ springs or a hidden holding motor.
 
 ## Inverted start and applied femur torque
 
-The separate full-angle fixture starts at `theta=-135deg`, with chassis centre
+The separate full-angle fixture starts at `theta=-45deg`, with chassis centre
 27.5mm above the flat floor and the wheel above it. Pymunk uses real wheel and
 chassis contacts: heave/translation are free, chassis pitch is held, and the
 2:1 guide keeps absolute upper/lower angles summing to minus pi. No wheel height
 is prescribed. The links/transmission use sensor geometry; self-collision is
 disabled to represent staggered lateral planes. No3Dclearance claim follows.
+
+Default angle stops are θ=-80° and +80°, with initial |θ|=45°. Therefore
+`x_knee-x_hip=L*cos(theta)>0`: the knee stays right while the wheel changes
+from above to below the chassis. Pymunk adds a real RotaryLimitJoint between
+chassis and femur (five total constraints); recorded poses are not clipped.
+Numerical stop overshoot is reported by the real solver. Current defaults use
+400 iterations to keep the original guide-error budget through impacts. Runs
+that overshoot far enough to move the knee left fail explicitly. Old saved
+profiles without stop metadata reproduce their unrestricted configuration.
 
 Clockwise femur torque is positive in the UI: upper body gets `-tau` and chassis
 gets `+tau` in world counterclockwise coordinates. Demo input is100Nm with
@@ -96,7 +116,7 @@ fly briefly or rotate further; the recording does not freeze at a target pose.
 
 Automatic spring rate balances the chosen normal ground ride pose (45deg demo)
 using distributed link and corner weight; it does not guarantee global stability.
-Default rates are about 7882.99 N/m dual-rope and 5116.73 N/m bellcrank. The default
+Default rates are about 10848.29 N/m dual-rope and 5116.73 N/m bellcrank. The default
 ground flips are observed, not scripted angle trajectories. Step size must be
 refined before interpreting contact/load peaks.
 
@@ -104,7 +124,7 @@ refined before interpreting contact/load peaks.
 
 SciPy and the matched physical comparison hold J1, without floor contact. They
 integrate angle directly, avoiding the height-Jacobian singularity at90deg.
-For ideal equal-link kinematics the positive effective inertia is
+Between stops, ideal equal-link kinematics give the positive effective inertia
 
 ```text
 M(theta) = I_upper+I_lower + m_upper*L^2/4
@@ -113,6 +133,15 @@ M(theta) = I_upper+I_lower + m_upper*L^2/4
 M*theta_ddot + 0.5*M'*theta_dot^2 = tau + Q_spring + G*cos(theta)
 G = gravity*(m_upper*L/2 + m_lower*(3L-e)/2 + 2*m_wheel*L)
 ```
+
+The independent angular integrator uses terminal angle events for zero-
+restitution impacts, adding loss `0.5*M*omega_before^2` to its energy ledger.
+At a loaded stop it remains at rest until free acceleration points inward.
+This is a unilateral rigid constraint, not a controller or added damper.
+Mathematical stop torque reports continuous holding reaction; its ideal impact
+has no finite peak torque. Pymunk reports actual step-averaged stop impulse/dt.
+With stops enabled, its mechanical_energy_minus_work_J includes unisolated
+constraint-impact losses and is not labeled a closed energy-error ledger.
 
 Mathematical ground impacts are not synthesized. Ground experiments and fixed-J1
 comparisons have different boundaries and must stay distinct. Pin/floor loads
@@ -134,14 +163,21 @@ The native button opens the actual `debug_inversion_gui.py` desktop simulation
 on the server computer. Space pauses, period steps and R resets. The diagnostic
 `--quit-at-end` exits only its own test window; normal server launch can loop.
 
-New configs explicitly store `rope_routing=central_face` and rope-eye offset.
+New configs store `rope_routing=central_wrap`, rope-eye offset and editable
+angle_limit_enabled/angle_min_deg/angle_max_deg. Current demo lead angles are
+within about 0.25° of the cylinder axis; the ideal model does not assume a
+measured cable diameter or certify fit through the 0.2 mm ideal gap.
 Saved pre-correction profiles are resolved to explicit `outer_rim` reproduction
 on import/library execution/native launch; their original JSON and recorded
 frames are not modified. The current UI labels those profiles as archived and
-offers Load selected flip demo for the corrected route. Session edits retain
-numeric choices while adopting the current route. Direct API configs without a
+offers Load selected flip demo for the corrected route. Current session migration adopts central_wrap, the tighter gap, 30 mm demo
+drum and knee-right bounds;
+older saved profiles retain their unrestricted angles for reproduction. Direct API configs without a
 routing marker use the corrected default; legacy API reproduction must select
-`outer_rim` explicitly with its old dimensions.
+`outer_rim` explicitly with its old dimensions and `angle_limit_enabled=false`.
+Archived central_face profiles retain their prior no-wrap geometry. Profiles
+from before the stop update likewise require explicit false
+to reproduce their unrestricted trajectory.
 
 Code: [geometry](../invertible_spring.py), [solvers](../inversion.py),
 [model tests](../test_inversion.py), [browser test](../scripts/verify_inversion_ui.cjs),

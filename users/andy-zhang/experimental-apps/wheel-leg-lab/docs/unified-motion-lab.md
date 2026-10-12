@@ -276,3 +276,27 @@ The corrected dual-rope route is explicitly central_face, with close-set cap
 eyes, inner roller flare and no knee-rim wrap. Older saved profiles execute as
 explicit outer_rim reproduction, while recorded frames/JSON remain unchanged.
 The enlarged diagram and native GUI follow the same computed cable geometry.
+
+## Tight rollers and knee-right demo, 2026-10-11
+
+Current demo: 1 mm clear roller gap, ±0.1 mm cap eyes and ±80° angle stops,
+starting at |θ|=45°. The knee remains to the right while the wheel moves above
+or below the chassis. Pymunk uses a real fifth constraint, not clipped playback;
+independent SciPy uses rigid-stop events, inelastic impact loss and inward-load
+release. Current default solver iterations are400. Lead alignment and signed
+stop torque are recorded; mathematical impact loss has its own energy channel.
+The gap stays fixed when editing roller radius. Session migration updates these
+requested geometry/pose settings while retaining other dimensions/input values;
+older saved profiles/recordings retain explicit unrestricted reproduction.
+See the current invertible model and validation records for exact scope.
+
+## Latest clarification: wrap the knee pulley, 2026-10-11
+
+Current central_wrap replaces the no-wrap interpretation: centre-fed cables
+flare over the tight rollers, follow common tangents and knee-rim arcs, then
+end at the offset attachments. Cable length and force use those contacts;
+the cable can lift off when its attachment faces the cylinder. Demo drum30mm,
+ideal gap0.2mm and eyes±0.02mm fit the existing coil/mount and keep pull nearly
+axial. Editable knee-right ±80° stops and |θ|=45° start remain. Older central_face
+and outer_rim profiles/frames stay reproducible. The latest invertible model
+and validation record supersede the earlier no-wrap and wider-gap descriptions.

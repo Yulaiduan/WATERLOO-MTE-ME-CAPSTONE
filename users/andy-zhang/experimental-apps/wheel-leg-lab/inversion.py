@@ -15,15 +15,17 @@ import pymunk
 from scipy.integrate import solve_ivp
 from debug_view import capture
 import invertible_spring as springs
+from angle_stops import integrate as integrate_stops
 
-DEFAULTS={'preset':'dual_rope','fixture':'ground','start_inverted':True,'initial_angle_deg':135.,
+DEFAULTS={'preset':'dual_rope','fixture':'ground','start_inverted':True,'initial_angle_deg':45.,
+ 'angle_limit_enabled':True,'angle_min_deg':-80.,'angle_max_deg':80.,
  'length':.273,'extension':.05,'radius':.2,'upper_mass':.6,'lower_mass':.65,'wheel_mass':1.5,'chassis_mass':8.,
  'gravity':9.80665,'stiffness':5000.,'auto_rate':True,'ride_angle_deg':45.,'damping':0.,'preload':.01,
- 'coil_free_length':.12,'cap_reference_distance':.1,'rod_length':.12,'pulley_radius':.04,'routing_radius':.01,'routing_distance':.06,'routing_offset':.015,
- 'rope_routing':'central_face','rope_eye_offset':.002,
+ 'coil_free_length':.12,'cap_reference_distance':.1,'rod_length':.12,'pulley_radius':.03,'routing_radius':.01,'routing_distance':.06,'routing_offset':.0101,
+ 'rope_routing':'central_wrap','rope_eye_offset':.00002,
  'attachment_offset_deg':5.,'femur_anchor_distance':.05,'crank_radius':.05,
  'femur_torque':100.,'torque_start':.1,'torque_width':.24,'torque_rise':.04,'torque_fall':.04,
- 'duration':1.,'dt':.00025,'iterations':100}
+ 'duration':1.,'dt':.00025,'iterations':400}
 
 def config(values=None):
     c=deepcopy(DEFAULTS)
@@ -39,15 +41,16 @@ def config(values=None):
             if isinstance(c[key],bool) or not isinstance(c[key],(int,float)) or not math.isfinite(c[key]):raise ValueError(key+' must be finite.')
     if c['preset'] not in ('dual_rope','knee_bellcrank'):raise ValueError('Select dual_rope or knee_bellcrank.')
     if c['fixture'] not in ('ground','hip_fixed'):raise ValueError('Select ground or hip_fixed fixture.')
-    if c['rope_routing'] not in ('central_face','outer_rim'):raise ValueError('Select central_face routing, or explicit legacy outer_rim reproduction.')
+    if c['rope_routing'] not in ('central_wrap','central_face','outer_rim'):raise ValueError('Select central_wrap routing, or an explicit archived route.')
     limits={'length':(.15,.8),'extension':(.005,.15),'radius':(.05,.4),'initial_angle_deg':(5,175),'ride_angle_deg':(10,80),
+      'angle_min_deg':(-89,-5),'angle_max_deg':(5,89),
       'upper_mass':(.01,20),'lower_mass':(.01,20),'wheel_mass':(.01,30),'chassis_mass':(.1,100),'gravity':(0,20),
       'stiffness':(0,100000),'damping':(0,2000),'preload':(0,.1),'coil_free_length':(.02,1),
-      'pulley_radius':(.005,.1),'routing_radius':(.003,.04),'routing_distance':(.01,.2),'routing_offset':(.01,.15),
+      'pulley_radius':(.005,.1),'routing_radius':(.003,.04),'routing_distance':(.01,.2),'routing_offset':(.003,.15),
       'rope_eye_offset':(0,.02),
       'attachment_offset_deg':(0,30),'femur_anchor_distance':(.005,.15),'cap_reference_distance':(.01,.3),'rod_length':(.02,.6),'crank_radius':(.005,.15),
       'femur_torque':(-500,500),'torque_start':(0,10),'torque_width':(.02,10),'torque_rise':(.001,2),'torque_fall':(.001,2),
-      'duration':(.1,10),'dt':(.000125,.002),'iterations':(30,300)}
+      'duration':(.1,10),'dt':(.000125,.002),'iterations':(30,1000)}
     for key,(lo,hi) in limits.items():
         if not lo<=c[key]<=hi:raise ValueError(f'{key} must be in [{lo}, {hi}] SI.')
     if c['extension']>=c['length'] or c['femur_anchor_distance']>=c['length']:raise ValueError('Extension and femur attachment distance must be shorter than the link.')
@@ -56,6 +59,9 @@ def config(values=None):
     if c['torque_rise']+c['torque_fall']>c['torque_width']:raise ValueError('Torque rise/fall must fit in pulse width.')
     if c['duration']/c['dt']>30000:raise ValueError('Limit each run to 30000 steps.')
     if c['iterations']!=int(c['iterations']):raise ValueError('Iterations must be integral.')
+    signed_initial=c['initial_angle_deg']*(-1 if c['start_inverted'] else 1)
+    if c['angle_limit_enabled'] and not c['angle_min_deg']<=signed_initial<=c['angle_max_deg']:
+        raise ValueError('Initial angle must lie inside the enabled knee-right limits.')
     p=springs.prepare(c)
     if c['auto_rate']:
         q=math.radians(c['ride_angle_deg']);trial=springs.state(q,0.,dict(c,stiffness=1.,damping=0.),p)
@@ -105,7 +111,11 @@ def build(c):
     guide=pymunk.GearJoint(upper,lower,math.pi,-1.)
     for joint in [*joints,guide]:joint.collide_bodies=False
     space.add(*joints,guide)
-    m={'space':space,'hip':hip,'upper':upper,'lower':lower,'wheel':wheel,'joints':joints,'guide':guide,'prepared':springs.prepare(c),'contacts':{'wheel':0.,'chassis':0.},'steps':0,'t':0.,'work':0.,'dissipated':0.,'H0':H}
+    stop=None
+    if c['angle_limit_enabled']:
+        stop=pymunk.RotaryLimitJoint(hip,upper,-math.radians(c['angle_max_deg']),-math.radians(c['angle_min_deg']))
+        stop.collide_bodies=False;space.add(stop)
+    m={'space':space,'hip':hip,'upper':upper,'lower':lower,'wheel':wheel,'joints':joints,'guide':guide,'stop':stop,'prepared':springs.prepare(c),'contacts':{'wheel':0.,'chassis':0.},'steps':0,'t':0.,'work':0.,'dissipated':0.,'H0':H}
     def contact(key):
         def capture_contact(arbiter,space,data):m['contacts'][key]+=abs(arbiter.total_impulse.y)
         return capture_contact
@@ -131,7 +141,9 @@ def step(m,c):
     command=torque(m['t']+c['dt']/2,c);m['upper'].torque-=command
     if c['fixture']=='ground':m['hip'].torque+=command
     m['contacts']={'wheel':0.,'chassis':0.};m['space'].step(c['dt']);m['t']+=c['dt'];m['steps']+=1
-    _,neww,*_=coordinates(m,c);m['work']+=command*(w+neww)/2*c['dt'];m['dissipated']+=s['dissipation']*c['dt']
+    newq,neww,newA,newB,_=coordinates(m,c)
+    if c['angle_limit_enabled'] and newB.x<=newA.x:raise ValueError('Stop overshoot moved the knee left; reduce timestep/input or increase stop margin.')
+    m['work']+=command*(w+neww)/2*c['dt'];m['dissipated']+=s['dissipation']*c['dt']
     return command
 
 def frame(q,A,c,s,upper_angle=None,lower_angle=None,B=None,C=None):
@@ -147,20 +159,23 @@ def channels(t,q,w,s,command,displacement=0):
       'red_tension_kgf':s['red_tension']/9.80665,'blue_tension_kgf':s['blue_tension']/9.80665,'compression_m':s['compression'],'coil_length_m':s['coil_length'],
       'spring_energy_J':s['energy'],'spring_dissipation_W':s['dissipation'],'angular_velocity_rad_s':w,
       'chassis_displacement':displacement,'active_red':int(s['geometry']['active']=='red'),'active_blue':int(s['geometry']['active']=='blue'),
+      'red_lead_angle_deg':math.degrees(math.acos(max(-1,min(1,s['geometry'].get('routes',{}).get('red',{}).get('cap_projection',1.))))),
+      'blue_lead_angle_deg':math.degrees(math.acos(max(-1,min(1,s['geometry'].get('routes',{}).get('blue',{}).get('cap_projection',1.))))),
       'red_slack_m':s['geometry']['slack'].get('red',0.),'blue_slack_m':s['geometry']['slack'].get('blue',0.)}
 
 UNITS={'t':'s','theta_deg':'deg','knee_opening_deg':'deg','femur_torque_Nm':'N·m','hip_motor_reaction_Nm':'N·m','spring_torque_Nm':'N·m','spring_knee_torque_Nm':'N·m','red_tension_N':'N','blue_tension_N':'N','cap_force_N':'N',
  'red_tension_kgf':'kgf','blue_tension_kgf':'kgf','compression_m':'m','coil_length_m':'m','spring_energy_J':'J','spring_dissipation_W':'W','angular_velocity_rad_s':'rad/s',
  'angular_acceleration_rad_s2':'rad/s²','chassis_displacement':'m','chassis_velocity_m_s':'m/s','chassis_acceleration_m_s2':'m/s²','wheel_ground_force_N':'N','chassis_ground_force_N':'N',
  'j1_force_N':'N','j2_force_N':'N','j3_force_N':'N','guide_torque_Nm':'N·m','guide_error_rad':'rad','motor_work_J':'J','mechanical_energy_J':'J','energy_balance_error_J':'J',
- 'active_red':'0/1','active_blue':'0/1','red_slack_m':'m','blue_slack_m':'m'}
+ 'active_red':'0/1','active_blue':'0/1','red_slack_m':'m','blue_slack_m':'m',
+ 'red_lead_angle_deg':'deg','blue_lead_angle_deg':'deg','angle_stop_torque_Nm':'N·m','stop_dissipated_energy_J':'J','mechanical_energy_minus_work_J':'J'}
 
 def package(c,rows,frames,backend):
     flipped=next((r['t'] for r in rows if math.sin(math.radians(r['theta_deg']))*(1 if c['start_inverted'] else -1)>.5),None)
     return {'backend':'inversion_'+backend,'model':'invertible wheel leg','engine':'Pymunk '+pymunk.version if backend=='pymunk' else 'independent SciPy angle ODE',
       'config':c,'units':UNITS,'rows':rows,'frames':frames,'diagnostics':{'flip_time_s':flipped,'max_compression_m':max(r['compression_m'] for r in rows),
       'red_samples':sum(r['active_red'] for r in rows),'blue_samples':sum(r['active_blue'] for r in rows)},
-      'scope':'Experimental fixed-pitch inversion study. Ground mode has real frictionless wheel/chassis floor contacts; self-collision disabled for staggered lateral planes. Math/fixed-J1 comparison has no floor. Ideal shortest cable paths; rope winding history, grooves, strength and 3D clearance are unverified.'}
+      'scope':('Knee-right angle stops are enabled. ' if c['angle_limit_enabled'] else 'Unrestricted archived angle study. ')+'Experimental fixed-pitch inversion study. Ground mode has real frictionless wheel/chassis floor contacts; self-collision disabled for staggered lateral planes. Math/fixed-J1 comparison has no floor. Ideal shortest cable paths; rope winding history, grooves, strength and 3D clearance are unverified.'}
 
 def preview(values=None):
     c=config(values);q,H=initial(c);s=springs.state(q,0.,c,springs.prepare(c))
@@ -176,13 +191,21 @@ def simulate(values=None,backend='pymunk'):
             q,w=y[:2];s=springs.state(float(q),float(w),c,p);M=I+a*math.sin(q)**2+b*math.cos(q)**2;Mp=(a-b)*math.sin(2*q);T=torque(t,c)
             return [w,(T+s['torque']+G*math.cos(q)-.5*Mp*w*w)/M,T*w,s['dissipation']]
         times=np.linspace(0,c['duration'],round(c['duration']/c['dt'])+1)
-        solved=solve_ivp(evaluate,(0,c['duration']),(q0,0.,0.,0.),t_eval=times,max_step=c['dt'],rtol=2e-8,atol=1e-10)
-        if not solved.success:raise ValueError(solved.message)
+        if c['angle_limit_enabled']:
+            states,stop_losses,_=integrate_stops(evaluate,lambda q:I+a*math.sin(q)**2+b*math.cos(q)**2,
+              times,(q0,0.,0.,0.),(math.radians(c['angle_min_deg']),math.radians(c['angle_max_deg'])))
+        else:
+            solved=solve_ivp(evaluate,(0,c['duration']),(q0,0.,0.,0.),t_eval=times,max_step=c['dt'],rtol=2e-8,atol=1e-10)
+            if not solved.success:raise ValueError(solved.message)
+            states=solved.y;stop_losses=np.zeros(len(times))
         rows=[];frames=[];first=None
-        for i,t in enumerate(solved.t):
-            q,w,work,diss=map(float,solved.y[:,i]);s=springs.state(q,w,c,p);r=channels(float(t),q,w,s,torque(float(t),c));r['angular_acceleration_rad_s2']=evaluate(float(t),(q,w,work,diss))[1]
+        for i,t in enumerate(times):
+            q,w,work,diss=map(float,states[:,i]);s=springs.state(q,w,c,p);r=channels(float(t),q,w,s,torque(float(t),c));free_accel=evaluate(float(t),(q,w,work,diss))[1]
+            held=c['angle_limit_enabled'] and abs(w)<1e-10 and ((abs(q-math.radians(c['angle_min_deg']))<1e-10 and free_accel<0) or (abs(q-math.radians(c['angle_max_deg']))<1e-10 and free_accel>0))
+            r['angular_acceleration_rad_s2']=0. if held else free_accel
+            r['angle_stop_torque_Nm']=-(torque(float(t),c)+s['torque']+G*math.cos(q)) if held else 0.
             E=.5*(I+a*math.sin(q)**2+b*math.cos(q)**2)*w*w+c['gravity']*(mu+ml+mw)*H-G*math.sin(q)+s['energy'];first=E if first is None else first
-            r.update(motor_work_J=work,mechanical_energy_J=E,energy_balance_error_J=E-first-work+diss);rows.append(r)
+            r.update(motor_work_J=work,mechanical_energy_J=E,stop_dissipated_energy_J=float(stop_losses[i]),energy_balance_error_J=E-first-work+diss+stop_losses[i]);rows.append(r)
             if i%max(1,round(.01/c['dt']))==0 or i==len(times)-1:frames.append({'t':float(t),**frame(q,(0,H),c,s)})
         return package(c,rows,frames,'math')
     m=build(c);rows=[];frames=[];previous_w=0.;previous_v=0.;E0=None
@@ -193,7 +216,11 @@ def simulate(values=None,backend='pymunk'):
                  chassis_acceleration_m_s2=(m['hip'].velocity.y-previous_v)/c['dt'] if i else 0.,motor_work_J=m['work'],mechanical_energy_J=E,
                  wheel_ground_force_N=m['contacts']['wheel']/c['dt'],chassis_ground_force_N=m['contacts']['chassis']/c['dt'],
                  guide_torque_Nm=m['guide'].impulse/c['dt'],guide_error_rad=m['upper'].angle+m['lower'].angle+math.pi)
-        if c['fixture']=='hip_fixed':r['energy_balance_error_J']=E-E0-m['work']+m['dissipated']
+        stop_sign=1 if abs(math.degrees(q)-c['angle_min_deg'])<abs(math.degrees(q)-c['angle_max_deg']) else -1
+        r['angle_stop_torque_Nm']=stop_sign*abs(m['stop'].impulse)/c['dt'] if m['stop'] else 0.
+        if c['fixture']=='hip_fixed':
+            key='mechanical_energy_minus_work_J' if c['angle_limit_enabled'] else 'energy_balance_error_J'
+            r[key]=E-E0-m['work']+m['dissipated']
         for j,joint in enumerate(m['joints'],1):r[f'j{j}_force_N']=joint.impulse/c['dt']
         if not all(math.isfinite(v) for v in r.values()):raise ValueError('Nonfinite inversion state; reduce torque/timestep.')
         rows.append(r);previous_w=w;previous_v=m['hip'].velocity.y

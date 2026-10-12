@@ -7,7 +7,7 @@ Limitations: ideal massless routing/fixed-pitch fixture, not 3D/hardware proof.
 import math
 import unittest
 from inversion import config,preview,simulate,build
-from invertible_spring import state,prepare,route,cross,sub,unit,mul
+from invertible_spring import state,prepare,route,cross,sub,unit,mul,_line_clear
 
 class InversionTests(unittest.TestCase):
     def test_offset_attachment_and_routing_geometry(self):
@@ -46,7 +46,7 @@ class InversionTests(unittest.TestCase):
                 self.assertAlmostEqual(cross(sub(b,a),F),0.,places=9)
     def test_preview_inverted_and_not_stepped(self):
         v=preview();self.assertEqual(v['solver_steps'],0);self.assertGreater(v['frame']['hub'][1],v['frame']['hip'][1]);self.assertEqual(v['frame']['hip'][1],.055/2)
-        m=build(v['config']);self.assertEqual(len(m['space'].constraints),4);self.assertTrue(all(b.body_type!=b.KINEMATIC for b in m['space'].bodies))
+        m=build(v['config']);self.assertEqual(len(m['space'].constraints),5);self.assertIsNotNone(m['stop']);self.assertTrue(all(b.body_type!=b.KINEMATIC for b in m['space'].bodies))
     def test_both_actual_ground_demos_flip_without_position_driver(self):
         for preset in ['dual_rope','knee_bellcrank']:
             r=simulate({'preset':preset});self.assertIsNotNone(r['diagnostics']['flip_time_s']);self.assertGreater(max(x['theta_deg'] for x in r['rows']),45)
@@ -63,11 +63,11 @@ class InversionTests(unittest.TestCase):
                 r=simulate(dict(c,dt=dt));errors.append(abs(r['rows'][-1]['theta_deg']-reference['rows'][-1]['theta_deg']))
             self.assertLess(errors[-1],errors[0]);self.assertLess(errors[-1],.1)
     def test_invalid_geometry_not_silently_repaired(self):
-        for changes in [{'routing_offset':.0105},{'rope_eye_offset':.006},{'coil_free_length':.03},{'cap_reference_distance':.23},{'attachment_offset_deg':float('nan')},{'preset':'unknown'},{'rope_routing':'unknown'}]:
+        for changes in [{'routing_offset':.010005},{'rope_eye_offset':.006},{'coil_free_length':.03},{'cap_reference_distance':.23},{'attachment_offset_deg':float('nan')},{'preset':'unknown'},{'rope_routing':'unknown'},{'initial_angle_deg':135},{'angle_max_deg':90}]:
             with self.assertRaises(ValueError):config(changes)
 
     def test_central_face_routes_inventory_and_cap_force(self):
-        c=config();p=prepare(c)
+        c=config({'rope_routing':'central_face','pulley_radius':.04,'routing_offset':.0105,'rope_eye_offset':.0001});p=prepare(c)
         for degrees in range(-179,180,2):
             s=state(math.radians(degrees),.2,c,p);g=s['geometry'];self.assertEqual(g['routing'],'central_face')
             q=math.radians(degrees);epsilon=1e-6
@@ -90,5 +90,45 @@ class InversionTests(unittest.TestCase):
     def test_prior_outer_route_remains_explicit_reproduction(self):
         c=config({'rope_routing':'outer_rim','routing_offset':.035});s=state(-2.2,0,c,prepare(c))
         self.assertTrue(any(piece['kind']=='arc' and piece['center']==(0,0) for r in s['geometry']['routes'].values() for piece in r['pieces']))
+
+    def test_tight_gap_parallel_leads_and_knee_right_stops(self):
+        c=config();self.assertAlmostEqual(2*(c['routing_offset']-c['routing_radius']),.0002)
+        self.assertEqual(c['initial_angle_deg'],45);self.assertEqual((c['angle_min_deg'],c['angle_max_deg']),(-80,80))
+        for preset in ['dual_rope','knee_bellcrank']:
+            for backend in ['pymunk','math']:
+                r=simulate({'preset':preset,**({'fixture':'hip_fixed'} if backend=='math' else {})},backend)
+                self.assertTrue(all(f['knee'][0]>f['hip'][0] for f in r['frames']))
+                self.assertTrue(all(-80.5<=row['theta_deg']<=80.5 for row in r['rows']))
+                self.assertTrue(any(abs(row['angle_stop_torque_Nm'])>0 for row in r['rows']))
+                self.assertLess(max(max(row['red_lead_angle_deg'],row['blue_lead_angle_deg']) for row in r['rows']),1.1)
+                if backend=='math':
+                    self.assertGreater(r['rows'][-1]['stop_dissipated_energy_J'],0)
+                    self.assertLess(max(abs(row['energy_balance_error_J']) for row in r['rows']),.001)
+
+    def test_unlimited_saved_profile_has_no_extra_stop(self):
+        c=config({'angle_limit_enabled':False,'initial_angle_deg':135})
+        m=build(c);self.assertEqual(len(m['space'].constraints),4);self.assertIsNone(m['stop'])
+
+    def test_central_wrap_tangents_inventory_and_energy(self):
+        c=config();p=prepare(c);seen_wrap=False
+        for degrees in range(-179,180,2):
+            q=math.radians(degrees);s=state(q,.2,c,p);g=s['geometry'];self.assertEqual(g['routing'],'central_wrap')
+            epsilon=1e-6;gradient=(state(q+epsilon,0,c,p)['energy']-state(q-epsilon,0,c,p)['energy'])/(2*epsilon)
+            self.assertAlmostEqual(s['torque'],-gradient,delta=1e-4)
+            for colour,r in g['routes'].items():
+                self.assertTrue(_line_clear(r['eye'],r['feed'],c['pulley_radius'])) if r['eye']!=r['feed'] else None
+                length=math.dist(r['eye'],r['feed'])
+                for piece in r['pieces']:
+                    if piece['kind']=='arc':
+                        length+=piece['radius']*abs(piece['sweep'])
+                        if piece['center']==(0,0):
+                            seen_wrap=True;self.assertAlmostEqual(piece['radius'],c['pulley_radius'])
+                            self.assertAlmostEqual(math.hypot(*r['lower_contact']),c['pulley_radius'])
+                    else:
+                        length+=math.dist(piece['a'],piece['b']);self.assertTrue(_line_clear(piece['a'],piece['b'],c['pulley_radius']))
+                self.assertAlmostEqual(length,r['length'],places=9)
+                self.assertAlmostEqual(p['reference'][colour]-length,g['slack'][colour],delta=1e-9)
+        self.assertTrue(seen_wrap)
+        with self.assertRaises(ValueError):config({'pulley_radius':.04})
 
 if __name__=='__main__':unittest.main()

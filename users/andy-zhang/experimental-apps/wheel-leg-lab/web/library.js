@@ -12,10 +12,10 @@ let databasePromise;
 const object = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 /** Resolve an explicit saved inversion profile without modifying its original JSON.
  * Pre-correction exports have no routing marker and reproduce the prior rim route.
- * Fresh server defaults/session edits use central_face. Old recorded frames stay intact.
+ * Fresh server defaults/session edits use central_wrap. Old recorded frames stay intact.
  */
 export function resolveInversionProfile(config) {
-  return {...config,rope_routing:config.rope_routing ?? 'outer_rim'};
+  return {...config,rope_routing:config.rope_routing ?? 'outer_rim',angle_limit_enabled:config.angle_limit_enabled ?? false};
 }
 function checkedJSON(value) {
   let nodes = 0;
@@ -158,7 +158,7 @@ export function normalizeImport(input, fileName = 'Imported study') {
   if(config&&selectedBackend?.startsWith('inversion_')){
     if(!['dual_rope','knee_bellcrank'].includes(config.preset))throw Error('Unknown invertible suspension preset.');
     if(!['ground','hip_fixed'].includes(config.fixture))throw Error('Unknown inversion fixture.');
-    if(config.rope_routing!==undefined&&!['central_face','outer_rim'].includes(config.rope_routing))throw Error('Unknown inversion rope routing.');
+    if(config.rope_routing!==undefined&&!['central_wrap','central_face','outer_rim'].includes(config.rope_routing))throw Error('Unknown inversion rope routing.');
     for(const key of ['length','radius','dt','duration'])if(typeof config[key]!=='number'||config[key]<=0)throw Error('Inversion '+key+' must be positive SI.');
   }
   const kind = config ? (hasData ? 'run' : 'profile') : 'dataset';

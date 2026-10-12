@@ -26,6 +26,8 @@ def main():
         assert data['solver_steps']>=4000 and data['status']=='closed'
         if os.name=='nt':assert data['window_id']
         assert image.is_file()
+        assert data['constraint_count']==5 and data['shape_count']==(8 if preset=='dual_rope' else 5)
+        assert data['minimum_knee_right_m']>0 and data['minimum_angle_deg']>=-80.5 and data['maximum_angle_deg']<=80.5
         print('PASS actual native:',preset,'steps',data['solver_steps'],'shapes',data['shape_count'],'constraints',data['constraint_count'])
 
 if __name__=='__main__':main()

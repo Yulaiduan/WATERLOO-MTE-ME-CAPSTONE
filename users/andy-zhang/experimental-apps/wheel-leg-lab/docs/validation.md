@@ -2,6 +2,113 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
 
+## Current tight, wrapped, knee-right demo, 2026-10-11
+
+The latest user clarification supersedes the no-wrap interpretation. Current
+central_wrap uses the tight centre channel, roller tangents and knee-rim arcs
+to the ±5° attachments. Every straight span clears the knee disk; wrap length
+and ±R angular derivative participate in cap travel, tension and actual force
+sites. A visible attachment can lift off the rim naturally. Earlier central_face
+and outer_rim profiles/recorded frames remain available without rewriting data.
+
+Current editable defaults: 30 mm knee drum, 0.2 mm ideal roller gap, ±0.02 mm
+cap eyes, |θ|=45° start and ±80° real angle stops. This drum fits the existing
+120 mm coil/rod and 100 mm rod-eye mount. The old40mm drum exhausts that mount's
+travel with wrapping and is explicitly rejected. Maximum recorded compression
+is94.761mm, leaving25.239mm coil length. Calibrated k is10848.294N/m. Cable lead
+angle stays below0.244°, and guide error below3.35e-9rad at400 iterations.
+
+All 23 scoped Python tests pass (inversion, angle_stops, replacement_suspension,
+setup_preview). Coverage includes actual rim tangents/arcs, disk clearance,
+inventory/slack, force-site virtual work, energy gradients, cap/tension
+projection, invalid travel, old route reproduction, both ground flips,
+knee-right bounds and independent rigid-stop impact/hold/release/energy.
+All63 JavaScript tests pass. The actual inversion browser suite passes wrapped
+main/detail drawings, tight gap, both presets, ten Plotly charts, JSON/library,
+current native envelope and matching fixed-J1 comparison. Both actual desktop
+windows pass4001 steps with five constraints, every-step knee-right/bound checks
+and graceful exit0. In-app preview and actual run are checked; launcher
+start/stop/restart/reuse passes from C:/Windows at4186. Raw evidence is ignored.
+
+| Dual-rope Pymunk step (ms) | First wheel-below (s) | Angle at 1 s (°) |
+| --- | --- | --- |
+| .5 | .357500 | 44.187 |
+| .25 | .360500 | 42.779 |
+| .125 | .360750 | 42.487 |
+
+Reversing the normal-start torque reaches wheel-above at .24175s dual/.23650s
+bellcrank with default0.25ms steps; the knee stays right. The unchanged bellcrank
+wheel-below time is .39725s. Matched fixed-J1 half-second max absolute angle
+deltas are1.38600° dual/.78804° bellcrank through rigid impacts; mathematical
+impact losses307.262/301.274J and energy residuals4.62e-4/1.13e-5J. These cases
+retain their actual impact error, rather than claiming the low-load .1° budget.
+Stop peaks remain step dependent; ideal mathematical impacts have no finite
+instantaneous peak. Pymunk reports averaged constraint impulse/dt.
+
+The earlier100-iteration guide failure and subsequent400-iteration repair are
+recorded below. The latest wrap correction also required a feasible demo drum
+size; infeasible travel is not clipped or silently ignored. Old recordings do
+not gain fabricated new channels. Cable diameter/fit, winding/groove history,
+rope crossing, stop compliance, actuator ratings and3Dclearance are unverified.
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace.
+
+## Initial tight-gap/no-wrap bounded check, 2026-10-11 (superseded by rim-wrap clarification)
+
+Current defaults use a 1 mm clear roller gap, ±0.1 mm cap eyes, |θ|=45° start
+and editable ±80° angle stops. Both mechanisms keep `x_knee-x_hip>0` while the
+wheel moves above/below the chassis. Pymunk has an actual RotaryLimitJoint,
+five total constraints, recorded stop impulse/dt and no clipped poses.
+Independent SciPy uses unilateral zero-restitution stop events, impact energy
+loss and release when free acceleration points inward. Its continuous holding
+torque is distinct from an ideal impact impulse or Pymunk's averaged loads.
+
+All 22 scoped Python tests pass: inversion, angle_stops, replacement_suspension
+and setup_preview. They retain force/work and fixed-J1 energy/refinement checks,
+and add actual right-side geometry, tight lead alignment, stop load, invalid
+initial pose, impact/hold/release including zero-force rest without chatter,
+and unrestricted historical reproduction. All 63 JavaScript tests pass.
+The actual inversion browser workflow passes: 1 mm gap, −45° initial pose,
+stop indicators, ten Plotly charts, all recorded knees on the right, no rim
+wrap, both preset flips, JSON/library/native routing and matched fixed-J1 runs.
+Actual desktop native checks pass both 4001-step windows with five constraints,
+owned handles, every-step knee-right/angle checks and graceful exit0.
+Launcher start/stop/restart/reuse passes from C:/Windows at4186. The user's
+in-app session is migrated, visually inspected and run with its unrelated
+dimensions/input settings preserved. Generated files remain ignored.
+
+Adding stop impacts initially exceeded the old 1e-8 rad guide-error budget at
+100 iterations. Iteration checks at200/300 improved error but still missed the
+budget; the default400 passes without loosening it. The current dual-rope
+0.25 ms run has maximum guide error3.49e-9 rad and cable lead angle1.026°.
+The tighter gap is editable and stays fixed when roller radius changes.
+
+| Dual-rope Pymunk step (ms) | First wheel-below (s) | Angle at 1 s (°) |
+| --- | --- | --- |
+| .5 | .339500 | 41.348 |
+| .25 | .341750 | 40.465 |
+| .125 | .341625 | 40.287 |
+
+At the default0.25ms, bellcrank reaches wheel-below at .39725s. Reversing the
+normal-start torque reaches wheel-above at .23375s dual/.23650s bellcrank;
+both retain a positive knee-right margin. This is a bounded contact demo,
+not a full revolution or a target-holding controller. Small numerical stop
+overshoot and timestep-dependent impulse peaks remain visible in solver data.
+Invalid runs crossing to the left fail rather than being cosmetically clipped.
+
+In a separate matched fixed-J1 half-second case, max absolute Pymunk-minus-
+SciPy angle differences are1.31332° dual/.78804° bellcrank through impacts.
+Math impact losses are310.685/301.274J and energy residuals2.17e-4/1.13e-5J.
+These high-torque rigid-stop cases do not inherit the low-load .1° refinement
+claim. Pymunk's mechanical_energy_minus_work_J includes unisolated constraint
+losses; it is not labeled a closed energy-error ledger with stops enabled.
+
+Old saved profiles without stop metadata explicitly reproduce unrestricted
+angles, and their original records/frames stay unchanged. Current session
+migration updates the requested roller/pose settings and old default solver
+iteration count. Cable diameter/fit, stop material/compliance, actual actuator
+ratings, 3D packaging and whole-vehicle self-righting remain unverified.
+Canonical physics is NOT APPLICABLE to this member experiment.
+
 ## Central feeds and knee-face anchors, 2026-10-11
 
 User correction supersedes the initial outside-wrap prototype below: both ropes

@@ -83,8 +83,10 @@ it does not silently add a second restoring spring.
 
 The [new inversion study](docs/invertible-suspension.md) uses actual ±5° knee
 attachment points and two explicitly requested routing pulleys to keep red/blue
-ropes through the central roller gap, then outward to face anchors with no
-outer-rim wrap. The cylinder stays parallel to the femur. The taut rope loads one
+ropes through the central roller gap, then onto tangent spans and knee-rim
+wrap. The cylinder stays parallel to the femur; the current 0.2 mm ideal gap keeps
+leads nearly parallel. Editable ±80° stops keep the knee right while the
+wheel moves above/below the chassis. The taut rope loads one
 shared piston cap; the other is slack. The symmetric knee bellcrank connects
 to a femur attachment50mmfromJ1. These are additional editable experiments;
 the existing nine working-range presets and their saved results are preserved.
@@ -98,8 +100,8 @@ excluded for staggered lateral planes, and undamped release may rebound/fly
 briefly. This is a contact experiment, not proof of3Dclearance or whole-robot
 self-righting. The default100Nm pulses are demo inputs, not motor ratings.
 
-Independent SciPy integrates angles across the full rotation without height
-inversion. Matched comparisons hold J1 and omit floor contact in both solvers;
+Independent SciPy integrates angle directly, with matching rigid-stop events;
+archived unrestricted profiles remain available. Matched comparisons hold J1 and omit floor contact in both solvers;
 ground contact is Pymunk-only. JSON/library/Comparison and the actual native
 Pygame GUI support both new backends. MATLAB remains legacy-tip-only.
 

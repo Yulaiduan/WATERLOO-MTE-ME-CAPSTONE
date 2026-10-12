@@ -45,13 +45,13 @@ function showMathModel(next=mathModel){
  mathModel=next==='inversion'?'inversion':'scipy';const key=mathModel==='inversion'?'inversion-math':'math';
  ensureFrame(key,'math-host',mathModel==='inversion'?'/inversion/?embedded=1&backend=math':'/mathematical/?embedded=1',mathModel==='inversion'?'Independent invertible angular model':'Independent SciPy mathematical simulation');
  for(const id of ['math','inversion-math'])if(frames.has(id))frames.get(id).hidden=id!==key;
- $('math-caption').textContent=mathModel==='inversion'?'Independent angles across full inversion · fixed J1 / no floor':'Independent Python / SciPy 2D suspension · MATLAB legacy-tip companion';
+ $('math-caption').textContent=mathModel==='inversion'?'Independent knee-right angle study · fixed J1 / no floor':'Independent Python / SciPy 2D suspension · MATLAB legacy-tip companion';
 }
 function showPhysicsModel(next=physicsModel){
  physicsModel=next==='inversion'?'inversion':'wheel';const key=physicsModel==='inversion'?'inversion-physics':'physics';
  ensureFrame(key,'physics-host',physicsModel==='inversion'?'/inversion/?embedded=1&backend=pymunk':'/physics/?embedded=1',physicsModel==='inversion'?'Torque-driven invertible ground-contact model':'Actual 2D Pymunk physical model');
  for(const id of ['physics','inversion-physics'])if(frames.has(id))frames.get(id).hidden=id!==key;
- document.querySelector('[data-panel="physics"] .workspace-bar p').textContent=physicsModel==='inversion'?'Torque-driven full inversion · fixed chassis pitch · actual floor contacts':'Actual Pymunk space · prescribed wheel height · floating chassis';
+ document.querySelector('[data-panel="physics"] .workspace-bar p').textContent=physicsModel==='inversion'?'Torque-driven above/below demo · knee stays right · actual floor contacts':'Actual Pymunk space · prescribed wheel height · floating chassis';
 }
 async function openInversion(preset=null,backend='pymunk'){
  const previous=activeFrameKey();if(previous)send(previous,{type:'motion-lab-deactivate'});
@@ -88,7 +88,7 @@ async function keepRun(backend,result){
  runs[backend]=result;if(result.config)configs[backend]=result.config;
  if(counterbalanceBackend(backend)){runs.counterbalance=result;configs.counterbalance=result.config;}
  const record=await saveRecord({kind:'run',name:name(backend,result.config),backend,config:result.config,result,...(result.reference_inputs?{reference_inputs:result.reference_inputs}:{})});
- status(`${counterbalanceBackend(backend)?'Counterbalance lever':backend==='math'?'Mathematical':backend==='pymunk'?'Pymunk':'Detailed linkage'} run saved · ${record.result.rows?.length||record.result.samples?.length||0} samples · inspect/export in Profiles & data`);
+ status(`${inversionBackend(backend)?'Invertible suspension':counterbalanceBackend(backend)?'Counterbalance lever':backend==='math'?'Mathematical':backend==='pymunk'?'Pymunk':'Detailed linkage'} run saved · ${record.result.rows?.length||record.result.samples?.length||0} samples · inspect/export in Profiles & data`);
  await dataBrowser.refresh();return record;
 }
 async function keepProfile(backend,config,reference_inputs){const record=await saveRecord({kind:'profile',name:name(backend,config),backend,config,...(reference_inputs?{reference_inputs}:{})});status(`Saved profile: ${record.name}`);await dataBrowser.refresh();}

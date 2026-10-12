@@ -14,6 +14,7 @@ test('inversion profiles/recordings roundtrip with explicit units and distinct f
 });
 test('saved outer-route profiles reproduce explicitly; corrected profiles retain central feeds',()=>{
  const previous={preset:'dual_rope',routing_offset:.035};const copy=resolveInversionProfile(previous);
- assert.equal(copy.rope_routing,'outer_rim');assert.equal(previous.rope_routing,undefined);
+ assert.equal(copy.rope_routing,'outer_rim');assert.equal(copy.angle_limit_enabled,false);assert.equal(previous.rope_routing,undefined);
  assert.equal(resolveInversionProfile({...previous,rope_routing:'central_face'}).rope_routing,'central_face');
+ assert.equal(resolveInversionProfile({...previous,rope_routing:'central_wrap',angle_limit_enabled:true}).rope_routing,'central_wrap');
 });
