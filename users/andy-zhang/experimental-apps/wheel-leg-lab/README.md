@@ -13,6 +13,7 @@ Read the [workflow and data contracts](docs/unified-motion-lab.md),
 | --- | --- | --- |
 | Main menu | `/` | Mathematical / physical / miscellaneous / comparison / profiles and data |
 | Mathematical suspension | `/mathematical/` | Independent Python/SciPy ODE with nine spring presets; MATLAB companion supports the original captured/direct tip spring |
+| Invertible suspension | `/inversion/`, Math/Physical model buttons and preset menu | Dual-rope common cap with two routing pulleys; symmetric knee bellcrank; actual femur-torque ground flips and fixed-J1 SciPy comparison |
 | Pymunk physical bench | `/physics/` | Actual rigid-body engine, nine editable spring presets, wheel-height input, floating chassis and solver loads |
 | Constant-lift single-link lever | `/counterbalance/`, Miscellaneous studies only | Free undamped lever, upward/downward end force, coasting after release, SciPy/Pymunk, JSON and native GUI |
 | Archived detailed linkage | `/linkage/`, archive entry under Miscellaneous | Retained source and direct route; retired from the main Math tab |
@@ -78,6 +79,29 @@ gravity compensation is neutral and supplies no restoring ride height. The curre
 wheel architecture uses one undamped replacement upper-link/chassis spring;
 it does not silently add a second restoring spring.
 
+## Invertible dual-rope and symmetric knee designs
+
+The [new inversion study](docs/invertible-suspension.md) uses actual ±5° knee
+attachment points and two explicitly requested routing pulleys to keep red/blue
+rope feeds parallel to the femur-mounted cylinder. The taut rope loads one
+shared piston cap; the other is slack. The symmetric knee bellcrank connects
+to a femur attachment50mmfromJ1. These are additional editable experiments;
+the existing nine working-range presets and their saved results are preserved.
+
+Select either invertible entry in Attachment / mechanism or choose **Invertible
+designs** from Math/Physical. Standalone preview: `/inversion/?backend=pymunk`.
+Start inverted places the wheel above the chassis on an ideal frictionless floor.
+Real clockwise femur torque flips the leg; no prescribed wheel driver or hidden
+position controller is used. Chassis pitch stays fixed, self-collision is
+excluded for staggered lateral planes, and undamped release may rebound/fly
+briefly. This is a contact experiment, not proof of3Dclearance or whole-robot
+self-righting. The default100Nm pulses are demo inputs, not motor ratings.
+
+Independent SciPy integrates angles across the full rotation without height
+inversion. Matched comparisons hold J1 and omit floor contact in both solvers;
+ground contact is Pymunk-only. JSON/library/Comparison and the actual native
+Pygame GUI support both new backends. MATLAB remains legacy-tip-only.
+
 ## Cylinder preview and tab memory
 
 The spring preview shows a bare inline coil, reversing cylinder/piston, or
@@ -139,6 +163,9 @@ node scripts/verify_motion_lab.cjs
 node scripts/verify_comparison_ui.cjs
 node scripts/verify_lever_force_ui.cjs
 .venv/Scripts/python.exe scripts/verify_native_gui.py
+.venv/Scripts/python.exe -m unittest -v test_inversion
+node scripts/verify_inversion_ui.cjs
+.venv/Scripts/python.exe scripts/verify_inversion_native.py
 ```
 
 Current solver, browser, native-window and launcher evidence is recorded in

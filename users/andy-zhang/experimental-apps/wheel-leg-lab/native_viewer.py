@@ -21,6 +21,7 @@ LOCK=threading.Lock()
 
 def launch(values):
     study=isinstance(values,dict) and values.get('model')=='counterbalance'
+    invertible=isinstance(values,dict) and values.get('model')=='inversion'
     wheel_envelope=isinstance(values,dict) and values.get('model')=='wheel_leg'
     viewer={'pretension_N':None,'show_force_vectors':True}
     if wheel_envelope:
@@ -33,7 +34,12 @@ def launch(values):
         if not isinstance(visible,bool):raise ValueError('Guide force-vector visibility must be boolean.')
         if raw.get('applied_to_solver',False) is not False:raise ValueError('Guide viewer forces cannot be applied to the engine.')
         viewer={'pretension_N':tension,'show_force_vectors':visible}
-    if study:
+    if invertible:
+        if set(values)!={'model','config'}:raise ValueError('Inversion native launch needs only model/config fields.')
+        import inversion
+        resolved=inversion.config(values['config']);inversion.build(resolved)
+        program='debug_inversion_gui.py'
+    elif study:
         if set(values)!={'model','config'}:raise ValueError('Counterbalance native launch needs only model/config fields.')
         import counterbalance
         resolved=counterbalance.config(values['config']);counterbalance.build(resolved)

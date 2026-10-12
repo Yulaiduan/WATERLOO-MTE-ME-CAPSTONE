@@ -90,8 +90,9 @@ export function mountDataBrowser(root, { onLoadProfile = () => {}, onPymunk = ()
     actions.replaceChildren(); actions.hidden = false;
     actions.append(button(record.result?'Add run to Comparison':'Run profile in Comparison',()=>safe(()=>onCompare(record))));
     const lever=['counterbalance_math','counterbalance_pymunk'].includes(record.backend);
-    if (record.config && record.backend) actions.append(button(`Load ${lever?'counterbalance lever':record.backend === 'math' ? 'mathematical' : record.backend === 'pymunk' ? '2D physics' : 'archived detailed linkage'} profile`, () => safe(() => onLoadProfile(record, record.backend))));
-    if (record.config && ['pymunk','math','counterbalance_math','counterbalance_pymunk'].includes(record.backend)) {
+    const inversion=record.backend?.startsWith('inversion_');
+    if (record.config && record.backend) actions.append(button(`Load ${inversion?'invertible suspension':lever?'counterbalance lever':record.backend === 'math' ? 'mathematical' : record.backend === 'pymunk' ? '2D physics' : 'archived detailed linkage'} profile`, () => safe(() => onLoadProfile(record, record.backend))));
+    if (record.config && ['pymunk','math','counterbalance_math','counterbalance_pymunk','inversion_math','inversion_pymunk'].includes(record.backend)) {
       const native=button('Show Pymunk desktop GUI', () => safe(() => onPymunk(record)));
       native.title='Launch live physics on the simulation host desktop using this saved configuration.';
       actions.append(native,button(lever?'View lever recording in tool':'Recorded browser playback',()=>safe(()=>onPlayback(record))));

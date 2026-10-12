@@ -166,3 +166,31 @@ spring-drum tangent and wrap. Generic piston comparison diagrams have no pulley.
 The enlarged view explicitly repeats the same named joint pulley with its
 configured radius and recorded angle; it is labeled as the same part. No solver
 geometry, forces or saved profiles changed in this presentation-only correction.
+
+## Invertible suspension / ground-torque fixture, 2026-10-11
+
+User confirmed: both ropes pull one cap, one taut at a time; ±5° are actual
+attachment offsets, and the new design includes two small routing pulleys near
+the knee to keep rope feeds linear. The default symmetric bellcrank is at the
+knee with its other spring end50mmfromJ1 along the femur. See
+[invertible-suspension.md](../docs/invertible-suspension.md).
+
+`invertible_spring.py` calculates external/inner circle tangents, visible direct
+paths, circle arcs and shortest admissible routing while rejecting other-idler
+intersections. Cap take-up is the greater cable demand, preload uses a mechanical
+reference stop, and one spring energy generates the force/torque. Preloaded
+bellcrank endpoint force remains nonzero at dead centre while torque is zero.
+
+`inversion.py` is separate from the existing limited-angle/position-driver
+bench. Pymunk ground mode has real wheel/chassis contacts, free heave/translation
+and held chassis pitch. The independent SciPy and matched Pymunk fixture hold
+J1 without floor; direct angles remain regular through90°. Default undamped
+100Nm demo pulses flip the −135° start, with rebound/continued motion recorded.
+Quarter-ms contact timestep is the current demo; an earlier coarse borderline
+pulse failed refinement and is not accepted evidence. New frontend, library,
+comparison and native viewer retain their own backend identity/config.
+
+Single-rope presets still have no added piston idler. The two routing pulleys
+exist only in the newly requested dual-rope design. Shortest routing omits rope
+winding/groove history;3Dself-clearance and whole-vehicle self-righting are not
+validated. Latest scoped verification is in the app validation record.

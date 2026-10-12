@@ -2,6 +2,68 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
 
+## Invertible suspension studies, 2026-10-11
+
+The [new study](invertible-suspension.md) implements actual ±5° knee rope
+attachments, two small routing pulleys and a single shared compression cap,
+plus a symmetric knee bellcrank with its femur attachment 50 mm from J1.
+Ground-mode Pymunk applies femur torque with actual wheel/chassis contacts;
+matched independent SciPy comparisons hold J1 and omit the floor in both models.
+Chassis pitch is held and self-collision is excluded for staggered lateral planes.
+
+- All 62 JavaScript tests pass, including portable inversion profile/run records,
+  explicit units and distinct comparison family. All 16 scoped Python tests pass
+  in `test_inversion`, `test_replacement_suspension` and `test_setup_preview`.
+  They check actual attachment geometry, one loaded rope/common cap, spring
+  energy gradients, force-site virtual work, symmetric energy/torque, nonzero
+  preloaded dead-centre endpoint force, initial zero-step preview and both real
+  ground flips. Fixed-J1 SciPy energy residual is below .001 J; Pymunk final
+  angle error refines below .1° at .125 ms in the tested low-load cases.
+- Five actual browser suites pass: `verify_inversion_ui.cjs`,
+  `verify_motion_lab.cjs`, `verify_suspension_architecture_ui.cjs`,
+  `verify_transmission_memory_ui.cjs` and `verify_comparison_ui.cjs`.
+  They cover three physical pulley symbols, red/blue handoff, moving shared cap,
+  both ground flips, 50 mm bellcrank mount, Plotly, JSON/library/comparison,
+  preserved original bench, tab memory and current-edit native launch routing.
+  Browser native endpoint calls are mocked; the desktop tests below are separate.
+- `scripts/verify_inversion_native.py` passes both actual desktop Pygame/Pymunk
+  windows: 4001 advancing steps each, four constraints, eight shapes for dual
+  rope and five for bellcrank, owned window handles and graceful exit code zero.
+  Native snapshots/state/logs and browser recordings remain ignored artifacts.
+- The app-local CMD launcher passes stop/start/restart and matching-server reuse
+  from C:/Windows at the original port 4186. Source syntax/compilation, edited
+  Markdown links/fences and diff hygiene are checked before publication.
+
+Contact timestep refinement of the current 100 N m demo pulses (dual 240 ms,
+bellcrank 170 ms; 40 ms smooth rise/fall, zero damping) gave:
+
+| Preset | Step (ms) | First flip (s) | Angle at 1 s (°) | Maximum sampled wheel penetration (mm) |
+| --- | --- | --- | --- | --- |
+| Dual rope | .5 | .3115 | 130.338 | 4.211 |
+| Dual rope | .25 | .3120 | 130.814 | 1.398 |
+| Dual rope | .125 | .3120 | 131.136 | .505 |
+| Bellcrank | .5 | .3315 | 33.328 | .884 |
+| Bellcrank | .25 | .3325 | 32.178 | .793 |
+| Bellcrank | .125 | .332875 | 31.643 | .749 |
+
+These trajectories continue after the flip; they do not demonstrate a settled
+upright pose. Contact forces and peak accelerations remain step dependent.
+An earlier dual-rope 180 ms pulse at 1 ms appeared to flip but failed at finer
+steps; it was rejected and replaced by the refined current demo. The initial
+fixed-J1 .25 ms error missed the .1° budget; the retained .125 ms refinement
+passes without loosening that budget. Initial geometry checks also found pulley
+overlap/intersection and a incorrectly zeroed dead-centre cap force; both were
+corrected and are covered by the retained tests. A native-config UI race and a
+409 from the old Math background run were fixed by immediate config publication
+and bounded busy retries; final browser checks pass.
+
+Shortest ideal rope routing omits winding/groove/crossover history, friction,
+stretch and binding. Routing parts are massless; cylinder mounting fit, real
+coil solid height, 3D clearance, motor ratings and whole-robot self-righting
+remain unverified. MATLAB remains legacy-tip-only. The unchanged older full
+numerical/envelope suites are historical evidence, not reruns for this feature.
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace.
+
 ## Existing joint pulley only, 2026-10-11
 
 The user corrected the earlier added piston idler. It is removed from the main

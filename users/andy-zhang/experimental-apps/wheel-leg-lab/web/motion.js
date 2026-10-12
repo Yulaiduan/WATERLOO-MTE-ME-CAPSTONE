@@ -9,7 +9,7 @@ import {saveRecord,downloadJSON} from './library.js';
 import {mountDataBrowser} from './data-browser.js';
 import {mountComparison} from './comparison.js';
 const $=id=>document.getElementById(id),frames=new Map(),pending=new Map(),ready=new Set(),frameConfigs=new Map(),configs={},runs={};
-let tab='home',mathModel='scipy',theme=document.documentElement.dataset.theme||'light',guiResult=null;
+let tab='home',mathModel='scipy',physicsModel='wheel',theme=document.documentElement.dataset.theme||'light',guiResult=null;
 let nativeSession=null,nativeConfig=null,nativePoll=0,nativeGeneration=0;
 let architectureLoading=false;
 const studyMemory=new Map();
@@ -19,19 +19,20 @@ function restoreStudy(frame,id){if(frame.dataset.study!==id)return;let saved=stu
 const studies=[['gallery','All motion studies','/animations/'],['counterbalance','Constant-lift lever','/counterbalance/'],['ratio','Wheel / link force & travel','/force-plots/'],['linear','Straight 2:1 leg','/animations/linear-leg/'],['coaxial','Independent coaxial wheel drive','/animations/coaxial-wheel-leg/'],['tilt','Tilted invertible leg','/animations/tilted-invertible-leg/'],['mirror','Mirrored left tilt','/animations/left-tilted-leg/'],['reindex','Historical reindexing alternative','/animations/two-position-left-leg/'],['fixed','Fixed 4:1 working strokes','/animations/fixed-ratio-left-leg/'],['paths','Mathematical path family','/animations/leg-path-family/'],['recorded','Recorded Pymunk playback','/recorded/'],['legacy-linkage','Archive · detailed linkage (retired)','/linkage/']];
 const counterbalanceBackend=backend=>['counterbalance_math','counterbalance_pymunk'].includes(backend);
 const activeCounterbalance=()=>tab==='studies'&&$('study-select').value==='counterbalance';
-const activeFrameKey=()=>tab==='physics'?'physics':tab==='math'?'math':tab==='studies'?($('study-select').value==='counterbalance'?'counterbalance':$('study-select').value==='legacy-linkage'?'linkage':'studies'):null;
-const modelProfile=record=>counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
+const activeFrameKey=()=>tab==='physics'?(physicsModel==='inversion'?'inversion-physics':'physics'):tab==='math'?(mathModel==='inversion'?'inversion-math':'math'):tab==='studies'?($('study-select').value==='counterbalance'?'counterbalance':$('study-select').value==='legacy-linkage'?'linkage':'studies'):null;
+const inversionBackend=backend=>backend?.startsWith('inversion_');
+const modelProfile=record=>inversionBackend(record.backend)?{model:'inversion',config:record.config}:counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
 function wheelNativeProfile(config,reference_inputs){
  const guide=reference_inputs?.guide_visualization;
  if(!guide||!config.guide_pulleys_visible&&guide.pretension_N==null)return config;
  if(guide.pretension_N!==null&&guide.pretension_N!==undefined&&(!Number.isFinite(guide.pretension_N)||guide.pretension_N<0))throw Error('Guide baseline must be finite nonnegative newtons or unspecified.');
  return {model:'wheel_leg',config,guide_visualization:{pretension_N:guide.pretension_N??null,...(typeof guide.show_force_vectors==='boolean'?{show_force_vectors:guide.show_force_vectors}:{})}};
 }
-const nativeProfile=record=>counterbalanceBackend(record.backend)?modelProfile(record):wheelNativeProfile(record.config,record.reference_inputs||record.result?.reference_inputs);
+const nativeProfile=record=>inversionBackend(record.backend)?modelProfile(record):counterbalanceBackend(record.backend)?modelProfile(record):wheelNativeProfile(record.config,record.reference_inputs||record.result?.reference_inputs);
 function status(text){$('lab-status').textContent=text;}
 function error(cause){$('lab-error').hidden=false;$('lab-error').textContent=cause instanceof Error?cause.message:String(cause);}
 function clearError(){$('lab-error').hidden=true;}
-function name(backend,config){return `${counterbalanceBackend(backend)?'Constant-lift lever':$(tab==='physics'?'physics-profile-name':'profile-name').value||'Wheel leg study'} · ${backend}${config?.wave?' · '+config.wave:''}`;}
+function name(backend,config){if(inversionBackend(backend)){const label=$(tab==='physics'?'physics-profile-name':'profile-name').value||'Wheel leg study';return (label==='Wheel leg study'?'Invertible '+(config?.preset||'study'):label)+' · '+backend;}return `${counterbalanceBackend(backend)?'Constant-lift lever':$(tab==='physics'?'physics-profile-name':'profile-name').value||'Wheel leg study'} · ${backend}${config?.wave?' · '+config.wave:''}`;}
 function send(key,message){const frame=frames.get(key);if(!frame)return;if(ready.has(key))frame.contentWindow.postMessage(message,location.origin);else{const queue=pending.get(key)||[];queue.push(message);pending.set(key,queue);}}
 function markReady(key){ready.add(key);const frame=frames.get(key);for(const message of pending.get(key)||[])frame.contentWindow.postMessage(message,location.origin);pending.delete(key);}
 function ensureFrame(key,host,url,title){
@@ -40,21 +41,34 @@ function ensureFrame(key,host,url,title){
  frame.addEventListener('load',()=>{frame.contentWindow.postMessage({type:'motion-lab-theme',theme},location.origin);if(key==='studies')markReady(key);});
  $(host).append(frame);frames.set(key,frame);return frame;
 }
-function showMathModel(){
- mathModel='scipy';
- ensureFrame('math','math-host','/mathematical/?embedded=1','Independent SciPy mathematical simulation');
- $('math-caption').textContent='Independent Python / SciPy 2D suspension · MATLAB legacy-tip companion';
+function showMathModel(next=mathModel){
+ mathModel=next==='inversion'?'inversion':'scipy';const key=mathModel==='inversion'?'inversion-math':'math';
+ ensureFrame(key,'math-host',mathModel==='inversion'?'/inversion/?embedded=1&backend=math':'/mathematical/?embedded=1',mathModel==='inversion'?'Independent invertible angular model':'Independent SciPy mathematical simulation');
+ for(const id of ['math','inversion-math'])if(frames.has(id))frames.get(id).hidden=id!==key;
+ $('math-caption').textContent=mathModel==='inversion'?'Independent angles across full inversion · fixed J1 / no floor':'Independent Python / SciPy 2D suspension · MATLAB legacy-tip companion';
+}
+function showPhysicsModel(next=physicsModel){
+ physicsModel=next==='inversion'?'inversion':'wheel';const key=physicsModel==='inversion'?'inversion-physics':'physics';
+ ensureFrame(key,'physics-host',physicsModel==='inversion'?'/inversion/?embedded=1&backend=pymunk':'/physics/?embedded=1',physicsModel==='inversion'?'Torque-driven invertible ground-contact model':'Actual 2D Pymunk physical model');
+ for(const id of ['physics','inversion-physics'])if(frames.has(id))frames.get(id).hidden=id!==key;
+ document.querySelector('[data-panel="physics"] .workspace-bar p').textContent=physicsModel==='inversion'?'Torque-driven full inversion · fixed chassis pitch · actual floor contacts':'Actual Pymunk space · prescribed wheel height · floating chassis';
+}
+async function openInversion(preset=null,backend='pymunk'){
+ const previous=activeFrameKey();if(previous)send(previous,{type:'motion-lab-deactivate'});
+ if(backend==='math')mathModel='inversion';else physicsModel='inversion';selectTab(backend==='math'?'math':'physics');
+ if(preset){const data=await(await fetch('/api/inversion/defaults')).json(),c={...data.presets[preset],...(backend==='math'?{fixture:'hip_fixed'}:{})};send(backend==='math'?'inversion-math':'inversion-physics',{type:'motion-lab-load-profile',config:c});}
+ status('Invertible designs use actual femur torque. Ground contact is Pymunk; matched independent mathematics holds J1.');
 }
 function selectTab(next){
  if(!['home','math','physics','studies','data','compare'].includes(next))next='home';const previous=activeFrameKey();tab=next;clearError();if(previous&&previous!==activeFrameKey())send(previous,{type:'motion-lab-deactivate'});
  document.querySelectorAll('[data-panel]').forEach(panel=>panel.hidden=panel.dataset.panel!==tab);
  document.querySelectorAll('[data-tab]').forEach(button=>{if(button.dataset.tab===tab)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
  if(tab==='math')showMathModel(mathModel);
- if(tab==='physics')ensureFrame('physics','physics-host','/physics/?embedded=1','Actual 2D Pymunk physical model');
+ if(tab==='physics')showPhysicsModel();
  if(tab==='studies')openStudy($('study-select').value||'gallery');
  if(tab==='compare'){void comparison.refresh();requestAnimationFrame(()=>comparison.resize());}
  if(tab==='data'){void dataBrowser.refresh();requestAnimationFrame(()=>$('data-panel').querySelectorAll('.js-plotly-plot').forEach(plot=>Plotly.Plots.resize(plot)));}
- const url=new URL(location.href);url.searchParams.set('tab',tab);if(tab==='math')url.searchParams.set('model',mathModel);else url.searchParams.delete('model');if(tab==='studies')url.searchParams.set('study',$('study-select').value);else url.searchParams.delete('study');if(tab!=='physics')url.searchParams.delete('architecture');history.replaceState(null,'',url);
+ const url=new URL(location.href);url.searchParams.set('tab',tab);if(tab==='math')url.searchParams.set('model',mathModel);else if(tab==='physics'&&physicsModel==='inversion')url.searchParams.set('model','inversion');else url.searchParams.delete('model');if(tab==='studies')url.searchParams.set('study',$('study-select').value);else url.searchParams.delete('study');if(tab!=='physics')url.searchParams.delete('architecture');history.replaceState(null,'',url);
 }
 function openStudy(id,loadOnly=false){
  rememberStudy();
@@ -80,6 +94,7 @@ async function keepRun(backend,result){
 async function keepProfile(backend,config,reference_inputs){const record=await saveRecord({kind:'profile',name:name(backend,config),backend,config,...(reference_inputs?{reference_inputs}:{})});status(`Saved profile: ${record.name}`);await dataBrowser.refresh();}
 function requestProfile(){const key=activeFrameKey()||'math';if(!frames.has(key)){selectTab('math');status('Open a model, set its inputs, then save the profile.');return;}send(key,{type:'motion-lab-save-profile'});}
 function loadProfile(record,backend){
+ if(inversionBackend(backend)){void openInversion(null,backend.endsWith('math')?'math':'pymunk').then(()=>send(backend.endsWith('math')?'inversion-math':'inversion-physics',{type:'motion-lab-load-profile',config:record.config})).catch(error);return;}
  const reference_inputs=record.reference_inputs||record.result?.reference_inputs;
  if(counterbalanceBackend(backend)){
   frameConfigs.set('counterbalance',{backend,config:record.config});
@@ -90,7 +105,7 @@ function loadProfile(record,backend){
  if(backend==='math')ensureFrame('math','math-host','/mathematical/?embedded=1&loadOnly=1','Independent SciPy mathematical simulation');
  if(backend==='pymunk')ensureFrame('physics','physics-host','/physics/?embedded=1&loadOnly=1','Actual 2D Pymunk physical model');
  if(backend==='linkage'){openStudy('legacy-linkage',true);selectTab('studies');send('linkage',{type:'motion-lab-load-profile',config:record.config});}
- else{if(backend==='math')mathModel='scipy';selectTab(backend==='math'?'math':'physics');send(backend==='math'?'math':'physics',{type:'motion-lab-load-profile',config:record.config,reference_inputs});}
+ else{if(backend==='math')mathModel='scipy';if(backend==='pymunk')physicsModel='wheel';selectTab(backend==='math'?'math':'physics');send(backend==='math'?'math':'physics',{type:'motion-lab-load-profile',config:record.config,reference_inputs});}
  configs[backend]=record.config;const label=record.name.replace(/ · (math|pymunk|linkage)( · (step|square|pulse|impulse))?$/,'').slice(0,100);$('profile-name').value=label;$('physics-profile-name').value=label;status('Profile loaded into controls. Run simulation to generate new data.');
 }
 async function openArchitecture(){
@@ -146,7 +161,7 @@ async function saveStudy(withData){
 const dataBrowser=mountDataBrowser($('data-panel'),{theme,onLoadProfile:loadProfile,onPymunk:record=>showNativeGui(nativeProfile(record)),onPlayback:record=>showPlayback(modelProfile(record),record.result,record.reference_inputs),onLoadStudy:loadStudy,onCompare:async record=>{const run=record.result?record:await runSavedProfile(record);await comparison.addRecords([run]);selectTab('compare');}});
 const comparison=mountComparison($('compare-panel'),{theme,onRunProfile:runSavedProfile});
 async function runSavedProfile(record){
- const endpoints={math:'/api/math/simulate',pymunk:'/api/pymunk/simulate',counterbalance_math:'/api/counterbalance/math',counterbalance_pymunk:'/api/counterbalance/pymunk'};
+ const endpoints={inversion_math:'/api/inversion/math',inversion_pymunk:'/api/inversion/pymunk',math:'/api/math/simulate',pymunk:'/api/pymunk/simulate',counterbalance_math:'/api/counterbalance/math',counterbalance_pymunk:'/api/counterbalance/pymunk'};
  const endpoint=endpoints[record.backend];if(!endpoint)throw Error('This archived model cannot be rerun in Comparison. Import a recorded dataset, or run it in its archive tool.');
  const result=await simulate(endpoint,record.config);if(record.reference_inputs)result.reference_inputs=record.reference_inputs;
  const saved=await saveRecord({kind:'run',name:record.name+' · comparison run',backend:record.backend,config:result.config,result});await dataBrowser.refresh();return saved;
@@ -159,6 +174,7 @@ async function simulate(endpoint,config){
  }
 }
 async function showPlayback(config=null,result=null,reference_inputs=null){
+ if(config?.model==='inversion'||(!config&&activeFrameKey()?.startsWith('inversion-'))){const type=(result?.backend||frameConfigs.get(activeFrameKey())?.backend||'inversion_pymunk').endsWith('math')?'math':'pymunk';await openInversion(null,type);const key=type==='math'?'inversion-math':'inversion-physics';if(result)send(key,{type:'motion-lab-load-result',result});else if(config?.config)send(key,{type:'motion-lab-load-profile',config:config.config});return;}
  if(config?.model==='counterbalance'||!config&&activeCounterbalance()){
   const c=config?.config||configs.counterbalance,r=result||(!config?runs.counterbalance:null);
   openStudy('counterbalance',true);selectTab('studies');
@@ -213,14 +229,15 @@ async function showNativeGui(selectedConfig=null,reference_inputs=null){
   if(!config){
    const activeKey=activeFrameKey(),activeProfile=frameConfigs.get(activeKey);
    reference=activeProfile?.reference_inputs;
-   if(activeCounterbalance())config={model:'counterbalance',config:activeProfile?.config||await (await fetch('/api/counterbalance/defaults')).json()};
+   if(inversionBackend(activeProfile?.backend))config={model:'inversion',config:activeProfile.config};
+   else if(activeCounterbalance())config={model:'counterbalance',config:activeProfile?.config||await (await fetch('/api/counterbalance/defaults')).json()};
    else{
    if(activeFrameKey()==='linkage')throw Error('The detailed two-axis linkage has a different configuration. Select the SciPy or 2D wheel-height model to launch its matching Pymunk desktop GUI.');
    config=activeProfile?.config||(!activeKey?configs.pymunk:null);
    if(!config)config=await (await fetch('/api/defaults')).json();
    }
   }
-  if(config?.model==='counterbalance'){if(!config.config||typeof config.config!=='object')throw Error('Select a valid counterbalance lever profile.');}
+  if(['counterbalance','inversion'].includes(config?.model)){if(!config.config||typeof config.config!=='object')throw Error('Select a valid model profile.');}
   else{
    const wheel=config?.model==='wheel_leg'?config.config:config;
    if(!wheel||typeof wheel.length!=='number'||!Number.isFinite(wheel.length))throw Error('Select a valid wheel-height model profile before opening the desktop GUI.');
@@ -248,6 +265,7 @@ function changeTheme(next){theme=next==='dark'?'dark':'light';document.documentE
 $('compare-models').onclick=async()=>{
  clearError();$('compare-models').disabled=true;
  try{
+  if(mathModel==='inversion'){const c={...frameConfigs.get('inversion-math')?.config,fixture:'hip_fixed'};if(!c.preset)throw Error('Open an inversion mathematical profile first.');const a=await simulate('/api/inversion/math',c),b=await simulate('/api/inversion/pymunk',c);const records=[await keepRun('inversion_math',a),await keepRun('inversion_pymunk',b)];send('inversion-math',{type:'motion-lab-load-result',result:a});await comparison.addRecords(records,{paired:true});selectTab('compare');status('Matched fixed-J1 inversion runs saved; floor contact is excluded from this comparison.');return;}
   const profile=frameConfigs.get('math'),config=profile?.config||configs.math||await (await fetch('/api/defaults')).json();
   status('Running SciPy and Pymunk with the same inputs for aligned deltas…');
   const a=await simulate('/api/math/simulate',config),b=await simulate('/api/pymunk/simulate',config);
@@ -262,25 +280,32 @@ window.addEventListener('message',event=>{
  const key=[...frames].find(([,frame])=>frame.contentWindow===event.source)?.[0];if(!key)return;const data=event.data;
  if(data.type==='motion-lab-height'&&Number.isFinite(data.height))frames.get(key).style.height=Math.min(18000,Math.max(key==='gui'?680:600,data.height))+'px';
  else if(data.type==='motion-lab-ready'||data.type==='motion-lab-viewer-ready')markReady(key);
- else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk'].includes(data.backend)){frameConfigs.set(key,{backend:data.backend,config:data.config,reference_inputs:data.reference_inputs});configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
+ else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk','inversion_math','inversion_pymunk'].includes(data.backend)){frameConfigs.set(key,{backend:data.backend,config:data.config,reference_inputs:data.reference_inputs});configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
  else if(data.type==='motion-lab-run'&&key!=='gui'){markReady(key);void keepRun(data.backend,data.result).catch(error);}
  else if(data.type==='motion-lab-profile')void keepProfile(data.backend,data.config,data.reference_inputs).catch(error);
  else if(data.type==='motion-lab-save-run')void keepRun(data.backend,data.result).catch(error);
  else if(data.type==='motion-lab-show-gui')void showNativeGui(data.config,data.reference_inputs||frameConfigs.get(key)?.reference_inputs||data.result?.reference_inputs);
  else if(data.type==='motion-lab-show-playback')void showPlayback(data.config,data.result,data.reference_inputs||frameConfigs.get(key)?.reference_inputs);
+ else if(data.type==='motion-lab-open-inversion')void openInversion(data.preset,data.backend==='math'?'math':'pymunk').catch(error);
  else if(data.type==='motion-lab-open-architecture')void openArchitecture();
  else if(data.type==='motion-lab-theme')changeTheme(data.theme);
 });
 document.querySelectorAll('[data-tab]').forEach(button=>button.onclick=()=>selectTab(button.dataset.tab));document.querySelectorAll('[data-open]').forEach(button=>button.onclick=()=>selectTab(button.dataset.open));document.querySelectorAll('[data-math-model]').forEach(button=>button.onclick=()=>showMathModel(button.dataset.mathModel));
 for(const [id,title] of studies){const option=document.createElement('option');option.value=id;option.textContent=title;$('study-select').append(option);}
-$('study-select').onchange=()=>openStudy($('study-select').value);$('theme-toggle').onclick=()=>changeTheme(theme==='dark'?'light':'dark');$('show-gui').onclick=()=>showNativeGui();$('show-playback').onclick=()=>showPlayback(null,tab==='physics'?runs.pymunk:null);$('close-gui').onclick=()=>$('gui-dialog').close();$('save-profile').onclick=requestProfile;$('physics-save-profile').onclick=requestProfile;$('open-data').onclick=()=>selectTab('data');
+$('study-select').onchange=()=>openStudy($('study-select').value);$('theme-toggle').onclick=()=>changeTheme(theme==='dark'?'light':'dark');$('show-gui').onclick=()=>showNativeGui();$('show-playback').onclick=()=>showPlayback(null,activeFrameKey()?.startsWith('inversion-')?runs[frameConfigs.get(activeFrameKey())?.backend]:tab==='physics'?runs.pymunk:null);$('close-gui').onclick=()=>$('gui-dialog').close();$('save-profile').onclick=requestProfile;$('physics-save-profile').onclick=requestProfile;$('open-data').onclick=()=>selectTab('data');
 $('save-study').onclick=()=>saveStudy(false);$('save-study-data').onclick=()=>saveStudy(true);
 $('gui-dialog').addEventListener('close',()=>send('gui',{type:'motion-lab-deactivate'}));
 for(const host of [document.querySelector('.home-secondary'),document.querySelector('[data-panel="physics"] .workspace-actions')]){
  const button=document.createElement('button');button.dataset.openArchitecture='constant-lift';button.textContent='Open constant-lift wheel-leg suspension';button.onclick=()=>openArchitecture();host.append(button);
 }
-const query=new URLSearchParams(location.search);mathModel='scipy';if(query.get('tab')==='math'&&['linkage','counterbalance'].includes(query.get('model'))){query.set('tab','studies');query.set('study',query.get('model')==='linkage'?'legacy-linkage':'counterbalance');}if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);
+for(const type of ['math','physics']){
+ const host=document.querySelector(`[data-panel="${type}"] .workspace-actions`);
+ const invert=document.createElement('button');invert.textContent='Invertible designs';invert.dataset.inversionOpen=type;invert.onclick=()=>openInversion(null,type==='math'?'math':'pymunk');
+ const normal=document.createElement('button');normal.textContent='Wheel-height bench';normal.onclick=()=>{const previous=activeFrameKey();if(previous)send(previous,{type:'motion-lab-deactivate'});if(type==='math')mathModel='scipy';else physicsModel='wheel';selectTab(type);};host.append(invert,normal);
+}
+const query=new URLSearchParams(location.search);mathModel=query.get('model')==='inversion'?'inversion':'scipy';physicsModel=query.get('model')==='inversion'?'inversion':'wheel';if(query.get('tab')==='math'&&['linkage','counterbalance'].includes(query.get('model'))){query.set('tab','studies');query.set('study',query.get('model')==='linkage'?'legacy-linkage':'counterbalance');}if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);
 if(query.get('architecture')==='constant-lift'){
+ physicsModel='wheel';
  // Prevent a cold Physics frame from running unrelated defaults while the factory loads.
  ensureFrame('physics','physics-host','/physics/?embedded=1&loadOnly=1','Actual 2D Pymunk physical model');selectTab('physics');void openArchitecture();
 }else selectTab(query.get('tab')||'home');

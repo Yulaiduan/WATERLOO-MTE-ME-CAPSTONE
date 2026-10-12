@@ -259,3 +259,15 @@ three transmission diagrams. The selected end cap follows actual recorded
 coil length, while the package drawing remains schematic. Current constant
 lift has no damper or extra tip strut option; earlier API/run diagnostics are
 retained.
+
+## Invertible designs, 2026-10-11
+
+Math and Physical each have an Invertible designs button; the original height
+bench remains available alongside it. The preset menu also opens the dual-rope
+or symmetric-knee study. Its [model record](invertible-suspension.md) distinguishes
+actual Pymunk floor flips from fixed-J1 independent angle mathematics.
+`inversion_math` / `inversion_pymunk` records retain explicit units and the
+separate invertible-wheel-leg comparison family. Profiles, runs, library,
+recorded playback and native GUI route to the matching model. Current controls
+are published immediately, so native launch cannot pick stale edited parameters.
+Run both & compare on the inversion Math tab uses fixed J1 in both solvers.

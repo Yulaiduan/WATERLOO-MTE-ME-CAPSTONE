@@ -5,7 +5,7 @@
  */
 export const RECORD_SCHEMA = 'wheel-leg-lab-record/v1';
 export const MAX_IMPORT_BYTES = 80 * 1024 * 1024;
-const BACKENDS = ['math', 'pymunk', 'linkage', 'counterbalance_math', 'counterbalance_pymunk'];
+const BACKENDS = ['math', 'pymunk', 'linkage', 'counterbalance_math', 'counterbalance_pymunk','inversion_math','inversion_pymunk'];
 const FORBIDDEN = new Set(['__proto__', 'prototype', 'constructor']);
 let databasePromise;
 
@@ -91,6 +91,7 @@ function inferredBackend(value, config) {
     return value.backend;
   }
   if (object(config?.geometry) && object(config?.simulation)) return 'linkage';
+  if(['dual_rope','knee_bellcrank'].includes(config?.preset)&&typeof config?.femur_torque==='number')return 'inversion_pymunk';
   if (typeof config?.spring_radius==='number' && typeof config?.anchor_height==='number' && typeof config?.law==='string') return 'counterbalance_math';
   if (typeof config?.length === 'number' && typeof config?.target === 'string') return 'pymunk';
   return null;
@@ -146,6 +147,11 @@ export function normalizeImport(input, fileName = 'Imported study') {
     if(!['prescribed','free','force'].includes(config.mode))throw new Error('Counterbalance mode must be prescribed, free or force.');
     for(const key of ['dt','duration'])if(config[key]!==undefined&&(typeof config[key]!=='number'||config[key]<=0))throw new Error(`Counterbalance ${key} must be positive seconds.`);
     if(config.stiffness_auto!==undefined&&typeof config.stiffness_auto!=='boolean')throw new Error('Automatic counterbalance stiffness must be boolean.');
+  }
+  if(config&&selectedBackend?.startsWith('inversion_')){
+    if(!['dual_rope','knee_bellcrank'].includes(config.preset))throw Error('Unknown invertible suspension preset.');
+    if(!['ground','hip_fixed'].includes(config.fixture))throw Error('Unknown inversion fixture.');
+    for(const key of ['length','radius','dt','duration'])if(typeof config[key]!=='number'||config[key]<=0)throw Error('Inversion '+key+' must be positive SI.');
   }
   const kind = config ? (hasData ? 'run' : 'profile') : 'dataset';
   if (value.kind && !['profile', 'run', 'dataset'].includes(value.kind)) throw new Error('Unknown record kind.');

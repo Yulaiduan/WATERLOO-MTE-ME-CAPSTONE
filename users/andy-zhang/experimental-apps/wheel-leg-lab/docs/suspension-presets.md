@@ -159,3 +159,13 @@ is another view of the same part. The three generic comparison diagrams now
 show a rope lead toward the mechanism, without inventing a separate pulley.
 This removes a visual interpretation only: solver constraints, kinematics,
 force laws, actual coil lengths, saved JSON and models are unchanged.
+
+## Additional full-inversion studies, 2026-10-11
+
+The [dual-rope and symmetric knee designs](invertible-suspension.md) are separate
+full-angle torque/contact studies, available from the same preset menu and
+Math/Physical model buttons. They do not extend the old position-controlled
+bench's3–87°range or reinterpret its recorded data. The new dual-rope design
+has two explicitly requested routing pulleys, whereas earlier single-rope
+assemblies continue to use their existing joint pulley without an added idler.
+The bellcrank femur attachment is50mmfromJ1, editable.

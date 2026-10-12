@@ -1738,3 +1738,57 @@ Main view, enlarged view and generic comparisons now distinguish the single phys
 Continue from the latest preset/validation record and the no-extra-pulley browser checks, and restart with the existing Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — invertible dual-rope and symmetric knee suspension
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab full-angle suspension study, Math/Physical UI, records and live native viewer.
+- **Associated Issue/Task:** User requested a parallel femur compression cylinder with actual ±5° knee rope anchors, two smaller routing pulleys, one shared cap with one loaded rope at a time, a symmetric knee bellcrank mounted 50 mm from J1, and inverted-start femur-torque flips.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_inversion_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/invertible-suspension.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/invertible_spring.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_viewer.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_inversion_native.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_inversion_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/inversion-library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison-data.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/data-browser.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- **API/Interface Changes:** Add isolated inversion geometry, Pymunk ground-contact/fixed-J1 solvers and independent full-angle SciPy ODE. Add GET /api/inversion/defaults and POST /api/inversion/preview, /math and /pymunk; no original solver endpoint removed. Config uses explicit SI dimensions/masses, actual rope attachment offsets, routing geometry, coil preload/travel, finite torque pulse/slopes and timestep bounds; invalid overlap/exhausted travel fails. Native viewer accepts model=inversion with validated config and launches the fixed debug_inversion_gui.py program. New inversion_math/inversion_pymunk backend IDs retain explicit channel units and a separate comparison family; original saved data/schema remain unchanged. Add /inversion/ UI, two menu presets, separate remembered Math/Physical frames, Plotly plots, moving shared-cap detail, JSON/library routing and matched fixed-J1 Run both comparison. Immediate config publication prevents stale native launches; bounded busy retries preserve legacy Math execution. Actual force sites reproduce one spring energy's virtual torque and preserve preloaded dead-centre endpoint force. Ground chassis translation/heave is free with pitch held; fixed-J1 Math comparisons have no floor. Existing single-rope presets gain no piston idler. No shared assets, engineering runtime, dependencies or enforcement files change; no original archive is deleted.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All62 JavaScript tests and all16 scoped Python tests (test_inversion, test_replacement_suspension, test_setup_preview) pass, with retained tests for actual routing/one-cap switching, spring energy/force-site virtual work, symmetry, dead-centre force, zero-step preview, both real ground flips and fixed-J1 numerical refinement/energy closure. Five browser suites pass verify_inversion_ui, verify_motion_lab, verify_suspension_architecture_ui, verify_transmission_memory_ui and verify_comparison_ui; the inversion suite is rerun after the final server restart. Native endpoint calls are mocked only in browser tests; actual scripts/verify_inversion_native.py passes both desktop windows with4001 steps each,4constraints,8dual/5bellcrank shapes, owned HWNDs and graceful exit0. Ground default100Nm pulses flip at.3120s dual/.3325s bell with.25ms steps;.125ms flips at.3120/.332875s, with continued rebound/airborne motion recorded. Sampled default wheel penetration1.398/.793mm refines to.505/.749mm. Independent fixed-J1 energy residual<.001J and final angle error<.1deg at.125ms in the tested low-load cases. Actual project-local CMD start/stop/restart/reuse from C:/Windows preserves127.0.0.1:4186 and the inversion route responds200. Python compilation, JS syntax, edited Markdown links/fences and diff hygiene pass; fetched-base working/publication/staged checks run before push. Generated raw recordings/snapshots/logs/environments remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. An earlier180ms dual pulse at1ms appeared to flip but failed refinement; the current240ms/.25ms demo is validated at.125ms. The fixed-J1.25ms error initially missed the.1deg budget; adding.125ms refinement passes without relaxing it. Routing overlap/intersection validation and nonzero preloaded dead-centre force were fixed after review and now have retained coverage. Browser checks found stale global native config and409 from a background legacy Math run; immediate config publication and bounded busy retry correct them. Initial browser automation could not click an embedded iframe in the in-app tool; actual Playwright iframe tests and the direct in-app study run pass. Contact peaks remain timestep dependent. Ideal shortest rope routes omit winding/groove/crossover history, stretch/friction/binding; massless packaging,3Dclearance, real coil solid height, hardware ratings and whole-vehicle self-righting are unverified. Chassis pitch is held; release is undamped with no hidden position hold. MATLAB remains legacy-tip-only. Previous full numerical/envelope audits retain historical scope and were not rerun for this feature.
+
+## 4. Compute Saving Handoff State
+
+The new full-angle bench contains a dual-rope common compression cap with actual offset anchors/two routing pulleys and a symmetric knee bellcrank anchored50mmfromJ1.
+Both real ground demos start wheel-up/chassis-down and flip under applied femur torque, while independent SciPy/Pymunk comparison explicitly holdsJ1 without contact and the native button runs the actual engine on the host desktop.
+Continue from docs/invertible-suspension.md and the scoped validation record, preserve original limited-angle/single-rope studies and saved data, refine timestep before interpreting contact peaks, and restart with the existing Start Motion Lab.cmd at port4186.
+
+---
