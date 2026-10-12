@@ -1,6 +1,6 @@
 # Wheel Leg Lab
 
-Owner: Andy Zhang. Updated: 2026-10-11. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
+Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
 
 ## Unified browser workspace
 
@@ -13,7 +13,7 @@ Read the [workflow and data contracts](docs/unified-motion-lab.md),
 | --- | --- | --- |
 | Main menu | `/` | Mathematical / physical / miscellaneous / comparison / profiles and data |
 | Mathematical suspension | `/mathematical/` | Independent Python/SciPy ODE with nine spring presets; MATLAB companion supports the original captured/direct tip spring |
-| Invertible suspension | `/inversion/`, Math/Physical model buttons and preset menu | Dual-rope common cap with two routing pulleys; symmetric knee bellcrank; actual femur-torque ground flips and fixed-J1 SciPy comparison |
+| Invertible suspension | `/inversion/`, Math/Physical model buttons and preset menu | **Dual-rope pulley: IMPOSSIBLE, historical model**; symmetric knee bellcrank; actual femur-torque ground flips and fixed-J1 SciPy comparison |
 | Pymunk physical bench | `/physics/` | Actual rigid-body engine, nine editable spring presets, wheel-height input, floating chassis and solver loads |
 | Constant-lift single-link lever | `/counterbalance/`, Miscellaneous studies only | Free undamped lever, upward/downward end force, coasting after release, SciPy/Pymunk, JSON and native GUI |
 | Archived detailed linkage | `/linkage/`, archive entry under Miscellaneous | Retained source and direct route; retired from the main Math tab |
@@ -80,6 +80,12 @@ wheel architecture uses one undamped replacement upper-link/chassis spring;
 it does not silently add a second restoring spring.
 
 ## Invertible dual-rope and symmetric knee designs
+
+**Dual-rope pulley design: IMPOSSIBLE / rejected**, by the user's2026-10-12
+decision. Its idealized simulator/source are retained for historical reference;
+its numerical runs do not establish physical feasibility. The symmetric knee
+bellcrank remains a separate experimental design.
+
 
 The [new inversion study](docs/invertible-suspension.md) uses actual ±5° knee
 attachment points and two explicitly requested routing pulleys to keep red/blue

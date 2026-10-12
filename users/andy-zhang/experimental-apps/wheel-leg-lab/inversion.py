@@ -175,11 +175,11 @@ def package(c,rows,frames,backend):
     return {'backend':'inversion_'+backend,'model':'invertible wheel leg','engine':'Pymunk '+pymunk.version if backend=='pymunk' else 'independent SciPy angle ODE',
       'config':c,'units':UNITS,'rows':rows,'frames':frames,'diagnostics':{'flip_time_s':flipped,'max_compression_m':max(r['compression_m'] for r in rows),
       'red_samples':sum(r['active_red'] for r in rows),'blue_samples':sum(r['active_blue'] for r in rows)},
-      'scope':('Knee-right angle stops are enabled. ' if c['angle_limit_enabled'] else 'Unrestricted archived angle study. ')+'Experimental fixed-pitch inversion study. Ground mode has real frictionless wheel/chassis floor contacts; self-collision disabled for staggered lateral planes. Math/fixed-J1 comparison has no floor. Ideal shortest cable paths; rope winding history, grooves, strength and 3D clearance are unverified.'}
+      'scope':('IMPOSSIBLE hardware design: rejected by user; historical ideal simulation only. ' if c['preset']=='dual_rope' else '')+('Knee-right angle stops are enabled. ' if c['angle_limit_enabled'] else 'Unrestricted archived angle study. ')+'Experimental fixed-pitch inversion study. Ground mode has real frictionless wheel/chassis floor contacts; self-collision disabled for staggered lateral planes. Math/fixed-J1 comparison has no floor. Ideal shortest cable paths; rope winding history, grooves, strength and 3D clearance are unverified.'}
 
 def preview(values=None):
     c=config(values);q,H=initial(c);s=springs.state(q,0.,c,springs.prepare(c))
-    return {'kind':'inversion-preview','solver_steps':0,'config':c,'frame':frame(q,(0,H),c,s),'scope':'Geometry only. No solved forces or contact reactions.'}
+    return {'kind':'inversion-preview','solver_steps':0,'config':c,'frame':frame(q,(0,H),c,s),'scope':('IMPOSSIBLE hardware design: historical geometry only. ' if c['preset']=='dual_rope' else '')+'Geometry only. No solved forces or contact reactions.'}
 
 def simulate(values=None,backend='pymunk'):
     c=config(values);q0,H=initial(c);p=springs.prepare(c)

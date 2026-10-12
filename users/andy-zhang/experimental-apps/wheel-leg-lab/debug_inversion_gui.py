@@ -22,7 +22,7 @@ def main():
     parser=argparse.ArgumentParser();parser.add_argument('--config',type=Path);parser.add_argument('--run',action='store_true');parser.add_argument('--loop',action='store_true');parser.add_argument('--headless-check',action='store_true');parser.add_argument('--state-file',type=Path);parser.add_argument('--snapshot-file',type=Path)
     parser.add_argument('--quit-at-end',action='store_true')
     args=parser.parse_args();value=json.loads(args.config.read_text()) if args.config else {};c=inversion.config(value.get('config',value));m=inversion.build(c)
-    pygame.init();screen=pygame.display.set_mode((1150,900),pygame.RESIZABLE);pygame.display.set_caption('Live Pymunk - invertible dual-rope / bellcrank')
+    pygame.init();screen=pygame.display.set_mode((1150,900),pygame.RESIZABLE);pygame.display.set_caption('IMPOSSIBLE pulley - historical ideal Pymunk study' if c['preset']=='dual_rope' else 'Live Pymunk - symmetric knee bellcrank')
     font=pygame.font.SysFont('Segoe UI',17);clock=pygame.time.Clock();paused=not args.run;running=True;accumulator=0.;steps=0;loops=0;last_report=0.;snapped=False
     initial_q,_,initial_A,initial_B,_=inversion.coordinates(m,c);minimum_angle=maximum_angle=math.degrees(initial_q);minimum_knee_right=initial_B.x-initial_A.x
     def advance():
@@ -36,7 +36,7 @@ def main():
     def paint():
         W,H=screen.get_size();screen.fill((28,32,27));q,w,A,B,C=inversion.coordinates(m,c);s=springs.state(q,w,c,m['prepared'])
         text('Live Pymunk inversion | Space: run/pause  .: step  R: reset  Esc: close',20,20)
-        text(f'{c["preset"]} | {c["fixture"]} | fixed chassis pitch | self-collision excluded',20,49)
+        text(f'{"IMPOSSIBLE pulley / historical" if c["preset"]=="dual_rope" else c["preset"]} | {c["fixture"]} | fixed pitch / ideal model',20,49)
         text(f't={m["t"]:.3f}s  theta={math.degrees(q):.1f}deg  motor={inversion.torque(m["t"],c):.2f}Nm  omega={w:.2f}rad/s',20,78)
         text(f'Cap compression={s["compression"]*1000:.1f}mm  red={s["red_tension"]:.1f}N  blue={s["blue_tension"]:.1f}N',20,107)
         if c['angle_limit_enabled']:text(f'Knee-right limits: {c["angle_min_deg"]:.0f} to {c["angle_max_deg"]:.0f}deg',20,134)

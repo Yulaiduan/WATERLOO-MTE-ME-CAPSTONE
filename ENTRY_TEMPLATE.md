@@ -1983,3 +1983,47 @@ Browser session migration restores only the reverted demo values and strips the 
 Continue from the restored model/current rollback validation note, preserve append-only history and original data, and restart with Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-12 — Andy Zhang — label invertible pulley design impossible
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Wheel Leg Lab dual-rope design status and documentation.
+- **Associated Issue/Task:** User explicitly requested commit/push and the label impossible for the invertible pulley design. Apply it to the dual-rope knee-pulley proposal, preserving its source and historical data.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_inversion_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/invertible-suspension.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/index.html`
+- **API/Interface Changes:** Label the dual-rope preset IMPOSSIBLE/archive in both wheel-model selectors and the inversion selector. Add a dual-only status notice inside the preview/recorded mechanism panel; the symmetric knee bellcrank is not labeled impossible. Native dual-rope caption/onscreen status and fresh dual-rope run/preview scope text mark the historical ideal simulation. Update app README, model/preset/validation notes and app/web context, attributing the status to the user's2026-10-12 decision. No failure explanation/proof is invented. Preserve backend/config IDs, mechanics, units, defaults, algorithms, recorded values, saved profiles/frames, source and archives. No shared component/asset/enforcement change or file deletion.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** JavaScript syntax checks pass for web/app.js and web/inversion/app.js; edited Python AST and Markdown link/fence checks pass. Solver-function AST comparison against fetched origin/main confirms config/build/step/coordinates/simulate and other mechanics functions unchanged; only package/preview human status text differs. Actual scoped Playwright rendering check passes dual-only visible IMPOSSIBLE banner and preset label, bellcrank exclusion, and the Math/Physical wheel selectors; no dynamics run. Ignored screenshot evidence is artifacts/inversion-ui/impossible-status.png. Actual API previews show the dual-only status and zero solver steps; bellcrank scope has no impossible label. Actual app-local CMD start/stop/restart/reuse from an unrelated directory passes at127.0.0.1:4186. The in-app preview is refreshed and the impossible label visibly verified. Fetched-base working/publication/staged checks run before commit/push, with hooks enabled. This is a status-only update: numerical physics suites and native windows are not rerun, and prior test evidence is not treated as physical feasibility approval. Raw screenshots/logs/environments remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+An initial diff-hygiene check reported trailing blank lines in three app docs; they were removed and the final diff check passes.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Impossible is the user's design disposition, not a new independently derived theorem or hardware test result. The retained ideal numerical model can still run for reference; its earlier successes do not override the rejected physical design. Existing geometric/rope-winding/contact/3Dfit and hardware limitations remain in the source records.
+
+## 4. Compute Saving Handoff State
+
+The dual-rope invertible knee-pulley design is labeled IMPOSSIBLE in the browser/native viewer and documentation, with its idealized simulation retained as history.
+The symmetric knee bellcrank and ordinary2:1guide are separate, while numerical mechanics, saved records and backend IDs remain unchanged.
+Continue from the latest status note without treating historical numerical passes as buildability evidence, preserve source/data, and restart with Start Motion Lab.cmd at port4186.
+
+---

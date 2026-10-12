@@ -8,6 +8,17 @@ The later clarification replaces the initial outside-wrap prototype with central
 feeds and outward flare. The latest clarification requires knee-rim wrap and
 supersedes the earlier no-wrap interpretation.
 
+## Design status — IMPOSSIBLE,2026-10-12
+
+The user marked the invertible **dual-rope knee-pulley design** as impossible
+and requested this label on2026-10-12. It is a rejected physical design,
+retained as a historical idealized simulator and source reference. Previous
+numerical runs establish behavior inside that ideal model, not buildability.
+No physical failure explanation or impossibility proof was supplied with the
+status decision; none is invented here. The symmetric knee bellcrank and the
+ordinary2:1guide are separate designs and do not inherit this label.
+Original code, profiles, records, equations and prior validation remain available.
+
 ## Three pulleys, one compression cap
 
 The current dual-rope design has one knee pulley and two small rollers on the

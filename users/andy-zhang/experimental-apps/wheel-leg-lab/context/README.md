@@ -1,6 +1,6 @@
 # Wheel Leg Lab context
 
-Owner: Andy Zhang. Updated: 2026-10-11. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
+Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
 
 ## Playback and setup previews, 2026-10-11
 
@@ -244,3 +244,14 @@ real +/-80deg stops remain. Current folded-session settings migrate back while
 retaining unrelated inputs. Contribution history and original saved JSON/frames
 are preserved; temporary folded exports are historical and their removed API
 field is not accepted for new solver runs on this reverted branch.
+
+## Design status — IMPOSSIBLE,2026-10-12
+
+The user marked the invertible **dual-rope knee-pulley design** as impossible
+and requested this label on2026-10-12. It is a rejected physical design,
+retained as a historical idealized simulator and source reference. Previous
+numerical runs establish behavior inside that ideal model, not buildability.
+No physical failure explanation or impossibility proof was supplied with the
+status decision; none is invented here. The symmetric knee bellcrank and the
+ordinary2:1guide are separate designs and do not inherit this label.
+Original code, profiles, records, equations and prior validation remain available.

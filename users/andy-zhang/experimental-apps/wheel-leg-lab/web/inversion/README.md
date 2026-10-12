@@ -41,3 +41,14 @@ ideal gap0.2mm and eyes±0.02mm fit the existing coil/mount and keep pull nearly
 axial. Editable knee-right ±80° stops and |θ|=45° start remain. Older central_face
 and outer_rim profiles/frames stay reproducible. The latest invertible model
 and validation record supersede the earlier no-wrap and wider-gap descriptions.
+
+## Design status — IMPOSSIBLE,2026-10-12
+
+The user marked the invertible **dual-rope knee-pulley design** as impossible
+and requested this label on2026-10-12. It is a rejected physical design,
+retained as a historical idealized simulator and source reference. Previous
+numerical runs establish behavior inside that ideal model, not buildability.
+No physical failure explanation or impossibility proof was supplied with the
+status decision; none is invented here. The symmetric knee bellcrank and the
+ordinary2:1guide are separate designs and do not inherit this label.
+Original code, profiles, records, equations and prior validation remain available.

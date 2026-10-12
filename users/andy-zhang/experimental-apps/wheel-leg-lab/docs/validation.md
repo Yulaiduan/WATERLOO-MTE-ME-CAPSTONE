@@ -1,6 +1,18 @@
 # Validation record
 
-Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
+Author: Andy Zhang with Codex. Updated: 2026-10-12. Status: locally checked member experiment, not canonical robot or hardware validation.
+
+## Design rejected as impossible,2026-10-12
+
+The user marked the dual-rope invertible pulley design **IMPOSSIBLE**. Earlier
+passing numerical/browser/native checks remain evidence about the retained
+idealized simulator only. They are not a physical-feasibility approval and do
+not override this status. The symmetric knee bellcrank is a separate experiment.
+This update changes status text and documentation only; it does not change
+mechanics, integration, profiles, units or recorded values. Fresh run/preview
+scope text carries the historical-model label, and old records remain intact.
+Current label checks are recorded in the latest root contribution entry;
+physics suites are not rerun for this status-only update.
 
 ## User-requested rollback of unloaded contraction,2026-10-11
 
