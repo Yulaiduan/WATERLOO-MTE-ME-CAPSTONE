@@ -169,3 +169,8 @@ bench's3–87°range or reinterpret its recorded data. The new dual-rope design
 has two explicitly requested routing pulleys, whereas earlier single-rope
 assemblies continue to use their existing joint pulley without an added idler.
 The bellcrank femur attachment is50mmfromJ1, editable.
+
+Latest dual-rope correction: ropes pass between the rollers and flare outward
+to face anchors, without knee-rim wrap. Defaults use ±15 mm roller centres and
+±2 mm cap eyes; current session numbers remain remembered. Cap travel is solved
+from full cable inventory, including finite lead-angle tension projection.

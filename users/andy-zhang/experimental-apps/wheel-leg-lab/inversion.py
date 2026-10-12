@@ -19,7 +19,8 @@ import invertible_spring as springs
 DEFAULTS={'preset':'dual_rope','fixture':'ground','start_inverted':True,'initial_angle_deg':135.,
  'length':.273,'extension':.05,'radius':.2,'upper_mass':.6,'lower_mass':.65,'wheel_mass':1.5,'chassis_mass':8.,
  'gravity':9.80665,'stiffness':5000.,'auto_rate':True,'ride_angle_deg':45.,'damping':0.,'preload':.01,
- 'coil_free_length':.12,'cap_reference_distance':.1,'rod_length':.12,'pulley_radius':.04,'routing_radius':.01,'routing_distance':.06,'routing_offset':.035,
+ 'coil_free_length':.12,'cap_reference_distance':.1,'rod_length':.12,'pulley_radius':.04,'routing_radius':.01,'routing_distance':.06,'routing_offset':.015,
+ 'rope_routing':'central_face','rope_eye_offset':.002,
  'attachment_offset_deg':5.,'femur_anchor_distance':.05,'crank_radius':.05,
  'femur_torque':100.,'torque_start':.1,'torque_width':.24,'torque_rise':.04,'torque_fall':.04,
  'duration':1.,'dt':.00025,'iterations':100}
@@ -38,10 +39,12 @@ def config(values=None):
             if isinstance(c[key],bool) or not isinstance(c[key],(int,float)) or not math.isfinite(c[key]):raise ValueError(key+' must be finite.')
     if c['preset'] not in ('dual_rope','knee_bellcrank'):raise ValueError('Select dual_rope or knee_bellcrank.')
     if c['fixture'] not in ('ground','hip_fixed'):raise ValueError('Select ground or hip_fixed fixture.')
+    if c['rope_routing'] not in ('central_face','outer_rim'):raise ValueError('Select central_face routing, or explicit legacy outer_rim reproduction.')
     limits={'length':(.15,.8),'extension':(.005,.15),'radius':(.05,.4),'initial_angle_deg':(5,175),'ride_angle_deg':(10,80),
       'upper_mass':(.01,20),'lower_mass':(.01,20),'wheel_mass':(.01,30),'chassis_mass':(.1,100),'gravity':(0,20),
       'stiffness':(0,100000),'damping':(0,2000),'preload':(0,.1),'coil_free_length':(.02,1),
       'pulley_radius':(.005,.1),'routing_radius':(.003,.04),'routing_distance':(.01,.2),'routing_offset':(.01,.15),
+      'rope_eye_offset':(0,.02),
       'attachment_offset_deg':(0,30),'femur_anchor_distance':(.005,.15),'cap_reference_distance':(.01,.3),'rod_length':(.02,.6),'crank_radius':(.005,.15),
       'femur_torque':(-500,500),'torque_start':(0,10),'torque_width':(.02,10),'torque_rise':(.001,2),'torque_fall':(.001,2),
       'duration':(.1,10),'dt':(.000125,.002),'iterations':(30,300)}
@@ -120,7 +123,7 @@ def step(m,c):
     q,w,A,B,C=coordinates(m,c);s=springs.state(q,w,c,m['prepared']);g=s['geometry'];au=m['upper'].angle
     def point(local):return tuple(B+pymunk.Vec2d(*springs.rot(local,au)))
     if c['preset']=='dual_rope' and g['active']!='none':
-        route=g['routes'][g['active']];direction=springs.rot(route['direction'],au);F=springs.mul(direction,s['cap_force'])
+        route=g['routes'][g['active']];direction=springs.rot(route['direction'],au);F=springs.mul(direction,s[g['active']+'_tension'])
         m['lower'].apply_force_at_world_point(F,point(route['lower_contact']));m['upper'].apply_force_at_world_point(springs.mul(F,-1),point(route['upper_contact']))
     elif c['preset']=='knee_bellcrank':
         a=point(g['femur_anchor']);b=point(g['crank_tip']);direction=springs.unit(springs.sub(a,b));F=springs.mul(direction,s['cap_force'])

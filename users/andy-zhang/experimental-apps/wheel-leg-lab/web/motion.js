@@ -5,7 +5,7 @@
  * Local loopback app only, no remote data upload or browser-to-host screen streaming.
  */
 import {captureForm,restoreForm} from './form-memory.js';
-import {saveRecord,downloadJSON} from './library.js';
+import {saveRecord,downloadJSON,resolveInversionProfile} from './library.js';
 import {mountDataBrowser} from './data-browser.js';
 import {mountComparison} from './comparison.js';
 const $=id=>document.getElementById(id),frames=new Map(),pending=new Map(),ready=new Set(),frameConfigs=new Map(),configs={},runs={};
@@ -21,7 +21,7 @@ const counterbalanceBackend=backend=>['counterbalance_math','counterbalance_pymu
 const activeCounterbalance=()=>tab==='studies'&&$('study-select').value==='counterbalance';
 const activeFrameKey=()=>tab==='physics'?(physicsModel==='inversion'?'inversion-physics':'physics'):tab==='math'?(mathModel==='inversion'?'inversion-math':'math'):tab==='studies'?($('study-select').value==='counterbalance'?'counterbalance':$('study-select').value==='legacy-linkage'?'linkage':'studies'):null;
 const inversionBackend=backend=>backend?.startsWith('inversion_');
-const modelProfile=record=>inversionBackend(record.backend)?{model:'inversion',config:record.config}:counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
+const modelProfile=record=>inversionBackend(record.backend)?{model:'inversion',config:resolveInversionProfile(record.config)}:counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
 function wheelNativeProfile(config,reference_inputs){
  const guide=reference_inputs?.guide_visualization;
  if(!guide||!config.guide_pulleys_visible&&guide.pretension_N==null)return config;
@@ -163,7 +163,7 @@ const comparison=mountComparison($('compare-panel'),{theme,onRunProfile:runSaved
 async function runSavedProfile(record){
  const endpoints={inversion_math:'/api/inversion/math',inversion_pymunk:'/api/inversion/pymunk',math:'/api/math/simulate',pymunk:'/api/pymunk/simulate',counterbalance_math:'/api/counterbalance/math',counterbalance_pymunk:'/api/counterbalance/pymunk'};
  const endpoint=endpoints[record.backend];if(!endpoint)throw Error('This archived model cannot be rerun in Comparison. Import a recorded dataset, or run it in its archive tool.');
- const result=await simulate(endpoint,record.config);if(record.reference_inputs)result.reference_inputs=record.reference_inputs;
+ const result=await simulate(endpoint,inversionBackend(record.backend)?resolveInversionProfile(record.config):record.config);if(record.reference_inputs)result.reference_inputs=record.reference_inputs;
  const saved=await saveRecord({kind:'run',name:record.name+' · comparison run',backend:record.backend,config:result.config,result});await dataBrowser.refresh();return saved;
 }
 async function simulate(endpoint,config){

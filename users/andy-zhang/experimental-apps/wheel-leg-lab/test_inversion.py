@@ -40,7 +40,7 @@ class InversionTests(unittest.TestCase):
                 s=state(math.radians(degrees),.2,c,p);g=s['geometry']
                 if preset=='dual_rope':
                     if g['active']=='none':continue
-                    r=g['routes'][g['active']];a,b=r['upper_contact'],r['lower_contact'];F=mul(r['direction'],s['cap_force'])
+                    r=g['routes'][g['active']];a,b=r['upper_contact'],r['lower_contact'];F=mul(r['direction'],s[g['active']+'_tension'])
                 else:a,b=g['femur_anchor'],g['crank_tip'];F=mul(unit(sub(a,b)),s['cap_force'])
                 self.assertAlmostEqual(cross(b,F)*2,s['torque'],places=9)
                 self.assertAlmostEqual(cross(sub(b,a),F),0.,places=9)
@@ -63,7 +63,32 @@ class InversionTests(unittest.TestCase):
                 r=simulate(dict(c,dt=dt));errors.append(abs(r['rows'][-1]['theta_deg']-reference['rows'][-1]['theta_deg']))
             self.assertLess(errors[-1],errors[0]);self.assertLess(errors[-1],.1)
     def test_invalid_geometry_not_silently_repaired(self):
-        for changes in [{'routing_offset':.015},{'coil_free_length':.03},{'cap_reference_distance':.23},{'attachment_offset_deg':float('nan')},{'preset':'unknown'}]:
+        for changes in [{'routing_offset':.0105},{'rope_eye_offset':.006},{'coil_free_length':.03},{'cap_reference_distance':.23},{'attachment_offset_deg':float('nan')},{'preset':'unknown'},{'rope_routing':'unknown'}]:
             with self.assertRaises(ValueError):config(changes)
+
+    def test_central_face_routes_inventory_and_cap_force(self):
+        c=config();p=prepare(c)
+        for degrees in range(-179,180,2):
+            s=state(math.radians(degrees),.2,c,p);g=s['geometry'];self.assertEqual(g['routing'],'central_face')
+            q=math.radians(degrees);epsilon=1e-6
+            gradient=(state(q+epsilon,0,c,p)['energy']-state(q-epsilon,0,c,p)['energy'])/(2*epsilon)
+            self.assertAlmostEqual(s['torque'],-gradient,delta=1e-4)
+            for colour,r in g['routes'].items():
+                self.assertLess(abs(r['eye'][1]),c['routing_offset']-c['routing_radius'])
+                length=math.dist(r['eye'],r['feed'])
+                for piece in r['pieces']:
+                    if piece['kind']=='arc':
+                        self.assertNotEqual(piece['center'],(0,0));self.assertAlmostEqual(piece['radius'],c['routing_radius']);self.assertLessEqual(abs(piece['sweep']),math.pi)
+                        length+=piece['radius']*abs(piece['sweep'])
+                    else:length+=math.dist(piece['a'],piece['b'])
+                self.assertAlmostEqual(length,r['length'],places=10)
+                self.assertAlmostEqual(p['reference'][colour]-length,g['slack'][colour],delta=1e-9)
+                if g['active']==colour:
+                    self.assertAlmostEqual(g['slack'][colour],0.,delta=1e-9)
+                    self.assertAlmostEqual(s[colour+'_tension']*r['cap_projection'],s['cap_force'],places=9)
+
+    def test_prior_outer_route_remains_explicit_reproduction(self):
+        c=config({'rope_routing':'outer_rim','routing_offset':.035});s=state(-2.2,0,c,prepare(c))
+        self.assertTrue(any(piece['kind']=='arc' and piece['center']==(0,0) for r in s['geometry']['routes'].values() for piece in r['pieces']))
 
 if __name__=='__main__':unittest.main()

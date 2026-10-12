@@ -194,3 +194,19 @@ Single-rope presets still have no added piston idler. The two routing pulleys
 exist only in the newly requested dual-rope design. Shortest routing omits rope
 winding/groove history;3Dself-clearance and whole-vehicle self-righting are not
 validated. Latest scoped verification is in the app validation record.
+
+## Central face routing correction, 2026-10-11
+
+User clarified central feeds between the rollers, flaring outward to the knee
+face anchors, with no outside rim wrap. Current `central_face` routes use full
+moving-cap cable inventory, inner roller tangents/arcs or free central spans.
+Finite lead angles give T=Fcap/cos(lead angle); force-site virtual work remains
+consistent. Default rollers are ±15 mm, eyes ±2 mm; remembered numbers survive.
+The knee pulley is not a circular rope obstacle. Either roller can guide a
+rope as its anchor moves. The main diagram, enlarged close-up and native GUI
+use the actual computed paths, without a knee-rim arc.
+
+Pre-correction saved profiles resolve to explicit `outer_rim` reproduction;
+original records/frames stay intact. Fresh defaults/session editing use current
+routing; loading the flip demo selects updated dimensions. Current model and
+validation docs supersede the initial outer-route description above.

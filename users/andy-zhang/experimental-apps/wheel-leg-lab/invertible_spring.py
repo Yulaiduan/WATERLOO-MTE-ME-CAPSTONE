@@ -4,8 +4,8 @@ Invocation: prepare(config), state(theta_rad, omega_rad_s, config, prepared).
 Inputs: SI lengths/rates, degrees only for configured attachment offset.
 Outputs: routed red/blue cable paths, slack/tension, cap travel, spring energy,
 and conservative generalized torque. No Pymunk/ODE dependency.
-Limitations: massless piston/ropes; ideal shortest external paths around two
-explicit routing pulleys and the knee drum. No winding history, rope crossover,
+Limitations: massless piston/ropes; central leads between two rollers, with
+outward flare to anchors on the knee face (no outer-rim wrap). No rope crossover,
 groove friction/stretch, piston binding, structural or packaging validation.
 One taut rope selects the common cap; exact ties use the outgoing branch.
 """
@@ -30,7 +30,7 @@ def _clear_other(a,b,center,radius):
     v=sub(b,a);t=max(0,min(1,dot(sub(center,a),v)/dot(v,v)))
     return norm(sub(add(a,mul(v,t)),center))>=radius-1e-9
 
-def route(phi,c,side):
+def _outer_route(phi,c,side):
     """Actual offset attachment geometry with an explicit linear-feed idler.
 
     Cylinder yoke eyes feed two parallel straight runs; red upper idler turns
@@ -78,13 +78,79 @@ def route(phi,c,side):
     result=min(candidates,key=lambda a:a['length'])
     return {**result,'anchor':E,'guide_center':G,'feed':S,'colour':side,'attachment_angle':angle}
 
+def _central_route(phi,c,side,cap_x):
+    """Shortest centre-channel cable to an anchor on the pulley face.
+
+    The cap eye translates along x. Either small roller can guide an outward
+    flare; a rope inside the channel can lose roller contact. The knee face
+    is not an obstacle and never receives a rim arc. Return both length partial
+    derivatives so cap travel and cable tension account for the lead angle.
+    """
+    sign=1 if side=='red' else -1
+    angle=phi+sign*math.radians(c['attachment_offset_deg'])
+    E=mul(polar(angle),c['pulley_radius']);P=(cap_x,sign*c['rope_eye_offset'])
+    radius=c['routing_radius'];gap=c['routing_offset']-radius
+    guides={key:(-c['routing_distance'],s*c['routing_offset']) for key,s in [('red',1),('blue',-1)]}
+    candidates=[]
+    def append(length,pieces,feed,upper_contact,u_in,u_out,roller):
+        candidates.append({'length':length,'derivative':dot(u_out,(-E[1],E[0])),
+          'cap_projection':u_in[0],'pieces':pieces,'eye':P,'feed':feed,
+          'upper_contact':upper_contact,'lower_contact':E,'direction':mul(u_out,-1),
+          'contact_roller':roller,'anchor':E,'colour':side,'attachment_angle':angle,
+          'routing':'central_face'})
+    straight=sub(E,P)
+    if straight[0]<=0:raise ValueError('Cylinder rope eyes must stay before the knee anchors.')
+    u=unit(straight)
+    gate_y=P[1]+straight[1]*(-c['routing_distance']-P[0])/straight[0]
+    if abs(gate_y)<=gap+1e-10 and all(_clear_other(P,E,G,radius) for G in guides.values()):
+        append(norm(straight),[{'kind':'line','a':P,'b':E}],P,P,u,u,None)
+    for key,G in guides.items():
+        winding=1 if key=='red' else -1
+        delta_in=sub(P,G);delta_out=sub(E,G);din,dout=norm(delta_in),norm(delta_out)
+        if min(din,dout)<=radius:continue
+        bin=math.atan2(delta_in[1],delta_in[0]);bout=math.atan2(delta_out[1],delta_out[0])
+        ain=math.acos(radius/din);aout=math.acos(radius/dout)
+        other=guides['blue' if key=='red' else 'red']
+        for qi in (bin-ain,bin+ain):
+            Ni=polar(qi);Ti=add(G,mul(Ni,radius));uin=unit(sub(Ti,P))
+            if winding*cross(Ni,uin)<.999999 or not _clear_other(P,Ti,other,radius):continue
+            for qo in (bout-aout,bout+aout):
+                No=polar(qo);To=add(G,mul(No,radius));uout=unit(sub(E,To))
+                arc=(winding*(qo-qi))%TAU
+                if winding*cross(No,uout)<.999999 or arc>math.pi+1e-10 or not _clear_other(To,E,other,radius):continue
+                pieces=[{'kind':'arc','center':G,'radius':radius,'start':qi,'sweep':winding*arc},
+                        {'kind':'line','a':To,'b':E}]
+                append(norm(sub(Ti,P))+radius*arc+norm(sub(E,To)),pieces,Ti,To,uin,uout,key)
+    if not candidates:raise ValueError('No valid central cable path; adjust roller spacing/placement or cap mount.')
+    return min(candidates,key=lambda value:value['length'])
+
+def route(phi,c,side,cap_x=None):
+    if c.get('rope_routing','central_face')=='outer_rim':return _outer_route(phi,c,side)
+    if cap_x is None:cap_x=-(c['length']-c['cap_reference_distance'])
+    return _central_route(phi,c,side,cap_x)
+
+def _cap_demand(phi,c,side,reference,arm):
+    """Solve cable inventory at a moving cap; d(length)/dx = -lead cosine."""
+    initial=route(phi,c,side,-arm)
+    if initial['length']<=reference+1e-12:return 0.
+    maximum=arm-c['routing_distance']-c['routing_radius']-.005
+    x=(initial['length']-reference)/initial['cap_projection']
+    for _ in range(12):
+        if not 0<=x<=maximum:raise ValueError('Piston take-up exhausted the central feed span; move its mount toward J1.')
+        current=route(phi,c,side,-arm+x);error=current['length']-reference
+        if abs(error)<1e-12:return x
+        x+=error/current['cap_projection']
+    raise ValueError('Central cable cap-travel solve did not converge.')
+
 def prepare(c):
     p={'arm':c['length']-(c['cap_reference_distance'] if c['preset']=='dual_rope' else c['femur_anchor_distance'])}
     if c['preset']=='dual_rope':
         if c['routing_offset']<=c['routing_radius']+.001:
             raise ValueError('Red and blue routing pulley circles must be separated.')
-        if c['routing_offset']+c['routing_radius']<=c['pulley_radius']:
+        if c.get('rope_routing','central_face')=='outer_rim' and c['routing_offset']+c['routing_radius']<=c['pulley_radius']:
             raise ValueError('Parallel rope feeds must lie outside the knee drum: routing offset + radius > drum radius.')
+        if c.get('rope_routing','central_face')=='central_face' and c['rope_eye_offset']>=c['routing_offset']-c['routing_radius']-.0005:
+            raise ValueError('Both rope eyes must lie inside the central gap between the rollers.')
         if math.hypot(c['routing_distance'],c['routing_offset'])<=c['pulley_radius']+c['routing_radius']:
             raise ValueError('The two routing pulleys must clear the knee drum.')
         p['reference']={colour:route(math.pi,c,colour)['length'] for colour in ('red','blue')}
@@ -96,17 +162,20 @@ def prepare(c):
 def state(theta,omega,c,p):
     phi=2*theta
     if c['preset']=='dual_rope':
-        routes={colour:route(phi,c,colour) for colour in ('red','blue')}
-        takeup={colour:g['length']-p['reference'][colour] for colour,g in routes.items()}
+        central=c.get('rope_routing','central_face')=='central_face'
+        takeup={colour:(_cap_demand(phi,c,colour,p['reference'][colour],p['arm']) if central else route(phi,c,colour)['length']-p['reference'][colour]) for colour in ('red','blue')}
         active=max(takeup,key=takeup.get);x=max(0,takeup[active])
         if abs(takeup['red']-takeup['blue'])<1e-10 and abs(omega)>1e-10:
-            upcoming={colour:route(phi+math.copysign(1e-7,omega),c,colour)['length']-p['reference'][colour] for colour in routes}
+            ahead=phi+math.copysign(1e-7,omega)
+            upcoming={colour:(_cap_demand(ahead,c,colour,p['reference'][colour],p['arm']) if central else route(ahead,c,colour)['length']-p['reference'][colour]) for colour in ('red','blue')}
             active=max(upcoming,key=upcoming.get)
-        J=2*routes[active]['derivative'] if x>1e-12 else 0.
+        routes={colour:route(phi,c,colour,-p['arm']+x) for colour in ('red','blue')}
+        projection=routes[active].get('cap_projection',1.)
+        J=2*routes[active]['derivative']/projection if x>1e-12 else 0.
         if p['arm']-c['routing_distance']-x<.005:
             raise ValueError('Piston take-up exhausted the parallel rope span; move its mount toward J1 or routing pulleys toward the knee.')
-        geometry={'routes':routes,'active':active if x>1e-12 else 'none',
-                  'slack':{key:x-takeup[key] for key in takeup},'cap_x':-p['arm']+x,
+        geometry={'routes':routes,'routing':c.get('rope_routing','central_face'),'active':active if x>1e-12 else 'none',
+                  'slack':{key:max(0,p['reference'][key]-routes[key]['length']) if central else x-takeup[key] for key in takeup},'cap_x':-p['arm']+x,
                   'piston_cap_x':-p['arm']-c['rod_length']+x,
                   'fixed_seat_x':-p['arm']-c['rod_length']+c['coil_free_length']-c['preload']}
     else:
@@ -117,7 +186,7 @@ def state(theta,omega,c,p):
     z=c['preload']+x;coil=c['coil_free_length']-z
     if coil<.005:raise ValueError('Compression coil reached the configured travel limit; increase free length or reduce preload/take-up.')
     elastic=c['stiffness']*z;speed=J*omega;force=max(0,elastic+c['damping']*speed)
-    tensions={colour:force if geometry['active']==colour else 0. for colour in ('red','blue')}
+    tensions={colour:force/(routes[colour].get('cap_projection',1.)) if geometry['active']==colour else 0. for colour in ('red','blue')}
     return {'compression':z,'takeup':x,'coil_length':coil,'cap_force':force,'elastic_force':elastic,
             'torque':-force*J,'jacobian':J,'energy':.5*c['stiffness']*z*z,
             'dissipation':max(0,(force-elastic)*speed),'red_tension':tensions['red'],'blue_tension':tensions['blue'],

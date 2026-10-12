@@ -271,3 +271,8 @@ separate invertible-wheel-leg comparison family. Profiles, runs, library,
 recorded playback and native GUI route to the matching model. Current controls
 are published immediately, so native launch cannot pick stale edited parameters.
 Run both & compare on the inversion Math tab uses fixed J1 in both solvers.
+
+The corrected dual-rope route is explicitly central_face, with close-set cap
+eyes, inner roller flare and no knee-rim wrap. Older saved profiles execute as
+explicit outer_rim reproduction, while recorded frames/JSON remain unchanged.
+The enlarged diagram and native GUI follow the same computed cable geometry.

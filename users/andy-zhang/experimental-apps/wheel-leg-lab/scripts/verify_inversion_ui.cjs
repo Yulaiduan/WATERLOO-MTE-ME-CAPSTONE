@@ -12,8 +12,14 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   await page.goto(origin+'/inversion/?backend=pymunk');await page.locator('#mechanism[data-mode="setup"]').waitFor();
   assert.equal(await page.locator('.routing-pulley-red').count(),1);assert.equal(await page.locator('.routing-pulley-blue').count(),1);assert.equal(await page.locator('.knee-spring-pulley').count(),1);assert.equal(await page.locator('.parallel-feed').count(),2);
   assert.equal(await page.locator('[data-key="attachment_offset_deg"]').inputValue(),'5');assert.equal(await page.locator('#readouts').textContent(),'');
+  assert.equal(await page.locator('#mechanism').getAttribute('data-rope-routing'),'central_face');
+  assert.equal(await page.locator('#cap-detail').getAttribute('data-rope-routing'),'central_face');
+  assert.equal(await page.locator('#cap-detail .detail-roller-red').count(),1);assert.equal(await page.locator('#cap-detail .detail-roller-blue').count(),1);
+  const feeds=await page.locator('#mechanism .central-feed').evaluateAll(nodes=>nodes.map(n=>Number(n.dataset.eyeOffsetM)));assert.deepEqual(feeds,[.002,-.002]);
+  const arcs=await page.locator('#mechanism .roller-arc').evaluateAll(nodes=>nodes.map(n=>[Number(n.dataset.centerX),Number(n.dataset.centerY)]));assert.ok(arcs.every(([x,y])=>x!==0||y!==0));
   const response=page.waitForResponse(r=>r.url().endsWith('/api/inversion/pymunk'));await page.locator('#run').click();const result=await(await response).json();assert.ok(result.diagnostics.flip_time_s>0);assert.ok(result.rows.some(r=>r.active_red)&&result.rows.some(r=>r.active_blue));
   await page.locator('#mechanism[data-mode="recorded"]').waitFor();assert.equal(await page.locator('.js-plotly-plot').count(),9);
+  assert.equal(result.config.rope_routing,'central_face');assert.ok(result.frames.every(f=>Object.values(f.spring.geometry.routes).every(r=>r.pieces.every(p=>p.kind!=='arc'||p.center[0]!==0||p.center[1]!==0))));
   await page.locator('#time').evaluate(n=>{n.value=.36;n.dispatchEvent(new Event('input',{bubbles:true}));});assert.ok((await page.locator('#readouts').textContent()).includes('N /'));assert.equal(await page.locator('.shared-cap').count(),1);
   await page.locator('.mechanism-panel').screenshot({path:path.join(out,'dual-rope-flip.png')});
   const download=page.waitForEvent('download');await page.locator('#save-run').click();const file=await download;await file.saveAs(path.join(out,'dual-run.json'));const saved=JSON.parse(fs.readFileSync(path.join(out,'dual-run.json'),'utf8'));assert.equal(saved.backend,'inversion_pymunk');assert.equal(saved.config.start_inverted,true);

@@ -42,13 +42,16 @@ def main():
         if c['preset']=='dual_rope':
             for colour,rgb in [('red',(235,90,100)),('blue',(80,155,245))]:
                 route=g['routes'][colour];active=g['active']==colour
-                pieces=[{'kind':'line','a':(g['cap_x'],route['feed'][1]),'b':route['feed']},*route['pieces']]
+                pieces=[{'kind':'line','a':route.get('eye',(g['cap_x'],route['feed'][1])),'b':route['feed']},*route['pieces']]
                 for piece in pieces:pygame.draw.lines(screen,rgb,False,[point(world(p)) for p in springs.samples(piece)],3 if active else 1)
+                pygame.draw.circle(screen,rgb,point(world(route['anchor'])),3)
             cap,seat=g['piston_cap_x'],g['fixed_seat_x'];ref=cap-s['takeup']
             pygame.draw.lines(screen,(185,190,175),True,[point(world(p)) for p in [(ref,-.015),(seat,-.015),(seat,.015),(ref,.015)]],2)
             pygame.draw.line(screen,(230,175,75),point(world((cap,0))),point(world((seat,0))),4)
             pygame.draw.line(screen,(175,215,125),point(world((cap,-.013))),point(world((cap,.013))),3)
             pygame.draw.line(screen,(185,190,175),point(world((cap,0))),point(world((g['cap_x'],0))),2)
+            eye=c['rope_eye_offset'] if g.get('routing')=='central_face' else c['routing_offset']+c['routing_radius']
+            pygame.draw.line(screen,(185,190,175),point(world((g['cap_x'],-eye))),point(world((g['cap_x'],eye))),2)
         else:
             pygame.draw.line(screen,(210,145,235),point(B),point(world(g['crank_tip'])),5);pygame.draw.line(screen,(235,185,90),point(world(g['femur_anchor'])),point(world(g['crank_tip'])),3)
         text(('Actual floor contacts' if c['fixture']=='ground' else 'Fixed J1 / no floor')+'; three pins + guide; no commanded wheel height.',20,H-30)

@@ -2,7 +2,52 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
 
-## Invertible suspension studies, 2026-10-11
+## Central feeds and knee-face anchors, 2026-10-11
+
+User correction supersedes the initial outside-wrap prototype below: both ropes
+feed between the two rollers, which guide outward flare to the actual ±5° knee
+face anchors. The current route has no knee-rim arc. Main preview, enlarged
+close-up and live native drawing use the same full cable inventory geometry.
+Free central spans can lose roller contact; either roller can guide an outward
+flare. Cap travel is solved rather than approximated by drum payout, and active
+cable tension is cap force divided by the incoming lead cosine.
+
+All 18 scoped Python tests pass (inversion, replacement_suspension,
+setup_preview), including path inventory/slack, inside-gap eyes, absence of
+drum arcs, roller contact, force-site virtual work and energy gradients across
+the angular sweep away from exact handoff ties. Explicit outer_rim reproduction
+is retained. All 63 JavaScript tests pass, including non-mutating saved-profile
+route resolution. The real inversion browser workflow passes: actual ground
+flip, central lead metadata, no knee arc in any recorded frame, close-up with
+both rollers, both presets, JSON/library/Math comparison and native routing.
+Actual native desktop checks pass both 4001-step windows with graceful exit0.
+The project-local CMD start/stop/restart/reuse passes from C:/Windows at4186.
+Current in-app preview shows central routing while retaining remembered numbers.
+
+Default dual-rope calibration is now 7882.99 N/m. The 100 N m / 240 ms pulse
+still flips with actual floor contact. Current dual-rope refinement gave:
+
+| Step (ms) | First flip (s) | Angle at 1 s (°) | Maximum sampled wheel penetration (mm) |
+| --- | --- | --- | --- |
+| .5 | .316000 | 100.236 | 1.281 |
+| .25 | .316750 | 78.066 | .179 |
+| .125 | .316875 | 59.588 | .669 |
+
+First flip time refines, but the later undamped impact/rebound trajectory has
+not converged well at these three steps. Do not infer quantitative post-impact
+angle or force-peak accuracy from this contact demo. The separate fixed-J1
+SciPy comparison retains its tested energy/refinement limits. No target pose
+is held or frozen. The bellcrank mechanism/equations are unchanged.
+
+Pre-correction saved profiles reproduce the old outer route explicitly through
+the library/import/native bridge; original JSON/frames are preserved. Fresh
+defaults/session edits use central_face. Direct API reproduction of an old
+profile requires explicit outer_rim and its original dimensions. An initial
+test edit had an indentation syntax error, corrected before the passing rerun.
+No axle/3D/groove/rope-crossing, hardware or canonical validation is claimed.
+Canonical physics is NOT APPLICABLE to this isolated member workspace.
+
+## Initial outer-route inversion prototype, 2026-10-11 (superseded)
 
 The [new study](invertible-suspension.md) implements actual ±5° knee rope
 attachments, two small routing pulleys and a single shared compression cap,

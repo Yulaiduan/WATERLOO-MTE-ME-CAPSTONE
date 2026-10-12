@@ -1792,3 +1792,51 @@ Both real ground demos start wheel-up/chassis-down and flip under applied femur 
 Continue from docs/invertible-suspension.md and the scoped validation record, preserve original limited-angle/single-rope studies and saved data, refine timestep before interpreting contact peaks, and restart with the existing Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — correct central rope feeds and knee-face pull
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Invertible dual-rope suspension geometry, loads and preview.
+- **Associated Issue/Task:** User confirmed ropes pass through the centre between the small rollers, then flare outward to the actual ±5° knee face attachments, without wrapping around the knee outer rim.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_inversion_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/invertible-suspension.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/suspension-presets.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/invertible_spring.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_inversion_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/inversion-library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- **API/Interface Changes:** Correct default rope_routing to central_face and add SI rope_eye_offset; explicit outer_rim remains for prior profile reproduction. Current demo roller centres are ±15 mm and cap eyes ±2 mm, while session numbers stay remembered. Compute full moving-cap cable inventory with free centre spans or inner-side tangent/arcs on either roller, never a knee-rim arc. Solve each rope's cap demand, select the maximum for one shared compression cap, calculate real slack and lead-angle projection T=Fcap/cos(lead angle), and apply actual outgoing cable tension at force sites. Update main/close-up/native rope and yoke drawing, fixed roller locations and equations. Resolve old saved profiles without routing metadata to explicit outer_rim at execution/import/native bridges without modifying stored JSON/frames; direct API requests lacking the marker use current defaults. Document physical boundary, equations, correction and actual evidence. No original single-rope mechanism, bellcrank force law, shared component, canonical asset or enforcement file changes; no archive/data is deleted.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All18 scoped Python tests (test_inversion, test_replacement_suspension, test_setup_preview) pass. New retained assertions cover inside-gap cap eyes, no knee-rim arc, exact cable inventory/slack, cap/tension projection, angular-sweep energy gradients away from handoff ties and explicit legacy reproduction; actual force-site virtual work, ground flips and fixed-J1 SciPy refinement/energy still pass. All63 JavaScript tests pass, including non-mutating old/new profile route resolution. The real verify_inversion_ui browser suite passes central main/detail metadata, close-up rollers, every recorded frame without knee arcs, both real ground demos, JSON/library/current native config and independent fixed-J1 comparison. Actual verify_inversion_native.py desktop windows pass both4001-step cases, four constraints, expected8/5shapes and graceful exit0. Current default dual-rope k=7882.991939N/m; first flip at.316750s with.25ms and.316875s with.125ms. Retained35mm session spacing also flips at.313500s with central_face and k=7051.275905N/m. Actual app-local CMD stop/start/restart/reuse from C:/Windows preserves port4186. In-app main preview is refreshed and visually checked with remembered35mm inputs retained; latest browser PNG includes the central route and enlarged diagram. Python/JS syntax, edited Markdown links/fences and diff hygiene pass; fetched-base working/publication/staged checks run before push. Raw results/logs/screenshots/environments remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. An initial test-line indentation caused a syntax error in the scoped unittest command; it was corrected before the passing18-test rerun, with original tolerances retained. A documentation patch did not match its context and applied no changes; targeted edits then updated the actual source text. Current ground first-flip time refines, but one-second undamped post-impact angles100.236/78.066/59.588deg at.5/.25/.125ms have not converged well, and contact peaks/later bounce are qualitative. Actual model/validation docs disclose the full table, rather than claiming settled pose or quantitative impact accuracy. Geometry omits axle/groove/rope-crossing/3D package clearance, stretch, friction and binding; parts are massless, chassis pitch held, and no controller/pose hold is added. Fixed-J1 comparison has no floor, MATLAB remains legacy-tip-only, and older broad envelope/browser evidence keeps its historical scope.
+
+## 4. Compute Saving Handoff State
+
+Current dual ropes feed through the centre gap and flare over the small rollers onto knee face anchors, with no outer-rim wrap in main, close-up or native views.
+The one-cap solver uses actual cable inventory and lead-angle tension projection; both default and remembered35mm configurations flip under real femur torque, while saved prior profiles/frames remain reproducible.
+Continue from the corrected invertible model/validation docs, preserve existing records and session numbers, interpret post-impact ground peaks cautiously until refined, and restart with Start Motion Lab.cmd at port4186.
+
+---

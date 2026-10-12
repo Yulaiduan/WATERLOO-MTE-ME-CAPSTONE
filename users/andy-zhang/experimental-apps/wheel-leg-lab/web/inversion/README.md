@@ -12,3 +12,8 @@ floor contact. Torque is an actual input; there is no hidden position motor.
 Profiles/results are portable JSON and integrate with the shared library/native
 GUI. Housing placement, rope winding/groove history and3Dclearance remain demo
 assumptions; see the app's current validation and invertible-design record.
+
+Current dual ropes feed through the centre gap and flare over the small rollers
+onto knee face anchors, without wrapping around the knee rim. The enlarged
+view repeats actual paths. JSON stores the route and eye offset; pre-correction
+saved profiles explicitly reproduce outer_rim without modifying recorded data.

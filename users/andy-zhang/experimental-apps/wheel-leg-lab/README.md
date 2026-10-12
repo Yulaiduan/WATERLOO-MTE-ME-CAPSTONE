@@ -83,7 +83,8 @@ it does not silently add a second restoring spring.
 
 The [new inversion study](docs/invertible-suspension.md) uses actual ±5° knee
 attachment points and two explicitly requested routing pulleys to keep red/blue
-rope feeds parallel to the femur-mounted cylinder. The taut rope loads one
+ropes through the central roller gap, then outward to face anchors with no
+outer-rim wrap. The cylinder stays parallel to the femur. The taut rope loads one
 shared piston cap; the other is slack. The symmetric knee bellcrank connects
 to a femur attachment50mmfromJ1. These are additional editable experiments;
 the existing nine working-range presets and their saved results are preserved.
