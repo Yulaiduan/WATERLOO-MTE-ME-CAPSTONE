@@ -84,7 +84,8 @@ it does not silently add a second restoring spring.
 The [new inversion study](docs/invertible-suspension.md) uses actual ±5° knee
 attachment points and two explicitly requested routing pulleys to keep red/blue
 ropes through the central roller gap, then onto tangent spans and knee-rim
-wrap. The cylinder stays parallel to the femur; the current 0.2 mm ideal gap keeps
+wrap. At full contraction the current attachments face the cylinder; zero
+preload gives zero spring force, and opening compresses the coil. The cylinder stays parallel to the femur; the current 0.2 mm ideal gap keeps
 leads nearly parallel. Editable ±80° stops keep the knee right while the
 wheel moves above/below the chassis. The taut rope loads one
 shared piston cap; the other is slack. The symmetric knee bellcrank connects

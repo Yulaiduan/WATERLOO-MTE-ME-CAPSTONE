@@ -2,7 +2,54 @@
 
 Author: Andy Zhang with Codex. Updated: 2026-10-11. Status: locally checked member experiment, not canonical robot or hardware validation.
 
-## Current tight, wrapped, knee-right demo, 2026-10-11
+## Current unloaded full contraction,2026-10-11
+
+The user's latest correction rotates both knee anchors by180deg and measures
+cable inventories at full contraction (theta0, parallel links). Current
+rope_neutral_pose=folded gives anchors phi+pi±5deg and zero preload. Both
+attachments face the cylinder at theta0. Exact compression, cap force, cable
+tensions, spring energy and torque are zero there, while opening either way
+compresses the coil and produces closing torque. This is a conservative model
+change in both solvers/native GUI, not only a drawing. The bellcrank is unchanged.
+
+All25 scoped Python tests pass (inversion, angle_stops, replacement_suspension,
+setup_preview), including zero-force/at-rest behavior in actual Pymunk/SciPy,
+opening-force sign, current/archived phase, inventory/slack, virtual work,
+energy/refinement, contact flips and real stops. All63 JavaScript tests pass.
+The actual inversion browser suite passes session migration with custom mass
+retained, the zero-degree preview with anchors visibly left and0mm/unloaded
+coil, both flips, ten Plotly plots, JSON/library/native envelope, tab memory
+and matched math/Pymunk comparison. The screenshot of the contracted preview
+is retained in ignored artifacts/inversion-ui/dual-rope-contracted.png.
+Both live native windows pass4001 steps, five constraints, all-step knee-right
+and bounds checks, and graceful exit0. Existing saved profiles/frames remain
+untouched; missing markers resolve to the old straight pose/10mm preload/
+120mm rod, while current session editing migrates phase/preload/demo rod only.
+
+Current editable defaults:0mm preload,130mm rod clearing the unloaded120mm
+coil,30mm knee drum,0.2mm ideal gap and±80deg stops. Magnitude-calibrated
+k13542.156N/m; this closing spring does not balance normal ride gravity.
+Default ground maximum compression40.270mm leaves79.730mm coil, maximum lead
+angle0.095deg and guide error4.89e-15rad. Default100Nm pulse flips below at
+.41900s with.25/.125ms and.41950s with.5ms; undamped final1s angles
+-18.436/-18.400/-18.285deg respectively show subsequent rebound. The normal
+ride pose is not held by a controller. A separate200Nm case exercises stops;
+no claim that the default must touch them is made.
+
+An intermediate no-preload profile failed the existing rod-eye clearance check
+with the prior120mm rod; the explicit130mm demo restores clearance. An edit
+command mistakenly ran from C:/Windows and found no relative source path; it
+made no changes and was rerun from the app folder. An initial browser status
+wait timed out while shared solver requests were busy; the harness now waits
+for the non-busy mathematical API result before checking its rendered status.
+The migration test initially seeded storage before reload, which pagehide
+correctly overwrote; one-shot document initialization then tested the actual
+migration successfully. No numerical tolerance was loosened. Earlier evidence
+below keeps its historical configuration and scope. Ideal cable diameter,
+winding history, friction/stretch,3Dfit and compliant stop/actuator hardware
+remain unverified; canonical robot physics is NOT APPLICABLE.
+
+## Preceding wrapped, straight-neutral demo,2026-10-11 (reference superseded)
 
 The latest user clarification supersedes the no-wrap interpretation. Current
 central_wrap uses the tight centre channel, roller tangents and knee-rim arcs

@@ -15,7 +15,8 @@ const object = value => value !== null && typeof value === 'object' && !Array.is
  * Fresh server defaults/session edits use central_wrap. Old recorded frames stay intact.
  */
 export function resolveInversionProfile(config) {
-  return {...config,rope_routing:config.rope_routing ?? 'outer_rim',angle_limit_enabled:config.angle_limit_enabled ?? false};
+  const archived=config.rope_neutral_pose===undefined;
+  return {...config,preload:config.preload ?? (archived||config.preset==='knee_bellcrank'?.01:0),rod_length:config.rod_length ?? (archived?.12:.13),rope_routing:config.rope_routing ?? 'outer_rim',rope_neutral_pose:config.rope_neutral_pose ?? 'straight',angle_limit_enabled:config.angle_limit_enabled ?? false};
 }
 function checkedJSON(value) {
   let nodes = 0;
@@ -158,6 +159,7 @@ export function normalizeImport(input, fileName = 'Imported study') {
   if(config&&selectedBackend?.startsWith('inversion_')){
     if(!['dual_rope','knee_bellcrank'].includes(config.preset))throw Error('Unknown invertible suspension preset.');
     if(!['ground','hip_fixed'].includes(config.fixture))throw Error('Unknown inversion fixture.');
+    if(config.rope_neutral_pose!==undefined&&!['folded','straight'].includes(config.rope_neutral_pose))throw Error('Unknown inversion rope neutral pose.');
     if(config.rope_routing!==undefined&&!['central_wrap','central_face','outer_rim'].includes(config.rope_routing))throw Error('Unknown inversion rope routing.');
     for(const key of ['length','radius','dt','duration'])if(typeof config[key]!=='number'||config[key]<=0)throw Error('Inversion '+key+' must be positive SI.');
   }

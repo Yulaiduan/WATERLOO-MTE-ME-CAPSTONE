@@ -1891,3 +1891,49 @@ Both new mechanisms use editable±80deg real stops and start at45deg magnitude, 
 Continue from the latest invertible model/validation records, preserve archived profiles/data and unrelated settings, refine contact timestep before interpreting peaks, and restart with Start Motion Lab.cmd at port4186.
 
 ---
+
+## Entry: 2026-10-11 — Andy Zhang — unloaded fully contracted dual-rope reference
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Member invertible suspension cable geometry, conservative spring law and browser/native profile handling.
+- **Associated Issue/Task:** User corrected the rope attachments to the cylinder-facing left side when the links are parallel, requesting no spring force at full contraction. Retain actual knee-rim wrap, tight rollers and knee-right limits.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_inversion_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/invertible-suspension.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/invertible_spring.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_viewer.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_inversion_ui.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_inversion.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/inversion-library.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/inversion/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- **API/Interface Changes:** Add rope_neutral_pose=folded/straight. Current dual ropes use anchors phi+pi±delta and full cable inventories at theta0; default preload0 gives compression/cap force/tensions/energy/torque0 there. Opening either way compresses the common cap and produces closing torque in both solvers and native drawing. Rod default130mm keeps its eye outside the unloaded120mm coil. Bellcrank retains10mm preload and original behavior. Current dual auto_rate matches gravitational torque magnitude at the calibration pose, explicitly not signed gravity equilibrium; label and equations follow the selected reference. Permit initial angle0 for reference studies; invalid inverted floor overlap remains rejected. Browser/Python saved-profile resolvers preserve missing-marker historical straight phase/preload/rod without mutating original records. Current session migration changes phase/preload and old demo rod only; unrelated controls remain remembered. Update tests, model/context/validation docs and unloaded/slack labels. No canonical model, shared runtime, dependency, enforcement, archive or stored original run changes/deletions.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All25 scoped Python tests pass via .venv/Scripts/python.exe -m unittest -q test_inversion test_angle_stops test_replacement_suspension test_setup_preview. Tests include exact unloaded contraction and real stationary Pymunk/SciPy rows, left-side offsets, opening-force sign, archive reproduction, cable inventory/slack, conservative energy/force-site virtual work, low-load timestep refinement, both actual ground flips, and separate200Nm stop cases. All63 JavaScript tests pass with native/library phase/default compatibility. Actual node scripts/verify_inversion_ui.cjs passes final source/server: session migration with custom0.7kg femur retained,130mm rod/zero preload, zero-degree unloaded preview and left anchors, current rim geometry, both flips, ten Plotly plots, portable JSON/library, tab memory, native request envelope and matched fixed-J1 comparison. Actual .venv/Scripts/python.exe scripts/verify_inversion_native.py passes both4001-step desktop windows with five constraints,8/5shapes, every-step right-side knees/angle bounds and graceful exit0. Current dual k13542.156N/m, default peak compression40.270mm/remaining coil79.730mm, lead below0.095deg and guide error4.89e-15rad. First wheel-below at.4195/.4190/.4190s with.5/.25/.125ms; undamped1s angles-18.285/-18.436/-18.400deg show rebound. In-app migrated preview and actual4001-sample run are verified, with new flip time. Actual project-local CMD stop/start/restart/reuse from an unrelated directory responds at127.0.0.1:4186 with folded/zero-preload backend defaults. Edited Python AST, JavaScript syntax, Markdown links/fences and diff hygiene pass. Fetched-base working/publication/staged checks run before push; raw screenshots/configs/frames/logs stay ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. An intermediate zero-preload profile failed existing120mm-rod eye clearance; explicit130mm demo rod restores clearance without relaxing validation. A relative-path edit command ran from the launcher-test directory and found no source, made no changes, then was rerun from the app directory. Initial browser rendered-status wait timed out during shared-solver busy responses; the harness waits for a non-busy math API result and final browser runs pass. Initial migration seeding before reload was overwritten by the existing pagehide saver; one-shot document initialization verifies real migration while preserving custom mass. No numeric tolerance was loosened. Exploratory300Nm/default-step runs overshot the80deg stop by1.061deg and exceeded the1e-8rad guide budget; they are not accepted accuracy evidence. Validated default100Nm and separate200Nm fixtures do not certify arbitrary edited inputs. Normal ride gravity and this closing spring may act in the same direction, so magnitude calibration is not passive height support. Shortest ideal routing, cable diameter/groove/winding/3Dfit, compliant impacts and real actuator hardware remain unverified. Earlier wide audits and MATLAB retain historical/legacy-tip-only scope.
+
+## 4. Compute Saving Handoff State
+
+The current dual-rope preset is unloaded at full contraction, with left-facing anchors and full cable inventory referenced to theta0; both actual solvers and the native renderer share this corrected law.
+Opening compresses the coil and produces closing torque, while saved old profiles/frames retain their original straight-phase law and current unrelated settings remain remembered.
+Continue from the latest invertible model/validation docs, preserve prior records, refine edited high-torque impacts before interpreting peaks, and restart with Start Motion Lab.cmd at port4186.
+
+---

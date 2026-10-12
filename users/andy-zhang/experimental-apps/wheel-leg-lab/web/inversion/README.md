@@ -41,3 +41,14 @@ ideal gap0.2mm and eyes±0.02mm fit the existing coil/mount and keep pull nearly
 axial. Editable knee-right ±80° stops and |θ|=45° start remain. Older central_face
 and outer_rim profiles/frames stay reproducible. The latest invertible model
 and validation record supersede the earlier no-wrap and wider-gap descriptions.
+
+## Current unloaded contraction,2026-10-11
+
+Dual-rope defaults now use rope_neutral_pose=folded, anchors phi+pi±delta and
+cable inventory at theta0. Zero preload gives zero spring force/tension at
+contraction; opening compresses the coil. The editable rod is130mm so its eye
+clears the unloaded120mm coil. Automatic k matches torque magnitude, not
+gravity equilibrium. Missing neutral markers in saved profiles retain the
+archived straight phase and saved preload; current sessions migrate only the
+requested phase/preload and old demo rod. Older sections describe superseded
+routing/reference dimensions. Both solvers/native rendering use the same phase.

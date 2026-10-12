@@ -6,7 +6,9 @@ clarifications in this task: one cap/one loaded rope, actual±5°attachment poin
 two small rollers near the knee, and bellcrank spring mount 50 mm from J1.
 The later clarification replaces the initial outside-wrap prototype with central
 feeds and outward flare. The latest clarification requires knee-rim wrap and
-supersedes the earlier no-wrap interpretation.
+supersedes the earlier no-wrap interpretation. The subsequent correction puts
+the attachments on the cylinder-facing side at full contraction, with zero
+preload and zero spring force in that pose.
 
 ## Three pulleys, one compression cap
 
@@ -20,9 +22,9 @@ design; the earlier single-rope mechanism still has no added piston idler.
 Demo dimensions: 273 mm links, 50 mm lower extension, 200 mm wheel radius,
 30 mm knee attachment radius, 10 mm rollers, centres 60 mm before the knee and
 ±10.1 mm to either side. The ideal gap is 0.2 mm; rope eyes are ±0.02 mm from the cylinder
-centreline. The rod-eye reference is 100 mm from J1, rod length 120 mm, physical
-coil free length 120 mm and preload compression 10 mm. The schematic housing
-extends 20 mm past J1 at its reference cap position; mounting fit is unverified.
+centreline. The rod-eye reference is 100 mm from J1, rod length 130 mm, physical
+coil free length 120 mm and preload compression 0 mm. The schematic housing
+extends 30 mm past J1 at its reference cap position; mounting fit is unverified.
 All dimensions are editable demo inputs. Wrapping increases cable travel; the
 30 mm drum fits the existing 120 mm coil and rod-eye mount. A 40 mm drum with
 those dimensions exhausts cap travel and is rejected rather than clipped.
@@ -30,7 +32,11 @@ The gap input keeps its value when roller radius changes.
 Current session migration updates the requested roller/pose settings while
 retaining link, wheel, mass and input settings; saved records are unchanged.
 
-For knee opening `phi=2theta`, face attachments rotate at `phi±delta`.
+For knee opening `phi=2theta`, current face attachments rotate at
+`phi+pi±delta`. At full contraction `theta=0`, r1/r2 are parallel and both
+anchors lie on the left side of the knee drum toward the cylinder. No automatic
+anchor switching or relocation occurs during a run; they rotate rigidly with r2.
+The reference cable inventories are measured in this folded pose.
 Geometry evaluates straight paths only when they clear the knee circle,
 plus tangent/arc paths over the small rollers and around the knee drum.
 Common circle tangents join roller exit to knee contact; the remaining rim
@@ -43,12 +49,12 @@ Axle/groove/rope-crossing clearance, friction, stretch and winding history are
 unverified. Shortest ideal routing does not model captured multi-turn winding.
 
 Let `ell_i(phi,x)` be the full cable length from the moving cap eye to its
-face anchor. Neutral inventories are measured at `phi=pi, x=0`. Each rope's
+face anchor. Current neutral inventories are measured at `phi=0, x=0`. Each rope's
 positive cap demand is solved from that inventory, then one common cap follows
 the larger demand:
 
 ```text
-ell_i(phi,x_i) = ell_i(pi,0)  [solve when positive take-up is needed]
+ell_i(phi,x_i) = ell_i(0,0)  [solve when positive take-up is needed]
 x = max(0, x_red, x_blue)
 z = preload + x; coil_length = free_length - z
 U = 0.5*k*z^2
@@ -57,7 +63,7 @@ lead_cosine = incoming cable direction dot cylinder axis
 dx_i/dtheta = 2*(partial ell_i / partial phi)/lead_cosine
 T_active = F_cap/lead_cosine; T_other = 0
 Q_theta = -F_cap*dx/dtheta
-slack_i = ell_i(pi,0) - ell_i(phi,x)
+slack_i = ell_i(0,0) - ell_i(phi,x)
 ```
 
 While wrapping, `partial ell_i / partial phi = ±R`; rim arcs contribute real
@@ -114,9 +120,21 @@ gets `+tau` in world counterclockwise coordinates. Demo input is100Nm with
 inputs, not motor ratings. Default cap damping is zero. Release can rebound,
 fly briefly or rotate further; the recording does not freeze at a target pose.
 
-Automatic spring rate balances the chosen normal ground ride pose (45deg demo)
-using distributed link and corner weight; it does not guarantee global stability.
-Default rates are about 10848.29 N/m dual-rope and 5116.73 N/m bellcrank. The default
+For the folded-neutral dual ropes, opening in either direction increases cable
+demand and coil compression. The spring resists opening and attracts the leg
+toward contraction. With zero preload, full contraction gives exactly zero coil
+compression, cap force, cable tension, spring energy and spring torque. A manually
+entered preload stores internal spring force at the reference stop and forfeits
+the zero-cap-force assumption. Default rod length is130mm to keep its eye outside
+the full120mm unloaded coil; the previous120mm rod relied on10mm preload.
+
+Automatic rate for this current geometry matches the **magnitude** of the
+gravitational torque at45deg, using distributed link/corner weight. It does not
+balance gravity: in the normal pose gravity and spring both tend to close the
+leg. The UI explicitly labels this distinction; the spring cannot hold a passive
+ride height by itself. Current dual-rope k is13542.156N/m. The unchanged
+bellcrank still uses10mm preload and its existing signed gravity calibration
+(k5116.73N/m). The default
 ground flips are observed, not scripted angle trajectories. Step size must be
 refined before interpreting contact/load peaks.
 
@@ -183,3 +201,17 @@ Code: [geometry](../invertible_spring.py), [solvers](../inversion.py),
 [model tests](../test_inversion.py), [browser test](../scripts/verify_inversion_ui.cjs),
 [native test](../scripts/verify_inversion_native.py). Actual results and failed
 early checks are scoped in [validation](validation.md).
+
+## Saved-profile compatibility: folded reference correction
+
+`rope_neutral_pose=folded` is the current dual-rope default. `straight` retains
+previous anchor angles `phi±delta`, inventory at `phi=pi` and any saved preload.
+Browser/native saved-profile resolvers fill a missing marker as `straight`,
+with the historical10mm preload/120mm rod when absent. Current session settings
+without this marker migrate to folded with zero preload; the old demo120mm rod
+becomes130mm. Other parameters remain remembered. Existing saved JSON/frames
+are never rewritten. Both explicit neutral-pose variants are selectable.
+
+A0deg initial angle is accepted for fixed-J1 reference studies. A normal ground
+start at0deg places J1/wheel centre at wheel radius; an inverted floor start
+at0deg is rejected if it would put the wheel through the floor.

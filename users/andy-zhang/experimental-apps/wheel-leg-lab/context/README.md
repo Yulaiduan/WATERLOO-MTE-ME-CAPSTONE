@@ -234,3 +234,17 @@ ideal gap0.2mm and eyes±0.02mm fit the existing coil/mount and keep pull nearly
 axial. Editable knee-right ±80° stops and |θ|=45° start remain. Older central_face
 and outer_rim profiles/frames stay reproducible. The latest invertible model
 and validation record supersede the earlier no-wrap and wider-gap descriptions.
+
+## Latest correction: unloaded full contraction,2026-10-11
+
+User moved the knee cable anchors to the cylinder-facing left side when the
+links are parallel. Current dual-rope rope_neutral_pose=folded uses
+phi+pi±delta, inventory at theta0 and zero preload: compression, cap force,
+cable tension, energy and spring torque all vanish there. Opening either way
+compresses the shared coil; it resists opening and cannot passively balance
+normal ride gravity. Automatic k is now explicitly a magnitude calibration.
+The demo rod is130mm to clear the unloaded120mm coil; bellcrank behavior stays
+unchanged. Fixed-J10deg previews are allowed, and actual Pymunk/SciPy at rest
+are tested. Saved profiles without the marker retain straight-phase behavior,
+10mm preload/120mm rod defaults, and original frames; current sessions migrate
+phase/preload and the old demo rod only. Use latest model/validation records.
