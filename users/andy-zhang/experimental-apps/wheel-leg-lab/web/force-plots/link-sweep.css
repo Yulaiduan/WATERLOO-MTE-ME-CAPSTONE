@@ -11,7 +11,7 @@
 .ls-actions { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin:16px 0; }
 .ls-actions button,.ls-winner { padding:10px 14px; border:1px solid var(--border); border-radius:6px; background:var(--background); color:var(--foreground); cursor:pointer; font:inherit; }
 .ls-actions button:first-child { background:#2168ae; color:white; }
-.ls-winners { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; }
+.ls-winners { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
 .ls-winner { text-align:left; line-height:1.7; }
 .ls-winner strong { display:block; }
 .ls-plots { display:grid; grid-template-columns:1fr 1fr; gap:14px; }

@@ -2164,3 +2164,43 @@ Motion Lab at 127.0.0.1:4186 and Atlas/workbench at 127.0.0.1:4175 remain runnin
 Continue from the 200 mm radius/400 mm diameter/200 mm lift sizing tool with editable degree/mm buffers and ROM, preserve IMPOSSIBLE dual-rope and undamped position-input decisions, and read the updated laptop/app validation context before the next development request.
 
 ---
+
+## Entry: 2026-10-12 — Andy Zhang — wheel-centre angles and individual torque curves
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab wheel/link analytical sizing study.
+- **Associated Issue/Task:** User requested upward angles from wheel-centre horizontal, individual profile torque curves, peak/ranking explanation and a torque-versus-travel metric; user clarified the existing equal-link 2:1 hip-to-knee guide.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/link-sizing.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_link_sweep.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/link-sweep.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/link-sweep-model.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/link-sweep.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/force-plots/link-sweep.css`
+- **API/Interface Changes:** App-local theta display points upward from wheel-centre horizontal, complementary to retained internal q. Wheel-centre horizontal references/arcs, table/cards/hover angles and explicit link/actuator ROM preserve existing geometry and buffer conversions. Individual curves compare each length's best window, top30 or distinct winners; selected profile highlighted/clickable, large plots explicitly disclose300 evenly spaced samples. Add ideal work, actuator ROM and usable-lift/RMS torque metrics, fourth lift ranking and named CSV columns. v1 config remains compatible with old inputs; new lift objective requires updated calculator. Direct hip actuator torque remains2FLcos(theta), relative knee FLcos(theta), with twice knee angular motion and equal work; no unspecified extra gearing is invented. Fix diagram radius padding so wheels are not clipped. No shared interfaces/assets/dependencies/rules, native/dynamic models or rejected dual-rope decisions change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** npm test passes72cases; new independent geometry/endpoints/virtual-work, exact feasibility/peak and lift/RMS ranking checks pass. Existing sizing browser suite passes upward theta/reference origins/arcs,97individual default curves, curve selection, top30/winners, disclosed300-profile sampling, fourth objective, coordinates/averages, conversions/ROM, clearance, JSON/CSV, refresh/study memory, Plotly zoom/dark and360pxlayout with no errors/external requests. Existing verify-force-plots.cjs passes original force/Jacobian/control/animation/UI suite. npm run build and JS syntax pass. Actual app-root Stop/Start Motion Lab.cmd restart and reuse from unrelated working directory verifies updated source and health at original4186. Angle/curve captures were visually inspected; ignored raw exports/screenshots stay local. Markdown links/fences, diff hygiene and fetched-base working/require-passed/scoped/staged checks use installedPython3.13 and normal hooks before publication. Source/default200mmradius/400mmdiameter/200mmlift and dynamic model decisions remain unchanged.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member analytical workspace. First browser rerun caught an outdated text assertion for custom35degreeROM after the UI explicitly separated link/actuator ROM; the assertion now checks both values and the full suite passes unchanged tolerances/timeouts. Visual QA found the end wheel clipped at the SVG top; radius padding fixes the retained geometry display. Lift/RMS is a dimensionful travel/torque score, not energy efficiency; both hip/knee do20J in the100N/200mm demo despite different torque/speed. Python/native/whole-robot/hardware/GPU/MATLAB are unchanged and not rerun for this analytical update.
+
+## 4. Compute Saving Handoff State
+
+Sizing angles now point upward from wheel-centre horizontal, with individual profile torque curves and a lift/RMS ranking at the same4186route.
+The current demo still selects120mmlinks for minimum peak/mean/RMS, with hip23.91652Nmpeak and19.96664NmRMS, half knee torque and twice knee angular ROM by virtual work.
+Continue from docs/link-sizing.md with real load, spring, motor-speed/duty and clearance constraints, preserve rejected dual-rope/undamped position-input models, and refresh or restart with Start Motion Lab.cmd.
+
+---

@@ -18,7 +18,10 @@ and working-angle windows for a specified wheel diameter/radius, usable lift,
 extension/compression buffers and chassis air gap. Start at 200 mm radius / 400 mm
 diameter; edit either. Buffers and custom ROM accept mm or degrees and convert at
 an entered link length. Compare minimum peak/average torque and torque flatness,
-inspect individual lengths, and export CSV/config JSON. Open Miscellaneous →
+inspect individual lengths, compare individual profile torque curves, and export
+CSV/config JSON. Angles point upward from the horizontal through the wheel
+centre. A lift/RMS-torque score compares usable travel against torque demand;
+it is not energy efficiency. Open Miscellaneous →
 Wheel / link sizing, torque & travel, or http://127.0.0.1:4186/force-plots/.
 This is a constant-net-load analytical screen; preload geometry is reserved,
 while actual spring assistance, dynamics and hardware clearance remain separate.

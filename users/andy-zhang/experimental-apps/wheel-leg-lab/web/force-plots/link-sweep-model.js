@@ -25,7 +25,7 @@ export function validate(c) {
   if (!c.nominal && c.rom.value <= 0) throw Error('ROM must be greater than zero.');
   if (typeof c.nominal !== 'boolean') throw Error('Nominal ROM must be true or false.');
   if (c.minLink > c.maxLink) throw Error('Minimum link must not exceed maximum link.');
-  if (!['hip','knee'].includes(c.shaft) || !['travel','angle'].includes(c.weighting) || !['peak','mean','flat'].includes(c.objective))
+  if (!['hip','knee'].includes(c.shaft) || !['travel','angle'].includes(c.weighting) || !['peak','mean','flat','lift'].includes(c.objective))
     throw Error('Unknown torque coordinate, averaging method or ranking objective.');
   if ((Math.floor((c.maxLink-c.minLink)/c.linkStep)+2)*(Math.ceil(90/c.angleStep)+2)>150000)
     throw Error('Sweep exceeds 150,000 possible candidates. Increase the link or angle step.');
@@ -92,11 +92,25 @@ export function metrics(c,L,a,b) {
     travel,startMM:2*L-height(L,a),endMM:height(L,b),
     groundGap:height(L,b)+c.diameter/2-c.chassisDepth,
     min:scale*Math.sin(a),peak:scale*Math.sin(b),mean,rms,cv:sd/mean,
-    peakMean:scale*Math.sin(b)/mean,ratio:L/c.diameter};
+    peakMean:scale*Math.sin(b)/mean,ratio:L/c.diameter,
+    liftPerRms:travel/rms,workJ:c.load*travel/1000,
+    actuatorROMDeg:deg(span)*(c.shaft==='knee'?2:1)};
+}
+
+// Equal vertical-travel samples; theta points upward from wheel-centre horizontal.
+export function torqueCurve(c,row,samples=101) {
+  if (!Number.isInteger(samples)||samples<2||samples>1001) throw Error('Use 2–1001 curve samples.');
+  return Array.from({length:samples},(_,i)=>{
+    const lift=row.travel*i/(samples-1),h=height(row.link,rad(row.startDeg))-lift;
+    const theta=Math.asin(Math.max(0,Math.min(1,h/(2*row.link))));
+    const hipTorque=2*c.load*row.link/1000*Math.cos(theta);
+    return {lift,thetaDeg:deg(theta),heightMM:h,hipTorque,kneeTorque:hipTorque/2,
+      torque:c.shaft==='hip'?hipTorque:hipTorque/2};
+  });
 }
 
 export function compare(c,a,b) {
-  const score=x=>c.objective==='flat'?x.cv:x[c.objective];
+  const score=x=>c.objective==='flat'?x.cv:c.objective==='lift'?-x.liftPerRms:x[c.objective];
   return score(a)-score(b) || a.peak-b.peak || a.link-b.link || a.startDeg-b.startDeg;
 }
 

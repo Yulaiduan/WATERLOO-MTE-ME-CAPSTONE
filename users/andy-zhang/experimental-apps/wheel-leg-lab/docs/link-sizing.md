@@ -17,16 +17,19 @@ are editable and synchronized. Selecting diameter 200 mm produces radius and
 nominal lift 100 mm. Nominal usable lift is radius; uncheck it to enter custom
 ROM in mm or degrees. The tool shows diameter and radius explicitly.
 
-Each link has length L. Fold q is from downward vertical: q=0 is full extension,
-q=90° is full compression. The existing force page uses theta from horizontal,
-so theta=90°−q. Wheel motion remains vertical under the ideal equal-link 2:1 guide.
-Hip-to-hub downward height h(q)=2L cos(q), and upward wheel lift is h(start)−h(end).
+Each link has length L. The displayed angle theta is measured upward from the
+horizontal through the wheel centre toward the knee: theta=0 is folded flat,
+theta=90° is upright. It decreases during upward wheel lift. Diagrams draw a
+horizontal reference and upward angle arc at the wheel centre; table/cards and
+plot hovers use the same convention. Height is h=2L sin(theta), and upward wheel
+lift is h(start)−h(end). The retained internal fold coordinate q=90°−theta runs
+from downward vertical; existing q fields in CSV/config metrics remain compatible.
 
 - Start buffer is a **minimum** travel reserve from full extension. In mm it is
-  2L−h(start); in degrees it is q(start). This reserves geometry for preload;
+  2L−h(start); in degrees it is 90°−theta(start). This reserves geometry for preload;
   it does not calculate coil extension, stiffness, force or preload energy.
 - End buffer is a **minimum** reserve from full compression. In mm it is h(end);
-  in degrees it is 90°−q(end). It is not itself the ground gap.
+  in degrees it is theta(end). It is not itself the ground gap.
 - Chassis depth is the underside's distance below the hip. Flat-ground gap is
   h(end)+wheel radius−chassis depth. Minimum air gap provides an independent
   constraint; the stricter of the end buffer and this clearance bound applies.
@@ -60,9 +63,13 @@ Neither buffer travel nor surplus travel enters the usable-stroke statistics.
 
 ## Torque and objectives
 
-Constant net vertical load F gives hip-equivalent magnitude tau=2FL sin(q), with
-L in metres. Relative-knee motion is twice the hip fold, so its torque is half:
-tauKnee=FL sin(q). This agrees with the existing linkage vertical Jacobian and
+Constant net vertical load F gives direct hip-actuator magnitude
+tauHip=2FL cos(theta)=2FL sin(q), with L in metres. Relative-knee motion is twice
+the hip link angle, so tauKnee=FL cos(theta)=tauHip/2. The 2:1 guide itself does
+not halve the direct hip-actuator torque: work conservation gives
+tauHip*dtheta=tauKnee*2*dtheta. The fixed guide pulley has its own reaction
+torque; it is not the generalized actuator input. Additional motor gearing
+would need a separate declared ratio/efficiency. This agrees with the existing linkage vertical Jacobian and
 the [Jacobian-transpose / virtual-work force mapping in Modern Robotics](https://modernrobotics.northwestern.edu/nu-gm-book-resource/5-2-statics-of-open-chains/).
 No drivetrain reduction or efficiency is applied. F excludes distributed link
 weight and spring assistance unless the user incorporates them into a constant
@@ -87,8 +94,9 @@ Uniform-travel weighting corresponds to constant vertical speed; uniform-angle
 weighting corresponds to constant fold speed. They are only time averages under
 those specific motion assumptions. Peak does not depend on averaging choice.
 
-Rank by lowest peak, lowest mean, or lowest CV for torque flatness. Winner cards
-show all three objectives for the same feasible population. The length chart
+Rank by lowest peak, lowest mean, lowest CV for torque flatness, or highest
+usable lift / RMS torque. Winner cards show all four objectives for the same
+feasible population. The length chart
 shows the selected objective's best angle window at each feasible length; the
 tradeoff chart compares its peak and CV. The table shows the best 30 windows,
 and CSV contains all feasible windows. Click a row, card or plotted length to
@@ -96,16 +104,66 @@ inspect geometry/torque. Stale results are dimmed and export is disabled until
 Run. JSON carries the versioned configuration and selected metrics and loads
 through the calculator's own control; it is not a solver profile/run.
 
+## Individual curves and travel-versus-torque score
+
+The comparison plot draws the actual torque-versus-usable-lift curve of each
+profile, rather than connecting aggregate statistics. By default it shows the
+best window at every feasible link length (97 at the starting settings).
+Choose the top 30 ranked windows or distinct objective winners for a smaller
+comparison. The selected profile is highlighted and always included; clicking
+a curve selects its geometry. Above 300 profiles, the length view explicitly
+discloses 300 evenly spaced samples, plus the selection if needed, for rendering
+performance. Hover values and the separate selected curve use theta from the
+wheel-centre horizontal. Changing comparison view does not invalidate the sweep.
+
+The additional score is `liftPerRms = usable_lift_mm / RMS_torque_Nm`, with
+mm/(N m) units; higher is better for this dimensionful travel/torque comparison.
+Compare the same load, actuator coordinate and motion weighting. At fixed
+usable lift it is exactly equivalent to minimizing RMS torque. It does not
+measure transmission or electrical energy efficiency, nor penalize motor speed.
+The selected readout also shows actuator angular ROM and ideal work
+`workJ = F * usable_lift_mm / 1000`. Relative-knee motion is doubled while its
+torque is halved, so both actuator locations do the same work.
+
+Mean describes typical demand under the selected weighting. Peak is the
+largest instantaneous torque over the usable window; lower peak minimizes the
+required maximum output in this static screen. RMS weights high torque more
+strongly and is a better copper-heating proxy than mean for the same motor and
+gearing when its time weighting is appropriate: current is proportional to
+motor torque and winding losses scale as current squared. See
+[maxon's motor heating explanation](https://support.maxongroup.com/hc/en-us/articles/360004427413-On-the-heating-of-motors-in-hand-held-tools).
+The actual trajectory, duty cycle, speed losses, motor limits and spring loads
+are still needed for thermal sizing. CV measures relative variation only.
+
+Rank 1 is the best of all feasible sampled windows for the selected score:
+lowest peak, lowest selected-weight mean, lowest CV, or highest lift/RMS.
+Ties use lower peak, then shorter link, then smaller internal starting q.
+With the starting mm reserves/clearance, `2L >= 20 + 200 + 20 = 240 mm`, so
+the minimum feasible link is 120 mm. At each length the lowest-peak window uses
+the earliest allowed start, leaving `hEnd=2L-20-200`. Its peak is
+`2F * sqrt(L^2-(hEnd/2)^2)` with all lengths in metres; this increases with L
+under those fixed mm settings. Thus 120 mm is the sampled minimum-peak winner.
+Changing reserves, clearance, angular ROM or load assumptions can change this
+argument; it does not select hardware or a dynamic optimum.
+
+CSV appends named lift/RMS, work and actuator-ROM fields; prior q/theta and
+torque columns remain present. Config JSON retains v1 and unchanged buffer/ROM
+semantics; old configurations load and recalculate new metrics. The new `lift`
+ranking value requires this version of the calculator.
+
 ## Initial sampled result and limits
 
 At the initial demo settings and uniform-travel hip torque, 2,586 windows across
 97 lengths are feasible. Both peak and mean objectives pick 120 mm links,
-q=23.5565°–85.2198°, 200 mm lift, 20 mm actual reserves and 20 mm end ground gap.
+theta=66.4435°→4.7802°, 200 mm lift, 20 mm actual reserves and 20 mm end ground gap.
 Mean torque is 19.5773 N m; peak 23.9165 N m; RMS 19.9666 N m; CV 20.0431%.
 Flatness chooses the 600 mm search boundary, q=79.4360°–89.0450°; mean 119.2573,
 peak 119.9833 N m and CV 0.4990%. It uses a much larger actual start reserve.
 This demonstrates the magnitude/flatness tradeoff, not a recommended hardware
 length. Expand/refine the search when a winner lies at a length boundary.
+Lift/RMS is approximately 10.0167 mm/(N m) at 120 mm with hip torque; switching
+to knee torque doubles the numerical score without improving energy efficiency.
+Every 200 mm / 100 N case does the same ideal 20 J lifting work.
 
 No measured spring law, link weight, acceleration, impacts, strength, motor
 speed, tire deformation, slope or 3D collision is included. Full extension is

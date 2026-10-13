@@ -4,7 +4,7 @@
  */
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {defaultSweep,rad,deg,height,limits,convert,metrics,sweep} from '../web/force-plots/link-sweep-model.js';
+import {defaultSweep,rad,deg,height,limits,convert,metrics,sweep,torqueCurve} from '../web/force-plots/link-sweep-model.js';
 import {defaultConfig,pose} from '../src/linkage/model.js';
 const near=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<tol,`${a} != ${b}`);
 test('Torque matches existing linkage Jacobian and work over angle',()=>{
@@ -82,4 +82,42 @@ test('Impossible / malformed sweeps fail clearly without nonfinite results',()=>
   for(const patch of [{load:NaN},{minLink:0},{airGap:-1},{angleStep:.000001},{shaft:'unknown'},
     {start:{value:90,unit:'deg'}},{nominal:false,rom:{value:0,unit:'mm'}}])assert.throws(()=>sweep({...defaultSweep(),...patch}));
   near(deg(rad(45)),45);
+});
+
+test('Wheel-centre upward angle curves preserve geometry, endpoints and actuator work',()=>{
+  const c=defaultSweep(),r=sweep(c).best,points=torqueCurve(c,r,1001);
+  near(points[0].thetaDeg,r.thetaStartDeg);near(points.at(-1).thetaDeg,r.thetaEndDeg);
+  near(points[0].torque,r.min);near(points.at(-1).torque,r.peak);
+  let hipWork=0,kneeWork=0;
+  points.forEach((p,i)=>{
+    const theta=rad(p.thetaDeg),x=r.link*Math.cos(theta),y=r.link*Math.sin(theta);
+    near(deg(Math.atan2(y,x)),p.thetaDeg);near(2*y,p.heightMM);
+    near(p.hipTorque,2*p.kneeTorque);
+    if(i){
+      const prev=points[i-1],angle=rad(prev.thetaDeg-p.thetaDeg);
+      assert.ok(p.lift>prev.lift&&p.thetaDeg<prev.thetaDeg&&p.torque>prev.torque);
+      hipWork+=(prev.hipTorque+p.hipTorque)/2*angle;
+      kneeWork+=(prev.kneeTorque+p.kneeTorque)/2*(2*angle);
+    }
+  });
+  near(hipWork,c.load*r.travel/1000,1e-5);near(kneeWork,hipWork);
+  const k=sweep({...c,shaft:'knee'}).best,kpoints=torqueCurve({...c,shaft:'knee'},k);
+  near(k.actuatorROMDeg,2*r.actuatorROMDeg);near(kpoints.at(-1).torque,r.peak/2);
+  assert.throws(()=>torqueCurve(c,r,1));assert.throws(()=>torqueCurve(c,r,1002));
+});
+
+test('Lift per RMS ranking normalizes travel without claiming an energy saving',()=>{
+  for(const weighting of ['travel','angle'])for(const shaft of ['hip','knee']){
+    const c={...defaultSweep(),weighting,shaft,objective:'lift'},s=sweep(c);
+    near(s.best.liftPerRms,Math.max(...s.rows.map(r=>r.travel/r.rms)));
+    s.rows.forEach(r=>{near(r.liftPerRms,r.travel/r.rms);near(r.workJ,20);});
+  }
+  const c=defaultSweep(),r=sweep(c).best;
+  // At these mm reserves, 2L must fit start reserve + usable lift + end reserve.
+  near(r.link,(c.start.value+r.travel+c.end.value)/2);
+  near(r.peak,2*c.load*Math.sqrt(r.link**2-(r.endMM/2)**2)/1000);
+  const angular=metrics({...c,weighting:'angle'},r.link,rad(r.startDeg),rad(r.endDeg));
+  near(angular.mean*rad(angular.actuatorROMDeg),angular.workJ);
+  const knee=sweep({...c,shaft:'knee'}).best;
+  near(knee.liftPerRms,2*r.liftPerRms);near(knee.workJ,r.workJ);
 });

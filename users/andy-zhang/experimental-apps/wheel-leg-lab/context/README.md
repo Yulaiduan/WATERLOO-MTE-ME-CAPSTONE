@@ -4,6 +4,17 @@ Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, imported against r
 
 ## Link sizing / torque sweep, 2026-10-12
 
+The sizing display now uses theta upward from wheel-centre horizontal (0° flat,
+90° upright), with per-pose horizontal rays and angle arcs. Individual torque
+curves compare each length's best window, top 30 profiles or objective winners;
+clicking a curve selects it. The new lift/RMS score ranks usable travel per
+torque demand, with ideal work and actuator ROM shown separately. The 2:1 guide
+makes relative knee motion twice hip motion, so direct hip actuator torque is
+twice relative-knee torque; fixed guide reactions are a different quantity.
+Internal q, existing conversions/config JSON, position input and rejected
+dual-rope status are preserved. See [link sizing](../docs/link-sizing.md) and
+[validation](../docs/validation.md) for formulas, metric limitations and checks.
+
 Actual Windows laptop reconstruction from `c6a79b5` is now verified with installed
 Python 3.13.12 and Node 22.23.3 / npm 10.9.9. Setup Motion Lab.cmd rebuilt its
 own dependencies/assets; the real app-root Start/Stop Motion Lab.cmd pass
@@ -17,7 +28,7 @@ It starts with the existing 200mm radius (400mm diameter), nominal200mm lift,
 editable demo20mm start/end reserves and air gap,200mm chassis depth and100N
 constant net load. Diameter/radius are distinct synchronized inputs. Custom ROM
 and both buffers convert degrees/mm at a reference link; units stay fixed while
-sweeping. Fold q is from downward vertical, theta=90deg−q for the old calculator.
+sweeping. Internal fold q is from downward vertical; displayed theta=90deg−q.
 Peak/mean/CV objectives are separate, averages explicitly use uniform travel or
 angle, and torque can be hip-equivalent or half-sized relative-knee. No actual
 spring law/preload/assistance or dynamic optimization is inferred. Original force

@@ -844,3 +844,43 @@ ROM; dual-rope IMPOSSIBLE status and historical rollback/source are preserved.
 Visible native windows, MATLAB, hardware, GPU, canonical robot physics and
 other operating systems are unverified by this setup. Canonical physics is not
 applicable to the isolated workspace contribution.
+
+## Wheel-centre angles, profile curves and lift/RMS, 2026-10-12
+
+At base `7cfacbf`, the sizing UI changes its displayed coordinate to theta
+upward from wheel-centre horizontal, while retaining internal q and the same
+geometry/conversion/search equations. New individual torque curves, click
+selection and a fourth lift/RMS ranking use the same static load model.
+
+All **72 JavaScript tests** pass. The two new analytical cases independently
+check wheel-centre vector angles/height, curve endpoints, monotonic lift/angle/
+torque, equal hip/knee work integrated along their different angular strokes,
+the exact 120 mm feasibility/peak boundary, lift/RMS rankings in both weighting
+and torque coordinates, and unchanged ideal work. Hip torque remains twice
+relative-knee torque; 2:1 guide motion is not an additional motor reduction.
+
+`node scripts/verify_link_sweep.cjs` passes both standalone and embedded UI,
+wheel-centre reference origins/arcs and complementary angle readouts, all 97
+initial profile curves, clicking a curve, winner/top-30 comparisons, explicitly
+disclosed sampling above 300 curves, the lift/RMS objective, unit/ROM controls,
+clearance, JSON/CSV, refresh/study memory, Plotly zoom/theme and 360px layout.
+Existing `verify-force-plots.cjs` passes its original analytical/UI suite.
+No page errors or external asset requests occur. The initial sizing browser
+rerun caught an obsolete `(35.00°)` text assertion after the readout gained
+separate link/actuator ROM labels; it now checks both explicit 35-degree values
+and the complete suite passes. No physics tolerance or timeout was relaxed.
+
+Build and JavaScript syntax checks pass. Actual app-root CMD stop/start/reuse
+from outside the app directory verifies the updated source at 127.0.0.1:4186.
+Angle and curve screenshots were inspected; the end wheel's previously clipped
+top edge is corrected by reserving its radius in the diagram layout. Raw QA
+captures/exports remain ignored under artifacts/link-sweep. The main UI remains
+running locally; refresh the sizing page to load the updated module.
+
+Default 100 N / 200 mm case: 120 mm links, theta66.44354→4.78019 degrees, hip
+peak23.91652 / mean19.57728 / RMS19.96664 N m, lift/RMS10.01671 mm/(N m),
+hip ROM61.66334 degrees. Knee values are half the torque, twice the ROM and
+twice the numerical lift/RMS score; both do20 J ideal work. The score compares
+travel with torque demand, not energy efficiency or hardware thermal suitability.
+Python/native/dynamic solvers are unchanged and not rerun; canonical robot
+physics is not applicable to this isolated analytical app contribution.
