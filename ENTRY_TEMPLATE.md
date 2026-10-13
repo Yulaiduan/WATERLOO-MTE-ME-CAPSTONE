@@ -2204,3 +2204,40 @@ The current demo still selects120mmlinks for minimum peak/mean/RMS, with hip23.9
 Continue from docs/link-sizing.md with real load, spring, motor-speed/duty and clearance constraints, preserve rejected dual-rope/undamped position-input models, and refresh or restart with Start Motion Lab.cmd.
 
 ---
+
+## Entry: 2026-10-13 — Jonathan Xie — General VSL Solver v1 kinematics
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan Xie's isolated leg-solver member app.
+- **Associated Issue/Task:** User requested a self-contained interactive HTML solver in the member experimental-apps folder, with tunable geometry/belt ratios, motion, plots and wheel rotation for a locked drive input. User explicitly confirmed three open belts, b attached to tibia, independent d/e and proximal link angle vectors. Work is saved locally; no hosting, commit or push requested.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v1-kinematics.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-kinematics.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver.cmd`
+- **API/Interface Changes:** New dependency-free, browser-local standalone HTML; all solver/style/UI code embedded. Positive pitch radii/mm and degree inputs; driven ratio/dimension triplets and swaps; angle sliders; animated exact open-belt tangent/wrap geometry with material dots, wheel and dotted foot path; all live angles and local/global displacement/stroke; full-domain angle/displacement plots with working-range boundaries, hover and series toggles. Derived locked-input coefficient K = 1 - q_ab + q_ef(q_ab - q_cd); signed endpoint strokes distinguished from sampled interior extrema. JSON general-vsl/v1-kinematics parameter import/export and metadata-bearing sweep CSV. Windows launcher opens the adjacent static HTML without a server. No shared assets, interfaces, dependencies, runtime or agent rules changed.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** node verify-kinematics.cjs passes 3,838 assertions, both embedded script syntaxes, independent closed-form geometry, three carrier constraints over 60 ratio combinations, finite-difference sensitivities, frame/length invariants, zero-spin degeneracies, exact belt lengths, boundary continuity and rigid surface material velocities on both wraps. Actual in-app browser static-HTTP preview verifies SVG/plots, all four triplet driven dimensions, exact one-selection behavior, swap, decimal key-by-key typing, angle sliders/manual inputs, invalid/reversed/zero-width ranges, overlap notice, wheel spin/cancellation, displacement reference resets, pause/play and scrubbing. CSV/JSON downloads and JSON reimport pass; CSV has 901 finite demo rows, exact extension zeros and 435.593224745812 mm endpoint travel. Screenshot inspected, no browser warnings/errors. Decimal typing and coincident axis-label issues found in browser QA are fixed. Both repository structure/handoff checks (including --require-passed) pass with 524 files, 7 changed paths and workspace scope; the scoped gate reports physics NOT APPLICABLE; git diff --check and six app Markdown links pass. Initial checks exposed clone CRLF conversion: normalize index-LF text checkouts/log to LF and local core.autocrlf=false, preserving all text and the full prior Git log prefix. Final Git diff remains only seven intended paths; no enforcement or canonical source change. Canonical physics is not applicable.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member analytical app. Direct file-URL navigation is blocked by the browser tool's HTTP/HTTPS-only policy; no bypass was attempted. Offline file opening and the .cmd launcher are not claimed as browser-verified; static HTTP checks exercised the identical standalone HTML with no network dependencies. Mobile layout, hardware, manufacturing teeth/wrap, spring/forces/torques, collisions and wheel/ground rolling remain unverified. Envelopes/graphs use finite sampling and disclose that limit. Other members' work is preserved.
+
+## 4. Compute Saving Handoff State
+
+General VSL Solver v1 is saved locally in the requested member app folder, with standalone HTML, model notes, Windows file launcher and numerical checks.
+The confirmed proximal angle convention reproduces the downward 2:1 straight path; locked-input wheel spin depends on K, while signed h values and sampled interior envelopes remain distinct.
+Open v1-kinematics.html manually in a browser, save parameter JSON for studies, preserve v1 when adding kinetics and confirm forces/spring/actuator coordinates before deriving the next version.
+
+---
