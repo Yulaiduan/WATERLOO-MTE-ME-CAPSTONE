@@ -4,6 +4,14 @@ Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, imported against r
 
 ## Link sizing / torque sweep, 2026-10-12
 
+Actual Windows laptop reconstruction from `c6a79b5` is now verified with installed
+Python 3.13.12 and Node 22.23.3 / npm 10.9.9. Setup Motion Lab.cmd rebuilt its
+own dependencies/assets; the real app-root Start/Stop Motion Lab.cmd pass
+start, scoped stop, restart and reuse at 4186. See the
+[laptop setup record](../../laptop-handoff.md#actual-laptop-setup-2026-10-12) and
+[validation](../docs/validation.md) for actual checks and limitations. Continue
+from the sizing state below; no mechanics or stored model decisions changed.
+
 The force calculator at /force-plots/ now includes [link sizing](../docs/link-sizing.md).
 It starts with the existing 200mm radius (400mm diameter), nominal200mm lift,
 editable demo20mm start/end reserves and air gap,200mm chassis depth and100N

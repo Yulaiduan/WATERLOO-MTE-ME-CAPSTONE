@@ -2121,3 +2121,46 @@ Fresh clone/build/dependencies,119JavaScript tests,668original and21supplemental
 On the laptop pullmain and read experimental-apps/context.md then laptop-handoff.md,keep current200mm-radius sizing and rejecteddual-rope status,preserve shared records,import any wantedbrowserJSON,and publish future validated changes through the existing scoped protocol.
 
 ---
+
+## Entry: 2026-10-12 — Andy Zhang — actual laptop development environment
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's Motion Lab and Terrain Atlas member workspaces.
+- **Associated Issue/Task:** Reconstruct the complete development environment on the owner's laptop, verify original localhost routes and restart, preserve current sizing/model decisions, and publish validated setup context to main.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/laptop-handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/context/README.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/docs/VALIDATION.md`
+- **API/Interface Changes:** None. Record actual laptop reconstruction and continuation in existing app context/history. Correct stale Atlas context to Start/Stop Terrain Atlas.cmd and stale current replacement-suspension prose to damping zero. Existing source/defaults, manifests/lockfiles, launcher contracts, rejected dual-rope IMPOSSIBLE status, rollback, position input and 200 mm radius / 400 mm diameter / 200 mm lift sizing remain unchanged. Installed runtimes, venv, node_modules, generated assets, process state/logs and raw QA exports stay local; no machine-specific paths, copied PC environment or boot automation enter Git. Existing repository hooks are installed locally, with persistent supported CAMEL_PYTHON override selecting installed Python 3.13.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Empty laptop Capstone directory receives non-shallow full clone at c6a79b5 (41 commits), main tracking origin/main; git fsck --full passes. Windows 11 Home x64 detected. Signed official Python 3.13.12 installer succeeds; official Node 22.23.3 Windows ZIP SHA-256 matches release manifest; npm 10.9.9 and fresh Windows CMD runtime resolution verified. Setup Motion Lab.cmd installs pinned Python packages, npm ci and both local builds pass, pip check passes, Motion Lab 70 plus Atlas 49 JavaScript tests pass, both npm installs report zero audit vulnerabilities. Motion browser sizing/force/portable/unified suites pass; Atlas verify_import.cjs passes controls, measured-USGS worker run, finite plots, mobile workbench and linkage route; desktop map capture confirms outlines/cells with no page errors. Native debugger headless check steps Pymunk and renders three shapes/six constraints. Both real app-local CMD start/scoped-stop/restart/reuse workflows pass at original 4186/4175 from outside app directories; listener disappearance and laptop-root/server identity verified. Markdown local links/fences and diff hygiene pass. Fetched-base working/require-passed/scoped/staged publication checks use normal hooks and installed Python; detailed app test evidence stays with each app.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member setup/context contribution. The first unified browser check timed out waiting for a mathematical recording while restart verification overlapped it; the stable-server rerun passes unchanged, without relaxed assertions/timeouts. PowerShell's bare python can resolve an existing Cygwin extensionless file; Windows CMD resolves installed Python 3.13 and hooks use supported CAMEL_PYTHON, with explicit python.exe / py -3.13 / app venv commands documented for PowerShell. No hardware, MATLAB, visible native-window, GPU or other-OS certification is claimed; experimental numerical checks do not validate a canonical robot.
+
+The first working-tree entry check rejected Windows CRLF in the contribution log. Normalizing its working copy to repository LF preserves the entire previous log as an exact byte prefix; final checks use the existing enforcement unchanged.
+
+The next working-tree checks exposed the same fresh-clone CRLF conversion across untouched tracked text, falsely classifying shared runtime as changed and invoking the missing-canonical-robot gate. Set this clone's core.autocrlf=false and normalized only Git-index LF text files to LF, preserving contents and the exact seven-path Git diff. Enforcement, assets and shared runtime source remain unchanged; rerun the actual workspace checks rather than bypassing them.
+
+Full Motion Lab .venv/Scripts/python.exe -m unittest discover -v passes all 139 tests in 578.836 seconds, including the 108-backend-case six-second passive envelope and independent solver refinement. Minimum prescribed support is 49.65184 N in that tested envelope; these are member fixture/model checks, not real unilateral contact or hardware validation. Complete raw test logs remain ignored under .preview.
+
+## 4. Compute Saving Handoff State
+
+The laptop now has a full-history main checkout, installed Python 3.13.12 and Node 22.23.3/npm 10.9.9, separate rebuilt app dependencies and enabled repository hooks.
+Motion Lab at 127.0.0.1:4186 and Atlas/workbench at 127.0.0.1:4175 remain running locally with verified manual restart and no desktop dependency.
+Continue from the 200 mm radius/400 mm diameter/200 mm lift sizing tool with editable degree/mm buffers and ROM, preserve IMPOSSIBLE dual-rope and undamped position-input decisions, and read the updated laptop/app validation context before the next development request.
+
+---

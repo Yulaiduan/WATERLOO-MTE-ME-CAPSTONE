@@ -60,6 +60,25 @@ Root verified the completed build at [http://127.0.0.1:4173](http://127.0.0.1:41
 
 This is a targeted first-iteration review, not a formal accessibility or exhaustive cross-browser audit.
 
+## Actual Windows laptop reconstruction, 2026-10-12
+
+Source base `c6a79b5`, Windows 11 Home x64, installed Node 22.23.3 / npm 10.9.9.
+Fresh app-local `npm ci` reports zero vulnerabilities, `npm run build` emits all
+three entries, and `npm test` passes all 49 cases. Existing
+`node scripts/verify_import.cjs` passes atlas region/inspector controls, a measured
+USGS workbench worker run, finite plot paths, 390px workbench and linkage route,
+with same-origin assets and no page errors. A separate 1280px desktop capture
+was visually inspected: geographic outlines and synthetic cell fills render.
+QA captures remain ignored under `artifacts/`.
+
+Actual Start Terrain Atlas.cmd / Stop Terrain Atlas.cmd pass fresh start,
+verified scoped stop (4175 listener disappears), restart and matching-server reuse
+from outside the app folder. All three rebuilt routes are ready; Atlas remains
+running beside Motion Lab at 4186 using this laptop's paths and installed runtime.
+No source/lockfile/terrain/model changes were required. The stale context launcher
+name is corrected; earlier dated validation retains its original scope. This
+setup does not certify hardware, whole-vehicle physics, GPU or another OS.
+
 ## Limits
 
 Tests exercise known model records, not measured terrain, GIS ingest, routing, or full browser interactions. No importer exists. No empirical validation, dynamics solver, traction/sinkage estimate, rollover calculation, or actuator sizing runs here. Existing evidence assets are future inputs. Font fallback and unavailable-WebGL paths are not fully tested unless explicitly exercised.

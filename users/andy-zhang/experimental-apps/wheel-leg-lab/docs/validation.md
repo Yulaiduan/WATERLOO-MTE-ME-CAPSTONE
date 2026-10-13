@@ -799,3 +799,48 @@ assumptions. No spring-force/preload law, distributed link weight, dynamic motor
 load, actual3Dclearance, strength, hardware or canonical robot validation is
 claimed. Python/native/physics solvers are not rerun for this analytical UI change;
 canonical physics is not applicable to the isolated member workspace.
+
+## Actual Windows laptop reconstruction, 2026-10-12
+
+Source base `c6a79b5`; full-history clone on Windows 11 Home x64. Installed
+Python 3.13.12, Node 22.23.3 and npm 10.9.9 are durable per-user runtimes.
+Actual Setup Motion Lab.cmd recreated `.venv`, installed all pinned requirements,
+ran npm ci (zero vulnerabilities) and rebuilt Vite plus all seven studies.
+`pip check` reports no broken requirements; all 70 JavaScript tests pass.
+
+The full `.venv/Scripts/python.exe -m unittest discover -v` run passes **139
+tests** in 578.836 seconds, including the 108-backend-case six-second passive
+envelope, independent SciPy/Pymunk refinement, position/force ledgers, spring
+mechanisms, inversion/stop events and setup previews. Minimum prescribed support
+in that envelope is 49.65184 N. These are experimental fixture checks, not
+hardware or a canonical robot validation; legacy reproduction cases retain
+their explicit historical interpretation. The complete raw log stays ignored
+in `.preview/laptop-python-tests.log`.
+
+Existing browser suites pass: `verify_link_sweep.cjs`, `verify-force-plots.cjs`,
+`npm run test:browser` and `verify_motion_lab.cjs`. They verify sizing/defaults,
+degree/mm buffers and ROM, objectives/selection/clearance, JSON/CSV, session
+memory, original force equations, seven offline studies, mobile layouts and
+real independent SciPy/Pymunk API runs plus the library/comparison workflow.
+Native endpoints in the unified browser suite are mocked. Actual
+Open Native Pymunk Debugger.cmd --headless-check steps the live engine and
+renders three shapes/six constraints with pygame-ce 2.5.8. The sizing desktop
+and mobile captures remain ignored under artifacts/; the desktop was inspected.
+
+The first unified browser run timed out waiting for its mathematical recording
+while the restart verification overlapped it. A stable-server rerun passes the
+same suite unchanged; no timeout or assertion was relaxed.
+Actual Start/Stop Motion Lab.cmd pass fresh start, scoped stop (4186 listener
+disappears), restart and matching-server reuse from outside the app directory.
+Health identifies this laptop's app root and Pymunk 7.3.0. Motion Lab remains
+running with Atlas/workbench independently at 4175. No copied PC environment
+or remote server was used.
+
+The current architecture defaults API confirms damping zero, auxiliary off,
+knee kp/kd zero, wheel radius .2 m and prescribed position. Only stale model
+prose is corrected to match that existing architecture. Sizing remains 200 mm
+radius / 400 mm diameter / 200 mm lift with configurable degree/mm buffers and
+ROM; dual-rope IMPOSSIBLE status and historical rollback/source are preserved.
+Visible native windows, MATLAB, hardware, GPU, canonical robot physics and
+other operating systems are unverified by this setup. Canonical physics is not
+applicable to the isolated workspace contribution.

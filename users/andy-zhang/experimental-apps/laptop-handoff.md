@@ -1,8 +1,8 @@
 # Continue Capstone development on a laptop
 
 Owner: Andy Zhang with Codex. Updated: 2026-10-12.
-Status: Windows fresh-clone reconstruction checked on this host; the actual
-laptop and other operating systems remain untested. No PC service is required.
+Status: fresh-clone reconstruction and actual Windows laptop setup verified.
+Other operating systems remain untested. No PC service is required.
 Audit base: `2353a6f`; the handoff's publication is the subsequent Git commit.
 
 ## What the laptop receives
@@ -176,6 +176,61 @@ summarize the current development state, and be ready for my next change.
 ```
 
 ## Actual audit evidence
+
+### Actual laptop setup, 2026-10-12
+
+The owner's laptop is Windows 11 Home x64 (10.0.26200). An empty Capstone
+directory received a normal full-history clone at `c6a79b5`: 41 commits,
+`main` tracking `origin/main`, non-shallow history and clean `git fsck --full`.
+The existing Python 3.11 and Node 24 were preserved. Python 3.13.12 was installed
+per user from the signed Python Software Foundation Windows installer; Node
+22.23.3 / npm 10.9.9 was installed per user from the official Windows ZIP after
+checking its SHA-256 against Node's release manifest. User PATH persists these
+runtimes, and a fresh Windows CMD resolves Python 3.13.12 and Node 22.23.3.
+PowerShell can resolve an existing Cygwin extensionless `python` first; use
+`python.exe`, `py -3.13`, or the app's `.venv/Scripts/python.exe` there.
+The existing supported `CAMEL_PYTHON` user environment override selects installed
+Python 3.13 for repository hooks; `core.hooksPath` is `.githooks`.
+This clone uses `core.autocrlf=false` and tracked text is restored to its Git
+index LF format. Windows CRLF conversion otherwise makes the raw-byte workspace
+validator classify untouched shared files as changes. No enforcement change is
+needed; retain the existing contents and line-ending format on future clones.
+
+**Setup Motion Lab.cmd** recreated its venv, installed the pinned requirements,
+ran `npm ci` and rebuilt Vite plus all seven studies locally. `pip check` reports
+no broken requirements; all 70 JavaScript tests pass.
+The full Python unittest discovery also passes all 139 tests, including the
+108-backend-case six-second passive envelope and independent refinement checks.
+Sizing, original force
+calculator, portable studies and unified Motion Lab browser suites pass on the
+actual 4186 server. They cover conversions/ROM/objectives, JSON/CSV, memory,
+offline assets, mobile layout and independent SciPy/Pymunk API runs. The native
+debugger's `--headless-check` steps Pymunk and renders three shapes/six constraints.
+Actual visible native windows, MATLAB, GPU and canonical robot physics are not
+certified by this setup.
+
+Atlas's lockfile-based `npm ci`, production build and all 49 JavaScript tests
+pass. Its browser verification passes atlas controls, a measured-USGS workbench
+worker run, finite plots, mobile workbench and historical linkage route. A fresh
+desktop capture also shows the local geographic map and synthetic cells with no
+page errors. Both dependency installs report zero npm audit vulnerabilities.
+
+Actual project-local **Start/Stop Motion Lab.cmd** and **Start/Stop Terrain
+Atlas.cmd** pass fresh start, scoped stop (listener disappears), restart and
+matching-server reuse from outside the app directories. Both are left running
+on this laptop at 127.0.0.1:4186 and 127.0.0.1:4175; the workbench and linkage
+routes return the rebuilt production entries. Ignored logs/builds/environments
+and QA exports stay local. No desktop service, copied venv, boot task or browser
+data transfer was used. The first unified browser check overlapped a server
+restart and timed out; its subsequent stable-server rerun passes unchanged.
+
+Current continuation remains the 200 mm radius / 400 mm diameter / 200 mm lift
+sizing tool with configurable degree/mm buffers and ROM. Preserve separate
+peak/mean/flatness objectives, the undamped replacement suspension, position
+input, the rollback and the dual-rope design's **IMPOSSIBLE / rejected** status.
+This contribution corrects stale current launcher/damping prose only; no model,
+default, manifest or lockfile changes are made. Publication checks and the
+complete Python test result are recorded in the contribution log and app validation.
 
 A new GitHub clone at base 2353a6f (no copied app dependencies) passes both
 `npm ci` / build workflows and 70 Motion Lab plus 49 Atlas JavaScript tests.

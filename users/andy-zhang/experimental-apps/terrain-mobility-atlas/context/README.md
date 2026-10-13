@@ -1,6 +1,6 @@
 # Terrain Mobility Atlas context
 
-Owner: Andy Zhang. Updated: 2026-10-10. Imported from the former loose Capstone
+Owner: Andy Zhang. Updated: 2026-10-12. Imported from the former loose Capstone
 workspace during the owner's requested nondeleting reorganization.
 
 ## Models and boundaries
@@ -32,7 +32,9 @@ evidence and frame dumps are not required to build or start the app.
 ## Setup and checks
 
 Use installed Node.js and npm: `npm ci`, `npm test`, `npm run build` from this
-app, then Start Capstone.cmd. Original routes are `/`, `/workbench/`, `/linkage/`
+app, then Start Terrain Atlas.cmd; stop with Stop Terrain Atlas.cmd. The
+Start/Stop Capstone.cmd names are Motion Lab aliases at 4186. Original routes
+are `/`, `/workbench/`, `/linkage/`
 and `/force-plots/` at 127.0.0.1:4175. This port is shared with Wheel Leg Lab's
 optional legacy geometry launcher; only one app can own it at a time. The
 main Wheel Leg Lab port 4186 can run simultaneously.
@@ -41,3 +43,15 @@ The imported model tests, build, browser routes and restart lifecycle are
 checked during this reorganization and recorded in docs/IMPORT-2026-10-10.md.
 Historical validation records retain their dates and limitations. No canonical
 robot or hardware validation is claimed.
+
+## Actual laptop setup, 2026-10-12
+
+A full-history clone at `c6a79b5` rebuilt this app using installed Node 22.23.3
+and npm 10.9.9: npm ci/build and all 49 tests pass. The browser checks pass atlas
+controls, local map rendering, a measured-USGS workbench worker run, finite plots,
+mobile layout and the linkage route. Start/Stop Terrain Atlas.cmd pass actual
+start/scoped-stop/restart/reuse at 4175 from outside this directory; Atlas and
+Motion Lab at 4186 are left running together on the laptop. See
+[the laptop record](../../laptop-handoff.md#actual-laptop-setup-2026-10-12) and
+[validation](../docs/VALIDATION.md); generated assets/logs remain local and no
+desktop service or mechanics change is involved.

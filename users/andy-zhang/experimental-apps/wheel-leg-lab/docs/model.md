@@ -1,6 +1,6 @@
 # Model and coordinate map
 
-Author: Andy Zhang with Codex. Updated: 2026-10-10. Status: experimental models and derived equations, not selected hardware.
+Author: Andy Zhang with Codex. Updated: 2026-10-12. Status: experimental models and derived equations, not selected hardware.
 
 ## Related model layers
 
@@ -143,7 +143,8 @@ supplies no restoring ride-height stiffness, with or without damping.
 The [current replacement architecture](suspension-architecture.md) uses only
 that upper-link/chassis spring/damper. Its force sites belong to the hip/chassis
 body and upper link; no primary force acts directly on the lower extension.
-Primary damping is 100 N s/m and `aux_spring_enabled=false`. The earlier
+Primary damping is 0 N s/m (the 2026-10-11 correction) and
+`aux_spring_enabled=false`. The earlier
 hip-to-lower-tip ride strut remains an explicitly enabled optional variant;
 its energy, generalized force and actual force sites add only when enabled.
 
