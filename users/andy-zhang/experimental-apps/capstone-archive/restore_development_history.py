@@ -1,0 +1,50 @@
+"""Restore the supplemental historical development source without executing it.
+
+Run: python restore_development_history.py --output NEW_DIRECTORY
+Inputs: adjacent development-history-2026-10-12.json, byte/base64/SHA-256 records;
+no physical units or network. Outputs: exact source files under a new directory.
+Limitations: historical scratch/editing/QA helpers, not maintained runnable tools;
+never imports or executes payloads, modifies originals, or overwrites an output.
+"""
+import argparse
+import base64
+import hashlib
+import json
+from pathlib import Path, PurePosixPath
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--output', type=Path, required=True)
+    args = parser.parse_args()
+    output = args.output.resolve()
+    if output.exists():
+        raise ValueError('Output must be a new directory; no files are overwritten.')
+    source = Path(__file__).resolve().with_name('development-history-2026-10-12.json')
+    package = json.loads(source.read_text(encoding='utf-8'))
+    if package['schema'] != 'capstone-historical-source/v1':
+        raise ValueError('Unknown historical source schema.')
+    verified, names = [], set()
+    for entry in package['files']:
+        name = entry['path']
+        relative = PurePosixPath(name)
+        destination = (output / name).resolve()
+        if (relative.is_absolute() or '\\' in name or ':' in name or '..' in relative.parts
+                or not name or name in names or not destination.is_relative_to(output)):
+            raise ValueError('Unsafe or duplicate historical source path.')
+        names.add(name)
+        content = base64.b64decode(entry['base64'], validate=True)
+        if len(content) != entry['bytes'] or hashlib.sha256(content).hexdigest() != entry['sha256']:
+            raise ValueError(f'Historical source checksum mismatch: {name}')
+        verified.append((destination, content))
+    output.mkdir(parents=True)
+    for destination, content in verified:
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        with destination.open('xb') as stream:
+            stream.write(content)
+    print(f'PASS: restored {len(verified)} historical development files with exact SHA-256; '
+          'no payload code executed and no originals changed.')
+
+
+if __name__ == '__main__':
+    main()

@@ -2,6 +2,24 @@
 
 Owner: Andy Zhang. Updated: 2026-10-10. Status: historical preservation, not an active simulation.
 
+Portable continuation: [context.md](context.md) and [laptop handoff](../laptop-handoff.md).
+
+## Supplemental development history, 2026-10-12
+
+The original snapshot below is unchanged. A separate
+[development source package](development-history-2026-10-12.json) preserves
+21 later local research/editing/QA source and Markdown files (86,103 original
+bytes) that previously lived in ignored artifact/staging folders. Its base64
+records carry original repository-relative paths, sizes and SHA-256, preserving
+bytes without making historical patch helpers runnable app dependencies.
+Restore with `python restore_development_history.py --output restored/development-history`
+to a new directory. Exact restoration was checked; no archived source was
+executed and no original local files changed. Runtime caches, raw current output,
+logs and private account/chat data are excluded. Read frozen source as evidence
+and use maintained app modules/tests for development.
+
+## Original legacy snapshot
+
 The owner requested that the former loose Capstone workspace be archived locally
 and preserved under his GitHub member workspace. This package preserves **668
 source, documentation, reference, data and output files**, including the original

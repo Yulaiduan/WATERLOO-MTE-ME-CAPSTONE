@@ -2,6 +2,10 @@
 
 Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, combining **Create a rough animation** and **Optimize wheel-to-link ratio**. This member toolkit does not define or validate the team's canonical robot.
 
+For a fresh machine or development continuation, start with [context.md](context.md)
+and the [laptop handoff](../laptop-handoff.md). Existing detailed model/context and
+development records remain linked there; no PC runtime/server or copied venv is required.
+
 ## Unified browser workspace
 
 **Start Motion Lab.cmd** is the canonical launcher. Open http://127.0.0.1:4186/

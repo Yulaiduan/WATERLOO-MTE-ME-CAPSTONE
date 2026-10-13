@@ -2073,3 +2073,51 @@ Exact constant-net-load torque statistics separate minimum peak/mean from flatne
 Continue from docs/link-sizing.md and the latest validation, enter real load/chassis/spring constraints before selecting hardware, refine boundary winners, and restart with the actual app-root Start Motion Lab.cmd at127.0.0.1:4186.
 
 ---
+
+## Entry: 2026-10-12 — Andy Zhang — portable app context and laptop development handoff
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's experimental apps, development history archive and cross-machine setup.
+- **Associated Issue/Task:** User requested confirmation that Capstone apps/development history/context.md files live in member experimental-app folders, plus a prompt to pull the repository and continue development on a laptop without the PC.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/laptop-handoff.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/context.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/development-history-2026-10-12.json`
+- `users/andy-zhang/experimental-apps/capstone-archive/restore_development_history.py`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/README.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/context.md`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start-Capstone.ps1`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Stop-Capstone.ps1`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Start Terrain Atlas.cmd`
+- `users/andy-zhang/experimental-apps/terrain-mobility-atlas/Stop Terrain Atlas.cmd`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context.md`
+- **API/Interface Changes:** Add root context.md for all three actual member apps and an umbrella context/history index plus verified clone/setup/continuation prompt. Preserve original context folders,model/decision/validation/handoff records,full Git history and canonical/shared repository layout. Audit confirms apps already colocated; no source/root move or deletion needed. Add independent capstone-historical-source/v1JSON supplement with21previously ignored source/Markdown research/editing/QA files,86,103original bytes,relative paths,base64,size/SHA-256,and standard-library restore to a new directory; never execute payloads and leave original668-file archive untouched. Raw current solver output/caches/process/account data stay local; browser JSON transfer is documented separately. Atlas startup discovers installedNodeonPATH and scoped stop validates its recorded executable/PID/time/app/Vite/port. New Start/Stop Terrain Atlas.cmd wrap standalone4175helpers; familiar Capstone/ForcePlotsaCMD aliases still target Motion Lab4186. Update helper readiness/stop messages to name the correct standalone launchers. Existing state format remains compatible; no physics/model/dependency/shared asset/interface/enforcement/agent rule changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** New full GitHub clone at2353a6f reproduces all40commits; local branches have zero unpublished commits outside origin. No copied app dependencies: fresh npm ci/build succeeds for both apps,all70MotionLab and49AtlasJS tests pass; newly createdMotionLabvenv installs all pinnedPythonpackages,pipcheckreports no broken requirements,and server/physical/math/inversion modules import. Fresh-cloneMotionLab independently passes real app-local CMD start/stop/restart/stop at its supported alternate4175port and returns sizing page/identity; the existing main4186server remains untouched. Updated actual canonicalAtlasCMD passes start/scopedstop/restart/reuse from unrelatedcwd atoriginal4175withall three production-route readiness checks; its proper launcher messages are verified afterward and Atlas is left running. Original103-part archive restores668files exactly from the freshclone; four ignored large terrainPDF/CSVinputs and six historical research/export sources match archivehashes. Supplemental21files restore with exactbytes/SHA-256,match untouched localoriginals,and reject an existingdestination without overwrite. LocalCapstoneOld remains present. MarkdownURL-decoded links/fences,PythonAST,PowerShellparser and diffhygiene pass. Fetched-base working/require-passed/scoped/staged publication checks run with normal hooks and installedPython via supportedCAMEL_PYTHON. New laptop/otherOS/native/GPU/MATLAB/canonicalphysics are untested; prior verification retains its scope. Temporary clone/restored files/environments/builds remain ignored under app-local .local-data; no payloadsource executed or originaldeleted.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member workspace/context/archival contribution. An initial ad-hoc Markdown check treated existing percent-encoded space links as literal paths; URL-decoding corrected the harness and the final link check passes, with no source-link change required. A launcher review caught old stop/restart text pointing at CMD aliases that now target MotionLab; messages now name Start/Stop TerrainAtlasand lifecycle/restart is verified. Archived helper scripts are frozen historical evidence with obsolete edits/paths possible,not maintained runnable modules or new validated simulations. The public repo carries engineering context and history,not private Codex chats or automatic browser storage synchronization.
+
+The initial staged diff-hygiene check flagged Windows CRLF in the newly generated supplemental JSON container. Its container was normalized to LF and the staged diff check passes; base64 payloads and all21original source hashes are unchanged.
+
+## 4. Compute Saving Handoff State
+
+All three published Andy apps remain under users/andy-zhang/experimental-apps with context.md entry points,linked original development records and a portable laptop setup/continuation prompt.
+Fresh clone/build/dependencies,119JavaScript tests,668original and21supplemental file restorations and independent app launcher lifecycles pass here; actual laptop and otherOS validation still belong to that machine.
+On the laptop pullmain and read experimental-apps/context.md then laptop-handoff.md,keep current200mm-radius sizing and rejecteddual-rope status,preserve shared records,import any wantedbrowserJSON,and publish future validated changes through the existing scoped protocol.
+
+---

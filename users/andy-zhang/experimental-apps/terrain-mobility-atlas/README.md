@@ -2,6 +2,15 @@
 
 Owner: Andy Zhang. Imported: 2026-10-10. Status: member experimental app.
 
+Current continuation entry: [context.md](context.md) and
+[laptop handoff](../laptop-handoff.md). For the standalone atlas/workbench, run
+`npm ci` and `npm run build`, then double-click **Start Terrain Atlas.cmd**;
+**Stop Terrain Atlas.cmd** stops it. These app-local launchers use Node.js on
+PATH and preserve http://127.0.0.1:4175/. Existing dated startup notes below are
+historical: Start Capstone/Force Plots/Stop Capstone CMD names now remain Motion
+Lab aliases at 4186. The maintained standalone PowerShell helpers are wrapped
+by the new Terrain Atlas CMD names.
+
 This is the former loose Capstone app, preserved inside the GitHub member
 workspace. Normal browser command names now forward to the unified
 [Motion Lab](../wheel-leg-lab/README.md) menu at **http://127.0.0.1:4186/**.
