@@ -1,7 +1,7 @@
 # Motion Lab — portable development context
 
-Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, not canonical physics.
-Latest feature base: `2353a6f` — wheel/link sizing and torque sweep.
+Owner: Andy Zhang. Updated: 2026-10-14. Status: experimental, not canonical physics.
+Latest feature base: `93fed9f` — Jonathan v2 linkage integration follows the separate force/travel report.
 
 Read [README.md](README.md), [AGENTS.md](AGENTS.md) and the detailed dated
 [context/README.md](context/README.md). This file is an entry point to existing
@@ -9,6 +9,12 @@ records, not a competing model specification. Laptop setup and transfer are in
 [the member handoff](../laptop-handoff.md).
 
 ## Current state to preserve
+
+- Math/Physical **Jonathan v2 · separate belt linkage** now integrates the full
+  original general linkage as one editor, with all dimensions, loads, masses,
+  preloads, FBDs, bounded maxima, profiles and sweeps. Read the
+  [cross-check](docs/jon-linkage-cross-check.md). Its three analytical model
+  scripts are source-built unchanged; there is no dynamic Pymunk counterpart.
 
 - Wheel/link sizing starts at **200 mm radius, 400 mm diameter, 200 mm usable
   lift**, confirmed by the user. It sweeps equal-link length/start-angle windows

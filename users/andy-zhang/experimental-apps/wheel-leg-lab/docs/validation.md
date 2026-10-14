@@ -912,3 +912,60 @@ total; largest 311,008 bytes), with matching delivered renderer/data and GIF
 hashes. One hundred relative documentation links pass. An ad-hoc link check
 initially used the lexical parent of Path('.'); resolving the app directory
 then produced the passing check without changing any source/result.
+
+## Separate Jonathan v2 linkage integration, 2026-10-14
+
+Base `93fed9f`; isolated member workspace. The current owner request integrates
+Jonathan's original v2 as a separate Math/2D Physical design. Python 3.13.12 and
+Node 22.23.3 are the installed runtimes. `npm run build` passes; all **80 Node
+tests** pass, including four new source-preservation/library/unit-boundary tests.
+On this host the shell's default `python` resolves to a nonlaunchable Cygwin
+entry; prepending the installed app-local `.venv/Scripts` uses the verified
+Python runtime for the unchanged build command. No dependency changes are needed.
+
+Jonathan's unchanged source checks pass: **3,853 kinematic**, **16,044
+quasi-static** and **29,863 bounded-global-maximum** assertions. Original
+reported residuals remain max force9.722e-13 N, moment3.624e-13 Nm and
+virtual-work discrepancy3.979e-13 Nm. All three model script bodies and their
+SHA-256 hashes match the source exactly in the generated page.
+
+`node scripts/verify_jon_linkage.cjs` passes actual installed Edge checks:
+all geometry/mass/preload fields; editable unequal links, alpha/beta and signed
+loads; twelve load plots/five FBDs/eight headline cards;31-pose original-source
+geometry/torque/tension parity; unchanged torque on force-mode switch; derived
+control disabling; one shared Math/Physical editor; paused background masters;
+complete profile/library/JSON restore; four-sweep saved datasets and original
+31-column CSV; nonmutating profile reevaluation in Comparison; refresh memory,
+atomic bad-window rejection, invalid-draft export rejection, dark mode and390px
+layout. Sweep outputs retain explicit units, branches, undefined direction nulls
+and source provenance, with no fabricated timestamps. Native/recorded Pymunk
+actions launch no unrelated fixture. Page errors and external requests are empty.
+
+The unchanged `verify_motion_lab.cjs` passes the existing menu, real SciPy/Pymunk
+API, library/import/playback/comparison/Plotly and mobile workflows; native launch
+endpoints remain mocked in that test. The actual app-root Start/Stop Motion
+Lab.cmd is exercised from an unrelated directory: reuse succeeds, scoped stop
+removes the4186listener, startup succeeds and `/jon-linkage/` returns200 with
+the new adapter. The server is left running. Desktop, mechanism and mobile
+captures are visually reviewed; raw screenshots/JSON/CSV remain ignored.
+
+Initial new-browser testing counted both sweep SVGs and tooltip IDs (24) with
+an overly broad selector; the SVG-specific12-plot assertion then passes. Visual
+review caught inherited automatic vertical margins centring the source main
+column in a growing iframe; explicit top alignment/min-height fixes the gap,
+with a new layout assertion. Diagram backgrounds retain readable source colors
+in dark mode. No mathematical tolerance or solver semantics changed.
+
+Canonical robot physics is NOT APPLICABLE. Existing dynamic/native backend code
+and full Python solver suites are unchanged and were not rerun. No dynamic
+general-ratio Pymunk counterpart, spring/acceleration model, no-slip/contact
+feasibility, physical inversion/clearance, hardware, GPU or other-OS validation
+is claimed. Historical dual-rope IMPOSSIBLE remains unchanged. Concurrent
+untracked files in the separate leg-design-study app are preserved and excluded
+from this contribution's staged snapshot/publication.
+
+Repository validation: whitespace and103relative documentation links pass.
+`check_entry.py --staged --base origin/main --require-passed` passes612files,
+22changed paths,workspace scope; scoped physics gate passes with canonical
+physics NOT APPLICABLE. Default working-tree entry coverage flags seven unfinished
+unlogged sibling corridor paths; the exact staged/outgoing snapshot excludes them.

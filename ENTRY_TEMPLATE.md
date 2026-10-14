@@ -2614,3 +2614,56 @@ Rounded320/320mm9:5 atalpha=phi0=0 gives325/285mm height and57.832Nm equivalent 
 Continue from docs/force-travel-study.md, resolve axial/chassis clearance and actual load/mass/shaft/spring inputs before physical inversion or motor selection, and preserve all previous reports, live examples/GIFs and IMPOSSIBLE decisions.
 
 ---
+
+## Entry: 2026-10-14 — Andy Zhang workspace — merge Jonathan v2 as separate Motion Lab linkage
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/wheel-leg-lab; isolated analytical UI/model integration.
+- **Associated Issue/Task:** Current owner request to cross-check Jonathan's v2 against the referenced v1 and merge all linkage/loading features into Motion Lab Math and 2D Physical as a separate design. Base 93fed9f; no relevant open GitHub issue.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no existing files deleted.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/.gitignore`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/jon-linkage-cross-check.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/bridge.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/embedded-api.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_animations.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_jon_linkage.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_jon_linkage.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/jon-linkage.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison-data.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/data-browser.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+
+- **API/Interface Changes:** New source-built /jon-linkage/ route and shared Math/Physical model=jon-v2 editor. Three original analytical scripts are preserved byte for byte, with source hashes; the UI adapter adds atomic snapshots/restoration, same-origin messages, theme/session recovery and nonmutating analytical sweep evaluation. Library backend jon_v2 accepts original v1/v2 JSON in mm/deg/kg/N/Nm, retains full parameters/windows/driven selections and exports four sweep tables with explicit units/provenance. Comparison overlays use sample indices and retain time-delta rejection; native/recorded Pymunk actions explain the separate quasi-static boundary. Startup now checks the new generated page. No original Jonathan source, dynamic/spring/native backend, shared/canonical API, dependency, asset, enforcement or prior IMPOSSIBLE decision changed.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Installed app-local Python 3.13.12 / Node 22.23.3. npm run build passes; 80/80 Node tests pass, including four new source/library/sweep checks. Original Jonathan checks pass 3,853 kinematic, 16,044 quasi-static and 29,863 bounded-maxima assertions with original residual limits. All three generated analytical scripts and model hashes match original source exactly. Actual Edge verify_jon_linkage.cjs passes full parameter/FBD/sweep/headline presence, editable unequal geometry/masses/preloads/angles/signed loads, 31-pose original-model parity, force-convention torque invariance, shared Math/Physical state, background master pause, original JSON/31-column CSV, four-sweep library/provenance, nonmutating profile reevaluation, refresh, bad-window atomicity, invalid-draft rejection, dark/mobile and no native/external requests/page errors. Existing verify_motion_lab.cjs passes real SciPy/Pymunk APIs, original menu/library/comparison/recorded playback/Plotly/mobile with mocked native launch endpoints. Actual app-root CMD reuse/scoped stop/start from unrelated directory passes; listener disappears and new linkage returns HTTP 200 after restart at 4186. Desktop/diagram/mobile captures visually reviewed; artifacts ignored. Whitespace and 103 relative documentation links pass. Exact staged check_entry.py --base origin/main --require-passed passes: 612 files, 22 changed paths, workspace scope. physics_gate.py --base origin/main passes and reports canonical physics NOT APPLICABLE. The default working-tree check flags seven concurrent unlogged corridor paths in the separate leg-design-study app; staged validation and exact outgoing-commit hooks exclude that unfinished work without changing it.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member workspace. No dynamic general-linkage Pymunk/spring/acceleration/contact/rolling, 3D packaging, hardware, GPU or other-OS validation is claimed; existing full Python/native solver suites were not rerun because those backends are unchanged. Initial browser sweep-ID count included tooltips; an SVG-specific selector corrects the harness. Visual review found inherited automatic vertical margins centring the source main column in an enlarged iframe; top alignment and a layout assertion fix it. Shell python initially resolved to a nonlaunchable Cygwin entry; installed app-local Python supplies the build/hooks. Concurrent untracked leg-design-study corridor files are preserved and excluded from this exact staged contribution; validation uses its isolated snapshot when full working-tree entry coverage includes that unfinished work. No solver tolerance was changed.
+
+## 4. Compute Saving Handoff State
+
+Open Motion Lab at 4186 with tab=math&model=jon-v2 or tab=physics&model=jon-v2 for the same separate three-belt editor and all original v2 parameters, FBDs, sweeps and bounded maxima.
+Save full linkage profiles through the existing library and analytical sweeps inside the editor; original v1/v2 JSON imports and source CSV remain compatible, while quasi-static playback is not a dynamic Pymunk run.
+Continue from docs/jon-linkage-cross-check.md and jon-linkage/README.md, rebuild after upstream source edits, preserve the original spring/inversion fixtures and rejected dual-rope status, and resolve actual dynamics/contact inputs before adding a physical counterpart.
+
+---

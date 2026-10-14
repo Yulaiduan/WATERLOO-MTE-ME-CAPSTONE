@@ -18,6 +18,7 @@ const ACCELS = ['knee_accel','upper_accel','lower_accel','wheel_accel'];
 
 export function modelFamily(record) {
   const backend = record.backend || record.result?.backend || '';
+  if (backend === 'jon_v2') return 'Jonathan v2 quasi-static linkage';
   if(backend.startsWith('inversion_'))return 'invertible wheel leg';
   if (backend.startsWith('counterbalance_') || record.config?.anchor_height !== undefined) return 'constant-lift lever';
   if (['math','pymunk','matlab-ode45'].includes(backend) || record.config?.radius !== undefined) return 'wheel leg';
