@@ -6,6 +6,10 @@ For a fresh machine or development continuation, start with [context.md](context
 and the [laptop handoff](../laptop-handoff.md). Existing detailed model/context and
 development records remain linked there; no PC runtime/server or copied venv is required.
 
+The later [generalized leg design report](../leg-design-study/README.md) is a
+separate offline HTML/PDF study, as requested by the owner. Its new equations,
+optimization and spring/motor results do not add controls or API routes here.
+
 ## Unified browser workspace
 
 **Start Motion Lab.cmd** is the canonical launcher. Open http://127.0.0.1:4186/

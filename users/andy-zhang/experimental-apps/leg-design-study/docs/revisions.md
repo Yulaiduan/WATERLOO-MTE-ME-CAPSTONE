@@ -1,0 +1,32 @@
+# Leg design revision map
+
+Owner: Andy Zhang. Updated: 2026-10-14. Status: navigation for experimental
+design history; Git and the repository contribution log retain exact changes.
+
+| Revision / date | Design change | Continue from |
+| --- | --- | --- |
+| `2353a6f`, 2026-10-12 | Equal-link sizing for 200 mm wheel radius and 200 mm usable lift; buffers, peak/mean/flatness | [Link sizing](../../wheel-leg-lab/docs/link-sizing.md) and its original result scope |
+| `7cfacbf`, 2026-10-12 | Actual laptop runtime/dependency reconstruction and both local app lifecycles | [Laptop handoff](../../laptop-handoff.md) |
+| `3bbe964`, 2026-10-12 | Upward wheel-centre angle, individual torque curves, lift/RMS score, explicit hip/knee work mapping | [Link sizing](../../wheel-leg-lab/docs/link-sizing.md), [validation](validation.md) |
+| `6c74cfd`, source baseline for 2026-10-14 | Jonathan V1/V2 and bounded global headline maxima available on main | [Jonathan V2 model](../../../../jonathan-xie/experimental-apps/leg-solver/v2-model.md) |
+| 2026-10-14 generalized design study | Merge variable-ratio/alpha conventions with sizing, explicit control windows and spring/motor example; exact publication hash is the commit adding this row | [Design study](generalized-leg-study.md), [math](generalized-leg-math.md), [physics](generalized-leg-physics.md) |
+
+Use `git log --oneline -- users/andy-zhang/experimental-apps/leg-design-study`
+from the repository root to find the exact publication and later revisions.
+Use `git show <revision>:<repository-relative-path>` for a read-only historical
+comparison. The log's four-section entries identify exact changed paths,
+commands, failures and handoffs; do not replace that append-only evidence with
+this index.
+
+Preserve the historical dual-rope model and its **IMPOSSIBLE / rejected** label,
+the user-requested rollback, the legacy position-input fixtures and the
+undamped single replacement spring. Generalized study assumptions do not
+silently migrate older saved profiles or certify earlier hypothetical designs.
+
+## Delivery correction, 2026-10-14
+
+The owner requested the design report/PDF as a standalone offline static HTML
+webpage and explicitly excluded this study from Motion Lab tooling. The initial
+unpublished Motion Lab entry, API routes and interactive study were removed.
+This folder retains the scientific models, selected evidence, report and
+reproduction checks; the existing wheel sizing calculator stays unchanged.

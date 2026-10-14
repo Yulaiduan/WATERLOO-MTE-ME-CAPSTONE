@@ -1,0 +1,6 @@
+# Optional report generation, separate from the app's numerical dependencies.
+# Install with Python 3.13: python -m pip install -r requirements-report.txt
+reportlab==4.4.9
+pypdf==6.10.0
+pillow==12.3.0
+charset-normalizer==3.5.2

@@ -1,0 +1,7 @@
+{
+  "name": "camel-leg-design-study",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "22.x" },
+  "scripts": { "test": "node --test tests/design-study.test.js" }
+}

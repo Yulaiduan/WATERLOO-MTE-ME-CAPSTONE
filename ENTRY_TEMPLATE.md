@@ -2387,3 +2387,65 @@ Each card includes a peak pose, keeps the requested torque sign and reports rema
 Refresh v2, use the new numerical checker and updated model notes, preserve v1 and keep all work local; no commit or push performed.
 
 ---
+
+## Entry: 2026-10-14 — Andy Zhang — Offline generalized leg design report and reproducible sizing
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated leg-design-study member workspace; Markdown navigation from existing apps.
+- **Associated Issue/Task:** User requested Jonathan V1/V2 conventions combined with wheel/link sizing, two optimization methods, unequal links and variable guide ratio/alpha, independent 2D/Pymunk checks for all nine springs, one spring/motor example, documented assumptions and revision history. Final user steering requires standalone offline static HTML and PDF, with no new Motion Lab tooling. Use 200 mm wheel radius, 200 mm minimum / approximately 250 mm preferred usable travel, 300–350 mm total including buffers, and 40–45 kg whole-robot sensitivity. Publish validated work directly to main.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/.gitattributes`
+- `users/andy-zhang/experimental-apps/leg-design-study/.gitignore`
+- `users/andy-zhang/experimental-apps/leg-design-study/AGENTS.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/Open Design Report.cmd`
+- `users/andy-zhang/experimental-apps/leg-design-study/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-math.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-physics.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-report-data.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-report.pdf`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/impact-load-envelope.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/validation.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/generalized_leg.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/index.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/model.js`
+- `users/andy-zhang/experimental-apps/leg-design-study/package.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/requirements-report.txt`
+- `users/andy-zhang/experimental-apps/leg-design-study/requirements.txt`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_design_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_generalized_leg.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_offline_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/test_generalized_leg.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/tests/design-study.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+
+- **API/Interface Changes:** No existing Motion Lab API, browser tooling, model or saved-profile interface changes. Removed the unshipped development integration and restored server.py and tracked web/ source to base 6c74cfd. New single static HTML file has inline styles, 22 SVG figures, selected numerical evidence, local PDF link and print button; it reads with JavaScript disabled and needs no server or installed runtime. Optional Python/Node reproduction is isolated here, importing existing member spring laws without canonical/shared consumers. Root-relative .cmd opens the local report. New AGENTS.md only points to existing root rules and owner-requested delivery context; no policy/enforcement change. App-local .gitattributes marks the PDF binary for correct Git handling. Models, manifests, compact selected JSON, a 16-page PDF/generator and dated design/revision/validation records are retained; raw runs, venvs and captures remain ignored.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** After relocation, Node22.23.3 analytical tests pass13/13; Python3.13.12 physical tests pass12/12; verify_generalized_leg.py passes all9 full1s spring trajectories plus1 generalized fixed-A case at2/1ms. Independent review found no material mechanics/coordinate/direction discrepancy. Earlier source verification passed Jonathan3853/16044/29863 assertions, combined85JS and34existingPython tests; prior embedded/browser checks are explicitly development history, not shipped controls. Actual Edge file:// test passes JavaScript-disabled reading,12sections/22SVG,6objective/16Pareto/9spring/9engine rows, exact JSON parity, no external requests/page errors,390px layout, print callback/CSS and local PDF link/signature. All16PDF pages rendered/visually reviewed; standalone Python3.13 regeneration is byte-identical,65081bytes,22772extractedcharacters,SHA2561a3c1fd72c739d07d948c612a13f8f5df4bb0508aff436c3190f6150c7ac6d7b. Optional pinned dependencies install and pip check passes. Source hashes distinguish pre-relocation computation from delivered adapters. Relative Markdown links pass. Motion Lab original build and CMD stop/restart pass after removing integration; original4186 health and4175Atlas/workbench return200; removed report endpoint returns404. Offline report launcher executes successfully from an unrelated directory. Actual laptop runtimes/services use local paths; hooks installed and full history retained.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. No hardware, GPU, other-OS, impact/contact/rolling, strength, thermal, coil-bind or 3D packaging validation is claimed. Conditional compact example180/340mm,qab1.775,alpha4.375deg gives325total/285usablemm; boundary and larger-tibia alternatives are explicit. Fixed-A robust static scores, supported-chassis dynamics and impact-equivalent held-load sensitivity are distinct. Historical dual-rope remains IMPOSSIBLE/rejected. Earlier microgram-mass/under-resolved engine failures and unshipped input-step bugs remain documented; no physics tolerance was weakened. A constant-drive chart's initially indistinguishable rounded ticks were repaired with display-only padding. Staged whitespace inspection caught CRLF endings in three new Markdown files and the evidence JSON, plus PDF text-diff noise; LF normalization and an app-local binary PDF attribute resolve those packaging issues without changing results. Initial combined edit/venv shell command was policy-rejected; separate explicit edits and environment creation succeeded without a bypass or lost files.
+
+## 4. Compute Saving Handoff State
+
+Open leg-design-study/index.html directly or Open Design Report.cmd for the offline report and adjacent PDF; existing Motion Lab and Atlas remain independent local services.
+The report records the compact bounded candidate, complete assumptions, per-profile torque curves, Pareto/boundary tradeoffs, all nine spring checks and one-second motor plus load-factor sensitivities.
+Continue from this app's context and revision map, retain Jonathan's conventions and rejected historical status, and obtain actual packaging, moving masses, spring limits and motor duty before promoting these conditional calculations to hardware decisions.
+
+---

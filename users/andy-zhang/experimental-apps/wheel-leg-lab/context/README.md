@@ -2,6 +2,15 @@
 
 Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
 
+## Separate offline design report, 2026-10-14
+
+Jonathan/Andy generalized design work continues in
+[leg-design-study](../../leg-design-study/context.md), with static HTML/PDF,
+selected evidence, reproducible math/physics checks and a revision map. The
+owner explicitly requested that the new report not enter Motion Lab tooling;
+the initial unpublished study/menu/API integration was removed. Existing sizing
+controls, solvers, profiles and the dual-rope IMPOSSIBLE status are preserved.
+
 ## Link sizing / torque sweep, 2026-10-12
 
 The sizing display now uses theta upward from wheel-centre horizontal (0° flat,
