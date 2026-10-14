@@ -59,3 +59,25 @@ not impacts; no new spring or motor rating is inferred. Five new tests, 10,248
 V2/Andy 2D scalar checks and three actual fine Pymunk geometry sweeps pass;
 coarse 2ms failures remain recorded. The old models/reports, live examples/GIFs,
 and historical dual-rope IMPOSSIBLE status are preserved.
+
+## Curved lateral-path follow-up, 2026-10-14
+
+The owner cancelled R²/fixed-line optimization before publication and confirmed
+25/50/75/100 mm sideways-travel comparisons. The current deliverable is
+[curved-paths.html](curved-paths.html), its [PDF](docs/curved-path-report.pdf) and
+[design/math record](docs/curved-path-study.md). Keep alpha=phi0=0, 325 mm total
+vertical travel including assumed20+20 mm reserves, and285 mm useful.
+
+Equal185/190/200/205 mm links at r1.9/1.8/1.7/1.6 permit approximately25/50/75/100 mm
+normal lateral excursion. Balanced geometric seed190/190 mm9:5 gives49.981 mm
+lateral travel,37.363 Nm equivalent45kg static hip peak and61.816 degree useful
+hip ROM. These short cases fail normal coplanar220 mm clearance; the50 mm
+normal-clearance alternative is285/285 mm,r1.85. Full near-equal coplanar
+inversion still fails. Lateral mobility is not measured compliance; actual
+spring/controller/geometric stiffness and contact remain unresolved.
+
+The new grid enumerates2,953,002 windows, with hard constraints and separate
+force/size leaders; no R² objective. Six new tests,10,788 original-model scalar
+comparisons and three actual constrained geometry refinements pass. Prior
+reports, spring/motor cases, Motion Lab examples/GIFs and IMPOSSIBLE decisions
+remain separate and intact. Read validation/revisions before continuing.

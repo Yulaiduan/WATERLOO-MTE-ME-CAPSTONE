@@ -51,3 +51,16 @@ have 325 mm total /285 mm usable height. Full physical inversion still needs
 resolved axial/chassis clearance; all coplanar near-equal sweeps fail.
 Report/optimization stays offline, separate from Motion Lab's earlier labelled
 examples/GIFs. Prior spring/motor estimates and IMPOSSIBLE decisions stay intact.
+
+## Current curved-path study, 2026-10-14
+
+The owner replaced the unpublished R²/straight-corridor method with curved
+paths allowing25/50/75/100 mm sideways travel through ratio changes. Open
+[the new offline report](leg-design-study/curved-paths.html) and
+[design record](leg-design-study/docs/curved-path-study.md). Alpha and original
+phase both remain zero;325 mm total vertical height includes20+20 mm reserves.
+Equal190 mm links at9:5 give approximately50 mm lateral excursion, but short
+cases require unresolved axial packaging;285 mm,r1.85 is the normal coplanar
+clearance comparison. Actual stiffness/contact and full physical inversion
+remain unresolved. Earlier published reports, Motion Lab examples and rejected
+IMPOSSIBLE decisions are preserved.

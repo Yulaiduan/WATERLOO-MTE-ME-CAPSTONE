@@ -242,3 +242,61 @@ New 3/4g values are equivalent held-load sensitivities, not simulated impacts.
 Full coplanar inversion still fails for every shortlist row; unknown axial/
 chassis geometry, strength, actual impact, springs, thermal motor duty, hardware,
 GPU and other-OS behavior are not certified.
+
+## Curved lateral-path report, 2026-10-14
+
+Source model base `93fed9f`; isolated workspace scope. The owner cancelled the
+unpublished fixed-line/R² proposal and confirmed 25/50/75/100 mm sideways-travel
+comparisons. See [the replacement record](curved-path-study.md). Historical
+reports/models and all earlier failures remain intact.
+
+- `curved_path_search.py`: 2,953,002 enumerated windows; 33-pose coarse counts,
+  continuous selected extrema and 2001-pose integrals. 29 detailed cases and
+  32 compact leaders retained, with objective/ROM/excursion evidence. Final
+  search run 14.719 seconds; not a cross-machine performance benchmark.
+- `python -m unittest -v test_curved_paths test_force_travel test_inversion_search`:
+  **16/16 pass**, including six new derivative/symmetry/flat-baseline/buffer/
+  work/compliance-map/extrema/acceptance tests. Original models unchanged.
+- Independent read-only Sol 6.1 high audit of all 29 selected cases agrees:
+  lateral metrics within 7.11e-14 mm, slope 1.07e-14, useful ROM 1.08e-12 degrees,
+  signed/robust side-load peaks 1.43e-14 Nm. All turn/clearance/inverse flags
+  match. Source hashes verified; expanded 90/95 degree envelopes consistent.
+- `node scripts/verify_curved_report.cjs`: **10,788** original Jonathan V2 /
+  Andy 2D scalar comparisons pass, max **2.2737368e-13 mm/Nm**. Installed Edge
+  passes JavaScript-disabled local reading, seven sections/six SVG, four
+  shortlist rows and exact embedded JSON, finite plots, no external requests
+  or page errors, 390 px layout, PDF link/signature and print callback/CSS/export.
+- `scripts/verify_curved_geometry.py`: three actual positive-mass Pymunk 7.3.0
+  angular fixtures pass at **2/1/0.5 ms** and converge. Fine path errors
+  **0.016781..0.018228 mm**. Actual pivots/gears/motor, only initial poses
+  assigned; zero gravity/forces and no collision shapes. Geometry evidence
+  does not validate compliance, load, contact, impact or packaging. Earlier
+  longer-case coarse failures remain documented; thresholds were not relaxed.
+- `scripts/build_curved_report.py`: **7 pages, 29,539-byte PDF**, 11,175 extracted
+  text characters, SHA256
+  `13a4a80c05d96e95c9379c2bffa925bca1818522875ea04ae5e2fbbf2dc4942d`.
+  HTML **840,110 bytes**, SHA256
+  `756a3f2d3d64a757143234723d97859539c6f31589b81342aa3f4ba668b4ad75`.
+  Both regenerate byte-identically. All PDF pages rendered and visually
+  reviewed; final changed layouts rechecked. Poppler's nonfatal Symbol
+  display-font message remains; no observed missing glyph, overlap or clipping.
+  HTML plots and mobile reading reviewed. Raw QA artifacts stay ignored.
+- 85 relative links in the affected app/parent documentation pass; finite
+  evidence and calculation/engine source hashes match. Manual **Open Curved
+  Path Report.cmd** returns exit 0 from an unrelated directory. No server,
+  network or installed runtime is needed for viewing.
+
+The first evidence export exceeded the repository's 1 MiB limit; retained
+display samples were reduced to 31 per interval, keeping dense calculations
+and continuous extrema unchanged, and the complete search was rerun. Compact
+leader metrics were then added after review and final evidence regenerated.
+Superseded R² work stays only in ignored local artifacts, not publication.
+Concurrent Motion Lab edits are preserved and excluded from this contribution.
+
+All compact cases fail normal coplanar 220 mm clearance; larger alternatives
+clear only the normal branch. Every full near-equal coplanar inversion fails.
+Actual horizontal stiffness requires spring/controller/geometric stiffness
+and contact inputs. No spring refit, dynamic/thermal motor rating, physical
+inversion, hardware, GPU or other-OS behavior is certified. Canonical physics
+is **NOT APPLICABLE**. Unchanged Motion Lab/Atlas lifecycle and complete app
+suites were not rerun for this static report; previous setup evidence remains.

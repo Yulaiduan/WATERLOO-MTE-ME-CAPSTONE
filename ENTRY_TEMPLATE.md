@@ -2667,3 +2667,53 @@ Save full linkage profiles through the existing library and analytical sweeps in
 Continue from docs/jon-linkage-cross-check.md and jon-linkage/README.md, rebuild after upstream source edits, preserve the original spring/inversion fixtures and rejected dual-rope status, and resolve actual dynamics/contact inputs before adding a physical counterpart.
 
 ---
+
+## Entry: 2026-10-14 — Andy Zhang workspace — ratio-generated curved paths and lateral travel
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/leg-design-study; isolated offline curved-path report and numerical screening.
+- **Associated Issue/Task:** Owner cancelled the unpublished fixed15/R² proposal and requested curved paths permitting horizontal travel/compliance through guide-ratio changes, then confirmed25/50/75/100 mm comparisons. Retain alpha=phi0=0,325 mm total including assumed20+20 mm reserves. Numerical base93fed9f; preserve concurrent Motion Lab work and publish this report separately.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no existing files deleted.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/Open Curved Path Report.cmd`
+- `users/andy-zhang/experimental-apps/leg-design-study/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/curved-paths.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/curved_path_search.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/curved-path-engine-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/curved-path-math-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/curved-path-report.pdf`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/curved-path-results.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/curved-path-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/validation.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_curved_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_curved_geometry.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_curved_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/test_curved_paths.py`
+
+- **API/Interface Changes:** New independent curved-path grid, six tests, original-V2/Andy2D and actual-Pymunk geometry verifiers, compact evidence, seven-page PDF/static HTML renderer and app-relative CMD opener. Separate normal excursion bands, force/size leaders, effective ROM, lateral/vertical coupling and normal220 clearance scenarios replace the abandoned unpublished R² approach. No existing model, shared/canonical API, dependency, Motion Lab service/UI/example/GIF or prior spring/motor calculation changes. Historical dual-rope remains IMPOSSIBLE/rejected. App/parent context, reasoning, revision and validation records retain assumptions and continuation.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python3.13.12 /Node22.23.3. Search enumerates2,953,002 windows;33-pose coarse counts, continuous selected extrema,2001-pose integrals;29 detailed cases and32 compact objective leaders.16/16 numerical tests pass (six new plus five force/five inversion). Independent original-V2 read-only review of29 cases agrees on lateral metrics7.11e-14mm, slope1.07e-14, usefulROM1.08e-12deg and signed/robust side-load peaks1.43e-14Nm; all flags match.10,788 originalV2/Andy2D scalar comparisons pass, max2.273737e-13mm/Nm. Three actual positive-mass Pymunk angular fixtures pass2/1/0.5ms and converge; fine path errors0.016781..0.018228mm. Installed Edge verifies JavaScript-disabled offline reading,7 sections/6 SVG/four shortlist rows, exact JSON, finite plots, no external requests/page errors,390px layout, PDF signature/link and print callback/CSS/export. Seven-page29,539-byte PDF and840,110-byte HTML regenerate byte-identically; all PDF pages and key HTML/mobile figures visually reviewed, final changed layouts rechecked.85 relative links and calculation/engine hashes pass; app-relative manual CMD opener exits0 from unrelated directory. Exact-snapshot entry/require-passed/scoped gate and staged checks are run before publication; canonical physics NOT APPLICABLE.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Short cases fail normal220 coplanar clearance, and every full near-equal coplanar inversion fails. Actual stiffness requires spring/controller/geometric stiffness and contact inputs; no measured compliance, spring selection, dynamic/thermal motor rating, physical inversion, real impact, hardware, GPU or other-OS validation is claimed.3/4g values are held-load multiples. First evidence export exceeded1MiB; display samples reduced to31 with dense metrics unchanged, then search/evidence regenerated. Compact leader metrics added after review. Poppler retains its nonfatal Symbol display-font message; reviewed pages have no observed missing glyph or clipping. Superseded unpublished R² files stay ignored locally. Concurrent unrelated Motion Lab edits are excluded; publication checks use an isolated exact snapshot rather than those unfinished working-tree edits. Unchanged complete app suites/lifecycle were not rerun for this report.
+
+## 4. Compute Saving Handoff State
+
+Open leg-design-study/curved-paths.html or its seven-page PDF for25/50/75/100mm curved lateral movement with alpha=phi0=0,325mm total/285mm useful height and individual force/control plots.
+Equal185/190/200/205mm links with r1.9/1.8/1.7/1.6 give about25/50/75/100mm sideways excursion;190mm9:5 is the balanced compact geometric seed, while285mmr1.85 is the normal220-clearance50mm comparison.
+Continue from docs/curved-path-study.md, resolve measured axial/chassis/contact and effective stiffness before physical inversion or actuator selection, and preserve prior reports/models/examples, historical failures and IMPOSSIBLE decisions.
+
+---

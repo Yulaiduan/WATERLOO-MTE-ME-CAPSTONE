@@ -90,3 +90,19 @@ These are ideal force/travel screens, not new spring/motor ratings. Viewing
 needs no server or installed runtime and adds no Motion Lab controls.
 Optional reproduction commands are in the design record; use the existing
 Python 3.13 / Node 22 environments and requirements.
+
+## Curved paths with sideways travel
+
+The latest owner request replaces the unpublished fixed-line/R² approach with
+curved paths from guide-ratio changes. Open **[curved-paths.html](curved-paths.html)**,
+**[Open Curved Path Report.cmd](Open%20Curved%20Path%20Report.cmd)** or its
+**[seven-page PDF](docs/curved-path-report.pdf)**. The
+[design record](docs/curved-path-study.md) documents search priorities, equations,
+buffered ROM, force/speed tradeoffs and the distinction between permitted lateral
+movement and actual suspension stiffness.
+
+With alpha=phi0=0, equal links 185/190/200/205 mm at guide ratios 1.9/1.8/1.7/1.6
+give about 25/50/75/100 mm lateral excursion over 325 mm total vertical travel
+(285 mm useful). These compact geometric examples fail coplanar wheel/hip
+clearance; larger normal-clearance alternatives and full ideal inversions are
+shown separately. Viewing stays offline and adds no Motion Lab controls.

@@ -81,3 +81,25 @@ while all 2ms path checks fail and remain recorded. Geometry agreement is not
 motor-force, impact or collision certification. All full coplanar near-equal
 inversions fail clearance; axial/chassis geometry remains unknown. Preserve
 prior spring/motor results as separate cases and dual-rope IMPOSSIBLE status.
+
+## Ratio-generated curved paths, 2026-10-14
+
+Continue from [the current curved-path record](../docs/curved-path-study.md) and
+[offline report](../curved-paths.html). The owner cancelled the unpublished
+fixed15/R² method and confirmed all25/50/75/100 mm lateral-travel comparisons.
+Numerical source base93fed9f; publication follows the separate concurrent Motion
+Lab work. This contribution does not alter that app or embed the report there.
+
+Keep alpha=phi0=0. The normal325 mm total height includes20 mm reserves at both
+ends, leaving285 mm useful. Equal185r1.9,190r1.8,200r1.7,205r1.6 mm examples
+permit24.887/49.981/76.479/101.052 mm lateral excursion. Use190/190mm9:5 as the
+balanced geometric seed; the285/285mm,r1.85 branch is the normal220-clearance
+comparison. All full near-equal coplanar inversions still fail. Full endpoint
+drift is zero by symmetry despite lateral excursion, and Jx vanishes atfold.
+
+Actual horizontal compliance requires effective spring/controller and geometric
+stiffness; blocked vertical movement or wheel contact can prevent the coupled
+sideways movement. Do not infer selected springs, motor ratings or no-slip
+rolling.16 numerical tests,10,788 originalV2/Andy2D comparisons and three actual
+Pymunk geometry sweeps pass. Preserve older numerical reports, live examples,
+all historical failures and rejected dual-rope IMPOSSIBLE status.

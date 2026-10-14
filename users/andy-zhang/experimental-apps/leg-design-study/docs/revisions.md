@@ -72,3 +72,20 @@ Rounded 320/320 mm 9:5 is the phase-zero compromise; 300/300 mm 2:1 with fixed
 phase -25 degrees is the exact-line alternative. Their ideal inverses do not
 resolve full coplanar clearance. All assumptions, active bounds, rejected
 diagnostics, held-load versus impact distinction and test failures stay recorded.
+
+## Curved lateral mobility instead of R², 2026-10-14
+
+Numerical source base `93fed9f`; publication is the commit adding
+`curved-paths.html`. Before publication the owner cancelled the proposed
+fixed15-degree corridor/R² search, then confirmed25/50/75/100 mm sideways
+comparisons. Superseded untracked work was preserved only in ignored local
+artifacts. It is not a published method or recommendation.
+
+[The replacement study](curved-path-study.md) retains alpha=phi0=0 and325/285 mm
+total/useful height. A2.953-million-window search compares curved normal paths,
+force/size leaders, lateral coupling, normal-clearance alternatives, full
+inversion and90/95-degree ROM sensitivities. New six tests, original-model and
+actual-Pymunk checks accompany the standalone seven-page PDF/static HTML.
+No old model/report, Motion Lab source/example/GIF, spring/motor rating or
+historical IMPOSSIBLE decision is replaced. Resolve physical packaging and
+effective stiffness before promoting permitted motion into a hardware claim.
