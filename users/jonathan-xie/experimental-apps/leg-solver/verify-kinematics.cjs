@@ -60,4 +60,8 @@ assert.equal(m.validate({...p,te:120,tc:120}).length,0);checks++;
 assert.ok(m.warnings({...p,L2:50}).length);checks++;
 const env=m.envelope(p);near(env.values.du.min,0);near(env.values.du.max,0);near(env.values.dv.max,600*(Math.sin(p.te*Math.PI/180)-Math.sin(p.tc*Math.PI/180)));
 const nonmono=m.envelope({...p,phi0:30,te:90,tc:180});assert.ok(nonmono.values.dv.min < -1);checks++;
+for(const [u,v,angle] of [[1,1,45],[-1,1,-45],[1,-1,135],[-1,-1,-135],[1,0,90],[0,-1,180]])near(m.inclination(u,v),angle);
+assert.equal(m.inclination(0,0),null);checks++;
+const ref=m.state(p,p.te);assert.equal(ref.gammaUV,null);assert.equal(ref.gammaYZ,null);checks+=2;
+for(const alpha of [0,15,30]){const z=m.state({...p,alpha},p.tc);near(z.gammaUV,0);near(z.gammaYZ,alpha);}
 console.log(`PASS: ${checks} mathematical assertions; both embedded scripts parse.`);

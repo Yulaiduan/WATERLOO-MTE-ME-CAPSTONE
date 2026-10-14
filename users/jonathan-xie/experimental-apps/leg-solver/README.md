@@ -1,6 +1,61 @@
-# General VSL Solver — v1 kinematics
+# General VSL Solver
 
 Owner: Jonathan Xie. Created with Codex, 2026-10-13. Status: experimental analytical tool.
+
+## Versions
+
+| Version | Open | Purpose |
+| --- | --- | --- |
+| v1 kinematics | [v1-kinematics.html](v1-kinematics.html) | Original mechanism, with live/final atan2 travel angles gamma_uv and gamma_yz in rows 3/6 and the angle plot |
+| v2 quasi-static | [v2-quasi-static.html](v2-quasi-static.html) | Prescribed contact loads, masses/gravity, span tensions, motor torques, five FBDs, switchable force conventions, twelve loading sweep plots and angles versus vertical travel |
+
+Use [Open Leg Solver v2.cmd](Open%20Leg%20Solver%20v2.cmd) for v2 on Windows.
+Read the [v2 model and usage](v2-model.md) for point-name changes, force directions,
+equilibrium derivation, preload assumptions, master sliders and validation.
+V2 renames the wheel centre C and uses P for the contact patch. V1 retains its
+original P endpoint name. Displacements in v2 track C relative to C at extension.
+Both versions are self-contained HTML files with no runtime dependencies/server.
+
+V1's new gamma angles use quadrant-aware atan2(horizontal, vertical), in degrees,
+as requested in the follow-up clarification. Zero travel direction is undefined
+(— / empty CSV cell); curves break at undefined poses and angle wraps. The updated
+kinematic checker passes 3,853 assertions; v2's checker passes 16,044.
+
+V2 result sections have arrow buttons beside their titles: collapse the FBD block,
+individual FBDs, any loading-sweep row, or the final result cards. Everything
+starts expanded; hidden sections retain their current plots and values.
+
+## Global headline maxima
+
+The second headline row shows maxima across **all θ₂ × β combinations** in the
+master bounds, with **α fixed at its current value** and driving force inputs
+held fixed. Values use the same size as the current row; torque signs are kept,
+Tab includes preload and its tight side, and dz is the largest absolute travel.
+Each maximum includes a peak pose. Changing current α updates the calculation.
+The search targets a magnitude gap ≤0.001 Nm/N/mm; if a computation limit is
+reached, it displays an estimate and the remaining gap. Hover for details.
+
+Run `node verify-global-maxima.cjs` for the new 29,863-assertion check against
+actual FBD results, closed-form extrema and domain bounds. Core quasi-static
+checks remain 16,044 assertions; v1 remains unchanged.
+
+## Latest v2 controls
+
+The θ₂ master has minimum, maximum and current boxes; its bounds also set θ₂ᵉ/θ₂ᶜ.
+α and β share a row. Choose the **Driving** column for global Fy/Fz or wheel Fn/Ft;
+the other components update automatically, and switching preserves the load.
+Only one master plays at a time. The headline shows both torques, tight a/b belt
+tension (upper/lower), and vertical wheel-centre displacement dz. Show/hide
+checkboxes control each motor arrow and the driving wheel-force decomposition.
+
+FBDs use two cards above three cards (Links 2/3, then 4/5/6). Below the θ₂ loading
+sweep is a working-range dz sweep; the bottom row adds Angles vs dz between the
+original plots. Parametric height curves retain reversing travel and multiple
+poses at the same height. JSON saves the force convention and view settings;
+legacy v2 JSON remains accepted. CSV adds dz sweeps and explicit x units.
+
+## V1 kinematics
+
 
 Open [v1-kinematics.html](v1-kinematics.html) directly in a browser, or double-click
 [Open Leg Solver.cmd](Open%20Leg%20Solver.cmd) on Windows. This is a self-contained,

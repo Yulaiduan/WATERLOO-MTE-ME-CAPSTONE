@@ -2241,3 +2241,149 @@ The confirmed proximal angle convention reproduces the downward 2:1 straight pat
 Open v1-kinematics.html manually in a browser, save parameter JSON for studies, preserve v1 when adding kinetics and confirm forces/spring/actuator coordinates before deriving the next version.
 
 ---
+
+## Entry: 2026-10-13 — Jonathan Xie — Leg Solver v2 quasi-static forces and v1 travel angles
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver member workspace.
+- **Associated Issue/Task:** User requested live/final gamma_uv and gamma_yz in v1 and its angle plot, preserving v1 separately; a new v2 quasi-static app adds masses, prescribed wheel-contact forces, belt preload/tensions, motor holding torques, five FBDs, five mutually exclusive master sliders and nine sweeps. User confirmed atan2 angles, gravity in -z, C as wheel centre/P as contact patch and beta clockwise from -z toward front/-y. Local save workflow continues; no publication requested.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v1-kinematics.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-kinematics.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-quasi-static.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v2.cmd`
+- **API/Interface Changes:** Separate dependency-free standalone HTML versions. V1 adds atan2 travel angles (undefined at zero displacement, split curves at singularities/wraps, CSV blanks) and six-row live/final table. V2 uses exact tangent span forces and specified fixed-slack preload allocation, complete wheel-on-tibia pin reaction, all five body equilibria and independent virtual-work torque checks. C/P naming change is explicit; displacement plots retain wheel-centre travel. Mass/gravity and recorded rod/rim inertias add no dynamics; effective compound rim radius is explicit. Prescribed Fn/Ft remain independent of m1; m1 at fixed A affects chassis support only. Exclusive theta2/alpha/beta/Fn/Ft playback, editable windows, colour/intensity force and motor arrows, FBD force/rho tables, total mass, torque cards, nine current-input sweeps with signed/dashed styling and absolute option; original kinematic plots/envelope remain. V2 JSON schema includes all loads/windows/pose and accepts v1 JSON; sweep CSV includes three axes, both span tensions and force components. No shared runtime, assets, dependencies or agent rules changed. Existing v1 launcher is copied unchanged; the new v2 launcher opens its adjacent HTML.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** node verify-kinematics.cjs passes 3,853 assertions, including atan2 quadrants/extension direction and both v1 script parses. node verify-quasi-static.cjs passes 13,483 assertions across 240 varied geometries/masses/loads/poses: all five FBDs, exact tangent moment balances, tension allocation, action/reaction, whole-system support, independent numerical virtual work, preload/m1 torque invariance and fast/full sweep parity; all v2 scripts parse. Maximum force residual 9.722e-13 N, moment 3.624e-13 Nm, analytic virtual-work discrepancy 3.979e-13 Nm. Actual loopback-HTTP browser checks verify five angle curves, six live/final rows, five FBDs, nine sweeps/three desktop columns, exclusive master playback and frozen other variables, custom beta20..60 and alpha45 windows, manual current inputs, invalid windows/geometry, negative Ft, preloads, zero loads, driven triplets, finite SVGs, signed/absolute dash styling, mass updates and JSON study/pose restoration. Browser logs have no warnings/errors; desktop1600/default narrow588 layouts inspected and screenshots retained outside Git. Actual v2 CSV has1,083rows/27columns over three axes, finite numeric values, correct undefined gamma blanks, torque/preload invariants; saved JSON restores the exact study. Fourteen app Markdown links verified. Both repository structure/require-passed checks pass (528 files, 10 changed paths, workspace scope); the scoped gate reports canonical physics NOT APPLICABLE and git diff --check passes. The original envelope updates during alpha playback; v1 CSV gamma blanks/final values are checked. All nine delivered files match the requested app copy byte for byte; ZIP contents are verified.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated analytical member app. No dynamics, inertia torque, spring/damper, wheel-ground rolling, friction/contact feasibility, strength or hardware validation is introduced. Inertias are recorded only. Zero preload is an ideal limiting assumption; curves are finite-sampled and arrows cap for readability. Direct file opening/launchers remain manual and are not claimed as browser-verified because the tool permits HTTP/HTTPS only; identical static HTML is browser-tested. Construction tests caught an accidentally renamed belt-centre property, default gamma curve visibility, missing alpha caption and change-only master input handling; all are fixed and rerun, with failure history in context. The task-local documentation helper initially encountered Git's sandbox ownership check; the verified revision was supplied from the allowed repository command without changing global trust settings. No unrelated work, enforcement or Git security settings changed.
+
+## 4. Compute Saving Handoff State
+
+Updated v1 remains separate and functional; v2 adds the requested quasi-static load/FBD/torque/tension solver with clarified C/P and contact directions.
+Motor holding torques agree with independent virtual work, all five FBDs close numerically, and the five master controls plus all eleven plots update from current inputs.
+Continue from v2-model.md and app context, keep prescribed loads distinct from fixed-A sprung mass, and add passive/active spring response only in a later explicitly defined model; all work remains local with no commit or push.
+
+---
+
+## Entry: 2026-10-13 — Jonathan Xie — V2 loading controls and vertical-travel plots
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver member app.
+- **Associated Issue/Task:** User requested eight direct v2 refinements: complete theta2 master fields, belt-tension/dz headlines, switchable global and wheel force conventions, paired masters, diagram visibility, compact FBD rows, loading-versus-dz plots and angles-versus-dz. Preserve v1 and quasi-static assumptions. Local save only; no commit, push or hosting requested.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-quasi-static.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-model.md`
+- **API/Interface Changes:** Theta2 minimum/maximum/current values sync extension/compression/pose. Alpha and beta share a row. Left Fy/Fz and right Fn/Ft columns have exclusive driving selection, preserved physical vector on switching, automatic orthogonal conversion, faded disabled derived controls and exclusive playback. All forces are signed; outward normal loads are prescribed rather than contact-feasibility predictions. Header cards show tau2/tau4, total tight-span Tab + upper/lower and dz; mass remains in sidebar. Separate figure toggles hide motor couples and driving force decomposition. FBD rows are 2/3 then 4/5/6. Twelve loading graphs add a working dz row under theta2; angle/dz joins the final three-graph row. Parametric paths preserve nonmonotonic branches, negative travel, exact fractional theta boundaries and 0/hz markers. Additive JSON schema retains old v2 support and saves loadMode/six windows/view settings. CSV now has four sweeps, 31 columns, x/x_unit, resolved force components and dz. V1 SHA256 is unchanged from the accepted prior version; no shared runtime/assets/dependencies/rules modified.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** node verify-quasi-static.cjs passes 16,044 assertions, including prior 240 varied equilibrium cases plus 91 equivalent loading-convention comparisons, signed forces, force norm/global sweep invariance, fractional endpoints, negative/reversing travel, multiple height roots and constant-height bounds. node verify-kinematics.cjs passes 3,853 assertions; all embedded scripts parse. Existing maximum residuals remain 9.722e-13 N, 3.624e-13 Nm and 3.979e-13 Nm virtual-work discrepancy. Actual static HTTP browser verification covers min/max/current theta controls, four headlines, force conversion/mode-switch torque invariance, derived control disabling, exclusive playback, visibility toggles, FBD order, twelve loading plots and three kinematic plots, negative travel and finite SVGs. Numeric current clamping displays the clamped value. JSON restores driving mode and legacy v2 files; actual exported CSV has 1,448 rows/31 columns over four sweeps, audited for finite values, resolved conversions, fixed global forces, exact dz reference/bounds and mm/deg metadata. Desktop and 390px responsive structure inspected; viewport reset, browser warning/error logs empty, screenshots retained outside Git. V1 hash unchanged; all nine delivered app files and ZIP entries match the requested folder byte-for-byte. Repository structure/require-passed checks pass (528 files, 10 changed paths, workspace scope); the scoped gate reports canonical physics NOT APPLICABLE; git diff --check and 15 local Markdown links pass. Documentation LF normalization fixes the first whitespace-check failure, preserving text and all prior log entries.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated analytical workspace. No dynamics, springs, contact/friction feasibility or hardware validation added. Height extrema/inverse branches remain sampled; zero-width axes use a display-only +/-0.5 mm pad. Static HTML was tested over HTTP; direct file opening and Windows launchers remain manual. Initial task-local helper failed on default Windows text encoding before assembling UI; explicit UTF-8 fixed it. The prior nonnegative-Fn test changed to nonfinite validation plus signed-convention equivalence, without weakening equilibrium tolerances. Prior uncommitted v1/v2 work is preserved.
+
+## 4. Compute Saving Handoff State
+
+V2 now supports both force input conventions and direct vertical-travel studies with all eight requested UI/layout refinements saved locally.
+The driving pair controls beta-sweep semantics; switching preserves current force, while multi-valued height paths retain each sampled theta branch.
+Continue from v2-model.md and app context, keep v1 separate and add suspension-response/dynamics only after a later explicit model definition; no commit or push performed.
+
+---
+
+## Entry: 2026-10-13 — Jonathan Xie — Collapsible v2 result sections
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver member app.
+- **Associated Issue/Task:** User requested arrow buttons to hide/show rows and sections beginning with FBDs. Local v2 update only.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- **API/Interface Changes:** Fifteen expanded-by-default disclosure arrows for the full FBD section, five individual FBDs, four loading-sweep rows and five final result cards. Keyboard-accessible buttons expose aria-expanded/aria-controls. Hidden content remains mounted and live; the torque display option remains outside the collapsible FBD body. No parameter/export/model API changes. Both embedded solver blocks and v1 remain unchanged; existing uncommitted work is preserved.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All embedded JavaScript parses. Actual HTTP browser checks pass for all 15 collapse/reopen controls, independent FBD hiding, Enter/Space activation, continued pose updates while hidden (reopened at theta2=140 degrees), retained 21 SVGs and available torque option with FBDs hidden. Browser warnings/errors empty; screenshot retained outside Git. Solver blocks verified byte-identical; no new numerical tests needed for this reversible visibility change. Nine-file app delivery and ZIP refreshed and compared byte-for-byte. Canonical physics not applicable.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member UI-only update. No mechanics/dynamics assumptions changed. Direct offline file opening remains manual; browser QA used identical standalone HTML over HTTP. Collapse states reset to expanded on reload; parameter saves retain their previous schema.
+
+## 4. Compute Saving Handoff State
+
+V2 now has arrow buttons beside result section/card titles, beginning with FBDs, and defaults to expanded.
+Collapsing hides only the view, preserving current plots, values and control state for reopening.
+Refresh the saved v2 HTML to load the change, continue using the existing model notes, and preserve v1; no commit or push performed.
+
+---
+
+## Entry: 2026-10-14 — Jonathan Xie — V2 global headline maxima at current alpha
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver app.
+- **Associated Issue/Task:** User requested a second equally prominent headline row for global absolute maxima, retaining torque signs. Final steering searches all theta2 × beta combinations inside their ranges with alpha fixed at its current value. Local update only.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-global-maxima.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- **API/Interface Changes:** New embedded VSLPeaks helper and four global headline cards under current values. Exact sinusoid beta candidates plus theta interval bounds search all combinations, targeting a 0.001-unit magnitude gap and displaying estimates if limited. Current alpha and driving forces are fixed; alpha-window bounds do not enter the user-facing search. Signed torque winners, total tight Tab/side and absolute dz include peak poses. Cached results update on relevant loads/geometry/bounds/current alpha. No existing solver, JSON/CSV input interface, shared runtime or v1 change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** verify-global-maxima.cjs passes 29,863 assertions: formula/FBD parity, closed-form extrema, conservative domain bounds, attained poses, interior beta peaks, negative dz, preload, collapsed ranges, limit fallback, both force conventions and current-alpha-only searches. Existing verify-quasi-static.cjs passes 16,044 assertions; all embedded scripts parse. Browser verifies eight headline cards with equal 19px values, bounds/force-convention changes and torque signs; theta/beta pose movement and alpha-window changes preserve maxima, while current-alpha changes recompute them. Peak pose alpha equals current alpha, warning/error logs empty, screenshot retained. Core solver blocks verified unchanged; delivered ten-file bundle/ZIP verified byte-for-byte. Canonical physics not applicable.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated analytical app. No dynamics or hardware claim. Search bounds are analytical with numerical roundoff limits; unresolved iteration-limit gaps are shown explicitly. A sinusoid test fixture was corrected to put its intended interior extremum inside the tested beta interval; no tolerances weakened. Offline launchers remain manual; identical standalone HTML tested over HTTP. Prior uncommitted changes preserved.
+
+## 4. Compute Saving Handoff State
+
+V2 now displays a second equal-size global maximum row for tau2, tau4, Tab and dz across theta2/beta at the current alpha.
+Each card includes a peak pose, keeps the requested torque sign and reports remaining search uncertainty when necessary.
+Refresh v2, use the new numerical checker and updated model notes, preserve v1 and keep all work local; no commit or push performed.
+
+---
