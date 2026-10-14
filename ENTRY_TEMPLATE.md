@@ -2825,3 +2825,37 @@ Unconverged headline estimates now report Jonathan's attained value and actual r
 Rebuild after upstream source changes and continue from docs/merged-linkage.md without interpreting the fixed-A reference as measured dynamic or hardware performance.
 
 ---
+
+## Entry: 2026-10-14 -- Andy Zhang workspace -- refresh maxima after beta-window edits
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/wheel-leg-lab; merged reference audit.
+- **Associated Issue/Task:** Follow-up final review identified beta-bound-only edits retaining cached headline maxima. Recompute within the actual edited box and verify attained poses, preserving the published merge and original solvers.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/linkage-tools.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_merged_linkage.cjs`
+- **API/Interface Changes:** Reference cache identity includes beta search bounds. Current audit states theta2/beta search domain and fixed alpha; bound labels describe headline search rather than full-domain plotting. General dynamic readout calls the wheel constraint output drive reaction, preserving the original lower-link label in original mode. No solver, source-reference equations, configuration keys or endpoint changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Installed Edge verify_merged_linkage.cjs passes full original Math/Pymunk workflows and a new beta-window-only edit from0..90 to20..30 degrees with all four attained peak beta poses inside the new bounds, then restored full range. Forced zero-iteration numerical error-bound display, controls/plots/FBDs/exports/library/native dispatch (mocked), refresh/theme/mobile and no page errors/external requests also pass. Both JavaScript files parse and whitespace passes. Earlier numerical/native/launcher checks retain their scope; this changes UI caching/labels only. Fetched published base1a431c8; final staged default entry check and exact outgoing require-passed/scoped gate run through the installed mandatory hooks before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE. This fixes which validated reference box is displayed, with no changed dynamic equations or new hardware/contact claim. The first merge is already published; this correction uses a new normal commit and does not rewrite shared history.
+
+## 4. Compute Saving Handoff State
+
+Refresh the original Math/Physics benches for the merged tooling; changing beta bounds now recalculates all headline maxima and displays the selected search domain.
+The browser verifier retains both bounded-pose and iteration-limit checks alongside the original-backend workflows, while numerical/native results remain in docs/validation.md.
+Continue from docs/merged-linkage.md and preserve fixed-A reference versus moving-chassis dynamics, original defaults and the rejected dual-rope status.
+
+---
