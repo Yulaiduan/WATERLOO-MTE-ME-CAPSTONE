@@ -49,3 +49,28 @@ Motion Lab menu entries or automatic startup tasks are installed.
 The optional browser verifier uses installed Edge/Chrome and Playwright from
 the sibling Wheel Leg Lab's locked Node dependencies. It validates local-file
 reading with JavaScript disabled, numerical parity, mobile layout and printing.
+
+## Alpha-zero path and inversion follow-up
+
+The separate **[inversion-paths.html](inversion-paths.html)** / **[12-page PDF](docs/inversion-path-report.pdf)**
+searches 26.46 million geometry/window combinations with alpha=phi0=0, equal
+or near-equal links, 300–350 mm total capacity and the 200 mm wheel radius.
+Use **[Open Inversion Report.cmd](Open%20Inversion%20Report.cmd)** for offline viewing.
+[Design reasoning](docs/inversion-path-study.md) records the strict symmetry
+limit, approximate 350/350 mm 7:4 branch, longer alternatives, explicit
+assembly-phase relaxation and unresolved full-inversion wheel clearance.
+This follow-up is also static; it adds no Motion Lab controls or services.
+
+Optional new checks and regeneration from this folder:
+
+```sh
+.venv/Scripts/python.exe inversion_search.py --output docs/inversion-path-results.json
+.venv/Scripts/python.exe -m unittest -v test_inversion_search
+.venv/Scripts/python.exe scripts/verify_inversion_geometry.py
+.venv/Scripts/python.exe scripts/build_inversion_report.py
+node scripts/verify_inversion_report.cjs
+```
+
+Source base is `865b5f1`. The renderer consumes retained evidence; it does not
+silently run the search. Coarse quality counts and dense selected metrics are
+labelled separately. The PDF/HTML regenerate locally from the pinned environment.

@@ -2449,3 +2449,52 @@ The report records the compact bounded candidate, complete assumptions, per-prof
 Continue from this app's context and revision map, retain Jonathan's conventions and rejected historical status, and obtain actual packaging, moving masses, spring limits and motor duty before promoting these conditional calculations to hardware decisions.
 
 ---
+
+## Entry: 2026-10-14 — Andy Zhang — Offline alpha-zero angled-path and inversion search
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated leg-design-study member workspace.
+- **Associated Issue/Task:** Owner requested many equal/near-equal-link designs with alpha=0 and different guide ratios, approximately linear 10–15 degree paths and full inversion, from Jonathan's screenshot parameters. Continue autonomously overnight and deliver another separate offline HTML/PDF report, document assumptions and revision context, validate and publish to main. Retain the 200 mm wheel radius, 300–350 mm total including buffers, prior report and rejected historical dual-rope status.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/Open Inversion Report.cmd`
+- `users/andy-zhang/experimental-apps/leg-design-study/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/inversion-engine-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/inversion-path-report.pdf`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/inversion-path-results.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/inversion-path-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/validation.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/index.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/inversion-paths.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/inversion_search.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_inversion_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_inversion_geometry.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_inversion_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/test_inversion_search.py`
+
+- **API/Interface Changes:** No Motion Lab tooling, localhost endpoints, original numerical model, saved profiles or canonical/shared consumers change. New isolated search extends ideal V2 geometry into full inversion without changing existing validators. Separate static HTML has embedded SVG/evidence, companion PDF and a manual app-relative CMD launcher; the earlier HTML adds a navigation link only. Retained selected JSON, five tests, actual angular Pymunk verifier, deterministic renderer and original-V2/browser verifier support reproduction. App context/design/revision/validation documents record bounded search, explicit phase relaxation and unresolved physical packaging; no new spring or motor rating is transferred to these geometries.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python 3.13.12 search enumerates 26,461,800 unique geometry/window combinations; 33-pose quality counts and 2001-pose selected metrics distinguished. Five numerical tests pass; independent original-V2 review checks 24 cases at 20,001 poses, agreeing on classifications and bow to 4.4e-6 mm sampling difference. Node 22.23.3/Edge verifier passes 8,784 original-model scalar comparisons, maximum 3.979e-13 mm/Nm, 12 sections / 9 SVG / 16 candidate rows, exact embedded evidence, JavaScript-disabled file reading, zero external requests/errors, 390 px layout, PDF link/signature and print callback/CSS/export. Actual Pymunk five inversion fixtures pass/converge at 1/0.5 ms; all 2 ms path checks fail unchanged 0.1 mm threshold and remain retained. Final 12-page 40354-byte PDF and 749707-byte HTML regenerate byte-identically; all PDF pages and key HTML/mobile figures reviewed. Existing report browser verifier passes 12 sections / 22 SVG after its navigation-only change; old numerical JSON unchanged.85 relative Markdown links, current source hashes and finite evidence pass. Manual launcher runs successfully from unrelated directory. Fetch confirms base 865b5f1 and installed .githooks. Canonical physics NOT APPLICABLE.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. No contact/impact, ground-flip, wheel/chassis interference, belt hardware, spring inversion routing, structural/thermal, GPU, other-OS or hardware acceptance is claimed. An initial zero-buffer height-inverse attempt hit endpoint-bracketing roundoff; the independent angular fixture avoids that dependency without changing the old solver or tolerances. Coarse 2 ms errors 0.112–0.164 mm exceed 0.1 mm; 1/0.5 ms runs pass and converge. Poppler emits a nonfatal Symbol display-font message; actual rendered pages were reviewed with no observed missing glyph/clipping. An ad-hoc evidence check initially assumed script-attribute order; order-independent extraction then passes both reports. Strict phase-zero symmetry makes the full fold tangent vertical, approximate normal/inverted branches mirror, and all near-equal full sweeps fail projected coplanar-wheel clearance. Assembly indexing is explicitly a changed constraint; historical dual-rope remains IMPOSSIBLE/rejected.
+
+## 4. Compute Saving Handoff State
+
+Open leg-design-study/inversion-paths.html or Open Inversion Report.cmd for the new offline report and 12-page PDF, while retaining the earlier design report.
+The equal 350 mm 7:4 example gives 325/285 mm total/usable travel, 12.02-degree chord and 9.66 mm bow on its normal branch; longer tested links reduce bow, while strict full inversion has mirrored tilt and unresolved wheel clearance.
+Continue from inversion-path-study.md and the revision/context map, choose explicitly whether approximate mirrored branches or assembly indexing is acceptable, and establish axial packaging and actual load/spring routing before hardware sizing.
+
+---

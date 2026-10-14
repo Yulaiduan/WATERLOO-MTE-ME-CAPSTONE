@@ -127,3 +127,62 @@ uses 19 pages, while the separately typeset companion report uses 16. The final
 HTML was checked again after print-only spacing changes. All three repository
 working-tree entry/require-passed/scoped-gate checks passed for 30 changed paths
 in workspace scope; canonical robot physics is explicitly NOT APPLICABLE.
+
+## Alpha-zero path and full-inversion follow-up, 2026-10-14
+
+Source base `865b5f1`; isolated workspace scope. The earlier report/model and
+Motion Lab are preserved. This new report is [inversion-paths.html](../inversion-paths.html),
+with [design reasoning](inversion-path-study.md),
+[search evidence](inversion-path-results.json) and
+[actual engine checks](inversion-engine-checks.json).
+
+- Python 3.13.12 `inversion_search.py` enumerated 26,461,800 unique
+  geometry/window combinations in 46.279 seconds: 13,230,900 normal and the
+  same number of crossing windows. Counts include rejected combinations.
+  The 33-pose quality count is coarse; retained selected metrics use 2001 poses.
+- `python -m unittest -v test_inversion_search`: **5/5 pass**, including
+  direct V2 equations/finite differences, symmetry/fold, exact phase line,
+  asymmetric-chord caveat and exact requested capacity without clipping.
+- Independent read-only review recomputed all 24 displayed cases at 20,001
+  poses, agreeing on endpoints, full-inversion and radius classifications.
+  Maximum chord-error sampling difference is 4.4e-6 mm; scalar/vector parity
+  discrepancy is <=1.42e-14 in column units. This is analytical evidence.
+- `node scripts/verify_inversion_report.cjs`: **8,784 scalar comparisons**
+  against this app and original Jonathan V2 pass; maximum discrepancy
+  3.979039320256561e-13 mm/Nm. Installed Node 22.23.3 / Edge verifies file://
+  reading with JavaScript disabled, 12 sections / 9 inline SVG figures,
+  16 candidate rows, exact embedded JSON parity, no external requests or page
+  errors, 390 px layout, PDF link/signature and print callback/CSS/export.
+  Browser-print export is a check artifact, not the typeset companion PDF.
+- `scripts/verify_inversion_geometry.py`: five actual Pymunk 7.3.0 angular
+  inversion fixtures pass at **1 ms and 0.5 ms** and converge. The 0.5 ms
+  maximum path errors range 0.027675–0.040564 mm. All **2 ms** runs fail the
+  unchanged 0.1 mm path threshold (0.111885–0.163992 mm); all refinements,
+  configs and source hashes are retained, rather than omitting coarse failures.
+  Actual constraints generate motion; poses are assigned only at initialization.
+  Gravity/contact/collision shapes are absent, so these are ideal-motion checks.
+- The first zero-buffer height-driven attempt failed root-bracketing at a
+  floating-point endpoint. The independent angular fixture avoids that height
+  inverse; it does not modify the existing solver or weaken tolerances.
+- `scripts/build_inversion_report.py`: final **12-page, 40,354-byte PDF**,
+  17,300 extracted text characters, SHA256
+  `d185e26a91ec43d9bc011d54a855db82b47ace2ab4c14929ec98e7bb8608a604`.
+  All 12 pages were rendered with Poppler and visually reviewed; final changed
+  pages were reviewed again. Poppler emitted a nonfatal Symbol display-font
+  message; completed rendering shows no observed missing glyph or clipping.
+  The HTML is 749,707 bytes with SHA256
+  `7edfa7527c24b262305e1a878ad415c09fee2fa2aedfe4ac36da794d9e4fbf04`.
+  Both outputs regenerate byte-for-byte from the retained evidence.
+- `node scripts/verify_offline_report.cjs` still passes the earlier report after
+  adding its navigation link: 12 sections / 22 SVG, unchanged embedded evidence,
+  JavaScript-disabled local reading, zero external requests and original PDF.
+- 85 relative Markdown links pass; search/model/engine hashes match current
+  files; retained evidence is finite. The old report's numerical JSON matches
+  HEAD exactly. New launcher executes with exit 0 from unrelated C:/Windows.
+
+No canonical robot, hardware, GPU, other-OS, structural, actual ground inversion,
+impact/contact or three-dimensional packaging validation is claimed. All strict
+near-equal full sweeps fail the projected coplanar 200 mm wheel filter. The
+historical dual-rope design stays IMPOSSIBLE / rejected; new spring/motor ratings
+are not copied from the earlier geometry. Exact symmetry limits, approximate
+branch candidates and explicitly changed assembly phase remain distinct.

@@ -30,3 +30,19 @@ webpage and explicitly excluded this study from Motion Lab tooling. The initial
 unpublished Motion Lab entry, API routes and interactive study were removed.
 This folder retains the scientific models, selected evidence, report and
 reproduction checks; the existing wheel sizing calculator stays unchanged.
+
+## Alpha-zero path and full-inversion study, 2026-10-14
+
+Source base `865b5f1` is the published earlier offline report. This follow-up's
+publication is the commit adding `inversion-paths.html`; use the app's Git log
+for its exact hash. The owner requested 10–15 degree approximately linear
+paths from guide ratio and equal/near-equal link lengths at alpha=0, including
+full inversion. [The new record](inversion-path-study.md) keeps phase0 strict,
+compares 26.46 million normal/crossing windows, records the symmetry/clearance
+limits, practical 7:4 branch and explicit assembly-indexing alternative.
+
+New files contain the independent search, five tests, actual angular Pymunk
+fixture, retained results, local HTML/12-page PDF generator and browser verifier.
+The earlier report gets a navigation link only. The previous numerical model,
+Motion Lab source/services and spring/motor results are unchanged. Canonical
+robot validation is not applicable; unresolved physical inversion remains open.
