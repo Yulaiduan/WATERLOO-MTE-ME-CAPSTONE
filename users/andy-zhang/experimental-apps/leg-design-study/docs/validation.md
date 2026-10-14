@@ -186,3 +186,59 @@ near-equal full sweeps fail the projected coplanar 200 mm wheel filter. The
 historical dual-rope design stays IMPOSSIBLE / rejected; new spring/motor ratings
 are not copied from the earlier geometry. Exact symmetry limits, approximate
 branch candidates and explicitly changed assembly phase remain distinct.
+
+## Force and useful-travel report, 2026-10-14
+
+Source base `d1596e5`; workspace scope. All old numerical models, reports,
+live Motion Lab examples/GIFs and historical IMPOSSIBLE decisions remain intact.
+See [the new design record](force-travel-study.md) for assumptions and limits.
+
+- Python 3.13.12 `force_travel_search.py` evaluates **11,478,060** strict
+  geometry/window combinations and **11,070** separate indexed combinations.
+  Final run 51.885 seconds; 51-pose quality counts and 2001-pose selected
+  acceptance distinguished. Two local SLSQP refinements succeed in 14 iterations
+  and pass dense checks. Twenty-one selected accepted or diagnostic/reference
+  cases are retained; source hashes match current files, and evidence is finite.
+- `python -m unittest -v test_force_travel test_inversion_search test_generalized_leg`:
+  **22/22 pass**, including five new independent force/buffer/quadrature/peak/
+  power/acceptance tests and the previous seventeen. No model tolerance changed.
+- Independent read-only review recomputes all 21 cases: peak J agreement
+  7.22e-15 m/rad, RMS J 5.91e-9 m/rad, continuous versus sampled bow at most
+  3.81e-6 mm; all acceptance classifications agree. Refined 5% mismatch boundary
+  and the 330 mm 7:4 diagnostic's 3.004279% bow failure are confirmed.
+- `node scripts/verify_force_report.cjs`: installed Node 22.23.3 /Edge passes
+  **10,248** original Jonathan V2/existing Andy 2D scalar comparisons, maximum
+  **3.410605e-13 mm/Nm**. Actual file:// reading passes with JavaScript disabled,
+  9 sections /7 inline SVG, four shortlist rows and exact embedded JSON.
+  No external requests, page errors, nonfinite figure data or 390 px overflow.
+  PDF link/signature, print callback/CSS and browser print export also pass.
+  Browser captures/print outputs stay ignored; no Motion Lab controls were added.
+- `scripts/verify_force_geometry.py`: three new full angular Pymunk 7.3.0
+  fixtures pass at **1/0.5 ms** and converge. Positive bodies, actual pivots/
+  gears/motor and Space.step; only initial poses assigned. Fine errors
+  0.025886–0.033781 mm. **All 2 ms path checks fail** (0.104650–0.136571 mm)
+  the unchanged 0.1 mm tolerance and remain in compact evidence. These are
+  zero-gravity/contact, collision-shape-free geometry checks, not motor-force
+  or physical inversion certification.
+- `scripts/build_force_report.py`: final **9-page, 39,966-byte PDF**, 12,734
+  extracted text characters, SHA256
+  `bdbda4e5ac4533cb2ef47740645a3a6c281eb4667bb20f21305709a826769281`.
+  HTML is **769,141 bytes**, SHA256
+  `cca70bfbd6529308635e8abf8c82ad2cc12f912ab1192d374fabad0d002971d0`.
+  Both regenerate byte-for-byte. All nine PDF pages were rendered with Poppler
+  and visually reviewed; final changed layouts/plots reviewed again. Poppler's
+  nonfatal Symbol display-font message remains, with no observed missing glyph,
+  clipping or overlap. Browser charts and offline/mobile reading reviewed.
+- Relative documentation links pass, and the manual **Open Force Travel
+  Report.cmd** returns exit 0 from an unrelated directory. Viewing needs no
+  server or installed runtime. Motion Lab/Atlas lifecycles and full unchanged
+  app suites were not rerun for this static report; previous setup evidence is
+  retained. Canonical robot physics is **NOT APPLICABLE**.
+
+The first JSON export rejected a NumPy boolean; explicit scalar conversion
+fixed export and the complete search was rerun. Report harness SVG count was
+corrected to the seven actual figures; no numerical limit was relaxed.
+New 3/4g values are equivalent held-load sensitivities, not simulated impacts.
+Full coplanar inversion still fails for every shortlist row; unknown axial/
+chassis geometry, strength, actual impact, springs, thermal motor duty, hardware,
+GPU and other-OS behavior are not certified.

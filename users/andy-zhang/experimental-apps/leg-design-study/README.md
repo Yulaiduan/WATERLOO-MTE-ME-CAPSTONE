@@ -74,3 +74,19 @@ node scripts/verify_inversion_report.cjs
 Source base is `865b5f1`. The renderer consumes retained evidence; it does not
 silently run the search. Coarse quality counts and dense selected metrics are
 labelled separately. The PDF/HTML regenerate locally from the pinned environment.
+
+## Force and useful-travel ranking
+
+Open **[force-travel.html](force-travel.html)** or **[Open Force Travel Report.cmd](Open%20Force%20Travel%20Report.cmd)**
+for the third offline report, with its **[nine-page PDF](docs/force-travel-report.pdf)**.
+[The design record](docs/force-travel-study.md) compares 11.48 million new
+phase-zero windows, local constrained refinement and separate fixed-indexing
+alternatives. Rounded 320/320 mm links with a 9:5 guide give 325/285 mm total/usable
+height and 57.83 Nm unassisted equivalent-load hip peak at the 45 kg case.
+Indexed 300/300 mm, 2:1 and phase -25 degrees gives an exact 12.5 degree line,
+with a wider control range. Full physical inversion remains a packaging issue.
+
+These are ideal force/travel screens, not new spring/motor ratings. Viewing
+needs no server or installed runtime and adds no Motion Lab controls.
+Optional reproduction commands are in the design record; use the existing
+Python 3.13 / Node 22 environments and requirements.

@@ -39,3 +39,15 @@ Git transfers source and these public engineering summaries, not private Codex
 chat/account history or installed runtime environments. Browser profiles/runs
 need explicit JSON download/import. Rebuild ignored dependencies and generated
 assets locally; no desktop path, PC server or old local archive is required.
+
+## Latest offline force/travel study, 2026-10-14
+
+The owner requested force and travel ranking for the slightly tilted invertible
+ideal legs. Open [leg-design-study/force-travel.html](leg-design-study/force-travel.html)
+and read its [design record](leg-design-study/docs/force-travel-study.md).
+Rounded 320/320 mm links with guide 9:5 retain alpha=phi0=0; fixed-indexed
+300/300 mm 2:1 at phi0=-25 degrees is the exact-line alternative. Both examples
+have 325 mm total /285 mm usable height. Full physical inversion still needs
+resolved axial/chassis clearance; all coplanar near-equal sweeps fail.
+Report/optimization stays offline, separate from Motion Lab's earlier labelled
+examples/GIFs. Prior spring/motor estimates and IMPOSSIBLE decisions stay intact.

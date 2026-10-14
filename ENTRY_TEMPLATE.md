@@ -2564,3 +2564,53 @@ The same renderer draws three leading options, an exact indexed line and the scr
 Continue from docs/design-examples.md and the sibling report revision map, preserve all existing solver/profile and IMPOSSIBLE decisions, and use the actual report calculations before proposing physical spring/motor or packaging changes.
 
 ---
+
+## Entry: 2026-10-14 — Andy Zhang workspace — force and useful travel for alpha-zero legs
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/leg-design-study; isolated offline report and experimental force/kinematic screening.
+- **Associated Issue/Task:** Owner request to find the best force/travel and link lengths among slightly tilted, ideally invertible paths; preserve original alpha/phase conventions and provide the reasoning/report later. Continue from d1596e5 and keep reports outside Motion Lab tooling.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no existing files deleted.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/Open Force Travel Report.cmd`
+- `users/andy-zhang/experimental-apps/leg-design-study/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/force-travel-engine-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/force-travel-math-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/force-travel-report.pdf`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/force-travel-results.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/force-travel-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/validation.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/force-travel.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/force_travel_search.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_force_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_force_geometry.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_force_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/test_force_travel.py`
+
+- **API/Interface Changes:** New independent force-first grid/refinement, five tests, original-model and actual-Pymunk geometry verifiers, compact selected evidence, offline HTML/nine-page PDF builder and app-relative manual CMD opener. No existing model, Motion Lab/Atlas API, solver UI, saved profile, live example/GIF, spring/motor calculation or canonical consumer changes. App/parent context and revision/validation records link the new force/travel screen, active bounds, fixed-indexing relaxation and unresolved physical inversion. Ranking is direct hip force per Nm with explicitly different knee/speed and work mappings, not electrical efficiency.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python3.13.12 /Node22.23.3. New strict search enumerates11,478,060 geometry/window combinations (51-pose coarse quality counts,2001-pose selected acceptance), plus11,070 separate fixed-indexed combinations;21 selected cases retained. Two grid-seeded SLSQP refinements succeed and pass dense constraints.22/22 Python tests pass (5 new force,5 inversion,12 generalized). Independent read-only review of21 cases agrees on peakJ to7.22e-15m/rad, RMSJ5.91e-9m/rad and continuous bow3.81e-6mm with unchanged classifications. Original Jonathan V2 and Andy2D statics pass10,248 scalar comparisons, max3.410605e-13mm/Nm. Actual three positive-mass Pymunk angular sweeps pass1/0.5ms and converge; all2ms path checks fail unchanged0.1mm threshold and remain recorded. Installed Edge verifies JavaScript-disabled file reading,9 sections/7 SVG/four shortlist rows, exact JSON, no external requests/page errors/nonfinite plots,390px layout, PDF signature/link and print callback/CSS/export. Nine-page39,966-byte PDF and769,141-byte HTML regenerate byte-identically; all PDF pages rendered and visually reviewed, final changes rechecked. Relative documentation links and finite/source-hash checks pass; manual app-relative CMD opener exits0 from an unrelated directory. Raw captures/logs stay ignored; canonical physics NOT APPLICABLE.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. No real impact/contact, 3D wheel/chassis clearance, structural strength, spring refit, dynamic/thermal motor rating, GPU, hardware or other-OS certification is claimed. Full coplanar inversion fails every shortlisted near-equal case. New3/4g values are held-load sensitivities. The historical dual-rope stays IMPOSSIBLE/rejected; previous models and estimates stay separate. Initial evidence export rejected a NumPy boolean; explicit scalar conversion fixed export and the complete search was rerun. The browser harness figure count was corrected to the actual seven figures; no numerical tolerance changed. Poppler emits its nonfatal Symbol display-font message; completed reviewed pages have no observed missing glyph or clipping. Unchanged Motion Lab/Atlas lifecycle and complete app suites were not rerun for this static report.
+
+## 4. Compute Saving Handoff State
+
+Open leg-design-study/force-travel.html or its nine-page PDF for the force-first ranking, total/useful travel comparisons, individual torque/force curves and control/load sensitivities.
+Rounded320/320mm9:5 atalpha=phi0=0 gives325/285mm height and57.832Nm equivalent static hip peak at45kg; indexed300/300mm2:1 phi0=-25 gives an exact12.5degree line with wider control/speed range, while local minima touch constraint boundaries.
+Continue from docs/force-travel-study.md, resolve axial/chassis clearance and actual load/mass/shaft/spring inputs before physical inversion or motor selection, and preserve all previous reports, live examples/GIFs and IMPOSSIBLE decisions.
+
+---

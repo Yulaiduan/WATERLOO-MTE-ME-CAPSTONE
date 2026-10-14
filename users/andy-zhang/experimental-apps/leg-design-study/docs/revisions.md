@@ -57,3 +57,18 @@ new live drawings and ten curated GIFs, with exact retained cases and geometry
 checks. The offline report/PDF, optimizer and physics models are not embedded
 in Motion Lab; only the separately requested read-only mechanism examples are
 added. Preserve fixed-phase/clearance limitations and historical decisions.
+
+## Force and useful-travel ranking, 2026-10-14
+
+Source base `d1596e5`; publication is the commit adding `force-travel.html`.
+The owner requested the best force/travel tradeoffs for the slightly tilted,
+invertible ideal designs. [The new record](force-travel-study.md) retains a new
+11.48-million-window force-first grid, local refinement, total-height comparison,
+explicit fixed-indexing relaxation and separate geometry/force validation.
+The nine-page PDF/offline HTML do not alter Motion Lab controls, saved profiles,
+existing examples/GIFs, old reports or spring/motor calculations.
+
+Rounded 320/320 mm 9:5 is the phase-zero compromise; 300/300 mm 2:1 with fixed
+phase -25 degrees is the exact-line alternative. Their ideal inverses do not
+resolve full coplanar clearance. All assumptions, active bounds, rejected
+diagnostics, held-load versus impact distinction and test failures stay recorded.

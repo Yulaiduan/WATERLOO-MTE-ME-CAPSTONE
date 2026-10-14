@@ -35,3 +35,27 @@ illustrative quality limits, and all near-equal full sweeps fail the coplanar
 and guide 2:1 gives a true 12.5 degree line for equal links but still crosses the
 hip; axial packaging remains unresolved. The previous spring/motor estimates
 are not transferred to these new geometries.
+
+## Force/travel follow-up, 2026-10-14
+
+Source base `d1596e5`; publication is the commit adding [force-travel.html](force-travel.html).
+Read [the detailed record](docs/force-travel-study.md), [selected evidence](docs/force-travel-results.json),
+[original-model checks](docs/force-travel-math-checks.json) and [new engine checks](docs/force-travel-engine-checks.json).
+The owner requested force and travel rankings for the slightly tilted invertible
+ideal paths. The new screen uses peak useful Jz (worst force per direct hip Nm),
+height-weighted RMS, explicit control range and 300/325/350 total heights.
+
+Rounded 320/320 mm, guide 9:5, alpha=phi0=0 gives 325/285 mm, 10.313 degree chord,
+9.179 mm bow and 57.832 Nm equivalent static hip peak at 110.3625 N. Its total
+normal interval is 110–155.398 degrees; local tangents 5.049–19.302 degrees.
+Near-equal local minimum 293.780/309.242, r1.786363 touches clearance, angle,
+tangent-span and 5% mismatch bounds. Prefer the rounded option's allowance.
+If indexing is accepted, 300/300, r2, phi0 -25 gives an exact 12.5 degree line,
+similar peak 57.263 Nm and larger useful ROM 44.274 degrees; normal start 87.5
+and shifted full envelope require changed ROM. This remains a separate relaxation.
+
+All full coplanar inversion checks fail. New 3/4g values are held-load sensitivities,
+not impacts; no new spring or motor rating is inferred. Five new tests, 10,248
+V2/Andy 2D scalar checks and three actual fine Pymunk geometry sweeps pass;
+coarse 2ms failures remain recorded. The old models/reports, live examples/GIFs,
+and historical dual-rope IMPOSSIBLE status are preserved.

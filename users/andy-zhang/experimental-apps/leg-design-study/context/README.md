@@ -59,3 +59,25 @@ all 2 ms coarse path checks fail the 0.1 mm tolerance and remain recorded.
 The earlier height-inverse endpoint-roundoff failure is also retained. No
 spring, motor, contact/impact, hardware or canonical robot certification is
 added. Preserve historical IMPOSSIBLE dual-rope status and the prior report.
+
+## Force and buffered travel, 2026-10-14
+
+Source base `d1596e5`. Continue from [the force/travel record](../docs/force-travel-study.md)
+and [offline report](../force-travel.html). The new owner request ranks force
+and useful height; it does not authorize moving this report into Motion Lab.
+The strict grid evaluates 11,478,060 windows and separately compares 2%/3% bow;
+two local constrained refinements and 11,070 fixed-indexed windows are retained.
+
+Recommended study seed: equal 320 mm links, 9:5 guide, alpha=phi0=0, normal
+theta2 110–155.398 degrees, 325 total /285 usable. It gives 1.908 N/Nm worst
+vertical force gain and 57.832 Nm static equivalent-load hip peak at the
+45 kg four-corner case, without a spring. A fixed phi0=-25 degree indexed
+300/300 mm 2:1 alternative is an exact 12.5 degree line and has a wider ROM.
+Refined minima touch several constraint bounds; none proves a hardware optimum.
+
+Five new numerical tests plus the prior 17 pass; 10,248 original-V2/Andy 2D
+comparisons pass. Three actual full angular Pymunk refinements pass at 1/0.5ms,
+while all 2ms path checks fail and remain recorded. Geometry agreement is not
+motor-force, impact or collision certification. All full coplanar near-equal
+inversions fail clearance; axial/chassis geometry remains unknown. Preserve
+prior spring/motor results as separate cases and dual-rope IMPOSSIBLE status.
