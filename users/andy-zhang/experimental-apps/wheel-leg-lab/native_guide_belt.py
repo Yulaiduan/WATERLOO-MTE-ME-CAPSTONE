@@ -14,6 +14,7 @@ from guide_belt import build_loop, material_phase, material_dots, tension_state
 
 
 def capture_torque(m,c,velocities,spins,dt):
+    if c.get('linkage_design')=='general':return None
     if c['fixture']!='floating':return None
     u,l,h,w=(m[key] for key in ('upper','lower','hip','wheel'))
     g=m['space'].gravity
@@ -37,6 +38,17 @@ def capture_torque(m,c,velocities,spins,dt):
 
 def draw(screen,m,c,project,font,viewer=None):
     if not c.get('guide_pulleys_visible'):return
+    if c.get('linkage_design')=='general':
+        A=m['hip'].local_to_world(m['j1'].anchor_a);B=m['lower'].local_to_world(m['j2'].anchor_b);C=m['wheel'].position
+        for name,left,right,R,r,shade in [('a/b',A,B,c['guide_hip_radius'],c['guide_knee_radius'],(226,191,112)),('c/d',A,B,c['drive_hip_radius'],c['drive_knee_radius'],(165,147,224)),('e/f',B,C,c['drive_output_radius'],c['wheel_pulley_radius'],(225,142,153))]:
+            delta=right-left;D=delta.length;u=delta/D;h=(R-r)/D;v=Vec2d(-u.y,u.x)
+            for sign in (-1,1):
+                n=u*h+v*(sign*math.sqrt(max(0.,1-h*h)));pygame.draw.line(screen,shade,project(left+n*R),project(right+n*r),2)
+            for centre,radius in ((left,R),(right,r)):
+                cp=project(centre);edge=project(centre+Vec2d(radius,0));pygame.draw.circle(screen,shade,cp,max(1,abs(edge[0]-cp[0])),1)
+        screen.blit(font.render('Three open carrier belts · measured body poses / editable pitch radii',True,(226,191,112)),(24,293))
+        screen.blit(font.render('Equivalent angular constraints; reference span/preload FBDs are in the browser audit.',True,(132,151,139)),(24,314))
+        return
     viewer=viewer or {};rh=c['guide_hip_radius'];rk=rh/2
     A=m['hip'].local_to_world(m['j1'].anchor_a);B=m['lower'].local_to_world(m['j2'].anchor_b)
     loop=build_loop(A,B,rh,rk)

@@ -6,7 +6,7 @@ artifacts/
 web/linkage/
 web/animations/
 web/recorded/
-web/jon-linkage/
+web/jon-models.js
 *.pyc
 
 web/plotly.min.js

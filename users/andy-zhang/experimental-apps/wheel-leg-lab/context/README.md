@@ -1,25 +1,22 @@
 # Wheel Leg Lab context
 
-## Jonathan v2 merged as a separate design, 2026-10-14
+Owner: Andy Zhang. Updated: 2026-10-14. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
 
-Current user request explicitly authorizes integrating Jonathan's v2 features
-into Motion Lab Math and 2D Physical, starting from `93fed9f`. The prior separate
-offline reports stay in their sibling app. The new editor exposes full original
-geometry, three belts, signed prescribed loads/force conventions, masses/gravity,
-preloads, FBDs, sweeps and bounded maxima. Both tabs share one mounted state;
-refresh recovery, library profiles, original JSON imports, sweep datasets and
-dark mode are integrated. Read the [cross-check](../docs/jon-linkage-cross-check.md)
-and [integration README](../jon-linkage/README.md).
+## Merged original suspension tooling, 2026-10-14
 
-Build reads the sibling v2 HTML and preserves its three analytical scripts
-byte for byte, with hashes in ignored web/jon-linkage/source.json. No retained
-solver copy, dynamic backend or new spring is introduced. The physical-tab entry
-is explicitly quasi-static; native/recorded Pymunk actions explain the boundary.
-Use the existing Start/Stop Motion Lab.cmd at 4186. Current actual validation and
-remaining limits are in [validation](../docs/validation.md). Canonical physics is
-not applicable; historical dual-rope IMPOSSIBLE and existing saved runs persist.
-
-Owner: Andy Zhang. Updated: 2026-10-12. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
+The owner corrected the c8b3c8b separate-editor integration: extend the original
+Math and 2D Physics solvers with Jon's features and validate against his source.
+The [merged model](../docs/merged-linkage.md) now owns general link lengths,
+three carrier belts, phases/mounting, masses/inertia, loads and source statics.
+The original UI, spring presets, position input, SciPy/Pymunk APIs, saved profiles,
+comparison and native viewer remain the foundation; original geometry is default.
+Jon's three math scripts are bundled verbatim as hashed reference functions,
+without his editor. The dynamic generalized fixture is independent of the fixed-A
+reference FBDs, preloads and holding loads; source zero masses are not fabricated
+into dynamic bodies. Read current validation before interpreting numerical claims.
+Continue with the original port4186 Start Motion Lab.cmd and select editable
+Geometry in either original bench. Keep rejected dual-rope inversion status,
+separate offline reports/examples and canonical engineering records intact.
 
 ## Separate offline design report, 2026-10-14
 

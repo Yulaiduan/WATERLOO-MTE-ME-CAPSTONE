@@ -1,11 +1,12 @@
 /** Browser-local motion study library. Import this ES module from the lab shell.
- * Inputs: JSON configs/results in each backend's documented units (Jonathan uses mm/deg).
+ * Inputs: JSON configs and recorded solver results in each backend's documented SI units.
  * Outputs: append-only IndexedDB records, lightweight summaries and explicit JSON downloads.
  * Limits: this browser/origin only; no server synchronization, deletion or physics validation.
  */
 export const RECORD_SCHEMA = 'wheel-leg-lab-record/v1';
+import {fromJon} from './jon-profile.js';
 export const MAX_IMPORT_BYTES = 80 * 1024 * 1024;
-const BACKENDS = ['math', 'pymunk', 'linkage', 'counterbalance_math', 'counterbalance_pymunk','inversion_math','inversion_pymunk','jon_v2'];
+const BACKENDS = ['math', 'pymunk', 'linkage', 'counterbalance_math', 'counterbalance_pymunk','inversion_math','inversion_pymunk'];
 const FORBIDDEN = new Set(['__proto__', 'prototype', 'constructor']);
 let databasePromise;
 
@@ -109,8 +110,8 @@ function inferredBackend(value, config) {
  */
 export function normalizeImport(input, fileName = 'Imported study') {
   let value = checkedJSON(input);
+  if(['general-vsl/v1-kinematics','general-vsl/v2-quasi-static'].includes(value?.schema))value={backend:'pymunk',config:fromJon(value),name:fileName.replace(/\.json$/i,'')};
   if (!Array.isArray(value) && !object(value)) throw new Error('Import a JSON object or an array of recorded samples.');
-  if(['general-vsl/v1-kinematics','general-vsl/v2-quasi-static'].includes(value.schema))value={backend:'jon_v2',config:value,name:fileName.replace(/\.json$/i,'')};
   if (value.schema !== undefined && ![RECORD_SCHEMA,'wheel-leg-lab-profile/v1','motion-lab-linkage-run','motion-lab-study/v1'].includes(value.schema)) throw new Error('Unsupported record schema.');
   if (value.schema==='motion-lab-linkage-run' && value.version!==1) throw new Error('Unsupported linkage run version.');
   if(value.schema==='motion-lab-study/v1'){
@@ -161,20 +162,6 @@ export function normalizeImport(input, fileName = 'Imported study') {
     if(!['ground','hip_fixed'].includes(config.fixture))throw Error('Unknown inversion fixture.');
     if(config.rope_routing!==undefined&&!['central_wrap','central_face','outer_rim'].includes(config.rope_routing))throw Error('Unknown inversion rope routing.');
     for(const key of ['length','radius','dt','duration'])if(typeof config[key]!=='number'||config[key]<=0)throw Error('Inversion '+key+' must be positive SI.');
-  }
-  if(config&&selectedBackend==='jon_v2'){
-    if(!['general-vsl/v1-kinematics','general-vsl/v2-quasi-static'].includes(config.schema)||!object(config.parameters))throw Error('Jonathan profiles need original v1/v2 parameter JSON.');
-    const p=config.parameters;
-    for(const key of ['L2','L3','ra','rb','rc','rd','re','rf','rw'])if(typeof p[key]!=='number'||p[key]<=0)throw Error('Jonathan '+key+' must be positive millimetres.');
-    for(const [key,min,max] of [['alpha',0,45],['phi0',0,30],['te',90,180],['tc',90,180]])if(typeof p[key]!=='number'||p[key]<min||p[key]>max)throw Error('Invalid Jonathan '+key+' angle in degrees.');
-    if(p.te>p.tc)throw Error('Jonathan extension must be no greater than compression.');
-    for(const key of ['m1','m2','m3','m5','m6','g','Tab0','Tcd0','Tef0'])if(p[key]!==undefined&&(typeof p[key]!=='number'||p[key]<0))throw Error('Jonathan '+key+' must be nonnegative.');
-    if(p.r5I!==undefined&&(typeof p.r5I!=='number'||p.r5I<=0))throw Error('Jonathan effective inertia radius must be positive millimetres.');
-    if(p.loadMode!==undefined&&!['nt','yz'].includes(p.loadMode))throw Error('Unknown Jonathan force convention.');
-    for(const key of ['Fn','Ft','Fy','Fz'])if(p[key]!==undefined&&typeof p[key]!=='number')throw Error('Jonathan forces must be numbers in newtons.');
-    if(p.beta!==undefined&&(typeof p.beta!=='number'||p.beta<0||p.beta>90))throw Error('Jonathan beta must be 0–90 degrees.');
-    if(config.theta2!==undefined&&typeof config.theta2!=='number')throw Error('Jonathan current angle must be a number.');
-    // The original model performs complete window/driven/belt checks when loading.
   }
   const kind = config ? (hasData ? 'run' : 'profile') : 'dataset';
   if (value.kind && !['profile', 'run', 'dataset'].includes(value.kind)) throw new Error('Unknown record kind.');

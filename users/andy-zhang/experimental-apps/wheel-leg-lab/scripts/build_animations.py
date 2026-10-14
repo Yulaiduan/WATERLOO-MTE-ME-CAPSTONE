@@ -29,8 +29,8 @@ def page(title,fragment):
          '<header><h1>'+escape(title)+'</h1><a href="/animations/">All studies</a><a href="/" target="_top">Motion Lab</a></header>'+fragment+'</main></body></html>')
 
 def main():
- from build_jon_linkage import main as build_linkage
- build_linkage()
+ from build_jon_models import main as build_models
+ build_models()
  from build_design_examples import main as build_examples
  build_examples()
  runtime=ROOT/'node_modules/plotly.js-dist-min/plotly.min.js'

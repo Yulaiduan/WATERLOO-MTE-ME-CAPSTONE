@@ -4,7 +4,8 @@ Invocation: imported by server.py/debug_gui.py; call simulate(config) for a trac
 Inputs: explicit config in m, kg, s, rad, N and N m; UI angles convert from degrees.
 Outputs: solver rows, debug-draw frames, reference checks and diagnostics.
 Requires pinned Pymunk; no terrain contact, belt elasticity or hardware calibration.
-Grounded 2:1 carrier guide uses absolute GearJoint ratio -1, phase pi.
+The original 2:1 carrier guide uses GearJoint ratio -1, phase pi; optional general
+geometry adds unequal links and independent compound/wheel carrier ratios.
 """
 from __future__ import annotations
 import math
@@ -16,6 +17,7 @@ from equation_checks import SCREENSHOT, moment_checks
 from motion_input import position_state
 from spring_mechanisms import MECHANISM_DEFAULTS,apply_preset,mechanism_config,geometry_from_bodies,mechanism_metadata,auxiliary_parameters,auxiliary_metadata,guide_pulley_frame,passive_stability
 import suspension_runtime as suspension
+import linkage_geometry as linkage
 
 DEFAULTS = {
     "length": .273, "extension": .05, "radius": .2, "theta": 45.,
@@ -32,6 +34,7 @@ DEFAULTS = {
 }
 
 DEFAULTS.update(MECHANISM_DEFAULTS)
+DEFAULTS.update(linkage.DEFAULTS)
 
 def config(values=None):
     c = deepcopy(DEFAULTS)
@@ -64,11 +67,13 @@ def config(values=None):
               "rise":(0,5),"fall":(0,5),"amplitude":(-10000,10000),
               "impulse":(-1000,1000),"bias_force":(-5000,5000),"bias_force_x":(-5000,5000),
               "position_amplitude":(-.5,.5),"preload_force":(-5000,5000)}
+    if linkage.enabled(c):limits['extension']=(0,.15)
     for k,(lo,hi) in limits.items():
         if not lo <= c[k] <= hi: raise ValueError(f"{k} must be between {lo} and {hi} (SI units).")
-    if c["extension"] >= c["length"]: raise ValueError("Extension must be shorter than the knee-to-hub link.")
-    if not 3 <= c["theta_min"] < c["theta"] < c["theta_max"] <= 87:
-        raise ValueError("Use 3° ≤ minimum < initial angle < maximum ≤ 87°.")
+    linkage.validate(c)
+    if not linkage.enabled(c) and c["extension"] >= c["length"]: raise ValueError("Extension must be shorter than the knee-to-hub link.")
+    if not (0 if linkage.enabled(c) else 3) <= c["theta_min"] < c["theta"] < c["theta_max"] <= (90 if linkage.enabled(c) else 87):
+        raise ValueError('Require minimum < initial angle < maximum, within 0..90 degrees for general geometry or 3..87 for original geometry.')
     if c["duration"] / c["dt"] > 30000: raise ValueError("Limit each run to 30,000 solver steps.")
     if c["iterations"] != int(c["iterations"]): raise ValueError("Iterations must be an integer.")
     for k, choices in {"fixture":["floating","hip","wheel"],"target":["position","force","knee"],"wave":["step","square","pulse","impulse"],"ramp_shape":["quintic","linear"],"load_point":["hub","contact"]}.items():
@@ -126,6 +131,9 @@ def body(mass, length, position, angle):
     return b
 
 def build(c):
+    if linkage.enabled(c):
+        from generalized_suspension import build
+        return build(c)
     L,e=c["length"],c["extension"]; theta=math.radians(c["theta"])
     A=Vec2d(0,0 if c["fixture"]=="hip" else 2*L*math.sin(theta))
     B=A+Vec2d(L*math.cos(theta),-L*math.sin(theta))
@@ -224,6 +232,9 @@ def build(c):
 def drive(model, c, t, dt):
     """Shared prescribed motion / diagnostic load for traces and native viewer."""
     u,l=model['upper'],model['lower']
+    if linkage.enabled(c):
+        from generalized_suspension import drive
+        return drive(model,c,t,dt)
     if c['target']=='position':
         z0,_,_=position_state(t,c);z1,v1,a1=position_state(t+dt,c)
         model['carriage'].velocity=(0,(z1-z0)/dt)
@@ -244,7 +255,11 @@ def drive(model, c, t, dt):
     return command,torque,torque_raw,external
 
 def simulate(values=None):
-    c=config(values); m=build(c); s=m["space"]; u=m["upper"]; l=m["lower"]; h=m["hip"]; w=m["wheel"]
+    c=config(values)
+    if linkage.enabled(c):
+        from generalized_suspension import simulate_physics
+        return simulate_physics(c)
+    m=build(c); s=m["space"]; u=m["upper"]; l=m["lower"]; h=m["hip"]; w=m["wheel"]
     L,e=c["length"],c["extension"]; g=Vec2d(0,-c["gravity"]);dt=c["dt"];model_info=describe(m)
     hip_origin=h.local_to_world(m['j1'].anchor_a)
     rows=[];frames=[];peaks={}; max_pin_error=0.;max_phase_error=0.;max_impulse_error=0.;max_angular_error=0.

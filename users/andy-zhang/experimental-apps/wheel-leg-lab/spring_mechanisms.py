@@ -131,12 +131,13 @@ def mechanism_config(c):
         raise ValueError('Auxiliary free length must be between 0.005 and one metre.')
     if resolved['aux_spring_enabled'] and resolved['spring_topology'] != 'gravity_balance':
         raise ValueError('The auxiliary ride spring is currently supported only with the gravity_balance primary stage.')
-    if not .005 <= resolved['guide_hip_radius'] <= .1:
-        raise ValueError('Guide hip radius must be between 0.005 and 0.1 metre; knee radius is half for the ideal 2:1 guide.')
+    general=c.get('linkage_design')=='general'
+    if not (1e-6 if general else .005) <= resolved['guide_hip_radius'] <= (.8 if general else .1):
+        raise ValueError('General guide radius must be 0.001..800 mm; original guide requires 5..100 mm and a half-sized knee drum.')
     L, e = c['length'], c['extension']
-    if not (math.isfinite(L) and math.isfinite(e) and 0 < e < L):
+    if not (math.isfinite(L) and math.isfinite(e) and (0 <= e < c['lower_length'] if general else 0 < e < L)):
         raise ValueError('Require finite link length and 0 < extension < length.')
-    if resolved['guide_pulleys_visible'] and 1.5*resolved['guide_hip_radius']>=L:
+    if resolved['guide_pulleys_visible'] and not general and 1.5*resolved['guide_hip_radius']>=L:
         raise ValueError('Visible guide pulleys must not overlap: use 1.5 times hip radius < link length.')
     return resolved
 
@@ -187,6 +188,9 @@ def _angular_velocity(body):
 
 def equal_poses(theta, c, theta_speed=0., base_height=0., base_speed=0.):
     """Analytical equal-link world poses (y up), also useful for virtual work."""
+    if c.get('linkage_design')=='general':
+        from linkage_geometry import poses
+        return poses(theta,c,theta_speed,base_height,base_speed)
     L, e = c['length'], c['extension']
     sn, cs = math.sin(theta), math.cos(theta)
     lam = (L+e)/2
@@ -207,19 +211,20 @@ def direct_anchors(c):
     s = mechanism_config(c)
     topology = s['spring_topology']
     L, e = c['length'], c['extension']
+    L3=c['lower_length'] if c.get('linkage_design')=='general' else L
     upper = [(s['spring_upper_fraction']-.5)*L, 0.]
-    lower = [s['spring_lower_fraction']*L-(L-e)/2, 0.]
+    lower = [s['spring_lower_fraction']*L3-(L3-e)/2, 0.]
     mount = [s['spring_chassis_x'], s['spring_chassis_y']]
     arm = _scale([math.cos(math.radians(s['spring_bellcrank_offset_deg'])),
                   math.sin(math.radians(s['spring_bellcrank_offset_deg']))], s['spring_bellcrank_radius'])
     if topology == 'legacy_tip':
-        a, b = ('hip', [0., 0.]), ('lower', [-(L+e)/2, 0.])
+        a, b = ('hip', [0., 0.]), ('lower', [-(L3+e)/2, 0.])
     elif topology == 'direct_scissor':
         a, b = ('upper', upper), ('lower', lower)
     elif topology == 'hip_bellcrank':
         a, b = ('hip', mount), ('upper', _add([-L/2, 0.], arm))
     elif topology == 'knee_bellcrank':
-        a, b = ('upper', upper), ('lower', _add([-(L-e)/2, 0.], arm))
+        a, b = ('upper', upper), ('lower', _add([-(L3-e)/2, 0.], arm))
     elif topology == 'chassis_direct':
         a, b = ('hip', mount), ('lower', lower)
     elif topology == 'gravity_balance':
@@ -248,7 +253,11 @@ def geometry_from_bodies(bodies, c):
     _, au = _pose(bodies['upper'])
     _, al = _pose(bodies['lower'])
     _, ah = _pose(bodies['hip'])
-    theta = (al-au+math.pi)/2
+    general=c.get('linkage_design')=='general'
+    ratio=c['guide_hip_radius']/c['guide_knee_radius'] if general else 2
+    mounting=math.radians(c['mount_angle']) if general else 0.
+    indexing=math.radians(c['link_phase']) if general else 0.
+    theta = -au-mounting if general else (al-au+math.pi)/2
     qref = math.radians(c['theta'])
     A = _world(bodies['upper'], [-L/2, 0.])
     B = _world(bodies['upper'], [L/2, 0.])
@@ -283,7 +292,7 @@ def geometry_from_bodies(bodies, c):
             pb = _add(pa, _scale(u, s['spring_input_ref']))
             sites = [_force_site('upper', pa, u, bodies),
                      _force_site('hip', pb, _scale(u, -1.), bodies)]
-            angle_delta = (au-ah)+qref
+            angle_delta = (au-ah)+qref+mounting
             length = s['spring_input_ref']+direction*radius*angle_delta
             J = -direction*radius
             wu, wh = _angular_velocity(bodies['upper']), _angular_velocity(bodies['hip'])
@@ -296,9 +305,9 @@ def geometry_from_bodies(bodies, c):
             pb = _sub(pa, _scale(u, L))
             sites = [_force_site('lower', pa, _scale(u, -1.), bodies),
                      _force_site('upper', pb, u, bodies)]
-            angle_delta = al-au+math.pi-2*qref
+            angle_delta = al-au+math.pi-indexing-ratio*qref
             length = s['spring_input_ref']-direction*radius*angle_delta
-            J = -2*direction*radius
+            J = -ratio*direction*radius
             wl, wu = _angular_velocity(bodies['lower']), _angular_velocity(bodies['upper'])
             speed = None if wl is None or wu is None else -direction*radius*(wl-wu)
         anchors = {'a': {'body': sites[0]['body'], 'local': sites[0]['local'], 'world': pa},
@@ -307,8 +316,8 @@ def geometry_from_bodies(bodies, c):
         raise ValueError('Ideal spring input payout crossed zero; increase input reference span or reduce travel.')
     return {'topology': topology, 'kind': CATALOG[topology]['kind'],
             'theta_rad': theta, 'input_length': length, 'input_speed': speed,
-            'jacobian': J, 'jacobian_basis': 'ideal equal-link 2:1 theta coordinate',
-            'anchors': anchors, 'force_sites': sites, 'physical_guide_ratio': 2,
+            'jacobian': J, 'jacobian_basis': 'ideal carrier-belt theta coordinate' if general else 'ideal equal-link 2:1 theta coordinate',
+            'anchors': anchors, 'force_sites': sites, 'physical_guide_ratio': ratio,
             'transmission_efficiency': 1., 'rope_stretch': 0.,
             'dimension_status': CATALOG[topology]['status']}
 
@@ -423,6 +432,8 @@ def mechanism_metadata(c, input_reference):
                 and s['spring_effective_free_length'] == 0.
                 and abs(s['spring_chassis_x']) < 1e-12 and s['spring_chassis_y'] < 0.
                 and s['spring_upper_fraction'] > 0. and mode_ok)
+    if c.get('linkage_design')=='general':
+        eligible = eligible and abs(c['length']-c['lower_length'])<1e-12 and abs(c['guide_hip_radius']/c['guide_knee_radius']-2)<1e-12 and c['mount_angle']==0 and c['link_phase']==0
     notes = []
     if s['spring_topology'] == 'gravity_balance' and not eligible:
         notes.append('Constant lift requires zero effective input free length, a downward vertical chassis mount and compatible tension-producing routing. This edited arrangement lacks exact constant lift; automatic calibration, if enabled, balances only the initial pose.')
@@ -550,9 +561,10 @@ def guide_pulley_frame(c, hip_center, knee_center, hip_angle, upper_angle, lower
     is fixed to the lower link, with the upper link as the moving carrier.
     Visibility and massless sensor sizes do not alter the angular constraint.
     """
-    return {'ratio': 2., 'carrier_angle': float(upper_angle),
+    radius=c['guide_knee_radius'] if c.get('linkage_design')=='general' else c['guide_hip_radius']/2
+    return {'ratio': c['guide_hip_radius']/radius, 'carrier_angle': float(upper_angle),
             'hip': {'body': 'hip', 'center': [float(v) for v in hip_center],
                     'angle': float(hip_angle), 'radius': c['guide_hip_radius']},
             'knee': {'body': 'lower', 'center': [float(v) for v in knee_center],
-                     'angle': float(lower_angle), 'radius': c['guide_hip_radius']/2},
-            'scope': 'Ideal 2:1 angular constraint. Pulley sensors are massless visual/query geometry; no belt stretch, pretension or bearing-load model. Torque-implied tension difference is derived telemetry, not an applied belt force.'}
+                     'angle': float(lower_angle), 'radius': radius},
+            'scope': 'Ideal carrier angular constraint. Pulley sensors are massless visual/query geometry; no belt stretch, pretension or bearing-load model. Torque-implied tension difference is derived telemetry, not an applied belt force.'}

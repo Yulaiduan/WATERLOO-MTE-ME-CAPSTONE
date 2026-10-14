@@ -17,7 +17,8 @@ def preview(values=None):
     A = h.local_to_world(model['j1'].anchor_a)
     B = l.local_to_world(model['j2'].anchor_b)
     C = w.position
-    E = l.local_to_world((-(c['length']+c['extension'])/2, 0))
+    lower_length=c['lower_length'] if c.get('linkage_design')=='general' else c['length']
+    E = l.local_to_world((-(lower_length+c['extension'])/2, 0))
     bodies = {key: model[key] for key in ('hip', 'upper', 'lower')}
     geometry = geometry_from_bodies(bodies, c)
     law = spring_law(geometry['input_length'], 0., dict(c, rest_length=model['rest']), model['spring_input_reference'])
@@ -32,6 +33,9 @@ def preview(values=None):
         g = geometry_from_bodies(bodies, aux['config'])
         frame['auxiliary_spring_geometry'] = g
         frame['auxiliary_spring_coil_length'] = spring_law(g['input_length'], 0., aux['config'], aux['input_ref'])['coil_length']
+    if c.get('linkage_design')=='general':
+        frame['wheel_angle']=w.angle
+        frame['compound_angle']=model['compound'].angle if model.get('compound') else 0.
     return {'kind': 'setup-preview', 'solver_steps': 0, 'config': c,
             'actual_rest_length': model['rest'], 'model': describe(model), 'frame': frame,
             'geometry': {'theta_deg': c['theta'], 'height': A.y-C.y,

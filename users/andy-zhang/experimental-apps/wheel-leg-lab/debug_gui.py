@@ -69,6 +69,13 @@ def main():
         max_y=.10 if c['fixture']=='hip' else 2*L+.08
         scale=min((side-100)/(L+c['radius']+.15),(H-(380 if c['guide_pulleys_visible'] else 330))/(max_y-min_y))
         ox=side*.38;oy=(335 if c['guide_pulleys_visible'] else 285)+max_y*scale
+        if c.get('linkage_design')=='general':
+            import linkage_geometry as geometry
+            points=[p[0] for q in [math.radians(c['theta_min']+(c['theta_max']-c['theta_min'])*i/32) for i in range(33)] for p in geometry.points(q,c)[0].values()]
+            min_x=min(p[0] for p in points)-c['radius'];max_x=max(p[0] for p in points)+c['radius']
+            min_y=min(p[1] for p in points)-c['radius']+model['wheel'].position.y;max_y=max(p[1] for p in points)+c['radius']+model['wheel'].position.y
+            scale=min((side-100)/(max_x-min_x),(H-380)/(max_y-min_y));ox=50-min_x*scale;oy=335+max_y*scale
+
         options=pymunk.pygame_util.DrawOptions(screen)
         options.transform=pymunk.Transform(a=scale,d=-scale,tx=ox,ty=oy)
         model['space'].debug_draw(options)
@@ -81,18 +88,18 @@ def main():
         text(f'{c["radius"]*1000:.0f} mm wheel radius | {c["extension"]*1000:.0f} mm extension | pink crosses: centres',24,H-45,small,(166,190,173))
         text(f't = {t:.3f} s | '+(f'height command = {command*1000:.1f} mm' if c['target']=='position' else f'diagnostic input = {command:.2f}'),24,H-23,small)
         x=side+18;y=22;text('Engine object inspector',x,y,title);y+=42
-        for key in ['upper','lower','wheel','hip']:
+        for key in ['upper','lower','wheel','hip']+(['compound'] if model.get('compound') else []):
             b=model[key];text(f'{key}: {"static" if b.body_type==pymunk.Body.STATIC else "dynamic"}',x,y);y+=25
         y+=14;text('Selected: '+selected,x,y);y+=28;b=model[selected]
         acceleration=model.get('live_acceleration',{}).get(selected,pymunk.Vec2d(0,0))
         for value in [f'Mass: {b.mass:.3g} kg',f'Inertia: {b.moment:.5g} kg m2',f'Angle: {math.degrees(b.angle):.2f} deg',f'Velocity: ({b.velocity.x:.3f}, {b.velocity.y:.3f}) m/s',f'Acceleration: ({acceleration.x:.2f}, {acceleration.y:.2f}) m/s2',f'Angular speed: {b.angular_velocity:.3f} rad/s']:
             text(value,x,y,small);y+=23
         y+=14;text('Actual constraints',x,y);y+=29
-        for key in ['j1','j2','j3','guide','spring','stop']+(['wheel_drive'] if model.get('wheel_drive') else [])+(['driver'] if model.get('driver') else []):
+        for key in ['j1','j2','j3','guide','spring','stop']+(['wheel_drive'] if model.get('wheel_drive') else [])+(['driver'] if model.get('driver') else [])+[key for key in ('compound_joint','compound_gear') if model.get(key)]:
             if model[key] is None:continue
             text(f'{key}: {type(model[key]).__name__}',x,y,small);y+=23
-        y+=10;text('Physical guide: 2:1 carrier',x,y,small);y+=23
-        text('Absolute GearJoint ratio: -1',x,y,small);y+=23
+        y+=10;text(('Physical guide: '+str(round(c['guide_hip_radius']/c['guide_knee_radius'],3))+':1 carrier') if c.get('linkage_design')=='general' else 'Physical guide: 2:1 carrier',x,y,small);y+=23
+        text(f'Absolute GearJoint ratio: {model["guide"].ratio:.4g}',x,y,small);y+=23
         text(f'Spring k: {c["stiffness"]:.0f} N/m',x,y,small);y+=23
         text(f'Free length: {model["rest"]*1000:.1f} mm',x,y,small);y+=30
         text('Solver joint resultants',x,y);y+=26
@@ -118,7 +125,11 @@ def main():
     if args.headless_check:
         for _ in range(1200):step()
         paint();args.screenshot.parent.mkdir(parents=True,exist_ok=True);pygame.image.save(screen,str(args.screenshot))
-        assert len(model['space'].shapes)==3+int(c['aux_spring_enabled'] or c['chassis_shape_enabled'])+2*int(c['guide_pulleys_visible']) and len(model['space'].constraints)==6-int(model['manual_spring'])+int(c['wheel_drive_locked'])+int(c['target']=='position')
+        if c.get('linkage_design')=='general':
+            assert len(model['space'].shapes)==3+int(c['chassis_shape_enabled'])+2*int(c['guide_pulleys_visible'])
+            assert len(model['space'].constraints)==7+2*int(c['compound_mass']>0)
+        else:
+            assert len(model['space'].shapes)==3+int(c['aux_spring_enabled'] or c['chassis_shape_enabled'])+2*int(c['guide_pulleys_visible']) and len(model['space'].constraints)==6-int(model['manual_spring'])+int(c['wheel_drive_locked'])+int(c['target']=='position')
         assert math.isfinite(model['lower'].angle)
         print(f"PASS: live Pymunk stepped, official pygame debug_draw rendered {len(model['space'].shapes)} shapes and {len(model['space'].constraints)} constraints.")
         pygame.quit();return

@@ -12,20 +12,17 @@ optimization and spring/motor results do not add controls or API routes here.
 
 ## Unified browser workspace
 
-Math and 2D Physical now also offer **Jonathan v2 · separate belt linkage**.
-Open [the linkage in Math](http://127.0.0.1:4186/?tab=math&model=jon-v2)
-or [quasi-static physics](http://127.0.0.1:4186/?tab=physics&model=jon-v2).
-One editor shares the full v2 geometry/loading parameters, three independent
-belts, motor torques, preloads, five FBDs, sweep plots and bounded global maxima
-between tabs. Profiles, source JSON/CSV, library sweeps, dark mode and refresh
-memory are integrated. Read the [cross-check](docs/jon-linkage-cross-check.md)
-and [adapter/model boundary](jon-linkage/README.md). This is quasi-static
-analysis; dynamic Pymunk suspension remains a separate design.
-
 **Start Motion Lab.cmd** is the canonical launcher. Open http://127.0.0.1:4186/
 for the shared main menu, dark-mode toggle and always-available Pymunk visual GUI.
 Read the [workflow and data contracts](docs/unified-motion-lab.md),
 [spring presets](docs/suspension-presets.md) and [current validation](docs/validation.md).
+
+Both original suspension tabs now include **Geometry → Editable links · three
+carrier belts**. Unequal links, independent ratios, all Jon v2 geometry/loading
+parameters, FBDs, sweeps and bounded maxima are merged into the existing controls,
+profiles, spring driver and SciPy/Pymunk solvers. The original equal-link model
+remains the default. Read [the merged model and source cross-check](docs/merged-linkage.md)
+for coordinate conversion, dynamic assumptions and the fixed-A reference audit.
 
 The [wheel/link sizing calculator](docs/link-sizing.md) now sweeps link lengths
 and working-angle windows for a specified wheel diameter/radius, usable lift,
@@ -44,7 +41,6 @@ while actual spring assistance, dynamics and hardware clearance remain separate.
 | --- | --- | --- |
 | Main menu | `/` | Mathematical / physical / miscellaneous / comparison / profiles and data |
 | Mathematical suspension | `/mathematical/` | Independent Python/SciPy ODE with nine spring presets; MATLAB companion supports the original captured/direct tip spring |
-| Jonathan v2 linkage | `/jon-linkage/`, Math/Physical `model=jon-v2` | General unequal-link/three-belt kinematics, prescribed-load quasi-static physics, full v2 parameters/FBDs/maxima and integrated profiles/sweeps |
 | Invertible suspension | `/inversion/`, Math/Physical model buttons and preset menu | **Dual-rope pulley: IMPOSSIBLE, historical model**; symmetric knee bellcrank; actual femur-torque ground flips and fixed-J1 SciPy comparison |
 | Pymunk physical bench | `/physics/` | Actual rigid-body engine, nine editable spring presets, wheel-height input, floating chassis and solver loads |
 | Constant-lift single-link lever | `/counterbalance/`, Miscellaneous studies only | Free undamped lever, upward/downward end force, coasting after release, SciPy/Pymunk, JSON and native GUI |
@@ -77,7 +73,7 @@ npm run build
 Profiles and generated runs are appended to browser IndexedDB. Save/download
 JSON for portable backup; import JSON through Profiles & data. Plotly charts
 support zoom, pan, reset and image export; full JSON/CSV retains recorded data.
-Math offers the 2D SciPy wheel suspension and separate Jonathan v2 linkage, retaining the
+Math runs only the 2D SciPy wheel suspension and retains the
 [legacy MATLAB companion](math/README.md). Run both opens the top-level
 [Comparison workspace](docs/comparison-workspace.md), alongside Profiles & data.
 The standalone lever is in Miscellaneous only. Its default is one free link,
@@ -202,7 +198,6 @@ node scripts/verify_counterbalance_ui.cjs
 node scripts/verify_suspension_architecture_ui.cjs
 node scripts/verify_passive_stability_ui.cjs
 node scripts/verify_motion_lab.cjs
-node scripts/verify_jon_linkage.cjs
 node scripts/verify_comparison_ui.cjs
 node scripts/verify_lever_force_ui.cjs
 .venv/Scripts/python.exe scripts/verify_native_gui.py

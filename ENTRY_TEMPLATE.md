@@ -2717,3 +2717,111 @@ Equal185/190/200/205mm links with r1.9/1.8/1.7/1.6 give about25/50/75/100mm side
 Continue from docs/curved-path-study.md, resolve measured axial/chassis/contact and effective stiffness before physical inversion or actuator selection, and preserve prior reports/models/examples, historical failures and IMPOSSIBLE decisions.
 
 ---
+
+## Entry: 2026-10-14 -- Andy Zhang workspace -- merge Jon tooling into original Math and Physics solvers
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/wheel-leg-lab; isolated Motion Lab suspension bench.
+- **Associated Issue/Task:** Owner corrected c8b3c8b: merge Jonathan v2 features into the original physics/math tool and validate its equations against his code. Supersedes the standalone copied-editor approach; preserve original defaults, springs, APIs, profiles, viewer and sibling design reports.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact changed paths below, including deletion of the previous standalone editor, builder/verifier/test and its superseded document.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/.gitignore`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/Start-Pymunk.ps1`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_gui.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/debug_view.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/jon-linkage-cross-check.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/merged-linkage.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/model.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/unified-motion-lab.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/generalized_suspension.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/bridge.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/embedded-api.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/jon-linkage/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/linkage_geometry.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/math_model.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/native_guide_belt.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/physics.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_animations.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_jon_linkage.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_jon_models.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/jon_reference_fixtures.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_jon_linkage.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_merged_linkage.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/setup_preview.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/spring_mechanisms.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_generalized_linkage.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/jon-linkage.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/merged-linkage.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/comparison-data.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/data-browser.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/jon-profile.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/library.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/linkage-tools.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/linkage-tools.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/mathematical/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/physics/index.html`
+
+- **API/Interface Changes:** Existing math/pymunk profiles and endpoints gain optional linkage_design=general with separate link lengths, all six carrier pitch radii, mounting/phase, optional compound mass/rim inertia, signed world/normal-tangent force inputs, beta bounds, preload reference fields and driven selections. Original geometry remains default; general dynamics uses independent direct-angle SciPy and actual unequal Pymunk bodies/pivots/gears with original spring laws/position driver. New dynamic angle/motor/energy channels and measured Newton-Euler diagnostics; unity/cancellation handled explicitly. Exact Jonathan model scripts are source-built with hashes for the existing bench's five-FBD/sweep/maxima audit. Source v1/v2 JSON maps mm to SI profiles; analytical sweeps save read-only datasets without invented time. UI preserves edits made during pending Run and fills newly introduced reference defaults when replaying old results. The separate jon_v2 backend/editor/menu route is removed; old query resolves to the ordinary bench. Native/setup/debug consumers support actual general geometry. No shared/canonical API, dependency, asset, rule, original Jonathan source, offline report or historical rejected inversion decision changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Installed app-local Python3.13.12 / Node22.23.3. npm build passes and81 Node tests pass. Original Jonathan suites pass3853/16044/29863 assertions with force/moment/VW maxima9.722e-13N/3.624e-13Nm/3.979e-13Nm; generated model scripts/hashes match source exactly. Broader original/general Python run113 tests passes, including original nine-preset108-backend-case envelope; expanded nine generalized tests pass source parity288 varied poses, independent fixed-A holding torque, geometry/force/inertia, all nine spring Jacobians, potential gradient/angular closure, original2:1 recovery, unity/cancellation/invalid cases and actual-body conservative energy. General Pymunk final-angle errors1/.5/.25ms:0.0006268464/0.0001868328/0.0000622246deg; physical energy drift0.0097574/0.0048918/0.0024492J converges, SciPy drift<1e-8J. New installed-Edge integration passes actual Math/Pymunk APIs,3belts/5FBDs/15plots/8headlines, all parameters, exports/library/native-profile dispatch (mocked), pending-run preservation, refresh/theme/mobile and no page errors/external requests. Existing verify_motion_lab and verify_setup_preview_ui pass. Actual native headless renderer passes1200 steps/6shapes/9constraints; screenshots visually reviewed and crowded legends corrected. Durable app-root Stop/Start CMD lifecycle at4186 passes.107 relative links and whitespace pass; default and --require-passed check_entry pass627 files/44 changed paths/workspace, and physics_gate reports canonical physics NOT APPLICABLE. Final general/spring regression passes21 tests and durable CMD stop/start/reuse from an unrelated directory confirms closed listener and HTTP200 original preview/reference bundle at4186. Staged/exact-tip publication checks run before commit and push.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member workspace. Fixed-A source holding/preload bearing loads are separate from moving-chassis spring/acceleration dynamics; physical belts/bearing forces, motor-shaft freedom, rolling/unilateral contact,3D packaging, hardware,GPU,other-OS and MATLAB general linkage are unvalidated. Original unrelated lever/inversion full suites were not rerun. Initial GearJoint residual used symmetric scaling; second-body torque convention corrects it. Initial new conservative case hit a dissipative stop; retained test asserts interior travel/no impact at2000N/m, without loosening tolerance. Browser harness fixes open collapsed controls, inspect native config envelope and use trusted-parent profile messages. Historical separate-editor contribution/log and independent sibling work are preserved in shared history; this is a normal corrective commit.
+
+## 4. Compute Saving Handoff State
+
+Open Motion Lab at4186 on the original Math or2DPhysics bench and choose Geometry > Editable links / three carrier belts for the merged controls, dynamics and source audit.
+Read docs/merged-linkage.md for exact coordinate conversion, energy/constraint equations, source hashes, JSON/data contracts, positive dynamic masses and the fixed-A versus floating-support distinction; original equal-link defaults and spring/native workflows remain available.
+Continue with Start Motion Lab.cmd, rebuild when Jonathan source changes and rerun the retained parity/refinement checks before extending physical belt/contact/motor modeling; preserve independent reports and the rejected dual-rope status.
+
+---
+
+## Entry: 2026-10-14 -- Andy Zhang workspace -- preserve bounded-search failure diagnostics
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/wheel-leg-lab; merged audit output.
+- **Associated Issue/Task:** Final source review found the unconverged maximum-search note reading a nonexistent gap field; show the source error bound and verify iteration-limit behavior before publication.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/linkage-tools.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_merged_linkage.cjs`
+- **API/Interface Changes:** Audit reads Jonathan's actual error field when a maximum is an unconverged estimate. No solver equations, configuration, endpoints or source changes; browser verification forces zero search iterations and checks a numerical remaining bound instead of an undefined placeholder.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Installed Edge merged verifier passes full original-backend workflows plus forced iteration-limit numerical-bound display, with no page errors/external requests. Previously recorded source, Python, Node, launcher and native checks retain their scope; exact final staged and outgoing-tip hooks run before publication. Whitespace passes.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE. This fixes reference result presentation only; the merged model's documented physical limitations remain unchanged.
+
+## 4. Compute Saving Handoff State
+
+The original Math and Physics benches retain the merged general geometry and source audit described in the preceding entry.
+Unconverged headline estimates now report Jonathan's attained value and actual remaining error bound; the retained browser test reproduces the limit case.
+Rebuild after upstream source changes and continue from docs/merged-linkage.md without interpreting the fixed-A reference as measured dynamic or hardware performance.
+
+---

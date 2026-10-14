@@ -4,9 +4,10 @@ Invocation: import simulate_math(config), or python math_model.py --output run.j
 Inputs: matching experimental bench config in m, kg, s, N, N m; theta in degrees.
 Outputs: JSON-compatible time rows, kinematic frames, joint loads, solver metadata.
 Requires NumPy/SciPy; imports neither Pymunk nor the rigid-body model. The model
-has an exact equal-link 2:1 guide and a prescribed bilateral wheel support, with
-chassis pitch held. It supports only floating chassis, smooth position input and
-hub-applied biases. Travel-limit events terminate; stop impacts/contact are not
+defaults to the original equal-link 2:1 guide, optionally generalized using
+Jonathan's exact carrier geometry, with a prescribed bilateral wheel support and
+held chassis pitch. Floating chassis and smooth position input are supported;
+general geometry also accepts a specified wheel-patch force. Travel limits terminate; impacts/contact are not
 integrated. Linear-ramp velocity jumps require impulse dynamics and are rejected.
 """
 from __future__ import annotations
@@ -20,6 +21,7 @@ from pathlib import Path
 import numpy as np
 import scipy
 from scipy.integrate import solve_ivp
+import linkage_geometry as linkage
 
 from motion_input import position_state
 from spring_mechanisms import (CATALOG, MECHANISM_DEFAULTS, apply_preset, equal_poses,
@@ -45,6 +47,7 @@ DEFAULTS = {
     'rise': .25, 'fall': .25, 'duration': 6., 'dt': .001, 'iterations': 80,
 }
 DEFAULTS.update(MECHANISM_DEFAULTS)
+DEFAULTS.update(linkage.DEFAULTS)
 
 
 def config(values=None):
@@ -72,7 +75,7 @@ def config(values=None):
                 raise ValueError(f'{key} must be finite.')
     if c['fixture'] != 'floating' or c['target'] != 'position':
         raise ValueError('The mathematical model requires a floating chassis and prescribed wheel position. Use the physical tab for fixed-fixture/force diagnostics.')
-    if c['load_point'] != 'hub':
+    if c['load_point'] != 'hub' and not linkage.enabled(c):
         raise ValueError('The mathematical model supports hub-applied loads only; tire-bottom contact moments require the physical tab.')
     if c['ramp_shape'] != 'quintic':
         raise ValueError('The mathematical model requires smooth quintic ramps. A linear ramp has velocity jumps requiring separate impulse dynamics.')
@@ -92,15 +95,17 @@ def config(values=None):
         'amplitude': (-10000, 10000), 'impulse': (-1000, 1000),
         'preload_force': (-5000, 5000),
     }
+    if linkage.enabled(c):limits['extension']=(0,.15)
     for key, (low, high) in limits.items():
         if not low <= c[key] <= high:
             raise ValueError(f'{key} must be between {low} and {high} (SI units).')
     if c['iterations'] != int(c['iterations']):
         raise ValueError('Iterations must be an integer.')
-    if c['extension'] >= c['length']:
+    linkage.validate(c)
+    if c['extension'] >= c['length'] and not linkage.enabled(c):
         raise ValueError('Extension must be shorter than the knee-to-hub link.')
-    if not 3 <= c['theta_min'] < c['theta'] < c['theta_max'] <= 87:
-        raise ValueError('Use 3 degrees <= minimum < initial angle < maximum <= 87 degrees.')
+    if not (0 if linkage.enabled(c) else 3) <= c['theta_min'] < c['theta'] < c['theta_max'] <= (90 if linkage.enabled(c) else 87):
+        raise ValueError('Require minimum < initial angle < maximum, within 0..90 degrees for general geometry or 3..87 for original geometry.')
     if c['duration'] / c['dt'] > 30000:
         raise ValueError('Limit each run to 30,000 output samples.')
     if c['rise'] < 4*c['dt'] or (c['wave'] != 'step' and c['fall'] < 4*c['dt']):
@@ -364,6 +369,9 @@ def observe(t, q, velocity, c, p):
 def simulate_math(values=None, *, rtol=1e-9, atol=1e-11, max_step=None):
     """Integrate the scalar ODE; stop events end a run before an unmodelled impact."""
     c = config(values)
+    if linkage.enabled(c):
+        from generalized_suspension import simulate_math
+        return simulate_math(c,rtol=rtol,atol=atol,max_step=max_step)
     p = parameters(c)
     if not (math.isfinite(rtol) and math.isfinite(atol) and 0 < rtol < 1 and 0 < atol < 1):
         raise ValueError('Solver tolerances must be finite, positive and below one.')

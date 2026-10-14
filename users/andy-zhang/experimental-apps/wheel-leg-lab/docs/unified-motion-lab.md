@@ -1,6 +1,6 @@
 # Unified Motion Lab
 
-Owner: Andy Zhang. Updated: 2026-10-14. Status: experimental motion workspace.
+Owner: Andy Zhang. Updated: 2026-10-10. Status: experimental motion workspace.
 
 ## Browser workflow
 
@@ -9,10 +9,10 @@ Use **Start Motion Lab.cmd** in the app root, wait for Ready and open
 
 | Section | Model and outputs |
 | --- | --- |
-| Mathematical model | 2D Python/SciPy wheel suspension, invertible angle fixture, and separate Jonathan v2 general linkage; legacy MATLAB companion belongs to the original tip model |
+| Mathematical model | 2D Python/SciPy wheel suspension only; nine spring presets, instantaneous loads and energy; legacy MATLAB companion |
 | Constant-lift single-link lever, within Miscellaneous only | Free undamped lever, vertical end force and coasting release, SciPy/Pymunk and native GUI |
 | Archived detailed linkage, within Miscellaneous | Retained source/direct route and two-coordinate guide/drive; retired from main Math |
-| 2D physical model | Actual Pymunk wheel/inversion fixtures plus separately labelled Jonathan v2 quasi-static belt linkage; its prescribed loads/FBDs are analytical |
+| 2D physical model | Actual Pymunk space, nine editable wheel-leg spring presets, pivots, guide and travel limits; solver impulse loads and motion |
 | Miscellaneous studies | Wheel/link ratio calculator, seven pulley/linkage motion studies, constant-lift lever and recorded Pymunk playback |
 | Comparison | Multi-run/profile loading, searchable channels, independent Plotly visibility/splits, signed deltas/statistics and workspace JSON |
 | Profiles & data | Browser-local profile/run library, JSON import/export, numeric channels, Plotly inspection and complete table CSV |
@@ -34,23 +34,22 @@ The Miscellaneous constant-lift entry launches its own live lever model, using t
 same native-GUI controls with an explicitly separate profile envelope.
 
 Dark mode is explicitly selected and shared with embedded benches/studies.
-Time-history and data-library charts use locally bundled Plotly 3.1.0, including time histories,
+All quantitative charts use locally bundled Plotly 3.1.0, including time histories,
 force/travel, wheel-path families, torque–speed, poles/Bode and the data browser.
 Charts support zoom, pan, reset and image export. Mechanical diagrams remain
 animated mechanism drawings. Plotly is generated from the pinned npm dependency,
 not a multi-megabyte tracked blob or a mandatory runtime CDN request.
 
-The [Jonathan v2 linkage](jon-linkage-cross-check.md) preserves its original SVG
-charts and geometry. Math and Physical use one mounted editor with session
-recovery. Its parameter JSON uses `general-vsl/v2-quasi-static`, accepts original
-v1/v2 files and is wrapped as backend `jon_v2` in the existing library. Geometry
-is mm, angles degrees and forces N; no wheel-suspension SI conversion is assumed.
-Save four sweeps inside the editor to retain explicit axes/units and source hashes.
-Comparison reevaluates profiles without changing current inputs; sweep overlays
-use sample indices, and time deltas are unavailable. Native GUI/recorded Pymunk
-actions explain the separate-fixture boundary for this analytical design.
-
 ## Profiles, data and units
+
+Math and 2D Physics share the original bench's new [general linkage controls](merged-linkage.md).
+They use existing `math`/`pymunk` APIs and profile/run identities. Jonathan v1/v2
+JSON imports convert mm/deg into an SI bench profile; zero source masses remain
+explicit and need positive dynamic values before Run. The five-FBD audit and
+four reference parameter tables use Jon's exact fixed-A statics, retain their
+source hashes/units and save as datasets without a simulated time column.
+The former separate `model=jon-v2` route now resolves to the ordinary bench;
+select Geometry there. No standalone copied editor is generated.
 
 Save a **profile** for current input settings; save a **run JSON** for complete
 recorded outputs. Successful embedded runs are also appended to IndexedDB.

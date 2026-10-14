@@ -1,9 +1,3 @@
-<# Start/reuse the app-local Motion Lab server with readable prerequisite errors.
-Invocation: Start Motion Lab.cmd [-NoBrowser], optional legacy -Port 4175.
-Inputs: installed app-local Python/runtime/build and loopback port; no physical units.
-Outputs: verified HTTP listener, ignored process/log state and optional browser.
-Limits: manual local startup only; no installation, boot automation or public hosting.
-#>
 param([switch]$NoBrowser,[ValidateSet(4186,4175)][int]$Port=4186)
 $ErrorActionPreference='Stop'
 $taskRoot=$PSScriptRoot
@@ -26,7 +20,7 @@ function Test-PymunkHttp {
 }
 try {
     Set-Location -LiteralPath $taskRoot
-    foreach($required in @($taskPython,$taskServer,(Join-Path $taskRoot 'web\index.html'),(Join-Path $taskRoot 'web\plotly.min.js'),(Join-Path $taskRoot 'web\animations\index.html'),(Join-Path $taskRoot 'web\linkage\index.html'),(Join-Path $taskRoot 'web\jon-linkage\index.html'))) {
+    foreach($required in @($taskPython,$taskServer,(Join-Path $taskRoot 'web\index.html'),(Join-Path $taskRoot 'web\plotly.min.js'),(Join-Path $taskRoot 'web\animations\index.html'),(Join-Path $taskRoot 'web\linkage\index.html'),(Join-Path $taskRoot 'web\jon-models.js'))) {
         if(!(Test-Path -LiteralPath $required)) { throw "Missing prerequisite: $required. Run Setup Motion Lab.cmd in this folder, including npm run build." }
     }
     New-Item -ItemType Directory -Force -Path $taskStateDir | Out-Null

@@ -19,10 +19,8 @@ function restoreStudy(frame,id){if(frame.dataset.study!==id)return;let saved=stu
 const studies=[['gallery','All motion studies','/animations/'],['counterbalance','Constant-lift lever','/counterbalance/'],['ratio','Wheel / link sizing, torque & travel','/force-plots/'],['design-examples','Alpha-zero design examples · labelled animations','/design-examples/'],['linear','Straight 2:1 leg','/animations/linear-leg/'],['coaxial','Independent coaxial wheel drive','/animations/coaxial-wheel-leg/'],['tilt','Tilted invertible leg','/animations/tilted-invertible-leg/'],['mirror','Mirrored left tilt','/animations/left-tilted-leg/'],['reindex','Historical reindexing alternative','/animations/two-position-left-leg/'],['fixed','Fixed 4:1 working strokes','/animations/fixed-ratio-left-leg/'],['paths','Mathematical path family','/animations/leg-path-family/'],['recorded','Recorded Pymunk playback','/recorded/'],['legacy-linkage','Archive · detailed linkage (retired)','/linkage/']];
 const counterbalanceBackend=backend=>['counterbalance_math','counterbalance_pymunk'].includes(backend);
 const activeCounterbalance=()=>tab==='studies'&&$('study-select').value==='counterbalance';
-const activeFrameKey=()=>tab==='physics'?(physicsModel==='jon-v2'?'jon-v2':physicsModel==='inversion'?'inversion-physics':'physics'):tab==='math'?(mathModel==='jon-v2'?'jon-v2':mathModel==='inversion'?'inversion-math':'math'):tab==='studies'?($('study-select').value==='counterbalance'?'counterbalance':$('study-select').value==='legacy-linkage'?'linkage':'studies'):null;
+const activeFrameKey=()=>tab==='physics'?(physicsModel==='inversion'?'inversion-physics':'physics'):tab==='math'?(mathModel==='inversion'?'inversion-math':'math'):tab==='studies'?($('study-select').value==='counterbalance'?'counterbalance':$('study-select').value==='legacy-linkage'?'linkage':'studies'):null;
 const inversionBackend=backend=>backend?.startsWith('inversion_');
-const activeJon=()=>['math','physics'].includes(tab)&&(tab==='math'?mathModel:physicsModel)==='jon-v2';
-const evaluations=new Map();
 const modelProfile=record=>inversionBackend(record.backend)?{model:'inversion',config:resolveInversionProfile(record.config)}:counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
 function wheelNativeProfile(config,reference_inputs){
  const guide=reference_inputs?.guide_visualization;
@@ -34,7 +32,7 @@ const nativeProfile=record=>inversionBackend(record.backend)?modelProfile(record
 function status(text){$('lab-status').textContent=text;}
 function error(cause){$('lab-error').hidden=false;$('lab-error').textContent=cause instanceof Error?cause.message:String(cause);}
 function clearError(){$('lab-error').hidden=true;}
-function name(backend,config){if(backend==='jon_v2'){const label=$(tab==='physics'?'physics-profile-name':'profile-name').value;return (label==='Wheel leg study'?'Jonathan v2 linkage':label||'Jonathan v2 linkage')+' · jon_v2';}if(inversionBackend(backend)){const label=$(tab==='physics'?'physics-profile-name':'profile-name').value||'Wheel leg study';return (label==='Wheel leg study'?'Invertible '+(config?.preset||'study'):label)+' · '+backend;}return `${counterbalanceBackend(backend)?'Constant-lift lever':$(tab==='physics'?'physics-profile-name':'profile-name').value||'Wheel leg study'} · ${backend}${config?.wave?' · '+config.wave:''}`;}
+function name(backend,config){if(inversionBackend(backend)){const label=$(tab==='physics'?'physics-profile-name':'profile-name').value||'Wheel leg study';return (label==='Wheel leg study'?'Invertible '+(config?.preset||'study'):label)+' · '+backend;}return `${counterbalanceBackend(backend)?'Constant-lift lever':$(tab==='physics'?'physics-profile-name':'profile-name').value||'Wheel leg study'} · ${backend}${config?.wave?' · '+config.wave:''}`;}
 function send(key,message){const frame=frames.get(key);if(!frame)return;if(ready.has(key))frame.contentWindow.postMessage(message,location.origin);else{const queue=pending.get(key)||[];queue.push(message);pending.set(key,queue);}}
 function markReady(key){ready.add(key);const frame=frames.get(key);for(const message of pending.get(key)||[])frame.contentWindow.postMessage(message,location.origin);pending.delete(key);}
 function ensureFrame(key,host,url,title){
@@ -43,32 +41,14 @@ function ensureFrame(key,host,url,title){
  frame.addEventListener('load',()=>{frame.contentWindow.postMessage({type:'motion-lab-theme',theme},location.origin);if(key==='studies')markReady(key);});
  $(host).append(frame);frames.set(key,frame);return frame;
 }
-function showJonLinkage(){
- const frame=ensureFrame('jon-v2','jon-linkage-host','/jon-linkage/?embedded=1','Jonathan v2 separate three-belt linkage · kinematics and quasi-static physics');
- frame.hidden=false;$('jon-linkage-panel').hidden=false;return frame;
-}
 function showMathModel(next=mathModel){
- mathModel=['inversion','jon-v2'].includes(next)?next:'scipy';
- if(mathModel==='jon-v2'){
-  showJonLinkage();for(const id of ['math','inversion-math'])if(frames.has(id))frames.get(id).hidden=true;
-  $('math-caption').textContent='Jonathan v2 · general three-belt kinematics · unequal links and independent wheel drive';
- }else{
- const key=mathModel==='inversion'?'inversion-math':'math';
+ mathModel=next==='inversion'?'inversion':'scipy';const key=mathModel==='inversion'?'inversion-math':'math';
  ensureFrame(key,'math-host',mathModel==='inversion'?'/inversion/?embedded=1&backend=math':'/mathematical/?embedded=1',mathModel==='inversion'?'Independent invertible angular model':'Independent SciPy mathematical simulation');
  for(const id of ['math','inversion-math'])if(frames.has(id))frames.get(id).hidden=id!==key;
  $('math-caption').textContent=mathModel==='inversion'?'Independent knee-right angle study · fixed J1 / no floor':'Independent Python / SciPy 2D suspension · MATLAB legacy-tip companion';
- }
- $('compare-models').disabled=mathModel==='jon-v2';
- $('compare-models').title=mathModel==='jon-v2'?'Jonathan v2 has quasi-static sweeps; it has no matching dynamic Pymunk backend.':'';
- document.querySelector('[data-panel="math"] .model-label').textContent=mathModel==='jon-v2'?'Jonathan v2 · analytical linkage':'Python / SciPy · 2D suspension';
 }
 function showPhysicsModel(next=physicsModel){
- physicsModel=['inversion','jon-v2'].includes(next)?next:'wheel';
- if(physicsModel==='jon-v2'){
-  showJonLinkage();for(const id of ['physics','inversion-physics'])if(frames.has(id))frames.get(id).hidden=true;
-  document.querySelector('[data-panel="physics"] .workspace-bar p').textContent='Jonathan v2 · quasi-static physics · prescribed forces, belt tensions, motor torques and five FBDs';return;
- }
- const key=physicsModel==='inversion'?'inversion-physics':'physics';
+ physicsModel=next==='inversion'?'inversion':'wheel';const key=physicsModel==='inversion'?'inversion-physics':'physics';
  ensureFrame(key,'physics-host',physicsModel==='inversion'?'/inversion/?embedded=1&backend=pymunk':'/physics/?embedded=1',physicsModel==='inversion'?'Torque-driven invertible ground-contact model':'Actual 2D Pymunk physical model');
  for(const id of ['physics','inversion-physics'])if(frames.has(id))frames.get(id).hidden=id!==key;
  document.querySelector('[data-panel="physics"] .workspace-bar p').textContent=physicsModel==='inversion'?'Torque-driven above/below demo · knee stays right · actual floor contacts':'Actual Pymunk space · prescribed wheel height · floating chassis';
@@ -83,14 +63,12 @@ function selectTab(next){
  if(!['home','math','physics','studies','data','compare'].includes(next))next='home';const previous=activeFrameKey();tab=next;clearError();if(previous&&previous!==activeFrameKey())send(previous,{type:'motion-lab-deactivate'});
  document.querySelectorAll('[data-panel]').forEach(panel=>panel.hidden=panel.dataset.panel!==tab);
  document.querySelectorAll('[data-tab]').forEach(button=>{if(button.dataset.tab===tab)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
- $('jon-linkage-panel').hidden=!activeJon();
  if(tab==='math')showMathModel(mathModel);
  if(tab==='physics')showPhysicsModel();
  if(tab==='studies')openStudy($('study-select').value||'gallery');
  if(tab==='compare'){void comparison.refresh();requestAnimationFrame(()=>comparison.resize());}
  if(tab==='data'){void dataBrowser.refresh();requestAnimationFrame(()=>$('data-panel').querySelectorAll('.js-plotly-plot').forEach(plot=>Plotly.Plots.resize(plot)));}
- for(const button of document.querySelectorAll('[data-jon-linkage]'))button.setAttribute('aria-pressed',String(activeJon()));
- const url=new URL(location.href);url.searchParams.set('tab',tab);if(tab==='math')url.searchParams.set('model',mathModel);else if(tab==='physics'&&physicsModel!=='wheel')url.searchParams.set('model',physicsModel);else url.searchParams.delete('model');if(tab==='studies')url.searchParams.set('study',$('study-select').value);else url.searchParams.delete('study');if(tab!=='physics')url.searchParams.delete('architecture');history.replaceState(null,'',url);
+ const url=new URL(location.href);url.searchParams.set('tab',tab);if(tab==='math')url.searchParams.set('model',mathModel);else if(tab==='physics'&&physicsModel==='inversion')url.searchParams.set('model','inversion');else url.searchParams.delete('model');if(tab==='studies')url.searchParams.set('study',$('study-select').value);else url.searchParams.delete('study');if(tab!=='physics')url.searchParams.delete('architecture');history.replaceState(null,'',url);
 }
 function openStudy(id,loadOnly=false){
  rememberStudy();
@@ -116,10 +94,6 @@ async function keepRun(backend,result){
 async function keepProfile(backend,config,reference_inputs){const record=await saveRecord({kind:'profile',name:name(backend,config),backend,config,...(reference_inputs?{reference_inputs}:{})});status(`Saved profile: ${record.name}`);await dataBrowser.refresh();}
 function requestProfile(){const key=activeFrameKey()||'math';if(!frames.has(key)){selectTab('math');status('Open a model, set its inputs, then save the profile.');return;}send(key,{type:'motion-lab-save-profile'});}
 function loadProfile(record,backend){
- if(backend==='jon_v2'){
-  mathModel=physicsModel='jon-v2';selectTab('math');send('jon-v2',{type:'motion-lab-load-profile',config:record.config});
-  $('profile-name').value=$('physics-profile-name').value=record.name.slice(0,100);status('Jonathan v2 linkage profile restored. Save analytical sweeps in the editor.');return;
- }
  if(inversionBackend(backend)){void openInversion(null,backend.endsWith('math')?'math':'pymunk').then(()=>send(backend.endsWith('math')?'inversion-math':'inversion-physics',{type:'motion-lab-load-profile',config:record.config})).catch(error);return;}
  const reference_inputs=record.reference_inputs||record.result?.reference_inputs;
  if(counterbalanceBackend(backend)){
@@ -187,14 +161,6 @@ async function saveStudy(withData){
 const dataBrowser=mountDataBrowser($('data-panel'),{theme,onLoadProfile:loadProfile,onPymunk:record=>showNativeGui(nativeProfile(record)),onPlayback:record=>showPlayback(modelProfile(record),record.result,record.reference_inputs),onLoadStudy:loadStudy,onCompare:async record=>{const run=record.result?record:await runSavedProfile(record);await comparison.addRecords([run]);selectTab('compare');}});
 const comparison=mountComparison($('compare-panel'),{theme,onRunProfile:runSavedProfile});
 async function runSavedProfile(record){
- if(record.backend==='jon_v2'){
-  ensureFrame('jon-v2','jon-linkage-host','/jon-linkage/?embedded=1','Jonathan v2 analytical linkage');
-  const requestId=crypto.randomUUID(),result=await new Promise((resolve,reject)=>{
-   const timeout=setTimeout(()=>{evaluations.delete(requestId);reject(Error('Jonathan v2 evaluation timed out; rebuild/reload its page.'));},20000);
-   evaluations.set(requestId,{resolve,reject,timeout});send('jon-v2',{type:'motion-lab-evaluate',requestId,config:record.config});
-  });
-  const saved=await saveRecord({kind:'run',name:record.name+' · analytical sweeps',backend:'jon_v2',config:result.config,result});await dataBrowser.refresh();return saved;
- }
  const endpoints={inversion_math:'/api/inversion/math',inversion_pymunk:'/api/inversion/pymunk',math:'/api/math/simulate',pymunk:'/api/pymunk/simulate',counterbalance_math:'/api/counterbalance/math',counterbalance_pymunk:'/api/counterbalance/pymunk'};
  const endpoint=endpoints[record.backend];if(!endpoint)throw Error('This archived model cannot be rerun in Comparison. Import a recorded dataset, or run it in its archive tool.');
  const result=await simulate(endpoint,inversionBackend(record.backend)?resolveInversionProfile(record.config):record.config);if(record.reference_inputs)result.reference_inputs=record.reference_inputs;
@@ -208,7 +174,6 @@ async function simulate(endpoint,config){
  }
 }
 async function showPlayback(config=null,result=null,reference_inputs=null){
- if(activeJon()||config?.schema?.startsWith('general-vsl/')){status('Jonathan v2 uses parameter playback in its linkage editor. Recorded Pymunk playback requires a dynamic wheel-height or inversion fixture.');return;}
  if(config?.model==='inversion'||(!config&&activeFrameKey()?.startsWith('inversion-'))){const type=(result?.backend||frameConfigs.get(activeFrameKey())?.backend||'inversion_pymunk').endsWith('math')?'math':'pymunk';await openInversion(null,type);const key=type==='math'?'inversion-math':'inversion-physics';if(result)send(key,{type:'motion-lab-load-result',result});else if(config?.config)send(key,{type:'motion-lab-load-profile',config:config.config});return;}
  if(config?.model==='counterbalance'||!config&&activeCounterbalance()){
   const c=config?.config||configs.counterbalance,r=result||(!config?runs.counterbalance:null);
@@ -260,7 +225,6 @@ function monitorNative(session){
 async function showNativeGui(selectedConfig=null,reference_inputs=null){
  clearError();const launchButton=$('show-gui');launchButton.disabled=true;
  try{
-  if(activeJon()&&!selectedConfig||selectedConfig?.schema?.startsWith('general-vsl/')){status('Jonathan v2 is quasi-static. Select Wheel-height bench or Invertible designs for a matching live Pymunk desktop fixture.');return;}
   let config=selectedConfig,reference=reference_inputs;
   if(!config){
    if(tab==='studies'&&$('study-select').value==='design-examples'){status('These examples show prescribed kinematics. Select Mathematical model or 2D physical model to launch a supported Pymunk fixture.');return;}
@@ -317,14 +281,11 @@ window.addEventListener('message',event=>{
  const key=[...frames].find(([,frame])=>frame.contentWindow===event.source)?.[0];if(!key)return;const data=event.data;
  if(data.type==='motion-lab-height'&&Number.isFinite(data.height))frames.get(key).style.height=Math.min(18000,Math.max(key==='gui'?680:600,data.height))+'px';
  else if(data.type==='motion-lab-ready'||data.type==='motion-lab-viewer-ready')markReady(key);
- else if(data.type==='motion-lab-error'&&key==='jon-v2')error(data.message);
- else if(data.type==='motion-lab-evaluated'&&key==='jon-v2'){
-  const request=evaluations.get(data.requestId);if(request){clearTimeout(request.timeout);evaluations.delete(data.requestId);if(data.error)request.reject(Error(data.error));else request.resolve(data.result);}
- }
- else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk','inversion_math','inversion_pymunk','jon_v2'].includes(data.backend)){frameConfigs.set(key,{backend:data.backend,config:data.config,reference_inputs:data.reference_inputs});configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
+ else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk','inversion_math','inversion_pymunk'].includes(data.backend)){frameConfigs.set(key,{backend:data.backend,config:data.config,reference_inputs:data.reference_inputs});configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
  else if(data.type==='motion-lab-run'&&key!=='gui'){markReady(key);void keepRun(data.backend,data.result).catch(error);}
  else if(data.type==='motion-lab-profile')void keepProfile(data.backend,data.config,data.reference_inputs).catch(error);
  else if(data.type==='motion-lab-save-run')void keepRun(data.backend,data.result).catch(error);
+ else if(data.type==='motion-lab-reference-audit')void (async()=>{await saveRecord({kind:'dataset',name:'Jonathan reference audit · '+new Date().toLocaleString(),result:data.result});await dataBrowser.refresh();status('Saved fixed-A reference sweeps. These parameter tables contain no dynamic time trajectory.');})().catch(error);
  else if(data.type==='motion-lab-show-gui')void showNativeGui(data.config,data.reference_inputs||frameConfigs.get(key)?.reference_inputs||data.result?.reference_inputs);
  else if(data.type==='motion-lab-show-playback')void showPlayback(data.config,data.result,data.reference_inputs||frameConfigs.get(key)?.reference_inputs);
  else if(data.type==='motion-lab-open-inversion')void openInversion(data.preset,data.backend==='math'?'math':'pymunk').catch(error);
@@ -343,9 +304,8 @@ for(const type of ['math','physics']){
  const host=document.querySelector(`[data-panel="${type}"] .workspace-actions`);
  const invert=document.createElement('button');invert.textContent='Invertible designs';invert.dataset.inversionOpen=type;invert.onclick=()=>openInversion(null,type==='math'?'math':'pymunk');
  const normal=document.createElement('button');normal.textContent='Wheel-height bench';normal.onclick=()=>{const previous=activeFrameKey();if(previous)send(previous,{type:'motion-lab-deactivate'});if(type==='math')mathModel='scipy';else physicsModel='wheel';selectTab(type);};host.append(invert,normal);
- const jon=document.createElement('button');jon.textContent='Jonathan v2 · separate belt linkage';jon.dataset.jonLinkage=type;jon.onclick=()=>{const previous=activeFrameKey();if(previous&&previous!=='jon-v2')send(previous,{type:'motion-lab-deactivate'});mathModel=physicsModel='jon-v2';selectTab(type);status('Separate general linkage: all v2 geometry and load parameters, quasi-static forces, FBDs and sweeps.');};host.append(jon);
 }
-const query=new URLSearchParams(location.search);mathModel=['inversion','jon-v2'].includes(query.get('model'))?query.get('model'):'scipy';physicsModel=['inversion','jon-v2'].includes(query.get('model'))?query.get('model'):'wheel';if(query.get('tab')==='math'&&['linkage','counterbalance'].includes(query.get('model'))){query.set('tab','studies');query.set('study',query.get('model')==='linkage'?'legacy-linkage':'counterbalance');}if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);
+const query=new URLSearchParams(location.search);mathModel=query.get('model')==='inversion'?'inversion':'scipy';physicsModel=query.get('model')==='inversion'?'inversion':'wheel';if(query.get('tab')==='math'&&['linkage','counterbalance'].includes(query.get('model'))){query.set('tab','studies');query.set('study',query.get('model')==='linkage'?'legacy-linkage':'counterbalance');}if(studies.some(s=>s[0]===query.get('study')))$('study-select').value=query.get('study');changeTheme(theme);
 if(query.get('architecture')==='constant-lift'){
  physicsModel='wheel';
  // Prevent a cold Physics frame from running unrelated defaults while the factory loads.

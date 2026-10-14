@@ -1,8 +1,13 @@
 # Model and coordinate map
 
-Author: Andy Zhang with Codex. Updated: 2026-10-12. Status: experimental models and derived equations, not selected hardware.
+Author: Andy Zhang with Codex. Updated: 2026-10-14. Status: experimental models and derived equations, not selected hardware.
 
 ## Related model layers
+
+The [merged general linkage](merged-linkage.md) extends the original SciPy/Pymunk
+fixture with unequal links and three carrier belts, validated against Jonathan's
+exact source. The equal-link equations below still describe Original mode;
+the linked record owns general geometry, dynamics and reference-audit boundaries.
 
 | Layer | Question | Coordinates |
 | --- | --- | --- |

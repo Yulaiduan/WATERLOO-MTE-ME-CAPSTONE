@@ -912,60 +912,77 @@ total; largest 311,008 bytes), with matching delivered renderer/data and GIF
 hashes. One hundred relative documentation links pass. An ad-hoc link check
 initially used the lexical parent of Path('.'); resolving the app directory
 then produced the passing check without changing any source/result.
+# Original solver / Jonathan tooling merge, 2026-10-14
 
-## Separate Jonathan v2 linkage integration, 2026-10-14
+This release supersedes c8b3c8b's separate editor; [merged-linkage.md](merged-linkage.md)
+owns the general fixture, source provenance, equations and physical boundaries.
+The original equal-link dynamic path stays unchanged. Installed Python3.13.12,
+Node22.23.3, Pymunk/NumPy/SciPy from the existing app environment were used.
 
-Base `93fed9f`; isolated member workspace. The current owner request integrates
-Jonathan's original v2 as a separate Math/2D Physical design. Python 3.13.12 and
-Node 22.23.3 are the installed runtimes. `npm run build` passes; all **80 Node
-tests** pass, including four new source-preservation/library/unit-boundary tests.
-On this host the shell's default `python` resolves to a nonlaunchable Cygwin
-entry; prepending the installed app-local `.venv/Scripts` uses the verified
-Python runtime for the unchanged build command. No dependency changes are needed.
+- `npm run build`: passes, copying only Jonathan's three exact math scripts,
+  with source/model hashes, into ignored `web/jon-models.js`. `npm test`:81/81
+  passes, including five provenance, SI mapping, driven/force convention,
+  geometry preset and no-fabricated-time/branch-cut tests.
+- Original Jonathan `verify-kinematics.cjs`, `verify-quasi-static.cjs`, and
+  `verify-global-maxima.cjs`:3853/16044/29863 assertions pass. Source maximum
+  residuals9.722e-13N force,3.624e-13Nm moment,3.979e-13Nm virtual work.
+- `.venv/Scripts/python.exe -m unittest -q test_physics test_equation_checks
+  test_position_input test_math_model test_spring_mechanisms test_suspension_physics
+  test_gravity_balance test_suspension_architecture test_replacement_suspension
+  test_guide_belt test_native_guide test_mechanism_stability test_setup_preview
+  test_generalized_linkage`:113 tests pass in504.271s. This includes the original
+  nine-preset,108-backend-case six-second envelope and existing refinement checks.
+- Expanded `test_generalized_linkage`: nine tests, including288 varied source
+  poses with independently derived fixed-A holding torque, SI inertia, angles,
+  world coordinates and force conversion; finite-difference spring leverage
+  across all nine original mechanisms; energy gradients and angular closure;
+  original2:1 output recovery; actual unequal bodies/compound; unity guide and
+  spin cancellation; invalid configurations; actual-body energy refinement.
+  The original2:1 theta discrepancy was about8.81e-11deg. General Pymunk final
+  angle errors against SciPy at1/.5/.25ms are0.0006268464/0.0001868328/0.0000622246deg.
+  Pin/position/guide drift limits1e-5m/1e-4m/1e-5rad and force/torque impulse
+  closure limits1e-8N/0.001Nm pass. Conservative actual-body energy drift at
+  those steps is0.0097574/0.0048918/0.0024492J; SciPy drift is below1e-8J.
+- Installed Edge `verify_merged_linkage.cjs`: passes real Math/Pymunk calls,
+  original-model default and no standalone editor, editable unequal geometry and
+  all loading parameters, three belts/five FBDs/15 plots/eight headlines,
+  current-pose force-convention invariance, source CSV/read-only dataset library,
+  original backend profiles, native profile dispatch (mocked), Math/Pymunk angle
+  parity, edited controls surviving pending Run, refresh/dark390px layout and
+  zero page errors/external requests.
+- Existing `verify_motion_lab.cjs` and `verify_setup_preview_ui.cjs`: pass real
+  APIs, original menu/library/Comparison/playback/Plotly, mocked native actions,
+  all nine setup previews, zero setup solver steps/loads and cancellation.
+- Actual native `debug_gui.py --config artifacts/merged-linkage/native-config.json
+  --headless-check --screenshot artifacts/merged-linkage/native.png`: passes1200
+  engine steps with compound mass, actual debug renderer, six shapes and nine
+  constraints. Carrier ratio/inspector/belt rendering uses actual general bodies.
+  Browser mechanism/audit/mobile and native screenshots were visually inspected;
+  crowded plot legends were moved below axes and final output reviewed.
 
-Jonathan's unchanged source checks pass: **3,853 kinematic**, **16,044
-quasi-static** and **29,863 bounded-global-maximum** assertions. Original
-reported residuals remain max force9.722e-13 N, moment3.624e-13 Nm and
-virtual-work discrepancy3.979e-13 Nm. All three model script bodies and their
-SHA-256 hashes match the source exactly in the generated page.
+The first expanded conservative-energy case crossed a rigid stop and lost energy;
+that is outside conservative smooth-motion validation. The retained test explicitly
+stays inside travel bounds, checks stop torque and uses2000N/m; no error tolerance
+was relaxed. Initial general torque reconstruction wrongly scaled the GearJoint
+impulse by the lower-angle rate; correcting the second-body impulse convention
+removes that discrepancy. Browser harness fixes open collapsed solver fields,
+inspect the native envelope's config, and send profile messages from the trusted
+parent. These failures were resolved before publication.
 
-`node scripts/verify_jon_linkage.cjs` passes actual installed Edge checks:
-all geometry/mass/preload fields; editable unequal links, alpha/beta and signed
-loads; twelve load plots/five FBDs/eight headline cards;31-pose original-source
-geometry/torque/tension parity; unchanged torque on force-mode switch; derived
-control disabling; one shared Math/Physical editor; paused background masters;
-complete profile/library/JSON restore; four-sweep saved datasets and original
-31-column CSV; nonmutating profile reevaluation in Comparison; refresh memory,
-atomic bad-window rejection, invalid-draft export rejection, dark mode and390px
-layout. Sweep outputs retain explicit units, branches, undefined direction nulls
-and source provenance, with no fabricated timestamps. Native/recorded Pymunk
-actions launch no unrelated fixture. Page errors and external requests are empty.
+Canonical physics is NOT APPLICABLE. Jon's fixed-A statics/preload bearing loads
+are reference values; the dynamic fixture uses equivalent angular constraints,
+floating bilateral wheel support and spring/acceleration loads. No physical belt
+elasticity/bearing-force implementation, rolling/unilateral terrain contact,
+motor-shaft freedom,3D packaging, hardware,GPU or other-OS validation is claimed.
+The headless native check does not certify a visible desktop window interaction;
+existing launcher/native APIs remain in place. Unrelated inversion/lever full
+suites and MATLAB were not rerun; this release changes only the original wheel
+fixture and its general geometry tooling.
 
-The unchanged `verify_motion_lab.cjs` passes the existing menu, real SciPy/Pymunk
-API, library/import/playback/comparison/Plotly and mobile workflows; native launch
-endpoints remain mocked in that test. The actual app-root Start/Stop Motion
-Lab.cmd is exercised from an unrelated directory: reuse succeeds, scoped stop
-removes the4186listener, startup succeeds and `/jon-linkage/` returns200 with
-the new adapter. The server is left running. Desktop, mechanism and mobile
-captures are visually reviewed; raw screenshots/JSON/CSV remain ignored.
-
-Initial new-browser testing counted both sweep SVGs and tooltip IDs (24) with
-an overly broad selector; the SVG-specific12-plot assertion then passes. Visual
-review caught inherited automatic vertical margins centring the source main
-column in a growing iframe; explicit top alignment/min-height fixes the gap,
-with a new layout assertion. Diagram backgrounds retain readable source colors
-in dark mode. No mathematical tolerance or solver semantics changed.
-
-Canonical robot physics is NOT APPLICABLE. Existing dynamic/native backend code
-and full Python solver suites are unchanged and were not rerun. No dynamic
-general-ratio Pymunk counterpart, spring/acceleration model, no-slip/contact
-feasibility, physical inversion/clearance, hardware, GPU or other-OS validation
-is claimed. Historical dual-rope IMPOSSIBLE remains unchanged. Concurrent
-untracked files in the separate leg-design-study app are preserved and excluded
-from this contribution's staged snapshot/publication.
-
-Repository validation: whitespace and103relative documentation links pass.
-`check_entry.py --staged --base origin/main --require-passed` passes612files,
-22changed paths,workspace scope; scoped physics gate passes with canonical
-physics NOT APPLICABLE. Default working-tree entry coverage flags seven unfinished
-unlogged sibling corridor paths; the exact staged/outgoing snapshot excludes them.
+Final publication checks:107 relative links and whitespace pass; check_entry.py
+(default and --require-passed) passes627 files/44 paths/workspace, and
+physics_gate.py reports canonical physics NOT APPLICABLE. The final expanded
+general/spring regression run passes21 tests after allowing general pitch radii
+under the explicit nonoverlap bounds; original radius limits remain unchanged.
+Durable app-root CMDs from an unrelated directory confirm closed listener, restart,
+HTTP200 original preview/reference bundle and reuse at4186.
