@@ -11,7 +11,7 @@ canonical locations. They are included by the same clone and linked below.
 
 | Workspace | Context to read | What is retained |
 | --- | --- | --- |
-| Offline leg design report | [leg-design-study/context.md](leg-design-study/context.md) | Static HTML/PDF, selected numerical evidence, generalized equations, optimization/spring/motor study and revision history; no Motion Lab integration |
+| Offline leg design report | [leg-design-study/context.md](leg-design-study/context.md) | Static HTML/PDF, selected evidence, generalized equations and revision history; later labelled pose examples/GIFs are separately available in Motion Lab |
 | Motion Lab / Wheel Leg Lab | [wheel-leg-lab/context.md](wheel-leg-lab/context.md) | Current source, simulations, calculators, seven motion studies, tests, setup/start/stop launchers, model/decision/validation/handoff history |
 | Terrain Mobility Atlas / workbench | [terrain-mobility-atlas/context.md](terrain-mobility-atlas/context.md) | Atlas, reduced terrain workbench, historical linkage and force calculator, data provenance, source/tests/lockfile, design/decision/validation history |
 | Legacy and supplemental source archive | [capstone-archive/context.md](capstone-archive/context.md) | Exact 668-file original snapshot plus 21 later local development source/QA/editing files; verified restorers, never executed as current code |

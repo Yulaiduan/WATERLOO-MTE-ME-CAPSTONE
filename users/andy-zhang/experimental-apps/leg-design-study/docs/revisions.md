@@ -46,3 +46,14 @@ fixture, retained results, local HTML/12-page PDF generator and browser verifier
 The earlier report gets a navigation link only. The previous numerical model,
 Motion Lab source/services and spring/motor results are unchanged. Canonical
 robot validation is not applicable; unresolved physical inversion remains open.
+
+## Labelled Motion Lab illustrations, 2026-10-14
+
+The owner subsequently requested labelled examples and animation GIFs for the
+leading path options. Source report revision is `12e227c`; publication is the
+commit adding wheel-leg-lab/web/design-examples.
+[The visualization record](../../wheel-leg-lab/docs/design-examples.md) owns the
+new live drawings and ten curated GIFs, with exact retained cases and geometry
+checks. The offline report/PDF, optimizer and physics models are not embedded
+in Motion Lab; only the separately requested read-only mechanism examples are
+added. Preserve fixed-phase/clearance limitations and historical decisions.

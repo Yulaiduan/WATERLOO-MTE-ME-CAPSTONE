@@ -2498,3 +2498,69 @@ The equal 350 mm 7:4 example gives 325/285 mm total/usable travel, 12.02-degree 
 Continue from inversion-path-study.md and the revision/context map, choose explicitly whether approximate mirrored branches or assembly indexing is acceptable, and establish axial packaging and actual load/spring routing before hardware sizing.
 
 ---
+
+## Entry: 2026-10-14 — Andy Zhang — Labelled Motion Lab design examples and animation GIFs
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated Motion Lab member app; linked design-report revision context.
+- **Associated Issue/Task:** Owner requested labelled Motion Lab visualizations and animation GIFs for the leading alpha-zero path options. Select the three summary options, exact indexed straight-line alternative and original screenshot reference. This explicitly authorizes the new visualization entry while preserving the separate offline report/PDF, existing sizing tool, spring/physics models and historical IMPOSSIBLE status. Source report is main revision 12e227c.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/design-examples.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/validation.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/requirements-animation.txt`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_animations.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_design_examples.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/encode_design_gifs.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/export_design_examples.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_design_examples.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/design-examples.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/data.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/exact-line-indexed-inversion.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/exact-line-indexed-working.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/longer-links-inversion.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/longer-links-working.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/manifest.json`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/near-equal-indexed-inversion.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/near-equal-indexed-working.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/screenshot-reference-inversion.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/screenshot-reference-working.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/simple-guide-inversion.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/gifs/simple-guide-working.gif`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/model.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/renderer.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/design-examples/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+
+- **API/Interface Changes:** New /design-examples/ static page and Miscellaneous study=design-examples entry; no server or numerical backend API changes. Five read-only exact report cases provide shared-scale working/full-inversion canvas views, fixed guide/phase labels, wheel-centre angle ray, play/pause/restart/scrub, filtering, theme/memory and projected-clearance flags. Ten curated GIF illustrations use the same renderer and stay below the 1 MiB blob cap; raw frames/logs stay ignored. Build extracts source-hashed selected evidence and adds gallery navigation; optional export uses locked Playwright and app-local Python/Pillow. The global native GUI action for this kinematic study explains the supported fixture boundary without silently launching the unrelated old wheel model. Existing native launches, saved solver profiles, original models/defaults and offline reports are preserved. Parent/app context and revision/validation records document the later owner request and limitations.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python 3.13.12 / Node 22.23.3 on this laptop. npm run build passes; npm test passes 76/76, including four new tests. Exact selected config/metric/source-hash parity and 3,010 original-Jonathan-V2 poses pass across five cases and both ranges; mirrored folds and fixed-phase exact-line identity checked. Actual Edge browser passes five cards/two modes, endpoint/midpoint scrubbing, playback, filtering/toggles, all ten HTTP GIF signatures, menu selection/restored settings, dark mode and 390 px layout, with zero page errors/external requests. Kinematic native-GUI action sends no native-launch POST. Optional pinned Pillow 12.3.0 install and pip check pass. All ten GIFs validate 48 frames, 600x720 pixels, 4.8-second infinite looping; representative frames and browser views reviewed and fold labels repaired. Final re-export is byte-identical; GIF/renderer/data hashes match manifest, total 2,589,694 bytes, largest 311,008 bytes. One hundred relative documentation links pass. Actual app-root Stop/Start Motion Lab.cmd from unrelated directory removes listener and restarts successfully; new page returns 200 at 4186. Canonical physics NOT APPLICABLE.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member visualization workspace. No new spring/motor/Pymunk/contact simulation, physical inversion, 3D packaging, hardware, GPU or other-OS validation is claimed. The 4.8-second animation is an illustrative prescribed theta2 cycle, not an actuator requirement. Phase alternatives keep fixed lower-link assembly indexing and are labelled as relaxing the original phase-zero constraint. Red wheel/disk overlays mark the projected 200 mm wheel plus assumed 20 mm gap, without inventing axial offsets or contacts. Historical dual-rope remains IMPOSSIBLE/rejected. An initial browser harness used a Frame method on a FrameLocator; the corrected API passes. An ad-hoc link check used the lexical parent of Path('.'); resolving the app path then passes. No mathematical or physics tolerance was changed. Existing Python physics backends and their full suites were not rerun because no backend changed; actual UI geometry parity and app lifecycle are the current evidence.
+
+## 4. Compute Saving Handoff State
+
+Open Motion Lab at 4186 with tab=studies&study=design-examples, or the direct /design-examples/ route, and download either GIF for each labelled case.
+The same renderer draws three leading options, an exact indexed line and the screenshot reference, with working/full-inversion views and explicit fixed-phase/projected-clearance limitations.
+Continue from docs/design-examples.md and the sibling report revision map, preserve all existing solver/profile and IMPOSSIBLE decisions, and use the actual report calculations before proposing physical spring/motor or packaging changes.
+
+---

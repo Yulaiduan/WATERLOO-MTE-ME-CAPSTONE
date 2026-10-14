@@ -29,6 +29,8 @@ def page(title,fragment):
          '<header><h1>'+escape(title)+'</h1><a href="/animations/">All studies</a><a href="/" target="_top">Motion Lab</a></header>'+fragment+'</main></body></html>')
 
 def main():
+ from build_design_examples import main as build_examples
+ build_examples()
  runtime=ROOT/'node_modules/plotly.js-dist-min/plotly.min.js'
  if not runtime.exists():raise SystemExit('Plotly runtime missing; run npm ci before building.')
  shutil.copyfile(runtime,ROOT/'web/plotly.min.js')
@@ -38,6 +40,7 @@ def main():
  folder=ROOT/'web/recorded';folder.mkdir(parents=True,exist_ok=True)
  (folder/'index.html').write_text(page('Recorded Pymunk playback',(ROOT/'animations/pymunk-remote-preview.html').read_text(encoding='utf-8')),encoding='utf-8')
  cards=''.join(f'<a href="/animations/{slug}/"><h2>{escape(title)}</h2><p>{escape(detail)}</p></a>' for slug,title,detail in STUDIES)
+ cards+='<a href="/design-examples/"><h2>Alpha-zero design examples</h2><p>Five labelled report candidates and reference mechanisms, working/full inversion, common scale and downloadable GIFs.</p></a>'
  cards+='<a href="/force-plots/"><h2>Wheel / link sizing & force calculator</h2><p>Diameter, lift and buffers; sweep link lengths and angle windows for peak, average and flatness of torque. Includes the original force animation.</p></a>'
  cards+='<a href="/linkage/"><h2>Detailed linkage bench</h2><p>Two-coordinate drive, spring, impedance, finite actuator response and local analysis.</p></a>'
  cards+='<a href="/physics/"><h2>Pymunk spring bench</h2><p>Actual engine, 50 mm extension spring, joint loads, pulse inputs and native debug view.</p></a>'

@@ -884,3 +884,31 @@ twice the numerical lift/RMS score; both do20 J ideal work. The score compares
 travel with torque demand, not energy efficiency or hardware thermal suitability.
 Python/native/dynamic solvers are unchanged and not rerun; canonical robot
 physics is not applicable to this isolated analytical app contribution.
+
+## Labelled alpha-zero examples and GIFs, 2026-10-14
+
+Source `12e227c`; isolated workspace visualization. [Design examples](design-examples.md)
+records five selected mechanisms and ten curated working/full-inversion GIFs.
+Node 22.23.3 build and all 76 tests pass, including four new tests and 3,010
+original-Jonathan-V2 pose comparisons. Exact retained configs, metric records
+and source hash agree. Actual Edge controls/menu-memory/dark/mobile checks
+pass, with zero page errors/external requests and ten HTTP GIF signatures.
+The native-GUI action for this study makes no launch POST, preserving the
+explicit kinematic/physical-fixture distinction. Optional pinned Pillow 12.3.0
+installs into this laptop's Python 3.13.12 venv; pip check passes.
+
+All GIFs reopen as 48-frame 600x720 infinite loops, 4.8 seconds each; frames and
+actual browser drawings were visually reviewed, with merged/separated fold
+labels repaired and re-exported. Sizes/hashes are retained in the GIF manifest.
+Actual app-root Stop/Start Motion Lab.cmd works from an unrelated directory: the
+listener disappears, restart succeeds and /design-examples/ returns 200 at 4186.
+The first integration harness used a Frame API on a FrameLocator; the corrected
+harness passes without changing a mathematical tolerance. No new physics
+backend, contact/impact, canonical robot, hardware, GPU or other-OS validation
+is claimed. Historical dual-rope remains IMPOSSIBLE/rejected.
+
+Final GIF reproduction is byte-identical for all ten files (2,589,694 bytes
+total; largest 311,008 bytes), with matching delivered renderer/data and GIF
+hashes. One hundred relative documentation links pass. An ad-hoc link check
+initially used the lexical parent of Path('.'); resolving the app directory
+then produced the passing check without changing any source/result.

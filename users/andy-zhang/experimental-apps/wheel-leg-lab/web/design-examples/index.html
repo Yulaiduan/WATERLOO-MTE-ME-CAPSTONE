@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Alpha-zero leg design examples · Motion Lab</title>
+<link rel="stylesheet" href="/viewer.css"><link rel="stylesheet" href="style.css">
+<script src="/theme.js"></script></head><body><main>
+<header><div><p class="eyebrow">MOTION LAB · LABELLED DESIGN EXAMPLES</p><h1>Alpha-zero paths in motion</h1></div><nav><a href="/animations/">All studies</a> · <a href="/" target="_top">Motion Lab</a></nav></header>
+<p class="scope">Five retained examples, with Jonathan's θ₂ and +y right / +z up convention. The hip A is fixed. Every example has α=0° and a 200 mm wheel radius.</p>
+<div class="controls card">
+<label class="form-label">View<select id="view-mode" class="form-select"><option value="working">Reported working stroke</option><option value="inversion">Full ideal inversion</option></select></label>
+<label class="form-label">Show<select id="design-filter" class="form-select"><option value="all">All five examples</option></select></label>
+<button id="play" class="btn btn-primary">Pause</button><button id="restart" class="btn">Restart</button>
+<label class="form-label progress">Pose through chosen range<input id="scrub" type="range" min="0" max="1" step="0.001" value="0"></label>
+<label class="form-check"><input id="show-clearance" type="checkbox" checked>Show projected 220 mm disk</label>
+<label class="form-check"><input id="show-guide" type="checkbox" checked>a–b guide pulleys</label>
+</div>
+<p id="view-description" class="scope"></p>
+<div class="legend"><span class="upper">Upper link L₂</span><span class="lower">Lower link L₃</span><span class="path">Wheel-centre path</span><span class="chord">Endpoint chord</span></div>
+<div id="examples" class="examples"></div>
+<aside class="card limits"><b>What the animation means</b><p>This is prescribed kinematic motion with an illustrative 4.8-second cycle. It does not simulate springs, motor torque, contact or a ground flip. The red 220 mm disk is a projected 200 mm wheel plus an assumed 20 mm gap. Red wheel outlines mark failure of that planar clearance filter.</p><p>The phase alternatives have a fixed lower-link assembly phase. No pulley is reindexed during playback. The original zero-phase full path mirrors through the fold; ideal inversion does not establish physical wheel/chassis clearance. Historical dual-rope remains <b>IMPOSSIBLE / rejected</b>.</p></aside>
+<footer>Source: retained alpha-zero path report, revision 12e227c · GIFs use this same renderer · all dimensions in mm</footer>
+<script type="module" src="app.js"></script></main></body></html>

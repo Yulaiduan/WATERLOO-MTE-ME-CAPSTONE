@@ -212,3 +212,15 @@ The native renderer can be checked with
 validation is claimed.
 
 The seven animation fragments are retained as editable source under `animations/`. The old high-resolution GIFs, raw frame directories and full traces are not committed; interactive pages retain the motion content and can be rebuilt. The Pymunk bench defaults to a prescribed vertical wheel-height step and floating chassis, with force/torque modes retained as legacy diagnostics. It uses sensor geometry, with no automatically solved tire contact, soil, belt elasticity or structural stress. The fixed 4:1 approximation is not an exact straight full inversion. Guide radii 28/14 mm are editable demo values; measured belt radii/T₀, real actuator limits, spring characterization, collision clearance and hardware validation remain open.
+
+## Labelled report examples and GIFs, 2026-10-14
+
+The owner's later request adds **[Alpha-zero design examples](http://127.0.0.1:4186/?tab=studies&study=design-examples)**
+to Miscellaneous studies: three leading options, an exact indexed line and the
+screenshot reference. Working/full inversion, labelled geometry, shared scale,
+pause/scrub and **[ten downloadable GIFs](web/design-examples/gifs/README.md)**
+are available. [The visualization record](docs/design-examples.md) explains
+conventions, fixed phase alternatives, clearance flags and reproduction. The
+offline report/PDF remains separate; this does not add a spring/physics solver
+or change the original wheel/link calculator. Native Pymunk launches retain
+their supported-fixture boundaries.

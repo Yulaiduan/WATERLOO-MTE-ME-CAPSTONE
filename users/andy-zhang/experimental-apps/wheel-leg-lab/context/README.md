@@ -299,3 +299,16 @@ No physical failure explanation or impossibility proof was supplied with the
 status decision; none is invented here. The symmetric knee bellcrank and the
 ordinary2:1guide are separate designs and do not inherit this label.
 Original code, profiles, records, equations and prior validation remain available.
+
+## Owner-requested labelled examples and GIFs, 2026-10-14
+
+After the offline report at `12e227c`, the owner requested labelled examples in
+Motion Lab and animated GIFs. This explicitly authorizes the visualization
+entry, while the design report/calculations stay in the separate sibling app.
+[The new record](../docs/design-examples.md) lists five exact report cases,
+working/full-inversion views, angle/scale conventions, ten GIFs, original-V2
+parity and actual browser/launcher checks. The cases are read-only kinematics;
+no spring/motor model or historical saved profile is migrated. The global native
+GUI action explains its supported-fixture boundary instead of showing an
+unrelated old wheel model. Continue from the source report for numerical design
+choices, and retain projected-clearance limitations and historical IMPOSSIBLE.

@@ -1,0 +1,2 @@
+# Optional GIF export only; app startup and live drawings do not need Pillow.
+Pillow==12.3.0

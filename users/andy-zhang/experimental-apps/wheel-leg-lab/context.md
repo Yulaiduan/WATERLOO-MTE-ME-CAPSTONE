@@ -50,3 +50,14 @@ Download selected profiles/runs with **Download JSON** in Profiles & data before
 transferring custom browser data. Sizing uses its own **Save configuration JSON**
 and **Load configuration** controls. Defaults/source work on the laptop without
 those exports. Private chat transcripts are not part of this public workspace.
+
+## Labelled alpha-zero examples, 2026-10-14
+
+Source report `12e227c`. The owner explicitly requested Motion Lab visualizations
+and GIFs after the offline report. Open study=design-examples or /design-examples/
+for five labelled cases and ten working/full-inversion clips. Read
+[the record](docs/design-examples.md) and [GIF index](web/design-examples/gifs/README.md).
+The report remains offline, and backend/sizing models and saved profiles remain
+unchanged. Fixed assembly indexing is labelled as a relaxed constraint; red
+wheel/hip overlap is projected clearance, not solved contact. Preserve the
+historical dual-rope IMPOSSIBLE status.
