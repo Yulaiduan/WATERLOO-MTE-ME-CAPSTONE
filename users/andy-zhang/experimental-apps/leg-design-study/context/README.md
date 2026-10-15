@@ -91,11 +91,11 @@ Numerical source base93fed9f; publication follows the separate concurrent Motion
 Lab work. This contribution does not alter that app or embed the report there.
 
 Keep alpha=phi0=0. The normal325 mm total height includes20 mm reserves at both
-ends, leaving285 mm useful. Equal185r1.9,190r1.8,200r1.7,205r1.6 mm examples
+ends, leaving 285 mm useful. Equal185r1.9,190r1.8,200r1.7,205r1.6 mm examples
 permit24.887/49.981/76.479/101.052 mm lateral excursion. Use190/190mm9:5 as the
 balanced geometric seed; the285/285mm,r1.85 branch is the normal220-clearance
 comparison. All full near-equal coplanar inversions still fail. Full endpoint
-drift is zero by symmetry despite lateral excursion, and Jx vanishes atfold.
+drift is zero by symmetry despite lateral excursion, and Jx vanishes at the fold.
 
 Actual horizontal compliance requires effective spring/controller and geometric
 stiffness; blocked vertical movement or wheel contact can prevent the coupled
@@ -104,26 +104,23 @@ rolling.16 numerical tests,10,788 originalV2/Andy2D comparisons and three actual
 Pymunk geometry sweeps pass. Preserve older numerical reports, live examples,
 all historical failures and rejected dual-rope IMPOSSIBLE status.
 
-## Unequal-link follow-up, 2026-10-14
+## Unequal-link owner correction, 2026-10-15
 
-Read [the new design record](../docs/unequal-inversion-study.md) and
-[offline HTML/GIFs](../unequal-inversion.html). Source base1a3fb7e; publication
-is the commit adding this report. The owner now allows substantial unequal
-links. An11,535,210-window search keeps alpha=phase=0 and325/285 mm height.
-160/475 mm,r1.42 is the balanced50 mm seed;160/480,r1.35 allows about75 mm
-with lower vertical-load torque. The full ideal height map remains one-to-one.
+Continue from [the current record](../docs/unequal-inversion-study.md) and
+[HTML/GIFs](../unequal-inversion.html). Source aaed324 is the initial broad
+unequal report; before shared publication the owner imposed max(length)/min<=1.25
+and confirmed upper-long is allowed.160/475 mm is now excluded/superseded.
 
-New distinction: b-a>=220 clears a point/thin-upper-segment screen for a
-lower-long leg, but wheel/hip pitch clearance additionally needs
-b-a>=220+60r (rb60). The rounded examples pass, with29.8–39 mm actual pitch
-gaps. These are not outer-pulley/chassis clearances. Atfold lowerBC overlaps
-upperAB and passes through A, requiring axial staggering/forks/offsets.
-Upper-long legs put C inside AB atfold; hip-distance-only screening is wrong.
+New compact upper-long set200/170,r2;200/175,r1.875;205/185,r1.75;215/175,r1.7
+provides roughly25/50/75/100 mm sideways travel over 325/285 mm height. The
+2:1 unequal case is an ellipse, not the equal-link vertical line. Full ideal
+q100-260 height inverse passes. All upper-long folds put C inside AB, so
+wheel/upper-rod projection overlap needs an axial wheel/link layout; guide
+pitch surplus alone is not clearance. Unknown tire/rod width, stack, chassis,
+outer pulley and structure remain open; no physical inversion is certified.
 
-22 numerical tests and8,184 originalV2/Andy2D comparisons pass; independent
-audit agrees across22 cases. Three actual positive-mass Pymunk fixtures pass
-all2/1/0.5/0.25 ms thresholds and converge. No collision shapes/gravity/loads
-means geometry-only evidence. Four local GIFs, source/result/manifest hashes,
-browser reading/printing and PDF visual verification are in validation.
-Physical inversion, actual stiffness, loaded dynamics and motor/spring sizing
-are not certified. Preserve existing reports and IMPOSSIBLE decisions.
+The 6.60-million-window search keeps separate upper/lower-long force/size
+leaders and no R2 objective. 23 tests,7,440 V2/Andy2D scalar checks and three
+positive-mass actual Pymunk sweeps pass at 2/1/0.5/0.25 ms. Engine has no gravity,
+forces or collision shapes: geometry only. Read current validation and
+revisions, preserve all older reports, spring/motor cases and IMPOSSIBLE status.

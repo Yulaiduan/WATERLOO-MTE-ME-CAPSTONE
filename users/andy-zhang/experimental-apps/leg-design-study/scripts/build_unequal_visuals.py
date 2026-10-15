@@ -53,10 +53,11 @@ def frame(case,q,index=0):
     disk(0,0,60*r,'#80679b',None,2);disk(bx,bz,60,'#80679b',None,2)
     for name,(px,pz) in [('A',(0,0)),('B',(bx,bz)),('C',(float(x),float(z)))]:
         cx,cy=tr(px,pz);d.ellipse((cx-4,cy-4,cx+4,cy+4),fill=INK)
-        d.text((cx+7,cy-20),name,font=font(16,True),fill=INK)
+        dx,dy={'A':(-19,-25),'B':(10,-20),'C':(-8,12)}[name]
+        d.text((cx+dx,cy+dy),name,font=font(16,True),fill=INK)
     gap=case['projection']['wheel_to_hip_pitch_circle_gap_mm']
-    d.text((28,551),f"Wheel R200 | minimum wheel-to-hip pitch-circle gap {gap:.1f} mm",font=font(16,True),fill=TEAL)
-    d.text((28,578),'Orange lower link crosses the hip in projection: axial separation required.',font=font(15),fill=RED)
+    d.text((28,551),f"Wheel R200 | projected hip pitch gap {gap:.1f} mm (overlap)",font=font(16,True),fill=RED)
+    d.text((28,578),'Wheel and links overlap in projection: axial separation required.',font=font(15),fill=RED)
     d.text((28,603),'Ideal geometry only; wheel orientation held; no contact or rolling constraint.',font=font(14),fill=INK)
     if abs(q-180)<1e-8:d.text((28,93),'FOLD: rods overlap in side view',font=font(19,True),fill=RED)
     return im

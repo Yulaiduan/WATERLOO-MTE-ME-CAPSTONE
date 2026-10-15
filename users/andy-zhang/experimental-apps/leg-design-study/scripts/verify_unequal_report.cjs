@@ -17,6 +17,7 @@ const root=path.resolve(__dirname,'..'),hash=p=>crypto.createHash('sha256').upda
  let comparisons=0,maxError=0;
  const eq=(a,b)=>{const e=Math.abs(a-b);assert.ok(e<1e-8,`${a} vs ${b}`);comparisons++;maxError=Math.max(maxError,e);};
  for(const c of d.selected){
+  assert.ok(Math.max(c.config.L2,c.config.L3)/Math.min(c.config.L2,c.config.L3)<=1.25+1e-9);
   const p={...M.DEFAULT_CONFIG,...c.config,rc:35,rd:35,re:35,rf:35,
    beta:0,Fy:0,Fz:110.3625,loadMode:'yz',m1:10,m2:0,m3:0,m5:0,m6:0};
   for(const side of ['normal','useful','full'])for(const row of c[side].samples){
@@ -26,6 +27,7 @@ const root=path.resolve(__dirname,'..'),hash=p=>crypto.createHash('sha256').upda
    eq(s.Cg[0],row.x_mm);eq(s.Cg[1],row.z_mm);eq(s.tau2,-row.torque_45kg_Nm);
   }
  }
+ for(const id of d.recommended_ids){const c=d.selected.find(c=>c.id===id);assert.ok(c.config.L2>c.config.L3);assert.equal(c.projection.wheel_upper_segment_min_mm,0);assert.equal(c.projection.physical_full_inversion_validated,false);}
  for(const [p,h] of Object.entries(d.provenance.sources))assert.equal(hash(path.join(root,p)),h);
  const checks={passed:true,selected_cases:d.selected.length,scalar_comparisons:comparisons,max_error_mm_Nm:maxError,
   scope:'Original V2 normal/useful/full geometry and vertical-load statics, Andy2D statics; no compliance/force-engine claim.',

@@ -66,6 +66,8 @@ class UnequalInversionTests(unittest.TestCase):
     def test_selected_continuous_acceptance(self):
         d=json.loads((Path(__file__).parent/'docs/unequal-inversion-results.json').read_text())
         for c in d['selected']:
+            self.assertTrue(c['projection']['owner_length_ratio_pass'])
+            self.assertLessEqual(c['projection']['length_ratio'],1.25+1e-9)
             self.assertTrue(c['full_ideal_inverse'])
             self.assertAlmostEqual(c['normal']['vertical_mm'],325,places=7)
             self.assertAlmostEqual(c['useful']['vertical_mm'],285,places=7)
@@ -77,6 +79,14 @@ class UnequalInversionTests(unittest.TestCase):
                 if 'pitch_circle' in c['id']:self.assertTrue(c['projection']['hip_pitch_circle_clear'])
                 if 'segment220' in c['id']:self.assertTrue(c['projection']['point_segment_clear'])
             self.assertFalse(c['projection']['physical_full_inversion_validated'])
+
+    def test_upper_long_near_equal_is_invertible_but_overlaps(self):
+        c=evaluate('upper',200,170,1.88,100)
+        self.assertTrue(c['full_ideal_inverse'])
+        self.assertTrue(c['projection']['owner_length_ratio_pass'])
+        self.assertAlmostEqual(c['projection']['wheel_upper_segment_min_mm'],0)
+        self.assertFalse(c['projection']['point_segment_clear'])
+        self.assertFalse(c['projection']['hip_pitch_circle_clear'])
 
 
 if __name__=='__main__':unittest.main()

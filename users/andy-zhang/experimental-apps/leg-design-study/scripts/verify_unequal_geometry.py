@@ -19,7 +19,7 @@ from verify_inversion_geometry import engine_run
 def main():
     app=Path(__file__).resolve().parents[1]
     data=json.loads((app/'docs/unequal-inversion-results.json').read_text());rows=[]
-    for name in ['clear25','clear50','clear100']:
+    for name in ['upper25','upper50','upper100']:
         c=next(c for c in data['selected'] if c['id']==name);p=c['config']
         cfg=g.physical_allocation(g.config(dict(L2=p['L2'],L3=p['L3'],ra=p['ra'],rb=60,
                      alpha=0,phi0=0,te=100,tc=260,g=0,Fy=0,Fz=0)))

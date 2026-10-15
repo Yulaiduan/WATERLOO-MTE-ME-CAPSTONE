@@ -357,3 +357,63 @@ does not know actual flanges, shafts, chassis, rod thickness or axial stack.
 No new spring, motor, loaded dynamics, hardware, GPU or other-OS claim is made.
 Canonical robot physics is **NOT APPLICABLE**. Unchanged Motion Lab/Atlas
 lifecycles and full app suites were not rerun; previous setup evidence remains.
+
+
+## Owner 1.25x correction and upper-long report, 2026-10-15
+
+The preceding broad unequal study is historical evidence at revision `aaed324`.
+Before shared publication, the owner clarified upper may be longer but
+max(length)/min<=1.25. The current HTML/PDF/data/GIFs replace those broad
+recommendations; see [the current record](unequal-inversion-study.md).
+
+- `unequal_inversion_search.py`: **6,601,338** enumerated windows,24 compact
+  leaders,20 detailed cases, all satisfying max/min<=1.25. L2,L3=150-400 mm
+  step5, upper/lower-long force/size families separate, no R2 objective. Final
+  run12.409 s; source hashes match. No compact full coplanar wheel-clearance
+  pass is claimed; the current quartet is upper-long with axial layout needed.
+- Numerical command with test_unequal_inversion/test_curved_paths/
+  test_force_travel/test_inversion_search: **23/23 pass**, including seven
+  unequal-specific tests and explicit owner-limit/upper-long-fold checks.
+- Independent read-only Sol6.1 high audit agrees across all20 cases, source
+  hashes and current HTML embedded JSON. Max height1.14e-13 mm, excursion
+  2.85e-14 mm, J5.69e-14 mm/rad, segment distance2.45e-14 mm, useful ROM
+  1.49e-12 deg, hip peak1.14e-13 Nm; RMS-J quadrature difference6.68e-9 m/rad.
+  All inverse/projection/owner-limit flags agree. Prose review tightened the
+  speed tradeoff to a given pose; peak speed depends on minimum Jz.
+- `node scripts/verify_unequal_report.cjs`: **7,440** originalV2/Andy2D scalar
+  comparisons across20 cases pass, maximum **1.70530257e-13 mm/Nm**. Every
+  case passes the explicit1.25x assertion; all four recommendations are upper-
+  long and have wheel-centre/upper-segment distance0 atfold. Installed Edge
+  passes JS-disabled local reading,6 sections/5 SVG/4 rows/exact JSON/4 local
+  GIFs,390px layout, print callback/CSS/export and PDF signature/link. All five
+  requests are local `file:`; no page error/external request. Current raw QA
+  overwrites ignored captures, not curated evidence or prior validation history.
+- `scripts/verify_unequal_geometry.py`: actual positive-mass Pymunk7.3.0 motor/
+  pivot/gear sweeps upper25/50/100 pass all **2/1/0.5/0.25 ms** path/pin/guide/
+  tracking thresholds and converge. Finest path errors **0.010445/0.009186/
+  0.008988 mm**. Only initial poses assigned; no gravity/forces/collision
+  shapes. This validates geometry, not loaded torque or physical inversion.
+- Four new upper25/50/75/100 GIFs are800x640,80 frames, actual6000 ms each;
+  sizes260,494/263,682/266,655/267,760 bytes. Source/output hashes match.
+  Earlier clearNN GIFs are replaced in the current folder and preserved in
+  revisionaaed324. Labels and all four fold frames, plus50mm start, reviewed.
+- Current PDF is **6 pages,24,419 bytes**,10,394 extracted text characters,
+  SHA256 `1624bf876a7eec7fa56598d5eb86cc2715bced2e22869a6388d3e90a2f211d4f`.
+  HTML is **607,635 bytes**, SHA256
+  `dc463abc28d452777c7403e5bc59cd7646ddf48ee5c4fc0d62983473688c132b`.
+  Both regenerate byte-identically. All six PDF pages rendered/reviewed;
+  final force wording/date rechecked, along with mobile HTML/GIF figures.
+  Poppler nonfatal Symbol display-font message persists with no observed
+  glyph/overlap/clipping defect. The first corrected PDF build rejected raw
+  inequality markup; escaping the less-than signs fixed it. A transient builder
+  quote syntax error was fixed before any successful report build; no math
+  tolerance or model was changed. Manual CMD returns exit0 from an unrelated
+  directory and opens the current static report.
+
+All current cases meet the owner length limit, but physical full inversion
+is **unvalidated**: wheel centres lie on upper AB atfold, requiring actual
+axial wheel/link separation. Guide pitch spacing is not wheel/chassis/outer
+hardware clearance. No new motor/spring rating, loaded contact/impact, hardware,
+GPU or other-OS certification. Canonical robot physics is NOT APPLICABLE.
+Unchanged Motion Lab/Atlas lifecycles/full app suites were not rerun. Prior
+historical evidence and IMPOSSIBLE decisions remain intact.

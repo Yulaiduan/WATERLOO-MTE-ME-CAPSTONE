@@ -62,14 +62,14 @@ and historical dual-rope IMPOSSIBLE status are preserved.
 
 ## Curved lateral-path follow-up, 2026-10-14
 
-The owner cancelled R²/fixed-line optimization before publication and confirmed
+The owner cancelled R²/fixed-line optimization before shared publication and confirmed
 25/50/75/100 mm sideways-travel comparisons. The current deliverable is
 [curved-paths.html](curved-paths.html), its [PDF](docs/curved-path-report.pdf) and
 [design/math record](docs/curved-path-study.md). Keep alpha=phi0=0, 325 mm total
-vertical travel including assumed20+20 mm reserves, and285 mm useful.
+vertical travel including assumed 20+20 mm reserves, and285 mm useful.
 
 Equal185/190/200/205 mm links at r1.9/1.8/1.7/1.6 permit approximately25/50/75/100 mm
-normal lateral excursion. Balanced geometric seed190/190 mm9:5 gives49.981 mm
+normal lateral excursion. Balanced geometric seed190/190 mm9:5 gives 49.981 mm
 lateral travel,37.363 Nm equivalent45kg static hip peak and61.816 degree useful
 hip ROM. These short cases fail normal coplanar220 mm clearance; the50 mm
 normal-clearance alternative is285/285 mm,r1.85. Full near-equal coplanar
@@ -82,22 +82,21 @@ comparisons and three actual constrained geometry refinements pass. Prior
 reports, spring/motor cases, Motion Lab examples/GIFs and IMPOSSIBLE decisions
 remain separate and intact. Read validation/revisions before continuing.
 
-## Unequal-link inversion, 2026-10-14
+## Unequal-link inversion with1.25x limit, 2026-10-14
 
-Source base `1a3fb7e`. The owner asked for good unequal-length invertible paths.
-Continue from [unequal-inversion.html](unequal-inversion.html) and
-[the complete design record](docs/unequal-inversion-study.md), not a fixed-line
-or R² objective. Keep alpha=phi0=0, R200,325/285 mm total/useful normal height.
+The owner clarified that upper L2 can be longer than lower L3, with
+max/min<=1.25. This supersedes the initial broad160/475 mm recommendation in
+source revision aaed324. Read [the current report/GIFs](unequal-inversion.html)
+and [design record](docs/unequal-inversion-study.md). Preserve alpha=phase=0,
+R200, 325/285 mm total/useful height and cancelled R2/fixed-line ranking.
 
-Rounded L2/L3/r examples175/495/1.5,160/475/1.42,160/480/1.35,175/485/1.3
-give24.902/50.165/74.451/101.407 mm normal sideways travel. Prefer160/475,r1.42
-as the50 mm CAD seed; hip peak38.552 Nm at110.3625 N pure vertical load.
-All pass ideal full height inversion and assumed wheel/guide pitch-circle
-screens. Lower rods still cross the hip in side projection atfold. Physical
-inversion, axial stack, outer pulley/chassis geometry and actual compliance
-remain unvalidated. Upper-long400/175 rejected despite225 mm hip distance.
+Rounded upper-long200/170,r2;200/175,r1.875;205/185,r1.75;215/175,r1.7 give
+24.620/49.772/76.313/99.949 mm sideways travel. Start 200/175,15:8 for 50 mm.
+All satisfy max/min<=1.25 and full ideal height inversion. At the fold C lies
+inside upper AB, so physical inversion needs wheel/link axial separation.
+Guide pitch surplus passes, but no projected wheel clearance passes.
 
-22 tests,8,184 original-model scalar checks, independent read-only math audit
-and three actual Pymunk geometry sweeps at four timesteps pass. Four offline
-GIFs and a six-page PDF accompany the static report. Read validation/revisions;
-preserve all older models/reports, spring cases and dual-rope IMPOSSIBLE status.
+New grid 6,601,338 windows; 23 tests,7,440 original-model comparisons and three
+actual Pymunk sweeps at four timesteps pass. Current six-page PDF and four GIFs
+replace the broad examples; earlier evidence stays in Git/log/validation.
+Preserve prior reports/models, spring cases and dual-rope IMPOSSIBLE status.

@@ -1,17 +1,16 @@
-# Unequal-link inversion illustrations
+# Upper-long inversion illustrations within 1.25x
 
-Four curated offline GIFs show the retained `clear25/50/75/100` designs.
-Blue is the upper link; orange is the lower link. The wheel has 200 mm radius,
-the guide pitch circles retain their actual radii, and all drawings share
-equal horizontal/vertical scale within each example.
+Four current offline GIFs show upper25/50/75/100:200/170,200/175,205/185 and
+215/175 mm. All have longer/shorter<=1.25, alpha=phase=0. Blue is upper,
+orange is lower; wheel radius200 mm and guide pitch circles are true scale.
+Each 80-frame six-second cycle sweeps q100-260 and back, including exact fold180.
 
-Each six-second cycle traverses q=100..260 degrees and returns. The q=180
-fold is included exactly and its projected rod overlap is labelled. Rods,
-belts and the wheel require axial packaging; these are analytical illustrations,
-not collision/contact simulations or physical inversion certification. Wheel
-orientation is held; no no-slip rolling constraint is implied.
+The wheel and upper rod overlap in side projection at the fold. Captions explicitly
+require axial wheel/link separation. These are equation-based illustrations,
+not collision/contact or hardware validation. Wheel orientation is held;
+no no-slip rolling constraint is imposed. Earlier broad clearNN examples are
+superseded and remain in Git revision aaed324, not the current folder.
 
-Rebuild with `python scripts/build_unequal_visuals.py` from the app root using
-the existing pinned Pillow environment. The adjacent manifest records source
-and GIF hashes, parameters and frame dimensions. Keep this folder next to the
-offline HTML for optional animation viewing. Raw frames/captures remain ignored.
+Rebuild with `python scripts/build_unequal_visuals.py` using the pinned local
+Pillow environment. Manifest records hashes, parameters, frame size and duration.
+Keep this folder beside the offline HTML. Raw QA frames stay ignored.

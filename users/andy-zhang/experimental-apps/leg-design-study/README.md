@@ -107,17 +107,18 @@ give about 25/50/75/100 mm lateral excursion over 325 mm total vertical travel
 clearance; larger normal-clearance alternatives and full ideal inversions are
 shown separately. Viewing stays offline and adds no Motion Lab controls.
 
-## Unequal links through inversion
+## Unequal links within 1.25x
 
 Open **[unequal-inversion.html](unequal-inversion.html)** or
 **[Open Unequal Inversion Report.cmd](Open%20Unequal%20Inversion%20Report.cmd)**
-for four labelled paths and offline GIFs, with a
+for four labelled upper-long paths/GIFs, with a
 **[six-page PDF](docs/unequal-inversion-report.pdf)** and
 [design/search record](docs/unequal-inversion-study.md).
 
-The 11.535-million-window search finds lower-long examples at alpha=phase=0.
-The 160/475 mm, guide1.42 example gives 50.165 mm sideways travel over325 mm
-total height (285 mm useful). It retains29.8 mm wheel-to-hip pitch-circle gap
-and a continuous ideal inverse across q100–260 degrees. Rods still overlap in
-side view atfold, so physical inversion needs an axial/forked packaged design.
-This report does not select hardware or change Motion Lab models/services.
+The owner clarified longer/shorter<=1.25. Current examples 200/170,200/175,
+205/185,215/175 mm give about 25/50/75/100 mm sideways travel over 325/285 mm
+total/useful height, alpha=phase=0. Balanced 200/175 mm,15:8 gives 49.77 mm
+sideways travel. All have a continuous ideal height inverse, but projected
+wheel/upper-link overlap at the fold requires an actual axial mechanical layout.
+The earlier 160/475 mm recommendation is superseded. No Motion Lab controls,
+old models or hardware ratings change.

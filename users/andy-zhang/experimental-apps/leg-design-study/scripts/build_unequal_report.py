@@ -34,7 +34,7 @@ def mechanism(c):
         for (u,v),col,w in [(((bx,bz),(x,z)),'#bc7b2b',6),(((0,0),(bx,bz)),'#416fa8',3)]:
             out.append(('line',*tr(*u),*tr(*v),col,w))
         for name,pt in [('A',(0,0)),('B',(bx,bz)),('C',(x,z))]:
-            xx,yy=tr(*pt);out.append(('text',xx+8,yy-7,name,'#153247'))
+            xx,yy=tr(*pt);out.append(('text',xx+({'A':-9,'B':12,'C':-8}[name]),yy+({'A':-12,'B':-12,'C':20}[name]),name,'#153247'))
     svg='<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 690 260" role="img" aria-label="Three equal-scale poses showing projected rod overlap at the fold">'
     for v in out:
         if v[0]=='text':svg+=f'<text x="{v[1]:.3f}" y="{v[2]:.3f}" fill="{v[4]}" font-size="12" text-anchor="middle">{v[3]}</text>'
@@ -49,124 +49,136 @@ def sections(d,e,v):
     t=lambda h,r,w,**kw:dict(kind='table',headers=h,rows=r,widths=w,**kw)
     f=lambda title,ls,x,y,**kw:dict(kind='figure',title=title,lines=ls,xlabel=x,ylabel=y,**kw)
     def sec(id,title,sub,blocks):rows.append(dict(id=id,title=title,subtitle=sub,blocks=blocks))
-    sec('options','Unequal links that invert','Original alpha=0 and assembly phase=0; wheel radius 200 mm.',[
-        p('A shorter upper link and longer lower link can keep the wheel away from the hip while the '
-          'height coordinate remains invertible through the fold. These four rounded study examples '
-          'provide <b>325 mm total vertical travel, including 20+20 mm assumed reserves: 285 mm useful.</b>'),
-        t(['Upper /lower mm','Guide r','Sideways mm','Hip peak Nm','Hip pitch gap mm'],[
-            [f"{c['config']['L2']:g} /{c['config']['L3']:g}",f"{c['config']['qab']:g}",
-             f"{c['normal']['signed_drift_mm']:.2f}",f"{c['force']['peak_45kg_hip_Nm']:.2f}",
-             f"{c['projection']['wheel_to_hip_pitch_circle_gap_mm']:.1f}"] for c in picks],
-          [115,68,102,101,113],id='shortlist',rowheight=29),
-        f('Normal paths aligned at their start; axes use equal physical scales',lines(picks,relative=True),
-          'Sideways movement from start (mm)','Vertical movement from start (mm)',equal=True,height=235),
-        p('<b>Start with 160/475 mm, r 1.42 for about 50 mm sideways travel.</b> The 160/480 mm, r 1.35 '
-          'alternative gives about75 mm and lower vertical-load torque. All four pass the assumed '
-          'wheel/thin-upper-link and wheel/guide-pitch-circle screens. Rod overlap, actual pulley '
-          'outer size and chassis interference still prevent a claim of physically proven inversion.')])
-    sec('inversion','Through the fold and back','Full ideal q=100-260 deg; the 325 mm normal stroke occupies only part of this envelope.',[
-        f('Full wheel-centre paths in hip coordinates; equal axis scales',lines(picks,'full'),
-          'Global C_y (mm)','Global C_z (mm)',equal=True,height=245),
+    sec('options','Upper-long links within 1.25x','Owner correction: longer /shorter <=1.25; alpha=phase=0; wheel R200 mm.',[
+        p('Yes, the upper link can be longer. These four rounded examples obey the new length '
+          'constraint and provide <b>325 mm total vertical travel, including assumed 20+20 mm '
+          'reserves: 285 mm useful.</b> Their ideal height maps stay invertible through the fold. '
+          'The earlier 160/475 mm proposal is outside this constraint and is superseded.'),
+        t(['Upper /lower mm','Length ratio','Guide r','Sideways mm','Hip peak Nm'],[
+            [f"{c['config']['L2']:g} /{c['config']['L3']:g}",f"{c['projection']['length_ratio']:.3f}",
+             f"{c['config']['qab']:g}",f"{c['normal']['signed_drift_mm']:.2f}",
+             f"{c['force']['peak_45kg_hip_Nm']:.2f}"] for c in picks],
+          [121,91,83,102,102],id='shortlist',rowheight=30),
+        f('Normal paths aligned at their start; equal physical axis scales',lines(picks,relative=True),
+          'Sideways movement from start (mm)','Vertical movement from start (mm)',equal=True,height=232),
+        p('<b>Balanced study seed: 200/175 mm, guide 15:8 (1.875).</b> This gives 49.77 mm sideways '
+          'movement with a 1.143 length ratio. The 205/185 mm, 7:4 alternative gives 76.31 mm '
+          'and slightly lower static torque. All require axial wheel/link separation at the fold; '
+          'none is a collision-free coplanar mechanism.')])
+    sec('inversion','Curved paths through the fold','Full ideal q=100-260 deg; the 325 mm normal stroke is only part of this envelope.',[
+        f('Full wheel-centre paths in hip coordinates; equal physical scales',lines(picks,'full'),
+          'Global C_y (mm)','Global C_z (mm)',equal=True,height=240),
         t(['Upper /lower mm','Full height mm','Min Jz mm/rad','Useful hip ROM deg'],[
             [f"{c['config']['L2']:g} /{c['config']['L3']:g}",f"{c['full']['vertical_mm']:.1f}",
              f"{c['full']['min_Jz_mm_rad']:.2f}",f"{c['force']['hip_ROM_deg']:.2f}"] for c in picks],
           [135,117,122,125],rowheight=29),
-        p('Jz stays positive across the entire 100-260 degree envelope, so each height has one q '
-          'and an unambiguous branch through 180 degrees. Fold tangent is vertical. Symmetry gives '
-          'x(-t)=x(t), z(-t)=-z(t): full endpoint sideways drift is zero, although the path bows sideways.'),
-        p('The offline HTML includes four labelled six-second GIFs. Each sweeps 100 to260 degrees '
-          'and back, shows actual wheel radius and guide pitch circles, and explicitly marks the '
-          'overlapping fold. They illustrate equations; they do not simulate collision or rolling.'),
-        dict(kind='gallery',cases=picks)])
-    sec('clearance','Why the longer lower link helps','Pitch circles improve the screen; they do not establish outer pulley or chassis clearance.',[
-        p('Let a=L2, b=L3, r=ra/rb, t=q-pi and k=r-1. Jonathan conventions give '
+        p('With a=L2,b=L3,t=q-pi,k=r-1: '
           '<font name="Courier">x=a cos(t)-b cos(kt); z=a sin(t)+b sin(kt)</font>. '
-          'Exactly, <b>|C|²=a²+b²-2ab cos(rt)</b>, hence minimum wheel-centre/hip distance is |a-b|.'),
-        p('For b>=a the wheel-centre distance to the thin upper segment AB is always at least b-a, '
-          'with equality at the fold. First screen: b-a>=220 mm (R200 plus 20 assumed gap). '
-          'With rb 60, the stronger wheel/hip pitch-circle screen is <b>b-a>=220+60r</b>. '
-          'Also require b>=280 for wheel/knee pitch-circle separation and a-60(r+1)>=10 for '
-          'an assumed 10 mm guide pitch-centre surplus.'),
-        dict(kind='mechanism',title='160/475 mm, r 1.42: wheel and pitch circles; blue upper /orange lower',case=picks[1],height=188),
-        t(['Case','Thin upper gap mm','Hip pitch gap mm','Interpretation'],[
-            ['160 /475, r 1.42','115.0','29.8','Pass assumed 20 mm screens'],
-            ['150 /375, r1.45','25.0','-62.0','Wheel overlaps hip pitch circle'],
-            ['400 /175, r1.50','-200.0','-65.0','Upper-long wheel overlaps upper rod']],
-          [112,114,112,161],rowheight=33),
-        p('<b>All rods overlap in side view at the fold.</b> For b>a, C lies on the opposite side of A '
-          'from B and the lower link passes through the hip. Axial staggering, forked links or '
-          'offset hardware is necessary. The quoted gaps exclude flange/shaft/belt/chassis sizes, '
-          'rod thickness, tire deformation and tolerances; no candidate is certified collision-free.')])
-    sec('force','Force and control tradeoffs','Pure vertical equivalent corner load 110.3625 N =45 kg  x 9.81/4; no spring or moving-link inertia.',[
-        f('Individual direct-hip holding torque curves through 285 mm useful travel',
-          lines(picks,'force','height_mm','torque_45kg_Nm'),'Useful vertical travel (mm)','Direct hip holding torque (Nm)',height=220),
+          'Jz is positive over the full envelope, so each height has one q through 180 degrees. '
+          'The fold tangent is vertical; full endpoint sideways drift is zero by symmetry, '
+          'despite nonzero lateral excursion.'),
+        p('<b>At r=2 with unequal links, x=(a-b)cos(t), z=(a+b)sin(t): an ellipse.</b> '
+          'A 2:1 guide therefore remains a useful curved-path option. It becomes a vertical '
+          'line only when a=b. Four labelled six-second offline GIFs below show actual wheel '
+          'radius and the projected overlaps; they do not simulate rolling or collision.'),
+        dict(kind='gallery',cases=picks)])
+    sec('clearance','Axial separation is necessary','Near-equal upper-long paths invert ideally; projected wheel and rod interference remains.',[
+        p('At the fold, B=(a,0), C=(a-b,0). For a>b, <b>0&lt;a-b&lt;a</b>, so the wheel centre '
+          'lies <b>inside the upper segment AB</b>. Its projected distance to that segment '
+          'is zero at any scale. A flat coplanar wheel/upper-link layout cannot pass through '
+          'this fold, even if hip-centre clearance alone looks acceptable.'),
+        dict(kind='mechanism',title='200/175 mm, guide 15:8: wheel and guide pitch circles; blue upper /orange lower',case=picks[1],height=188),
+        t(['Upper /lower mm','Fold hip distance mm','Wheel /upper gap mm','Guide pitch surplus mm'],[
+            [f"{c['config']['L2']:g} /{c['config']['L3']:g}",f"{c['projection']['wheel_hip_min_mm']:.1f}",
+             f"{c['projection']['wheel_rim_to_upper_segment_min_mm']:.1f}",
+             f"{c['projection']['guide_pitch_surplus_mm']:.1f}"] for c in picks],
+          [121,126,126,126],rowheight=29),
+        p('A negative wheel/upper gap means projected overlap. All rows pass the assumed '
+          '10 mm guide pitch-centre surplus a-60(r+1), with rb 60 and ra=60r; that guide '
+          'check does not establish wheel, flange, shaft, belt or chassis clearance.'),
+        p('For a lower-long alternative, minimum wheel/hip and wheel/thin-upper-segment '
+          'distance is b-a. Under the 1.25x limit, merely reaching 220 mm requires shorter '
+          'link>=880 mm and longer>=1100 mm. Adding hip pitch radius requires still more. '
+          'That is outside this compact 150-400 mm search. No searched candidate passes '
+          'the full coplanar wheel clearance screen.'),
+        p('<b>Proposed packaging direction:</b> place wheel and links in separate axial '
+          'planes, using an appropriate fork/offset/shaft arrangement. Rods also overlap in '
+          'projection at the fold. Actual axial stack, tire width, chassis and outer hardware '
+          'must be measured in CAD; physical full inversion remains unvalidated.')])
+    sec('force','Force and control tradeoffs','Pure vertical equivalent corner load 110.3625 N =45 kg x9.81/4; no spring or moving-link inertia.',[
+        f('Individual direct-hip holding torque magnitudes over 285 mm useful travel',
+          lines(picks,'force','height_mm','torque_45kg_Nm'),'Useful vertical travel (mm)','Direct hip holding magnitude (Nm)',height=215),
         t(['Upper /lower mm','Peak /RMS Nm','Hip speed rad/s','Side-load peak Nm'],[
             [f"{c['config']['L2']:g} /{c['config']['L3']:g}",
              f"{c['force']['peak_45kg_hip_Nm']:.2f} /{c['force']['rms_45kg_hip_uniform_height_Nm']:.2f}",
              f"{c['force']['constant_vertical_speed_0p25m_s_peak_hip_rad_s']:.3f}",
              f"{c['force']['robust_abs_Fx_over_Fz_0p3_peak_Nm']:.2f}"] for c in picks],
           [135,117,122,125],rowheight=29),
-        p('Holding torque magnitude is Fz Jz for the plotted upward-load case; reducing its maximum improves worst force per hip Nm, but a smaller '
-          'Jacobian needs more joint speed. Speed assumes constant vertical 0.25 m/s. Side-load '
-          'column is the worst either-sign |Fx/Fz|<=0.3 envelope, an assumed sensitivity. '
-          'For total supported loads of 3g and 4g, multiply the static load term by 3 and 4 respectively. This is not an impact prediction.'),
-        p('Relative-knee torque is <b>-tau_hip/r</b>; relative-knee speed is <b>-r times hip speed</b>. '
-          'One-half applies only to r2. Motor gearing is another mapping. Height-RMS equals '
-          'time-weighted torque RMS for constant vertical speed without dwell. Motor heating '
-          'still needs shaft/gearing, losses and real duty.'),
-        p('Ideal useful lift work is 31.453 J per leg in every case. Lower torque is therefore '
-          'mechanical advantage, not improved energy efficiency. Permitted lateral travel also '
-          'does not establish compliance: local C=J J^T/K_eff needs actual spring/controller and '
-          'geometric stiffness, contact and rolling conditions. No new motor or spring is selected.')])
-    compare=[get(d,k) for k in ['w50_pitch_circle_force','clear50','w100_pitch_circle_short','w100_pitch_circle_force']]
+        p('Holding magnitude is Fz Jz for the upward-load case; the signed balancing '
+          'hip torque is -Fz Jz. Reducing maximum Jz improves worst vertical force per hip '
+          'Nm. A smaller Jz at a given pose needs greater joint speed for the same vertical '
+          'speed; peak speed depends on minimum Jz. Speed assumes constant vertical 0.25 m/s; '
+          'side-load peak is a both-sign |Fx/Fz|<=0.3 assumed sensitivity.'),
+        p('Relative-knee torque is <b>-tau_hip/r</b>; relative-knee speed is '
+          '<b>-r times hip speed</b>. Half-torque applies only at r2. Motor gearing is '
+          'another mapping. Height-RMS equals time-weighted torque RMS at constant vertical '
+          'speed without dwell; heating still needs motor/gear losses and actual duty.'),
+        p('Ideal useful lift work remains 31.453 J per leg in every case. Lower torque is '
+          'mechanical advantage, not free energy. Total supported loads 3g and 4g multiply '
+          'the static load term by 3 and 4; they do not predict impacts. Permitted sideways '
+          'movement is not measured compliance: stiffness, contact, rolling and inertia '
+          'are unresolved. No new spring or motor rating is selected.')])
     rom=lines([picks[1],picks[3]],'normal','q_deg','z_mm')
     for l,c in zip(rom,[picks[1],picks[3]]):l['y']=[y-c['normal']['samples'][0]['z_mm'] for y in l['y']]
-    sec('search','Search priorities and useful ROM','11,535,210 bounded geometry/window combinations; no weighted score or R² method.',[
-        p('L2=130-350 and L3=150-650 mm in 5 mm steps; guide 1.2-2.6 in 0.005 steps plus exact 5/3; '
-          'q start 100-140 in 5 deg steps. End angle solves 325 mm height and must be<=175. '
-          'Full 100-260 must have Jz>=5 mm/rad. Unequal means |L2-L3|>=10 mm. '
-          'Normal sideways excursion must be 25/50/75/100 +/-2.5 mm without sideways reversal.'),
-        p('Hard constraints first; geometry-only, thin-segment 220 and hip-pitch-circle families '
-          'remain separate. Within each, rank minimum useful peak Jz and minimum link sum '
-          'separately. Coarse 33 poses retain eight candidates per bucket; finalists get continuous '
-          'derivative-extrema checks and 2001-pose force integrals. Finite grid/pool retention '
-          'cannot prove a global or manufacturing optimum.'),
-        t(['Comparison','L2 /L3, r','Hip peak Nm','Hip pitch gap mm'],[
-            [name,f"{c['config']['L2']:g} /{c['config']['L3']:g}, {c['config']['qab']:g}",
-             f"{c['force']['peak_45kg_hip_Nm']:.2f}",f"{c['projection']['wheel_to_hip_pitch_circle_gap_mm']:.1f}"]
-            for name,c in zip(['50 mm grid force leader','50 mm rounded example','100 mm grid size leader','100 mm grid force leader'],compare)],
-          [145,135,102,117],rowheight=31),
-        f('Height reserves trim different angular windows',rom,'Hip angle q (degrees)','Height from normal start (mm)',height=173),
-        p('Useful ROM uses exact height roots qlow=z^-1(zstart+20), qhigh=z^-1(zend-20), '
-          'rather than subtracting fixed degrees. For 160/475,r 1.42, totalq=100-164.692 deg; '
-          'useful ROM 55.806 deg. Rounded examples trade a little peak torque for larger '
-          'assumed pitch-circle gaps. Starting angles and all margins are study assumptions.')])
-    sec('evidence','Checks and next design decision','Numerical agreement supports the equations; physical inversion still needs a packaged design.',[
-        p(f'<b>22 numerical tests pass</b>, including six new unequal-link tests. '
-          f'{v["scalar_comparisons"]:,} scalar comparisons across 22 cases agree with original '
-          f'Jonathan V2 and Andy 2D statics, maximum error {v["max_error_mm_Nm"]:.3e} mm/Nm. '
-          'The first test run misclassified diagnostic wide_reverse as a grid ID; the harness '
-          'classifier was fixed and all 22 tests rerun. Numerical acceptance criteria were unchanged.'),
+    compare=[get(d,k) for k in ['w50_upper_long_force','upper50','w50_upper_long_short','w50_lower_long_force']]
+    sec('search','Hard length limit, separate objectives',f"{d['search']['counts']['enumerated']:,} bounded geometry/window combinations; no weighted score or R2 method.",[
+        p('L2 and L3=150-400 mm in 5 mm steps; max/min<=1.25 and |L2-L3|>=5 mm. '
+          'Guide 1.2-2.6 in 0.005 steps plus exact 5/3. Normal q start 100-140 in 5 degree '
+          'steps; end solves 325 mm height and must be<=175. Full 100-260 requires '
+          'Jz>=5 mm/rad. Sideways excursion 25/50/75/100 +/-2.5 mm, without reversal.'),
+        p('Upper-long and lower-long families are ranked separately. Hard constraints '
+          'come first; minimize useful peak Jz and total link sum as separate objectives. '
+          'Coarse 33 poses retain eight candidates per bucket; finalists get continuous '
+          'derivative-extrema checks and 2001-pose integrals. Finite grid and retained pool '
+          'do not prove a global or manufacturing optimum.'),
+        t(['50 mm comparison','Upper /lower, r','Hip peak Nm','Length ratio'],[
+            [name,f"{c['config']['L2']:g}/{c['config']['L3']:g}, {c['config']['qab']:g}",
+             f"{c['force']['peak_45kg_hip_Nm']:.2f}",f"{c['projection']['length_ratio']:.3f}"]
+            for name,c in zip(['Upper-long force leader','Rounded 15:8 example','Upper-long size leader','Lower-long force leader'],compare)],
+          [151,143,103,102],rowheight=30),
+        f('Height reserves trim the angular control window',rom,'Hip angle q (degrees)','Height from normal start (mm)',height=173),
+        p(f"Useful ROM uses height roots z^-1(zstart+20) and z^-1(zend-20). For 200/175,15:8, "
+          f"total q=100-{picks[1]['config']['tc']:.3f} deg; useful hip ROM "
+          f"{picks[1]['force']['hip_ROM_deg']:.3f} deg. Do not subtract 20 degrees for 20 mm. "
+          'Rounded ratios balance readable parameters, compactness and lateral target; '
+          'their somewhat higher torque than the grid force leaders is reported explicitly.')])
+    sec('evidence','Checks and next design decision','Ideal inverse verified; collision-free axial packaging and loaded dynamics remain open.',[
+        p(f"<b>23 numerical tests pass</b>, including seven unequal-link tests. "
+          f"{v['scalar_comparisons']:,} original Jonathan V2/Andy 2D scalar comparisons across "
+          f"{v['selected_cases']} cases agree, maximum {v['max_error_mm_Nm']:.3e} mm/Nm. "
+          'The 1.25x constraint and upper-long fold overlap have explicit regression checks. '
+          'Independent read-only review confirms the four rounded examples and ellipse relation.'),
         t(['Actual Pymunk case','2 ms mm','1 ms mm','0.5 ms mm','0.25 ms mm'],[
             [c['id'],*[f'{a["max_path_error_mm"]:.5f}' for a in c['refinement']]] for c in e['cases']],
           [119,95,95,95,95],rowheight=30),
-        p('All three fixtures pass path/pin/guide/tracking tolerances at all four timesteps and '
-          'converge. Real motor, pivot and gear constraints move positive-mass bodies; only the '
-          'initial pose is assigned. Zero gravity/forces and no collision shapes make this a '
-          'geometry test. It does not validate loaded torque, ground contact, impacts or packaging.'),
-        p('<b>Recommended next CAD seed: 160/475 mm, guide1.42.</b> It provides 50.165 mm normal '
-          'sideways travel, 38.552 Nm equivalent 45 kg hip peak and 29.8 mm minimum wheel-to-hip '
-          'pitch-circle gap. Use 160/480,r 1.35 if 74.451 mm sideways travel is desirable: 35.633 Nm '
-          'peak and 39 mm pitch gap. Both require an explicit axial layout at the fold.'),
-        p('Next measure pulley outer radii, rod/fork thickness, axial stack, chassis envelope '
-          'and actual contact conditions. Then size springs/motors using that geometry and '
-          'measured mass/inertia/duty. Prior spring cases remain separate. Historical dual-rope '
-          'stays <b>IMPOSSIBLE /rejected</b>; no Motion Lab controls or services change.'),
-        p('Rebuild using unequal_inversion_search.py, test_unequal_inversion, '
-          'scripts/verify_unequal_geometry.py, scripts/verify_unequal_report.cjs --math-only, '
-          'scripts/build_unequal_visuals.py and scripts/build_unequal_report.py. Then run the '
-          'full browser verifier. Adjacent design record retains commands, source hashes and '
-          'decisions. Source base 1a3fb7e; workspace scope; canonical physics NOT APPLICABLE.')])
+        p('Actual positive-mass motor/pivot/gear constraints generate the three angular sweeps; '
+          'only initial poses are assigned. The compact evidence retains every timestep and '
+          'unchanged tolerance result, including coarse failures if present. Zero gravity/forces '
+          'and no collision shapes mean geometry evidence, not validated loaded torque, '
+          'contact, compliance, impact or physical inversion.'),
+        p('<b>Start CAD with 200/175 mm, guide 15:8</b> for approximately 50 mm sideways movement, '
+          'or 205/185 mm, 7:4 for about 75 mm. Both fit the required length relation. Their '
+          'normal strokes approach the assumed 175 degree guard; inspect actual stop and '
+          'buffer tolerances rather than treating these limits as measured hardware.'),
+        p('The earlier broad search recommended 160/475 mm before the owner clarified the '
+          '1.25x limit. That recommendation is superseded; its historical evidence remains '
+          'in the preceding local revision and contribution log. This report now applies '
+          'the constraint to every retained case. Existing Motion Lab models, earlier '
+          'reports/spring cases and historical dual-rope <b>IMPOSSIBLE /rejected</b> stay intact.'),
+        p('Reproduction commands, source hashes, exact assumptions and validation history are '
+          'in docs/unequal-inversion-study.md and docs/validation.md. The manual launcher '
+          'opens this static file with adjacent GIFs; no server or new Motion Lab control '
+          'is needed. Source base aaed324; workspace scope; canonical physics NOT APPLICABLE.')])
     return rows
 
 
@@ -174,7 +186,7 @@ class UnequalReport(Report):
     def section(self,*args):
         super().section(*args)
         self.c.setFillColor(colors.white);self.c.rect(46,24,450,21,fill=1,stroke=0)
-        self.text(48,37,'2026-10-14 | Unequal-link inversion | Source 1a3fb7e | Experimental',7,GRAY)
+        self.text(48,37,'2026-10-15 | Unequal-link inversion | Source aaed324 | Experimental',7,GRAY)
 
 
 def build_pdf(d,ss):
@@ -223,10 +235,10 @@ def build_html(d,ss):
     out='<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">'
     out+='<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src file: data:; style-src \'unsafe-inline\'; script-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'"><title>CAMEL · Unequal links through inversion</title><style>'+css+'</style></head><body>'
     out+='<header class="top"><div class="brand">CAMEL <small>Unequal-link report / October 2026</small></div><div class="top-actions"><a id="pdf-link" href="docs/unequal-inversion-report.pdf">PDF report ↗</a><button class="print-button" id="print-report">Print report</button></div></header>'
-    out+='<div class="hero"><div><p class="eyebrow">ALPHA ZERO · CURVED PATHS · FULL IDEAL INVERSION</p><h1>Unequal links.<br>Room around the hip.</h1><p>Four labelled examples, with full-path animations and explicit force, control and packaging screens.</p></div><div class="hero-box"><b>Offline design report</b><span>325 mm total /285 mm useful</span><span>11,535,210 windows searched</span></div></div>'
+    out+='<div class="hero"><div><p class="eyebrow">ALPHA ZERO · CURVED PATHS · FULL IDEAL INVERSION</p><h1>Upper link longer.<br>Within 1.25x.</h1><p>Four upper-long examples within the required length limit, with full inversion animations and explicit packaging limits.</p></div><div class="hero-box"><b>Offline design report</b><span>325 mm total /285 mm useful</span><span>6,601,338 windows searched</span></div></div>'
     out+='<main class="reader"><nav class="toc">'+toc+'<small>Static offline evidence.<br>No server or network needed.</small></nav><article class="report">'+''.join(bodies)
     out+='<div class="links"><a href="docs/unequal-inversion-study.md">Detailed design record</a><a href="docs/unequal-inversion-results.json">Numerical evidence</a><a href="docs/unequal-animations/manifest.json">GIF manifest</a><a href="docs/revisions.md">Revision map</a><a href="curved-paths.html">Earlier curved paths</a></div></article></main>'
-    out+='<footer class="footer">Ideal height inversion · projected pitch-circle screens · axial packaging unresolved · historical IMPOSSIBLE decisions retained</footer><script type="application/json" id="report-evidence">'+payload+'</script><script>document.getElementById("print-report").addEventListener("click",()=>window.print());</script></body></html>'
+    out+='<footer class="footer">Ideal height inversion · wheel/link axial separation needed · axial packaging unresolved · historical IMPOSSIBLE decisions retained</footer><script type="application/json" id="report-evidence">'+payload+'</script><script>document.getElementById("print-report").addEventListener("click",()=>window.print());</script></body></html>'
     (APP/'unequal-inversion.html').write_bytes(out.encode())
 
 

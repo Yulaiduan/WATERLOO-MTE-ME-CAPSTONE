@@ -1,6 +1,6 @@
 # Andy's experimental apps — development context entry point
 
-Owner: Andy Zhang. Updated: 2026-10-14. Status: portable member experiments.
+Owner: Andy Zhang. Updated: 2026-10-15. Status: portable member experiments.
 Audit base: `2353a6f`; see Git history for the publication of this handoff.
 
 This directory contains Andy's app/tool workspaces and offline design report. Each has
@@ -65,13 +65,13 @@ clearance comparison. Actual stiffness/contact and full physical inversion
 remain unresolved. Earlier published reports, Motion Lab examples and rejected
 IMPOSSIBLE decisions are preserved.
 
-## Unequal-link invertible paths, 2026-10-14
+## Unequal links within1.25x, 2026-10-15
 
-The latest [offline report and four GIFs](leg-design-study/unequal-inversion.html)
-and [design record](leg-design-study/docs/unequal-inversion-study.md) broaden
-the curved search to unequal links. Lower-long160/475 mm,r1.42 gives about50 mm
-sideways travel with325/285 mm total/useful height, alpha=phase=0. It passes
-ideal height inversion and assumed wheel/guide pitch-circle clearance; rods
-still overlap atfold and need an axial/forked mechanical layout. The six-page
-PDF retains the parameters, plots, screen proofs and numerical evidence.
-No Motion Lab controls, old spring/motor estimates or IMPOSSIBLE decisions change.
+The owner clarified upper L2 may be longer than lower L3, but max/min<=1.25.
+The [current offline report/GIFs](leg-design-study/unequal-inversion.html) and
+[design record](leg-design-study/docs/unequal-inversion-study.md) supersede the
+initial160/475 mm proposal. Upper-long200/170,200/175,205/185,215/175 mm give
+about25/50/75/100 mm sideways travel over325/285 mm total/useful height,
+alpha=phase=0. Start200/175,guide15:8 as the50 mm study seed. Ideal height
+inversion passes; wheel/upper-link fold overlap requires actual axial packaging.
+No physical inversion, new motor/spring rating or Motion Lab change is claimed.

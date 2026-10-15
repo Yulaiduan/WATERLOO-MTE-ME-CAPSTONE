@@ -106,3 +106,15 @@ Actual rods still overlap atfold; physical/axial packaging is unresolved.
 Old reports, Motion Lab models/services, motor/spring cases and historical
 IMPOSSIBLE decisions are unchanged. Tests/audit/parity/actual engine evidence,
 failures/corrections and reproduction commands remain beside the report.
+
+
+## Owner length-ratio correction, 2026-10-15
+
+The owner clarified upper may be longer, but max(length)/min<=1.25. The preceding
+broad unequal report is retained in source revision `aaed324`; its160/475 mm
+recommendation is superseded before shared publication. The current report,
+PDF, data and GIFs use the6.60-million-window constrained search and four
+upper-long rounded designs200/170,200/175,205/185,215/175 mm. Read
+[the current record](unequal-inversion-study.md) and validation. Full ideal height
+inversion passes; coplanar wheel/upper-rod overlap atfold still needs an axial
+layout. No earlier model, spring/motor case or IMPOSSIBLE decision changes.
