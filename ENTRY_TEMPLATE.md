@@ -2859,3 +2859,60 @@ The browser verifier retains both bounded-pose and iteration-limit checks alongs
 Continue from docs/merged-linkage.md and preserve fixed-A reference versus moving-chassis dynamics, original defaults and the rejected dual-rope status.
 
 ---
+
+
+## Entry: 2026-10-14 -- Andy Zhang workspace -- unequal-link invertible paths
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/leg-design-study; offline member design report.
+- **Associated Issue/Task:** Owner requested good unequal-leg curved paths through inversion, retaining alpha=phase=0, wheel R200 and325 mm total normal travel including buffers. Search separate force/size and projected-clearance families, deliver labelled examples/GIFs and PDF, document decisions without adding Motion Lab controls.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/Open Unequal Inversion Report.cmd`
+- `users/andy-zhang/experimental-apps/leg-design-study/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-animations/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-animations/clear100.gif`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-animations/clear25.gif`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-animations/clear50.gif`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-animations/clear75.gif`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-animations/manifest.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-inversion-engine-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-inversion-math-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-inversion-report.pdf`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-inversion-results.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/unequal-inversion-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/validation.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_unequal_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_unequal_visuals.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_unequal_geometry.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_unequal_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/test_unequal_inversion.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/unequal-inversion.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/unequal_inversion_search.py`
+- **API/Interface Changes:** New isolated unequal-link grid, tests, actual constrained geometry verifier, report/GIF generators and original-model/offline-browser verifier. Adds camel/unequal-inversion/v1 selected-evidence schema and camel/unequal-inversion-gifs/v1 manifest inside this app only. No production endpoint, model, dependency, lockfile, saved-profile or shared interface changes. New manual app-relative CMD opens a static local file; no server or startup task is installed. Earlier reports/models and rejected dual-rope IMPOSSIBLE status are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python3.13.12/NumPy2.5.3/SciPy1.18.1 search enumerates11,535,210 windows, retains24 compact leaders/22 detailed cases; all source hashes match.22 numerical tests pass (six new); first harness misclassified wide_reverse as numeric grid ID, fixed classifier and reran all22 without changed criteria.8,184 original JonathanV2/Andy2D scalar comparisons pass, maximum2.84217e-13 mm/Nm. Independent read-only Sol6.1 high audit agrees across22 inverse/clearance/ROM/force cases; prose corrections explicitly preserve holding-magnitude sign,3g/4g scaling, RMS-duty limitations and UTF8. Actual positive-mass Pymunk7.3.0 pivot/gear/motor sweeps clear25/50/100 pass unchanged path/pin/guide/tracking thresholds at2/1/0.5/0.25 ms and converge; finest path errors0.006819/0.005918/0.008080 mm. Zero forces/gravity and no collision shapes: geometry only. Installed Edge passes JS-disabled file reading,6 sections/5 SVG/4 rows/exact JSON/4 local GIFs,390px layout, print callback/CSS/export, PDF link/signature, no external request/page error. Four800x640 GIFs each have80 frames and6000 ms verified duration; source/output hashes match, each<1MiB. Initial GIF size failure fixed with shared palette/differential frames. Six-page24,173-byte PDF and660,300-byte HTML regenerate byte-identically; all final PDF pages, mobile HTML and GIF start/fold figures visually reviewed. Poppler nonfatal Symbol display-font message persists with no observed glyph/layout defect.117 relative links, finite evidence, source/manifest hashes and whitespace pass. Manual launcher exits0 from unrelated directory. Fetched origin/main1a3fb7e and hooks remain .githooks; final working/staged/outgoing checks run before publication. No unchanged Motion Lab/Atlas lifecycle or complete app-suite rerun is claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE. Lower-long designs pass ideal height inversion and assumed thin-upper-link/guide-pitch-circle wheel screens, but rods overlap and the lower link crosses the hip in side projection atfold. Actual axial stack, forks, outer pulleys, chassis, tire/rod dimensions, strength, loaded dynamics/contact/impact, springs, thermal motor duty, hardware, GPU and other-OS behavior remain unvalidated.
+
+## 4. Compute Saving Handoff State
+
+Open unequal-inversion.html for the four labelled paths/GIFs and its six-page PDF;160/475 mm,r1.42 is the50 mm seed and160/480,r1.35 is the75 mm lower-static-torque alternative, both325/285 mm total/useful height.
+Read docs/unequal-inversion-study.md for exact equations, stronger pitch-circle screen, upper-long rejection, search bounds, separate ranking objectives, source hashes and actual validation; physical inversion still requires a packaged axial design.
+Preserve older reports, Motion Lab models/services, motor/spring cases and IMPOSSIBLE decisions; continue with measured outer/axial/chassis geometry and duty before hardware sizing, using normal validated direct-to-main publication.
+
+---

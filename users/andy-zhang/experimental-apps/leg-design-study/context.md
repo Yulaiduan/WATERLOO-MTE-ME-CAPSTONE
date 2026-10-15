@@ -81,3 +81,23 @@ force/size leaders; no R² objective. Six new tests,10,788 original-model scalar
 comparisons and three actual constrained geometry refinements pass. Prior
 reports, spring/motor cases, Motion Lab examples/GIFs and IMPOSSIBLE decisions
 remain separate and intact. Read validation/revisions before continuing.
+
+## Unequal-link inversion, 2026-10-14
+
+Source base `1a3fb7e`. The owner asked for good unequal-length invertible paths.
+Continue from [unequal-inversion.html](unequal-inversion.html) and
+[the complete design record](docs/unequal-inversion-study.md), not a fixed-line
+or R² objective. Keep alpha=phi0=0, R200,325/285 mm total/useful normal height.
+
+Rounded L2/L3/r examples175/495/1.5,160/475/1.42,160/480/1.35,175/485/1.3
+give24.902/50.165/74.451/101.407 mm normal sideways travel. Prefer160/475,r1.42
+as the50 mm CAD seed; hip peak38.552 Nm at110.3625 N pure vertical load.
+All pass ideal full height inversion and assumed wheel/guide pitch-circle
+screens. Lower rods still cross the hip in side projection atfold. Physical
+inversion, axial stack, outer pulley/chassis geometry and actual compliance
+remain unvalidated. Upper-long400/175 rejected despite225 mm hip distance.
+
+22 tests,8,184 original-model scalar checks, independent read-only math audit
+and three actual Pymunk geometry sweeps at four timesteps pass. Four offline
+GIFs and a six-page PDF accompany the static report. Read validation/revisions;
+preserve all older models/reports, spring cases and dual-rope IMPOSSIBLE status.

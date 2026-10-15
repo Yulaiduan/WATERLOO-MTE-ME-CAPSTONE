@@ -103,3 +103,27 @@ sideways movement. Do not infer selected springs, motor ratings or no-slip
 rolling.16 numerical tests,10,788 originalV2/Andy2D comparisons and three actual
 Pymunk geometry sweeps pass. Preserve older numerical reports, live examples,
 all historical failures and rejected dual-rope IMPOSSIBLE status.
+
+## Unequal-link follow-up, 2026-10-14
+
+Read [the new design record](../docs/unequal-inversion-study.md) and
+[offline HTML/GIFs](../unequal-inversion.html). Source base1a3fb7e; publication
+is the commit adding this report. The owner now allows substantial unequal
+links. An11,535,210-window search keeps alpha=phase=0 and325/285 mm height.
+160/475 mm,r1.42 is the balanced50 mm seed;160/480,r1.35 allows about75 mm
+with lower vertical-load torque. The full ideal height map remains one-to-one.
+
+New distinction: b-a>=220 clears a point/thin-upper-segment screen for a
+lower-long leg, but wheel/hip pitch clearance additionally needs
+b-a>=220+60r (rb60). The rounded examples pass, with29.8–39 mm actual pitch
+gaps. These are not outer-pulley/chassis clearances. Atfold lowerBC overlaps
+upperAB and passes through A, requiring axial staggering/forks/offsets.
+Upper-long legs put C inside AB atfold; hip-distance-only screening is wrong.
+
+22 numerical tests and8,184 originalV2/Andy2D comparisons pass; independent
+audit agrees across22 cases. Three actual positive-mass Pymunk fixtures pass
+all2/1/0.5/0.25 ms thresholds and converge. No collision shapes/gravity/loads
+means geometry-only evidence. Four local GIFs, source/result/manifest hashes,
+browser reading/printing and PDF visual verification are in validation.
+Physical inversion, actual stiffness, loaded dynamics and motor/spring sizing
+are not certified. Preserve existing reports and IMPOSSIBLE decisions.

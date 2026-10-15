@@ -64,3 +64,14 @@ cases require unresolved axial packaging;285 mm,r1.85 is the normal coplanar
 clearance comparison. Actual stiffness/contact and full physical inversion
 remain unresolved. Earlier published reports, Motion Lab examples and rejected
 IMPOSSIBLE decisions are preserved.
+
+## Unequal-link invertible paths, 2026-10-14
+
+The latest [offline report and four GIFs](leg-design-study/unequal-inversion.html)
+and [design record](leg-design-study/docs/unequal-inversion-study.md) broaden
+the curved search to unequal links. Lower-long160/475 mm,r1.42 gives about50 mm
+sideways travel with325/285 mm total/useful height, alpha=phase=0. It passes
+ideal height inversion and assumed wheel/guide pitch-circle clearance; rods
+still overlap atfold and need an axial/forked mechanical layout. The six-page
+PDF retains the parameters, plots, screen proofs and numerical evidence.
+No Motion Lab controls, old spring/motor estimates or IMPOSSIBLE decisions change.

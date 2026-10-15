@@ -300,3 +300,60 @@ and contact inputs. No spring refit, dynamic/thermal motor rating, physical
 inversion, hardware, GPU or other-OS behavior is certified. Canonical physics
 is **NOT APPLICABLE**. Unchanged Motion Lab/Atlas lifecycle and complete app
 suites were not rerun for this static report; previous setup evidence remains.
+
+## Unequal-link inversion report, 2026-10-14
+
+Source base `1a3fb7e`; workspace scope. See [the design record](unequal-inversion-study.md)
+for search bounds, exact geometric proof, assumptions and recommendations.
+
+- `unequal_inversion_search.py`: **11,535,210** windows,24 compact leaders,
+ 22 detailed cases; continuous final extrema and2001-pose force integrals.
+  Final run40.549 s is execution history, not a benchmark. All four calculation
+  source hashes match retained provenance. No older model/search code changed.
+- `python -m unittest -v test_unequal_inversion test_curved_paths test_force_travel test_inversion_search`:
+  **22/22 pass**, including six new unequal-link tests. First run had one test
+  harness error: `wide_reverse` accidentally matched the grid-ID prefix. The
+  classifier now requires numeric `wNN_`; all22 were rerun unchanged otherwise.
+- Independent read-only Sol6.1 high audit verifies all22 cases with original
+  trig, bracketed derivative extrema, scalar inversion and SciPy quadrature.
+  Max height1.14e-13 mm, ROM1.38e-12 deg, peak1.64e-13 Nm; RMS-J quadrature
+  difference5.59e-9 m/rad. All inverse/segment/pitch-circle/guide flags agree.
+  Report review corrected holding-magnitude sign wording, explicit3g/4g
+  multipliers, torque-RMS versus heating scope and a UTF8/locale encoding issue.
+- `node scripts/verify_unequal_report.cjs`: **8,184** original Jonathan V2 /
+  Andy2D scalar checks across22 cases pass, max **2.84217094e-13 mm/Nm**.
+  Installed Edge passes JS-disabled local reading, six sections/five SVG,
+  four shortlist rows/exact embedded JSON, four locally loaded800px GIFs,
+  manifest hashes, finite body/figures,390px layout, PDF link/signature and
+  print callback/CSS/export. Five requests, all local `file:`; no external
+  requests or page errors. Browser QA stays ignored in `artifacts/unequal-report/`.
+- `scripts/verify_unequal_geometry.py`: three actual positive-mass Pymunk7.3.0
+  fixtures clear25/50/100 pass all **2/1/0.5/0.25 ms** path/pin/guide/tracking
+  checks and converge. Finest path errors **0.006819/0.005918/0.008080 mm**.
+  Actual pivots/gears/motor generate motion; only initial poses assigned.
+  Zero gravity/forces and no collision shapes mean geometry-only evidence,
+  not validated force, compliance, physical inversion, contact or impact.
+- `scripts/build_unequal_visuals.py`: four800x640,80-frame GIFs,253,143 /
+  268,859 /278,077 /280,977 bytes. Actual Pillow frame durations sum6000 ms
+  each (alternating70/80 ms), and GIF/source hashes match the manifest.
+  Initial96-color per-frame export exceeded1 MiB; shared64-color palette and
+  differential frames fixed size without changing geometry. Full fold frames
+  for all four, plus the50mm start/fold views, were visually reviewed.
+- `scripts/build_unequal_report.py`: **6 pages,24,173-byte PDF**,10,173 extracted
+  text characters, SHA256
+  `5803cdbc7de1e1e5ac5bb261a2a2a2538be9a5dfce171d2cef81bf72482103f1`.
+  HTML **660,300 bytes**, SHA256
+  `b95980f5ad0fc7ea842e2e68821fae0f30fd3b3ae0fa58847a7a842d1b137660`.
+  Both regenerate byte-identically. All six final PDF pages rendered with
+  Poppler and visually reviewed, along with mobile HTML and GIF figures.
+  Poppler emits its nonfatal Symbol display-font message; no observed missing
+  glyph, overlap or clipping. The manual **Open Unequal Inversion Report.cmd**
+  returns exit0 from an unrelated directory. No server/runtime/network is
+  needed to read the report; retain the adjacent GIF folder when sharing.
+
+Physical inversion is **unvalidated**: projected rods overlap and the lower
+rod crosses the hip atfold. The stronger wheel/guide pitch-circle screen
+does not know actual flanges, shafts, chassis, rod thickness or axial stack.
+No new spring, motor, loaded dynamics, hardware, GPU or other-OS claim is made.
+Canonical robot physics is **NOT APPLICABLE**. Unchanged Motion Lab/Atlas
+lifecycles and full app suites were not rerun; previous setup evidence remains.

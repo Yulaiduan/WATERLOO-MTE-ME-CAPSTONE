@@ -89,3 +89,20 @@ actual-Pymunk checks accompany the standalone seven-page PDF/static HTML.
 No old model/report, Motion Lab source/example/GIF, spring/motor rating or
 historical IMPOSSIBLE decision is replaced. Resolve physical packaging and
 effective stiffness before promoting permitted motion into a hardware claim.
+
+## Unequal-link inversion, 2026-10-14
+
+Source base `1a3fb7e`; publication is the commit adding
+`unequal-inversion.html`. [The new record](unequal-inversion-study.md) searches
+11.535 million unequal-link windows with separate geometry/segment/pitch-circle
+families and peak-force/size objectives. The owner asked for good unequal
+invertible paths; cancelled R²/fixed-line ranking remains cancelled.
+
+Four rounded lower-long examples, labelled GIFs and a six-page PDF retain
+alpha=phase=0 and325/285 mm normal height.160/475 mm,r1.42 is the50 mm seed.
+New analytic upper-segment proof rejects upper-long false positives and the
+stronger wheel/hip pitch-circle screen excludes point-only clearance cases.
+Actual rods still overlap atfold; physical/axial packaging is unresolved.
+Old reports, Motion Lab models/services, motor/spring cases and historical
+IMPOSSIBLE decisions are unchanged. Tests/audit/parity/actual engine evidence,
+failures/corrections and reproduction commands remain beside the report.
