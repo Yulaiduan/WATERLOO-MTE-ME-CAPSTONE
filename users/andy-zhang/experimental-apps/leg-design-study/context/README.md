@@ -143,3 +143,19 @@ constraints are in the brief, with a copyable next-sweep prompt. No new large
 grid has been run; thirteen analytical cases and4,838 V2/Andy checks pass.
 Earlier Pymunk results remain scoped to their original cases; actual axial
 packaging, moving masses, stiffness, impacts and thermal duty remain open.
+
+## Reverse link orientation and RMS, 2026-10-15
+
+Continue from [the RMS design record](../docs/rms-link-study.md) and
+[offline HTML/PDF](../rms-link-comparison.html), source c92880d. Interpret the
+owner's r1/r2 as upper/lower length, separate from guide ratio. Lower/upper1.25
+can improve hip RMS after retuning guide for the same lateral task; equal
+225/225 versus reverse200/250 at450 mm combined size/exact50 mm sideways
+gives35.433 versus33.508 Nm. Knee equivalents19.408 versus19.578 Nm show why
+actual actuator placement/gearing matters. At guide2/fixed sum they tie.
+Bounded582,471-window grid optimizes hip height-RMS only across equal and both
+exact1.25 orientations;52 cases and three actual unloaded Pymunk sweeps pass.
+Useful reverse180/225,17:10 gives49.10 mm lateral/30.835 Nm RMS, but longer
+individual/combined links than prior equal190/190. Keep physical clearance,
+springs, loaded dynamics/duty and true compliance unresolved; preserve older
+reports, models and rejected dual-rope IMPOSSIBLE status.

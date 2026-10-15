@@ -86,3 +86,14 @@ baseline. Unequal lengths add path/guide-packaging freedom, with exact fixed-
 S,r2 vertical equivalence. Keep max/min<=1.25 and compare operating-angle caps
 165/170/175 explicitly before choosing shorter links. The brief proposes a
 fair next sweep; it does not run a new large grid or certify physical clearance.
+
+## RMS and lower-long1.25x, 2026-10-15
+
+[The RMS follow-up](leg-design-study/rms-link-comparison.html) and
+[design record](leg-design-study/docs/rms-link-study.md) compare equal and
+both exact1.25 length orientations with a bounded582,471-window search.
+Lower-long can reduce hip RMS with a retuned guide, but relative-knee RMS may
+increase; actual actuator coordinate matters. Fixed total length and guide2
+give equal vertical RMS. Rounded180/225 mm,17:10 is a compact reverse example.
+52 analytical cases and three actual unloaded Pymunk geometry refinements pass;
+physical packaging, dynamic motor/spring sizing and impacts remain unresolved.

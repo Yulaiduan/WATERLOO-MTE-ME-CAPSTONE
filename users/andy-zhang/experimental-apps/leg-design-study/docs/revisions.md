@@ -130,3 +130,16 @@ Current upper examples are shape/guide-packaging alternatives, not demonstrated
 vertical-force winners. Equal cases remain eligible. New four-page PDF/HTML,
 selected data, reproducible checks and Markdown preserve the complete scope;
 all older reports/models/GIFs and IMPOSSIBLE decisions stay intact.
+
+## RMS and reverse lower-long1.25x, 2026-10-15
+
+Source c92880d; publication is the commit adding rms-link-comparison.html.
+Owner asked equal versus unequal RMS and the reversed length relation.
+[The new record](rms-link-study.md) separates fixed-size/r2 controls,
+exact50 mm matched lateral comparisons, a582,471-window bounded hip-RMS
+search and common quintic-time static evaluation. Lower-long can improve hip
+RMS; equivalent knee mapping changes the ranking, and exactr2 gives a tie.
+Separate HTML/four-page PDF preserves every earlier report.52 cases pass
+original-model checks and three new actual unloaded Pymunk refinements pass;
+no physical clearance or loaded motor/spring certification. A rounded knee
+digit and page2 spacing were corrected during report QA, before publication.

@@ -120,3 +120,19 @@ ratio and separate165/170/175 caps, with Pareto/independent objectives. Ranges
 are proposals, not a new grid result. Thirteen analytical cases/4,838 original-
 model scalar checks pass; no new physical/Pymunk fixture is claimed. Preserve
 prior reports, spring/motor assumptions, undamped models and IMPOSSIBLE status.
+
+## RMS and reverse lower-long1.25x, 2026-10-15
+
+Source c92880d. The owner asked whether equal or unequal links improve RMS
+and requested lower=1.25*upper. Read [the RMS record](docs/rms-link-study.md)
+and [offline report](rms-link-comparison.html). Matched450 mm combined size
+and exactly+50 mm lateral movement gives hip RMS35.433/37.254/33.508 Nm
+for equal225/225,upper250/200,lower200/250 with individually retuned guides.
+Knee equivalents19.408/19.008/19.578 Nm reverse that interpretation; compare
+the actual actuator coordinate. Fixed size/r2 gives identical vertical RMS.
+Bounded582,471-window hip-RMS grid keeps exact equal/upper/lower controls and
+separate165/170/175 caps. Rounded180/225,17:10 gives49.10 mm lateral and
+30.835 Nm hip RMS, with a longer maximum link than equal190/190.
+52 analytical cases/7,702 independent checks and three unloaded actual
+Pymunk refinements pass. No physical inversion, loaded RMS or motor/spring
+rating is claimed. Preserve older models/reports and IMPOSSIBLE decisions.

@@ -3024,3 +3024,52 @@ Use equal190/190,r1.8 as the50 mm force/travel baseline and200/175,15:8 as a pat
 Compare165/170/175 stop scenarios with signed d including zero and both orientations, resolve physical packaging and duty before spring/motor sizing, and preserve all prior reports/models/IMPOSSIBLE decisions under normal validated direct-to-main publication.
 
 ---
+
+
+## Entry: 2026-10-15 -- Andy Zhang workspace -- RMS and reverse lower-long1.25x
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/leg-design-study; offline RMS comparison.
+- **Associated Issue/Task:** Compare equal/different link RMS and test owner's reverse r2=1.25*r1, interpreted upper L2=1x/lower L3=1.25x, separate from pulley guide ratio. Retain R200, alpha=phase=0,325 mm total height/20+20 assumed reserves, sideways25/50/75/100 bands and165/170/175 cap scenarios. Compare hip/knee coordinates and declare static versus dynamic weighting.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/Open RMS Comparison.cmd`
+- `users/andy-zhang/experimental-apps/leg-design-study/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/rms-link-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/rms-link-engine-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/rms-link-report.pdf`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/rms-link-results.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/rms-link-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/validation.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/rms-link-comparison.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_rms_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/compare_rms_links.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_rms_geometry.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_rms_links.cjs`
+- **API/Interface Changes:** Adds app-local camel/rms-link-comparison/v1 selected evidence, bounded RMS grid, original-model RMS verifier, actual unloaded geometry verifier, separate static HTML/PDF renderer and manual CMD. Updates app/context/revision/validation records. No canonical model, production endpoint, dependency, lockfile, Motion Lab control/service or previous report/GIF changes. Historical dual-rope IMPOSSIBLE status remains intact.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python3.13.12/NumPy2.5.3/SciPy1.18.1 bounded582,471-window grid retains36 hip-RMS leaders and52 detailed analytical cases;118,071 height/guide/inverse and15,940 lateral-band scenario passes. Original JonathanV2/Andy2D7,702 scalar checks pass, overall9.89075e-12 mm/Nm, independent height-RMS4.54037e-12 Nm and quintic-time static RMS9.89075e-12 Nm. Adaptive quadrature versus existing height estimate differs<=7.59076e-7 Nm; doubled time resolution<=6.25278e-13 Nm. Fixed-S/r2 identities, owner1.25 limit and source hashes pass. Actual Pymunk7.3.0 motor/pivot/gear sweeps for3 new reverse cases pass unchanged path/pin<0.1 mm,guide<1e-4 rad,tracking<0.01 rad at2/1/0.5/0.25 ms and converge; finest path0.00754746/0.00847097/0.00736111 mm. Zero gravity/forces/collision shapes: geometry only. Installed Edge passes JS-disabled local file reading,4 sections/3 SVG/exact JSON,390px layout,finite values,PDF link/signature,print callback/CSS/export;1 local and0 external requests/page errors. Four-page13,673-byte PDF and726,713-byte HTML regenerate byte-identically; final rendered pages/mobile reviewed. Page2 spacing and one rounded knee digit corrected during QA; Poppler nonfatal Symbol font message has no observed glyph/layout defect. Manual app-relative CMD exits0 from unrelated directory. UTF8,strict finite JSON,relative links,<=1MiB new blobs and whitespace pass. Fetched origin/mainc92880d; installed hooks and required working/staged/outgoing checks remain mandatory. No unchanged full Motion Lab/Atlas lifecycle/suite rerun is claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated workspace. RMS search optimizes only massless-link static hip height-weighting, not global/knee/motor optimum. Quintic results are static torque along normalized time, without acceleration torque. Physical inversion/axial wheel/chassis/outer-hardware clearance, loaded spring/motor/contact/impact/thermal behavior, actual compliance, hardware/GPU and other OS remain unvalidated.
+
+## 4. Compute Saving Handoff State
+
+Read rms-link-comparison.html and docs/rms-link-study.md for matched450 mm/exact50 mm lateral controls, bounded hip-RMS leaders, actuator mapping, duty assumptions and actual validation.
+Lower200/250 with guide1.711530895 gives33.508 Nm hip RMS versus equal225/22535.433, but equivalent knee19.578 versus19.408 reverses that benefit; rounded180/225,17:10 is a compact reverse example with49.10 mm sideways/30.835 Nm hip RMS.
+Preserve all older reports/models/IMPOSSIBLE decisions, compare exact actuator coordinate and real packaging/duty before springs/motors, and publish only through normal validated direct-to-main hooks.
+
+---

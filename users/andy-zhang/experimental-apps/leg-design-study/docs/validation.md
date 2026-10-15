@@ -463,3 +463,51 @@ hardware, GPU or other-OS verification is claimed. Original model equations,
 services, dependencies and prior validation scope are unchanged. Proposed
 ranges, objective choices, ride position, actual ROM and physical inputs need
 selection before another large sweep. Canonical physics is NOT APPLICABLE.
+
+## RMS and reverse lower-long1.25x, 2026-10-15
+
+Source c92880d; isolated workspace. Read [rms-link-study.md](rms-link-study.md),
+[offline HTML](../rms-link-comparison.html), [results](rms-link-results.json),
+[math checks](rms-link-checks.json) and [engine checks](rms-link-engine-checks.json).
+
+- Bounded582,471-window grid retains36 hip-RMS leaders across3 exact length
+  orientations,3 caps and4 lateral bands;52 detailed cases include fixed-size
+  controls, prior examples and rounded reversals.118,071 height/guide/inverse
+  and15,940 lateral passes counted by scenario.65-pose coarse screening,
+  retained finalist continuous extrema and adaptive quadrature; no global or
+  knee-RMS optimum claim. Source hashes match.
+- Original JonathanV2/Andy2D verification passes7,702 scalar comparisons.
+  Independent dense original-V2 height-RMS error4.54037e-12 Nm and quintic-time
+  static RMS error9.89075e-12 Nm; overall error9.89075e-12 mm/Nm. Existing
+  trapezoid height estimate differs from adaptive quadrature by at most
+  7.59076e-7 Nm; doubled time resolution changes at most6.25278e-13 Nm.
+  Exact fixed-S,r2 identities and length/guide/inverse flags pass.
+- Three actual positive-mass Pymunk7.3.0 sweeps reverse180/225, matched450
+  reverse200/250 and lower125_175_50 pass2/1/0.5/0.25 ms with unchanged
+  0.1 mm path/pin,1e-4 rad guide and0.01 rad tracking thresholds. Finest path
+  errors0.00754746/0.00847097/0.00736111 mm; all converge. Only initial
+  poses assigned; motor/pivot/gear constraints generate full100-260 motion.
+  Zero gravity/forces/collision shapes: geometry only, not loaded RMS.
+- Installed Edge passes JavaScript-disabled file reading,4 sections/3 SVG,
+  exact embedded evidence, finite text,390px no-overflow layout, PDF link/
+  signature and print callback/CSS/export. One local request, zero external
+  requests/page errors. Ignored QA under artifacts/rms-links. Manual CMD exits0
+  from unrelated Temp directory and opens the static file.
+- Four-page PDF13,673 bytes, SHA256
+  `c76577e84db9e67efc785edbea0717d54854dce212d98321972814ce7d1aaedb`;
+  HTML726,713 bytes, SHA256
+  `c8857b11cee385764695cadc791d76c63415bae8af43eca8a1c13e0b638d1b39`.
+  Both regenerate byte-identically. All rendered pages and mobile HTML
+  reviewed; page2 spacing reduced to protect footer, one rounded knee digit
+  corrected. Poppler nonfatal Symbol display-font message persists without
+  observed glyph/layout defects. Strict finite JSON, UTF8, source hashes,
+  changed-document links, <=1MiB blobs and whitespace checked.
+
+Current report distinguishes height-weighted RMS, static torque over common
+smooth quintic time and equivalent relative-knee mapping. No inertia or actual
+motor thermal validation is included; normalized time is not a one-second
+dynamic sizing run. Actual axial/chassis/tire/outer-pulley clearance, spring/
+motor duty, contact/impact, stiffness, hardware/GPU and other OS remain open.
+Unchanged Motion Lab/Atlas services/full suites were not rerun. Prior reports,
+models and dual-rope IMPOSSIBLE decisions remain intact. Canonical physics is
+NOT APPLICABLE; ordinary installed hooks and scoped publication checks apply.

@@ -135,3 +135,17 @@ another path/guide-packaging adjustment; they are not automatic force winners.
 The brief preserves fixed-size/guide controls, actual ROM sensitivity and a
 proposed fair sweep with equal/upper-long/lower-long families. No new large
 optimization or physical clearance certification is performed.
+
+## RMS and reverse 1.25x links, 2026-10-15
+
+Open [rms-link-comparison.html](rms-link-comparison.html),
+[Open RMS Comparison.cmd](Open%20RMS%20Comparison.cmd), the
+[four-page PDF](docs/rms-link-report.pdf) and
+[design record](docs/rms-link-study.md). A582,471-window bounded RMS search
+compares equal, upper-long1.25x and lower-long1.25x across165/170/175 caps.
+Reverse200/250 mm has5.43% less hip RMS than equal225/225 at fixed450 mm
+combined length and exactly50 mm sideways movement, after guide retuning;
+equivalent relative-knee RMS gives a different ordering. At fixed size/r2,
+all orientations have identical vertical RMS. Rounded180/225,17:10 is a
+compact reverse example.52 analytical cases and three actual unloaded Pymunk
+geometry sweeps pass; physical clearance and motor/spring duty remain open.
