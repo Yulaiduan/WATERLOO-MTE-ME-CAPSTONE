@@ -100,3 +100,23 @@ New grid 6,601,338 windows; 23 tests,7,440 original-model comparisons and three
 actual Pymunk sweeps at four timesteps pass. Current six-page PDF and four GIFs
 replace the broad examples; earlier evidence stays in Git/log/validation.
 Preserve prior reports/models, spring cases and dual-rope IMPOSSIBLE status.
+
+## Equal versus unequal and next-sweep planning, 2026-10-15
+
+The owner asked what unequal lengths buy versus similar equal designs and
+requested a summary of prior design/optimization requests for another sweep.
+Read [the new brief](docs/next-sweep-brief.md) and
+[offline comparison/PDF](design-sweep-brief.html). Source base14f53f1.
+Matched rounded upper examples save0-4.9% link sum but have1.1-5.0% higher
+vertical-load hip peak and slightly less ROM. Use190/190,r1.8 as the50 mm
+baseline;200/175,15:8 remains a shape/guide-packaging alternative. Equal links
+must remain eligible. Fixed-S,r2 controls prove identical vertical kinematics
+and torque while mismatch adds lateral motion. Small offsets do not resolve
+wheel/link overlap. Current short designs rely on extending q close to175;
+190/190,r1.8 has only269.2 mm capacity over100-165.
+
+Suggested next study uses S and signed d including equal d0, |d|<=1/9, guide
+ratio and separate165/170/175 caps, with Pareto/independent objectives. Ranges
+are proposals, not a new grid result. Thirteen analytical cases/4,838 original-
+model scalar checks pass; no new physical/Pymunk fixture is claimed. Preserve
+prior reports, spring/motor assumptions, undamped models and IMPOSSIBLE status.

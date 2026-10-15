@@ -75,3 +75,14 @@ about25/50/75/100 mm sideways travel over325/285 mm total/useful height,
 alpha=phase=0. Start200/175,guide15:8 as the50 mm study seed. Ideal height
 inversion passes; wheel/upper-link fold overlap requires actual axial packaging.
 No physical inversion, new motor/spring rating or Motion Lab change is claimed.
+
+## Equal controls and proposed next sweep, 2026-10-15
+
+[The latest brief](leg-design-study/design-sweep-brief.html) and
+[request/optimization summary](leg-design-study/docs/next-sweep-brief.md)
+compare slightly unequal links with similar equal designs. Current upper-long
+examples are not pure vertical force winners; equal190/190,r1.8 is the50 mm
+baseline. Unequal lengths add path/guide-packaging freedom, with exact fixed-
+S,r2 vertical equivalence. Keep max/min<=1.25 and compare operating-angle caps
+165/170/175 explicitly before choosing shorter links. The brief proposes a
+fair next sweep; it does not run a new large grid or certify physical clearance.

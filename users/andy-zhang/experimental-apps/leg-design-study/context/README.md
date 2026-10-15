@@ -124,3 +124,22 @@ leaders and no R2 objective. 23 tests,7,440 V2/Andy2D scalar checks and three
 positive-mass actual Pymunk sweeps pass at 2/1/0.5/0.25 ms. Engine has no gravity,
 forces or collision shapes: geometry only. Read current validation and
 revisions, preserve all older reports, spring/motor cases and IMPOSSIBLE status.
+
+## Equal controls and next-sweep brief, 2026-10-15
+
+Continue from [next-sweep-brief.md](../docs/next-sweep-brief.md) and
+[the new offline comparison](../design-sweep-brief.html). Current upper-long
+recommendations were examples satisfying that orientation request, not proven
+force winners. Upper examples have1.1-5.0% higher peaks than similar rounded equal designs,
+while saving0-4.9% total link sum but increasing
+the longest single link. Keep equal190/190,r1.8 as a50 mm baseline.
+
+The parameterization S=L2+L3,d=(L2-L3)/S separates scale and signed imbalance;
+|d|<=1/9 is the exact1.25x limit. At r2, fixed S gives identical vertical
+motion/torque/ROM; D=S*d controls lateral motion and fold offset. Original
+100-165 screenshot ROM does not give325 mm for the recent short cases; compare
+165/170/175 caps explicitly. New proposed ranges and hard versus assumed
+constraints are in the brief, with a copyable next-sweep prompt. No new large
+grid has been run; thirteen analytical cases and4,838 V2/Andy checks pass.
+Earlier Pymunk results remain scoped to their original cases; actual axial
+packaging, moving masses, stiffness, impacts and thermal duty remain open.

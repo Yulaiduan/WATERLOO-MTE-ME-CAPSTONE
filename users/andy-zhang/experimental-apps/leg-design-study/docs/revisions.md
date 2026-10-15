@@ -118,3 +118,15 @@ upper-long rounded designs200/170,200/175,205/185,215/175 mm. Read
 [the current record](unequal-inversion-study.md) and validation. Full ideal height
 inversion passes; coplanar wheel/upper-rod overlap atfold still needs an axial
 layout. No earlier model, spring/motor case or IMPOSSIBLE decision changes.
+
+## Equal/unequal comparison and next-sweep brief, 2026-10-15
+
+Source base14f53f1; publication is the commit adding design-sweep-brief.html.
+The owner requested benefits versus equal links and a design/optimization
+request summary before another sweep. [The brief](next-sweep-brief.md) compares
+eight published cases, fixed-size/guide controls and an exact r2 identity pair;
+it proposes a fair S/d/r/window study without executing another large grid.
+Current upper examples are shape/guide-packaging alternatives, not demonstrated
+vertical-force winners. Equal cases remain eligible. New four-page PDF/HTML,
+selected data, reproducible checks and Markdown preserve the complete scope;
+all older reports/models/GIFs and IMPOSSIBLE decisions stay intact.

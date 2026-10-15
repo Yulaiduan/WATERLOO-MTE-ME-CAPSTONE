@@ -2977,3 +2977,50 @@ Start from200/175,15:8 for the50 mm CAD study or205/185,7:4 for75 mm; the unequa
 Read docs/unequal-inversion-study.md, validation and revisions for exact assumptions/proofs/evidence; resolve actual axial/chassis/tire/outer-pulley geometry before physical inversion or hardware sizing, preserving all prior model and IMPOSSIBLE decisions.
 
 ---
+
+
+## Entry: 2026-10-15 -- Andy Zhang workspace -- equal-link controls and next-sweep brief
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** users/andy-zhang/experimental-apps/leg-design-study; separate offline comparison and optimization brief.
+- **Associated Issue/Task:** Explain what slightly unequal links offer versus comparable equal links, summarize current owner design requests and propose variables/methods for the next sweep. Preserve equal/upper-long/lower-long eligibility, owner max/min<=1.25, alpha=phase=0, R200 and325 mm total buffered height. Do not run another large search in this contribution.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/Open Sweep Brief.cmd`
+- `users/andy-zhang/experimental-apps/leg-design-study/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/design-sweep-brief.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/design-sweep-brief.pdf`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/equal-link-comparison-checks.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/equal-link-comparison.json`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/next-sweep-brief.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/validation.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_sweep_brief.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/compare_link_lengths.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_sweep_brief.cjs`
+- **API/Interface Changes:** Adds app-local camel/equal-link-comparison/v1 selected evidence, original-model verifier and offline HTML/PDF builder/manual CMD. Adds fixed-total-length/guide controls and a proposed S/d/r/window Pareto search brief; updates app context/revision links. No production interface, dependency, equation, Motion Lab control/service or old report/GIF changes. Historical dual-rope IMPOSSIBLE/rejected decisions remain intact.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python3.13.12 comparison retains13 analytical cases, reproduces32 published metric comparisons exactly and checks501 r2 identity samples within5.68434e-14 mm/rad-unit quantities. Independent original JonathanV2/Andy2D verifier passes4,838 scalar checks, max1.70530257e-13 mm/Nm; source hashes match. Retains equal195/195,r1.7 capacity324.800 mm as a0.200 mm numerical threshold failure and185/185,r2 guide surplus5 mm as an assumed10 mm screen failure; added190/190 vs205/175,r2 controls both meet that screen. Read-only independent Sol6.1 high audit agrees with comparisons, reciprocal1.25 limit and parameterization. Installed Edge passes JavaScript-disabled file reading,4 sections/2 SVG/4 rows/exact embedded JSON,390px layout, finite values, PDF link/signature, print callback/CSS/export,1 local file request and0 external requests/page errors. Four-page14,322-byte PDF and357,822-byte HTML regenerate byte-identically; all final PDF pages and mobile HTML rendered/reviewed. Poppler nonfatal Symbol display-font message has no observed glyph/overlap/clipping defect. Manual Open Sweep Brief.cmd exits0 from unrelated directory.126 relative links, UTF8, finite evidence, source hashes and whitespace pass. Fetched origin/main14f53f1 and installed .githooks; required working/staged/outgoing checks remain part of publication. No new large search, Pymunk run, full Motion Lab/Atlas lifecycle, loaded spring/motor or physical inversion test is claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Physical wheel/link/chassis/outer-pulley clearance, real masses/inertia, stiffness/contact, impacts, hardware, GPU and other-OS behavior remain unvalidated. Proposed bounds and20+20 mm reserves are assumptions; current short designs depend on extending the normal stop beyond the screenshot's165 degrees.
+
+## 4. Compute Saving Handoff State
+
+Read design-sweep-brief.html and docs/next-sweep-brief.md for the equal/unequal comparison, current owner choices, ROM sensitivity, separate objectives and copyable next-sweep request; no new large grid was run.
+Use equal190/190,r1.8 as the50 mm force/travel baseline and200/175,15:8 as a path/guide-packaging alternative, preserving both and lower-long controls in the next study.
+Compare165/170/175 stop scenarios with signed d including zero and both orientations, resolve physical packaging and duty before spring/motor sizing, and preserve all prior reports/models/IMPOSSIBLE decisions under normal validated direct-to-main publication.
+
+---

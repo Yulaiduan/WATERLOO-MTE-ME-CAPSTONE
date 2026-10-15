@@ -122,3 +122,16 @@ sideways travel. All have a continuous ideal height inverse, but projected
 wheel/upper-link overlap at the fold requires an actual axial mechanical layout.
 The earlier 160/475 mm recommendation is superseded. No Motion Lab controls,
 old models or hardware ratings change.
+
+## Equal-link comparison and next-sweep brief
+
+Read **[design-sweep-brief.html](design-sweep-brief.html)** or
+**[Open Sweep Brief.cmd](Open%20Sweep%20Brief.cmd)**, with its
+**[four-page PDF](docs/design-sweep-brief.pdf)** and
+[detailed Markdown/request summary](docs/next-sweep-brief.md).
+The selected upper-long examples have slightly higher pure vertical peak
+torque than comparable rounded equal-link cases. Unequal lengths provide
+another path/guide-packaging adjustment; they are not automatic force winners.
+The brief preserves fixed-size/guide controls, actual ROM sensitivity and a
+proposed fair sweep with equal/upper-long/lower-long families. No new large
+optimization or physical clearance certification is performed.

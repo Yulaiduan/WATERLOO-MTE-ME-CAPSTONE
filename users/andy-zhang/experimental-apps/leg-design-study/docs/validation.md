@@ -417,3 +417,49 @@ hardware clearance. No new motor/spring rating, loaded contact/impact, hardware,
 GPU or other-OS certification. Canonical robot physics is NOT APPLICABLE.
 Unchanged Motion Lab/Atlas lifecycles/full app suites were not rerun. Prior
 historical evidence and IMPOSSIBLE decisions remain intact.
+
+
+## Equal/unequal comparison and proposed sweep brief, 2026-10-15
+
+Source base14f53f1; workspace-only analytical comparison/planning. See
+[next-sweep-brief.md](next-sweep-brief.md) and the separate
+[offline brief](../design-sweep-brief.html). All older reports, models and
+curated GIFs remain unchanged. No new large sweep is claimed.
+
+- `scripts/compare_link_lengths.py`:13 retained analytical cases: eight
+  published examples, three height-feasible fixed-size/guide controls and two
+  additional guide-feasible S380,r2 controls.32 retained metric comparisons
+  reproduce exactly.501 independent r2 identity samples agree within
+  5.68434e-14 mm/rad-unit quantities. The equal195/195,r1.7 control's actual
+  capacity324.800 mm is retained as a0.200 mm numerical threshold failure,
+  explicitly not a robust practical superiority claim. The185/185,r2 control
+  has5 mm pitch surplus and fails the assumed10 mm; the added190/190 vs205/175
+  r2 pair meets that screen. Source/helper/input hashes match.
+- `node scripts/verify_sweep_brief.cjs`: **4,838** original JonathanV2/Andy2D
+  scalar comparisons across13 cases pass, maximum **1.70530257e-13 mm/Nm**.
+  Exact r2 peak/ROM equality, full guide-feasible control flags and retained
+  failures are checked. Independent read-only Sol6.1 high review agrees with
+  the comparisons, S/d parameterization, reciprocal1.25 limit, implied length
+  bounds and no-universal-torque-benefit interpretation. The owner explicitly
+  confirmed25/50/75/100 mm comparisons; +/-2.5 tolerance remains an assumption.
+- Installed Edge verification passes JavaScript-disabled local-file reading,
+  four sections/two SVG/four comparison rows/exact embedded JSON, finite
+  plots/body,390px layout, PDF link/signature, print callback/CSS/export.
+  One local `file:` request, no external requests/page errors. Screenshots
+  and browser-print PDF stay ignored under `artifacts/sweep-brief/`.
+- `scripts/build_sweep_brief.py`: **4-page,14,322-byte PDF**,8,563 extracted
+  text characters; SHA256
+  `6d22037eba7071cb156c5c6e88ce4d2fd80904980d25eb5bba71bcdd77e804a3`.
+  HTML **357,822 bytes**, SHA256
+  `9635dddc880e5db94a0e69d8e781d6169db31b44a413e4f607e40f63e7e7aa06`.
+  Both regenerate byte-identically. All pages rendered with Poppler and
+  reviewed; final changed requirements/validation pages rechecked, plus
+  mobile HTML. Poppler's nonfatal Symbol font message persists with no
+  observed glyph, overlap or clipping defect. Manual **Open Sweep Brief.cmd**
+  exits0 from an unrelated directory and opens the local static file.
+
+No new Pymunk, loaded spring/motor, contact/impact, physical inversion,
+hardware, GPU or other-OS verification is claimed. Original model equations,
+services, dependencies and prior validation scope are unchanged. Proposed
+ranges, objective choices, ride position, actual ROM and physical inputs need
+selection before another large sweep. Canonical physics is NOT APPLICABLE.
