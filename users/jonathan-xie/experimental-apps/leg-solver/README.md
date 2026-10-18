@@ -2,11 +2,107 @@
 
 Owner: Jonathan Xie. Created with Codex, 2026-10-13. Status: experimental analytical tool.
 
+## V4 textbook: 10mm pulley and effective mg compensation — 2026-10-18
+
+Default/Reset now uses the requested13kg,300/300mm,k8N/mm,Sv100mm,rs10mm
+textbook example: Su7.157923mm,rh89.416035mm,p0149.918335N,all nominal
+spring drivers off. Ideal compensation error stays within±0.06209% over
+100–165deg, with at most0.037295Nm applied motor correction. Read the
+[textbook derivation/plots](v4-textbook.md) or Load the [complete preset](v4-textbook-10mm.json).
+
+The new **Fit rh,Su,p0 to1mg** button holds k/Sv/rs/nu/leg geometry and jointly
+solves rh/Su/p0 numerically, turns nominal drivers off and reports checked error.
+The exact point rule/preload button remain available under their zero-radius,
+zero-offset assumptions. No exact finite-pulley closed-form identity is claimed.
+
+The owner clarified the percentage: it is **100*(effective support/mg-1)**,
+so0%=1mg,-10%=0.9mg,+10%=1.1mg. The middle card now has separate linear
+raw-motor and compensation-error graphs; headlines append the compensation
+error at the same pose. It is independent of prescribed Fz, and undefined
+at zero total weight/vertical Jacobian. The geometry card remains collapsible.
+91,128 model/fitter assertions pass; actual browser checks include finite fit
+from invalid point geometry, both graphs, zero-mass handling and textbook reset.
+
+## V4 applied CCW torque and 13kg tuning — 2026-10-18
+
+V4 now reports **tau2 as the actual applied CCW motor torque**: tau2=tauG-tauS,
+where tauG is the no-spring CCW motor requirement and tauS the physical signed
+spring couple. Previous V4 displayed demand signs are reversed; the actual
+physical solution and geometric saved settings are unchanged. More preload
+raises tau2 over100–165 degrees, by an angle-dependent amount.
+
+The middle geometry section is collapsible. Its right plot now shows motor
+torque on a linear Nm axis plus a separate effective mg compensation-error
+graph, as clarified above; zero weight/vertical Jacobian is undefined. Current/global tau2
+headlines append percentages (global percentage is evaluated at the torque peak).
+
+For the confirmed13kg,300/300mm,k8,Sv100,rs0.1 sample, the product rule alone
+requires matching preload as well. Read [tuning explanation and plots](v4-tuning.md),
+or Load parameters with the [fitted preset](v4-sample-13kg-fitted.json) and
+[point-rule comparison](v4-sample-13kg-point-rule.json). Keep all spring drivers
+off for the fitted case. Ideal fitted support error is below0.0004%; this
+numerical fit is not a hardware accuracy claim. Revised verifier passes91,128
+assertions; both collapse states, preload rise, fit import, percentage singularity
+and expanded linear plots pass actual browser checks.
+
+## V4 hip pulley and literal preload
+
+Open [v4-pulley.html](v4-pulley.html) or [Open Leg Solver v4.cmd](Open%20Leg%20Solver%20v4.cmd).
+V4 routes a cable from the hip horn over one finite-radius fixed pulley to a
+remote spring. The three input rows are k/r_h/S_v (zero or one driven), r_s/p0,
+and nu/S_u. All coordinates follow the local u/v frame. P0 is literal spring
+force at 90 degrees; invalid reference tangency is flagged even when the 100-degree
+operating stop is clear. Cable payout includes tangent span and changing wrap.
+
+The nominal driver uses **k*r_h*S_v = 2*m_total*g*L2*cos(alpha)**. L2 is required
+for dimensional consistency; total mass includes all five mass inputs. Matching
+point-pulley preload is reported separately: p0=0 is not automatically balanced.
+The finite-radius model computes actual spring and applied motor torque throughout.
+
+Current Fs, global max Fs and extension-stop pe occupy the third headline column.
+Force masters accept Current xg entries. Graphs default to master bounds, with
+optional 90-270-degree expansion when clamping is off. TauG/TauS use subscripts;
+duplicate contact controls and r5,I are removed. V1/V2/V3 remain unchanged.
+
+Read [V4 equations, signs, defaults and validation](v4-model.md). Run
+`node verify-pulley.cjs` for 91,128 assertions. V4 JSON saves driven/view choices;
+older files load geometry/forces with the new spring disabled. Actual browser
+checks cover controls, curves, exports and invalid-reference recovery. The
+manual offline launcher opens the adjacent file; automated browser QA used the
+identical HTML over temporary loopback HTTP. No hosting or hardware claim.
+
+## V3 spring assistance
+
+Open [v3-spring.html](v3-spring.html) or use
+[Open Leg Solver v3.cmd](Open%20Leg%20Solver%20v3.cmd). The original V1/V2 files
+are preserved. V3 adds one femur-fixed hip horn and a unilateral tension spring,
+S_y/S_z anchor coordinates, horn radius/angle, effective zero-force length, added
+preload and k. Theta2 motion allows 90–270°; a master checkbox switches all
+theta-based graphs, including height sweeps, between 90–180° and 90–270°.
+
+V3 uses the requested **tau2 = tauG - tauS** residual load convention; the
+physical applied CCW motor couple is **-tau2**, while tau4 keeps V2's sign.
+Every torque graph includes all four quantities. The spring updates the femur
+FBD and hip reaction; live/global headline tau2 values are residuals. A labeled
+whole-leg/hip-detail diagram reports installed length and tension, and a separate
+full-range support graph exposes poles, slack and reversed spring action.
+
+The compact sample is an approximate ±2.20% fit over 100–165°, not an exact
+constant-force mechanism. Its spring goes over centre near 246.874° and reverses
+torque; full-travel peak residual is about 25.16 Nm. Read the
+[V3 model, signs, defaults and validation](v3-model.md),
+[dimensioned diagram](v3-hip-horn-geometry.png) and
+[full-range plots](v3-full-range.png). Run `node verify-spring.cjs` for 28,616
+assertions. JSON and CSV include spring state; importing older parameter files
+defaults the spring off. Contact forces remain independent inputs, not m1*g.
+
 ## Versions
 
 | Version | Open | Purpose |
 | --- | --- | --- |
+| v4 hip pulley | [v4-pulley.html](v4-pulley.html) | Finite-radius cable wrap, literal preload, driven spring scale, Fs/pe and bounded plots |
 | v1 kinematics | [v1-kinematics.html](v1-kinematics.html) | Original mechanism, with live/final atan2 travel angles gamma_uv and gamma_yz in rows 3/6 and the angle plot |
+| v3 spring assistance | [v3-spring.html](v3-spring.html) | Hip tension horn, residual actuator torque, 90–270° travel, labeled geometry and full-range equivalent support |
 | v2 quasi-static | [v2-quasi-static.html](v2-quasi-static.html) | Prescribed contact loads, masses/gravity, span tensions, motor torques, five FBDs, switchable force conventions, twelve loading sweep plots and angles versus vertical travel |
 
 Use [Open Leg Solver v2.cmd](Open%20Leg%20Solver%20v2.cmd) for v2 on Windows.

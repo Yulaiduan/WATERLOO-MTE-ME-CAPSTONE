@@ -1,5 +1,135 @@
 # Leg Solver context
 
+## V4 textbook10mm and clarified compensation — 2026-10-18
+
+This supersedes the percentage description below: user wants effective mg
+compensation error100*(Feq/(m_total*g)-1), not tau2/abs(tauG). Separate linear
+raw-tau2 and compensation plots; latter spans at least±10%, with0%=1mg.
+Headline brackets use compensation error at same/torque-peak pose. Zero mass
+or vertical Jacobian is undefined; changing prescribed Fz does not change it.
+
+Default/Reset/Textbook uses13kg chassis, zero moving masses,300/300mm,qab2,
+alpha=phi0=nu=beta=0,Fy0,Fz127.53N,k8,Sv100,rs10 andtheta100–165deg.
+Calculated Su7.1579230735mm,rh89.416035166mm,p0149.918334501N yield
+pe195.954393852N,maxFs963.065307336N,95.888864mm working spring stroke,
+max compensation error0.06208975% and peak motor0.037294803Nm.
+All nominal spring drivers default off. [Textbook report](../v4-textbook.md)
+and complete JSON retain the dense independent fit and plots;0.1mm study remains.
+
+The new dependency-free finite fit button solves rh/Su/p0 while holding
+k/Sv/rs/nu/leg geometry, disables nominal drivers and reports sampled error.
+Affine Chebyshev p0 elimination plus2D multistart Nelder-Mead uses181 objective
+angles and6501 verification poses; this case about0.06219%, near SciPy's denser
+reference0.06209%. No exact finite-radius identity/global optimum proof claimed.
+Refit after changes. Literal90deg guard remains; point rh95.6475/Su0 is invalid
+with a10mm pulley, but the joint fit repairs it without reinterpreting p0.
+
+91,128 checks pass including both-radius fit controls/held parameters, actual
+textbook solver and compensation semantics. Browser verifies fit from invalid
+draft geometry, zero mass, Fz-independent support, textbook reset, collapse,
+24 finite SVGs and empty warning/error logs. Physical spring/tolerance/contact
+behavior remains unvalidated. V1-V3 unchanged; local save only, no commit/push.
+
+## V4 applied CCW signs and tuning — 2026-10-18
+
+This revision supersedes the V4 displayed-demand signs below: tauG=V2 holding
+motor, tauS=-Fs*cprime/1000 is the physical spring couple, tau2=tauG-tauS is
+the applied CCW motor, and tau2Applied=tau2. dU/dtheta=-tauS. Physical motor,
+FBD forces and frame reactions are unchanged. Preload raises normal-range tau2
+by delta(p0)*cprime/1000, not a uniform shift. Tau4 remains applied CCW.
+
+The user confirmed tuning assumptions13kg chassis, no moving masses, equal300mm
+links,qab2,alpha=phi0=nu=0,Fz=127.53N,Fy=beta=0,k8,Sv100,rs0.1 and100–165deg.
+[Tuning report](../v4-tuning.md) explains the missing matching-p0 condition and
+finite wrap correction. Point rule rh95.6475,p034.82,Su0 yields0.800255% max
+error; fitted Su0.0495235514,rh95.5636321098,p036.3389792098 yields0.000392529%
+and0.000290116Nm max residual. Load the fitted JSON with all spring drivers off;
+enforcing the nominal point product would overwrite its correction.
+
+Geometry/support card now collapses. Right graph is signed motor torque (linear
+Nm) and signed100*tau2/abs(tauG) (independent linear percent axis); singularity
+is undefined. Headline percentages use the same pose, including the torque-peak
+pose for global tau2. Tiny results retain significant digits. New JSON includes
+torqueConvention=applied-ccw; old mechanical parameters keep their physical meaning.
+
+83,803 numerical assertions and four independent65001-angle fitting sweeps pass,
+including6501 actual embedded-model samples per case, applied signs and preload
+slope. Production CSV handler capture1446x43 preserves residual identity below
+9.46e-13Nm and now tau2=applied. Actual browser verifies collapse/reopen, preload
+rise, preset import, tiny headline values, zero-gravity percent, expanded/clamped
+linear graph,23 finite SVGs and empty warning/error logs. Local save only;
+V1/V2/V3 byte-preserved. No hardware tolerance/rating/clearance claim.
+
+## V4 finite hip pulley — 2026-10-18
+
+The owner selected one small fixed idler at local S and a remote spring, with
+nu=Su=0 defaults, literal p0=Fs(90 degrees), theta2e=100 degrees. Input rows:
+k/rh/Sv with exclusive optional driver; rs/p0; nu/Su. Total mass drives the
+nominal k*rh*Sv=2*m_total*g*L2*cos(alpha) relation. L2 is necessary for units;
+arbitrary ratio/moving mass/load settings still use full quasi-static equations.
+
+See [v4-model.md](../v4-model.md) for tangent choice, continuous clockwise wrap,
+payout, unilateral tension, energy and complete-frame reactions. tau2=tauG-tauS,
+physical applied motor=-tau2; tau4 unchanged. Point-pulley exact balance additionally
+requires p0=k*abs(Sv-rh). Finite rs changes the actual curve. The user explicitly
+chose to flag invalid 90-degree reference geometry, rather than extrapolate p0.
+
+V4 adds current/global Fs and pe, force xg boxes, master-domain clamping default
+on and expanded theta default off. Clamping wins over expansion. V4 saves nullable
+driver and graph flags; V1/V2/V3 imports disable the new spring. Existing versions
+are byte-preserved. The removed r5,I was unused by this static model.
+
+57,524 assertions pass over600 varied poses and24 global-bound cases, including
+independent cable/energy derivatives and complete FBD/frame force/moment balance.
+Actual browser verifies row layout, zero/exclusive drivers, force multiples,
+domains, literal-reference failure/recovery, save/reload, migration,23 finite SVGs
+and empty warning/error logs. Actual CSV1446x43 has residual identity below
+9.60e-13 Nm. The manual offline launcher is provided; automated QA used identical
+HTML on temporary HTTP. Local save only; no commit/push or hardware validation.
+
+## V3 hip tension horn — 2026-10-17
+
+User selected the compact direct hip tension horn; do not reintroduce bulky pulley
+routes. S is global y/z relative to hip A; the rigid horn points at theta2+eta-alpha.
+One tension spring uses k*max(0,ell-ell0+p). All definitions/defaults/derivations
+are in [v3-model](../v3-model.md). V1/V2 remain byte-identical.
+
+V3's signed tau2 is remaining load demand tauG-tauS; applied CCW motor=-tau2.
+TauG=-V2 holding torque; tauS=dU/dtheta2. The actual femur FBD includes spring
+force at D and the changed hip reaction. Tau4/belt loads retain their prior model.
+Allowed theta2 motion is 90–270°. The master checkbox switches full-domain
+theta/height graphs only; working animation/envelope/headline bounds remain
+independent. Support graph always spans 90–270°, using symmetric-log scaling
+and undefined zero-Jacobian endpoints. V3 JSON/CSV include added fields;
+legacy V1/V2 imports disable the spring and preserve legacy nt load-mode defaults.
+
+Sample A has Sy=94.62059, Sz=61.04114, r_h=63.02554 mm, eta=-34.04727°,
+ell0=54.99222 mm, p=0, k=13.24787 N/mm and 98.1 N upward wheel force.
+100–165° support is 0.977968–1.022031 mg; max residual 1.25254 Nm. A denser
+sweep corrected the old coarse minimum by about 1.2e-6 in support ratio.
+Spring reverses torque near 246.874°; full-range max residual ~25.159 Nm near
+268.07°, peak tension ~1.598 kN. Sample B rotates S clockwise20 and scales k
+by cos20; changing alpha alone holds S fixed and does not retain that fit.
+
+28,616 V3 assertions pass: 450 varied poses, FBD/virtual-work/energy checks,
+spring-off parity, slack and 14 bounded peak searches. V1/V2 regressions pass
+3,853/16,044/29,863 assertions. Actual browser checks pass 270° inputs,
+180/270 graph/height domains, A/B, preload, spring off/slack, V3 save/reload,
+legacy load migration, all23 finite SVGs, and CSV1444 rows/37 columns with
+residual identity to1.01e-12 Nm and exact applied-motor sign. Browser logs empty.
+The first dense-fit assertion revealed the previous coarse sampling minimum;
+the corrected expectation uses the unchanged parameters on a finer grid.
+
+Regenerate dense data/summary with `node verify-spring.cjs --output` and figures
+with `python plot-v3-sample.py` (NumPy/Matplotlib). Dense CSV is ignored locally;
+retained figures/JSON are small. Local-only save; no commit/push or hosting.
+The manual offline launcher is provided; browser verification used identical
+HTML over temporary loopback HTTP, not default-browser file-launch automation.
+Root checkout was clean and fast-forwarded to fetched3908c3b before saving.
+No hardware spring travel/rating/damping or canonical robot validation claimed.
+
+
+
 ## Headline maxima — 2026-10-14
 
 User's final steering fixes alpha at its current value and searches all theta2 ×

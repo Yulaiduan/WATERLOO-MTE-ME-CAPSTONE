@@ -3073,3 +3073,215 @@ Lower200/250 with guide1.711530895 gives33.508 Nm hip RMS versus equal225/22535.
 Preserve all older reports/models/IMPOSSIBLE decisions, compare exact actuator coordinate and real packaging/duty before springs/motors, and publish only through normal validated direct-to-main hooks.
 
 ---
+
+## Entry: 2026-10-17 — Jonathan Xie — VSL V3 hip tension horn
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver member app.
+- **Associated Issue/Task:** Add compact hip tension horn spring inputs, full90–270 travel, master graph domain toggle, labeled geometry/initial tension, full-range equivalent support and residual motor torque while preserving V1/V2. Local save only.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-spring.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-spring.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/plot-v3-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v3.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/.gitignore`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+
+- **API/Interface Changes:** Add standalone v3-spring HTML and general-vsl/v3-spring JSON schema. Global Sy/Sz, hornR/eta, effective ell0, added preload p, k and enable flag define a unilateral tension spring. tauG=-V2 holding tau2; tauS=dU/dtheta2; new tau2=tauG-tauS is residual demand, applied CCW motor=-tau2; tau4 unchanged. Actual Link2 FBD/reaction and virtual-work checks include spring. Full-domain theta/height graphs toggle90–180/90–270; motion/headline bounds remain independent. Four torque series and six new CSV columns; legacy imports disable spring/preserve nt defaults. Fixed-alpha global peaks use conservative smooth/slack spring interval bounds; alpha-box peak API rejects enabled-spring multi-alpha searches. No existing V1/V2 or shared engineering code changed.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** V3 passes28616 assertions over450 varied poses and14 bounded peak cases; max force3.22e-13 N/moment7.11e-14 Nm/energy-derivative5.94e-9 Nm. Existing V1/V2 checks pass3853/16044/29863 assertions. Dense18001-point sample reproduces support0.977968–1.022031 and1.25254 Nm working residual; a first check exposed previous coarse-minimum sampling, corrected against finer unchanged-parameter data. Actual browser verifies270 motion,180/270 theta/height graph domains, A/B, preload, spring off/slack, V3 JSON restoration, legacy nt migration,23 finite SVGs and empty warnings/errors. Actual CSV1444x37 has residual identity<=1.01e-12 Nm and exact applied-motor sign. PNG/SVG geometry/full-range figures visually reviewed and adjusted for label spacing. Local standalone manual CMD provided; HTTP preview checked200, direct file/default-browser launching remains manual. No hardware/canonical physics claim.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated analytical member app. Spring force/stroke ratings, damping, strength, friction and real inversion are unvalidated; projected overlap is excluded per user instruction. Fetched origin/main and fast-forwarded the clean checkout to3908c3b, preserving V1/V2; no commit/push.
+
+## 4. Compute Saving Handoff State
+
+Use v3-spring.html and v3-model.md for the compact direct hip horn, parameter conventions and residual-demand signs.
+The sample is an approximate ±2.20% fit over100–165°, reverses spring torque near246.874° and reaches about25.16 Nm residual near268° overfulltravel.
+Keep V1/V2 unchanged, use the V3 checker and manual offline launcher, and resolve physical spring ratings before treating this exploratory fit as hardware.
+
+---
+
+## Entry: 2026-10-18 — Jonathan Xie — VSL V4 finite hip pulley
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver member app.
+- **Associated Issue/Task:** Replace direct spring with finite-radius fixed hip idler and remote spring; literal90-degree preload, local coordinates, optional driven scale, force headlines/multiples and plot bounds. Local save only; preserve V1/V2/V3.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Complete working-diff paths below include carried-forward, unchanged V3 artifacts from the previous local task.
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/.gitignore`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v3.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v4.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/plot-v3-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-spring.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-pulley.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-pulley.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-spring.cjs`
+
+- **API/Interface Changes:** Adds general-vsl/v4-pulley standalone HTML/JSON; local Su/Sv,nu,rh,rs,k,p0 and nullable springDriven. Finite tangency plus continuous wrap sets cable payout and tauS=Fs*cprime/1000; tau2=tauG-tauS, applied motor=-tau2. Nominal driver includes total mass and dimensionally required L2. Literal invalid90-degree tangency is flagged per user choice. Adds Fs/maxFs/pe, Current xg force entry, display-domain controls and43-column CSV; legacy imports disable new spring. Shared interfaces and prior versions unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** V4 passes57,524 assertions over600 varied poses and24 bounded maximum cases; independent payout/energy derivatives, tangent/unit direction, virtual work, FBD/pin/frame reaction balance, point-limit A/B exact cancellation, exclusive/all-independent drivers and graph domains. Max force4.69e-13 N, moment7.82e-14 Nm, energy derivative2.11e-7 Nm, payout derivative5.96e-8 mm/rad. Actual browser verifies input layout, total-mass force multiples, all plot options,23 finite SVGs, HTML subscripts, V4 save/reload and V3 migration, literal invalid-reference recovery, no warnings/errors. Actual CSV1446x43 residual identity<9.60e-13 Nm and exact applied sign. Tests corrected cross-realm assertion and13kg fixture; browser caught/fixed sweep-domain metadata and narrow force-column overflow. Manual offline launcher provided; identical HTML verified over temporary HTTP, file-launch automation untested. V1/V2/V3 hashes preserved. Required entry/scope/whitespace/link checks run after saving, with results reported in the task. No canonical/hardware acceptance.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Friction, bending, spring stroke/rating, strength, damping, real slack recovery and loaded inversion are unvalidated. Projected overlap is excluded per user instruction. Fetched origin/main; no commit/push.
+
+## 4. Compute Saving Handoff State
+
+Use v4-pulley.html and v4-model.md for the finite-radius idler, literal preload and residual-demand conventions.
+The default p0=0 is intentionally not balanced; point-limit exact matching additionally needs p0=k*abs(Sv-rh), while finite rs uses the actual cable geometry.
+Preserve all previous versions, run verify-pulley.cjs for changes and retain the chosen invalid90-degree reference guard before physical spring/stroke sizing.
+
+---
+
+## Entry: 2026-10-18 — Jonathan Xie — V4 applied CCW torque and preload fit
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver member app.
+- **Associated Issue/Task:** Make tau2 actual applied CCW motor, collapse hip panel, linear motor/percent plot and percentage headlines; diagnose and fit confirmed13kg finite-idler sample. Local code update only.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Complete current diff including carried-forward V3/original V4 artifacts below; earlier version files are unchanged by this revision.
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/.gitignore`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v3.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v4.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/plot-v3-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/tune-pulley-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-spring.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-pulley.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-sample-13kg-fitted.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-sample-13kg-point-rule.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-pulley.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-spring.cjs`
+
+- **API/Interface Changes:** V4 tauG=unassisted applied CCW motor, tauS=-Fs*cprime/1000 physical spring couple, tau2=tauG-tauS=tau2Applied; previous displayed demand signs reverse, physical motor/FBD solution unchanged. CSV keeps43 columns with updated signs; JSON adds torqueConvention=applied-ccw. Linear dual trace uses tau2 Nm and100*tau2/abs(tauG) at same pose, singular reference undefined; global percent uses torque-peak pose. Adds collapsed state control, tiny-value precision, model/report/presets/reproducible fit script and compact evidence. No shared runtime/interface or V1-V3 modifications.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 83,803 assertions pass over600 varied poses,24 bounded peak cases, applied-sign/preload slope/percent checks and26004 full embedded-model sample poses reproducing independent SciPy fit evidence. Force4.69e-13N,moment7.82e-14Nm,energy-derivative2.11e-7Nm,payout derivative5.96e-8mm/rad maxima. Four independent65001-point sweeps retain product-only25.51484%, point-preload0.800255%, local minimax0.000392529% and roundoff-exact point limit. Fit uses explicit Su[-5,5],rh[85,105],p0[0,200] bounds and1301-point objective; not global optimality. Production CSV handler capture1446x43 has residual identity<=9.46e-13Nm and exact tau2/applied equality. Actual browser passes preload rise, collapse/reopen, fitted import, tiny values, zero-tauG undefined percent, expanded/clamped linear traces,23 finite SVGs and no warnings/errors. CSV harness initially used CommonJS reserved exports binding; corrected to exportCode without weakening checks. Manual file launcher is unchanged; identical HTML tested over temporary HTTP, default-browser launch not automated. Required scope/entry/link/whitespace checks run after save and reported in task. Initial entry check rejected a missing separator after the validation-field colon; corrected formatting only, without changing evidence or gate logic.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated analytical workspace. Real spring/cable tolerances, friction, bending, stroke/rating, strength and dynamics remain unvalidated; no physical accuracy claim. V1/V2/V3 hashes preserved; no commit or push.
+
+## 4. Compute Saving Handoff State
+
+Use v4-pulley.html and revised v4-model.md for actual applied CCW signs, linear dual-axis residual plot and same-pose percentages.
+Load v4-sample-13kg-fitted.json with all spring drivers off; v4-tuning.md explains product scaling plus matching preload and the finite-radius correction.
+Preserve V1-V3, retain literal90-degree tangent guard and distinguish ideal numerical fit from hardware tolerances before spring selection.
+
+---
+
+## Entry: 2026-10-18 — Jonathan Xie — V4 10mm textbook and mg compensation
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated leg-solver member app.
+- **Associated Issue/Task:** Add10mm-radius textbook fit and bounded finite matching control; user clarified graph/headline percentage as effective support error relative to1mg, separate from raw applied CCW motor torque. Local save only.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Full current diff includes carried-forward V3/original V4/local refinement artifacts; V1/V2/V3 HTML remains unchanged by this task.
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/.gitignore`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v3.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v4.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/plot-v3-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/tune-pulley-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/tune-pulley-textbook.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-spring.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-pulley.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-sample-13kg-fitted.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-sample-13kg-point-rule.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook-10mm.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook-10mm.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-pulley.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-spring.cjs`
+
+- **API/Interface Changes:** Adds VSLFit.fit bounded sampled numerical rh/Su/p0 calculation holding k/Sv/rs/nu and leg geometry, with multistart2D Nelder-Mead and affine Chebyshev preload elimination. New fit button turns all nominal drivers off and reports checked error; invalid current reference may be repaired by valid fitted geometry. Default/Reset/textbook uses13kg,rs10 fit. VSLStatic.compensationPercent=100*(spring support ratio-1); zero weight/Jz undefined, independent of prescribed Fz. Separate linear torque/compensation graphs and same-pose headline error replace residual/tauG normalization. Signs remain actual CCW tau2=tauG-tauS, tau2Applied=tau2. Adds reproducible SciPy fit, report, complete preset and compact PNG/JSON; no shared runtime or canonical model changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 91,128 analytical/model/fitter assertions pass:600 varied poses,24 bounded torque peak cases, both0.1/10mm browser fit algorithms and held parameters, 0.9/1/1.1mg maps to-10/0/+10%, zero stiffness/mass fit rejection,6501 embedded textbook samples plus26004 comparison samples. Independent seven-start SciPy/SLSQP1001-angle minimax and65001-angle verification retain Su7.1579230735,rh89.416035166,p0149.918334501,0.06208975% max support error,0.037294803Nm max motor,pe195.954394N,maxFs963.065307N. Browser181-angle fitter/6501-pose verification achieves0.06219%; bounded sampled local fit, not continuous/global certificate. Actual browser verifies fit from invalid reference draft, held k/Sv/rs/nu, nominal drivers off, textbook reset, independent raw/compensation graphs, proper±10% labels, collapse/reopen, Fz independence, zero-weight undefined result,24 finite SVGs and no warnings/errors. Existing production CSV43-column sign/identity capture still passes. Figures visually inspected; old CSV harness reserved binding and missing log-field space were corrected without weakening checks. V1-V3 hashes preserved. Scope/entry/link/whitespace checks run after saving and reported in task; manual offline launcher unchanged, browser QA uses identical HTML over temporary HTTP.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated analytical member app. No hardware strength/rating/stroke, tolerance, cable bending/friction or dynamic validation claimed. Exact matching is only established for the specified point-pulley limit; finite fit is approximate. No commit/push.
+
+## 4. Compute Saving Handoff State
+
+Use v4-pulley.html with its new10mm textbook default and v4-textbook.md/JSON for explicit assumptions, joint rh/Su/p0 fit and reproduction.
+Percent now means effective support/mg minus one; raw applied CCW motor torque is a separate graph and unchanged in physical meaning.
+Keep nominal drivers off for finite fitted examples, refit after held-value changes, retain the literal90deg guard and preserve V1-V3.
+
+---
