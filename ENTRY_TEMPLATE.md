@@ -3326,3 +3326,55 @@ All maintained app code is already in main; the new 14-file archive supplement r
 Update the PC checkout while preserving local edits, rebuild only the needed local environments and verify actual startup there before claiming runtime readiness; retain current RMS/curved-path studies and all rejected-design history.
 
 ---
+
+## Entry: 2026-10-19 — Andy Zhang workspace — suspension actuator sizing and Jon V4
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Motion Lab experimental sizing UI and Jonathan V4 integration.
+- **Associated Issue/Task:** User requested pulling the latest Motion Lab, adding constant-lift suspension/link/chassis-driven torque-speed bands and feasibility contours using Flipsky motors and EG23 gearboxes, filling the supplied motor workbook, matching its compact formatting, integrating Jon V4 and leaving a note about his missing AGENTS.md. Clean main fast-forwarded from c6a79b5 to 5d9dfa2. User explicitly asked to ignore the missing app instruction file for now after its protocol blocker was explained.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/actuator-sizing.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_motion_lab.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_sizing.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/server.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/test_vsl_integration.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/sizing.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/vsl_integration.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/motion.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/app.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/catalog.json`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/index.html`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/model.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/style.css`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/vsl-bridge.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/vsl-theme.css`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/2026-10-19-agent-entry-note.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+
+- **API/Interface Changes:** Add main tabs ?tab=sizing and ?tab=vsl. Basic sizing includes explicit constant-lift spring law, unequal-link fixed-2:1 geometry, prescribed-heave inertial terms, hip/knee power-preserving conversion, 54 conditional catalog combinations, nominal/momentary torque-speed envelopes and mass/link utilization boundary. Catalog is verified Google Sheets readback (nine Flipsky rows and six gearbox listings), not live sync; native Gearboxes A1:AH7 was added with compact 8pt/9pt formatting, explicit units, source hyperlinks and caveats. CSV refresh, calculation JSON/demand CSV and browser library exports retain inputs/catalog provenance. /vsl-v4/ serves original sibling V4 HTML and explicit documentation/preset allowlist, adding only theme and bridge scripts; original inline scripts and all V1-V4 source files are preserved. V4 transfers 181 fixed-A quasi-static applied-CCW hip samples with speed derived from its actual Jz, rejects singular/reversing height branches and records source SHA-256. It remains separate from basic chassis mass contours; no inferred V4 contact force or dynamics. Add requested AGENTS housekeeping note, no replacement agent rules. Existing launchers/port4186 and canonical engineering components remain unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** npm run build passes. npm test passes all89 tests (eight new sizing cases verify independent potential derivatives, COM inertia, hip/knee power invariance, current/power/gear bounds, map consistency, CSV validation and invalid inputs). python -m unittest -v test_vsl_integration passes3 tests for original-script preservation, narrow resource access and preset bytes. Jon's original node verify-pulley.cjs passes91,128 assertions. Actual node scripts/verify_sizing.cjs passes54 combinations,101 basic poses,181 exact V4 source torque/speed comparisons, fixed-spring mass changes, explicit retuning, coordinate conversion, invalid values, invalid/valid CSV refresh, reset, JSON export, library save, tab state, native-GUI guard, singular V4 rejection, source transfer, shared themes and390px responsiveness without page errors. Original node scripts/verify_motion_lab.cjs passes live solver APIs, comparisons, library/import/reload, recorded playback, mocked native GUI and mobile workflows. Desktop/mobile screenshots inspected. Start Motion Lab.cmd tested from unrelated CWD: verified existing-server reuse, scoped stop, restart and actual health plus V4 route200 on127.0.0.1:4186. Spreadsheet readback confirms6 rows, nominal torques28/10/30/25, source links, notes and8pt/9pt fonts; Google-rendered verification unavailable because browser is not signed in. Markdown links and git diff --check pass; required entry/scoped publication gates run after log save. Initial numeric HTML step mismatch fixed with bounded fractional inputs; mobile test now waits for asynchronous Plotly resize. First broad browser regression was interrupted by the separate server restart test, then passed when rerun sequentially. Two authoring helpers used a wrong CWD and made no edits; corrected paths succeeded. No physics or thermal claims inferred from these checks.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to these isolated member workspaces. Motors' continuous thermal limits, phase-current convention, loaded voltage drop, peak duration, controller/battery regeneration, rotor/reflected inertia, tire contact, mechanical adapter fit and real spring packaging remain unverified. Marketing max values and gearbox momentary values are not continuous ratings. Missing Jon AGENTS.md remains recorded for his next session; the user's task-specific waiver does not change shared agent rules.
+
+## 4. Compute Saving Handoff State
+
+Open the unchanged project-local Start Motion Lab.cmd and use Suspension & actuator sizing or Jon V4 from the main navigation at port4186.
+Read docs/actuator-sizing.md for formulas, sheet provenance, explicit CSV refresh and the separation between basic heaving-chassis assumptions and V4 fixed-A prescribed loads; transfer V4 again after editing it.
+The next engineering work is measured motor/controller thermal and voltage characterization, adapter and spring packaging, actual motion duty/contact inputs, and Jonathan's reviewed app AGENTS.md publication; no canonical robot validation has been substituted.
+
+---

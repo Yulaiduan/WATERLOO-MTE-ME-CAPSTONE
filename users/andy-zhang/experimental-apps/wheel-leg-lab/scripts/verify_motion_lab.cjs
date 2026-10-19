@@ -20,7 +20,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
    return r.fulfill({contentType:'application/json',body:JSON.stringify({id,pid:7654321,status:nativeFailure?'failed':'running',solver_steps:nativeSteps,loops:0,paused:false,window_shown:true,...(nativeFailure?{error:'Fixture native startup failure'}:{})})});
   });
   await page.goto('http://127.0.0.1:4186/');await page.locator('#motion-lab').waitFor();
-  assert.equal(await page.locator('[data-open]').count(),5);
+  assert.equal(await page.locator('[data-open]').count(),7);
   await page.locator('#show-gui').click();
   await page.waitForFunction(()=>document.querySelector('#native-status').dataset.state==='running');
   assert.equal(nativeLaunches.length,1);assert.equal(nativeLaunches[0].target,'position');

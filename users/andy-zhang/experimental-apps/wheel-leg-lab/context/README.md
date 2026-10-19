@@ -1,5 +1,19 @@
 # Wheel Leg Lab context
 
+## Suspension sizing and V4 integration, 2026-10-19
+
+Read [the sizing record](../docs/actuator-sizing.md). New main tabs `sizing` and
+`vsl` use the original port4186 launcher. Basic constant-lift analytical loads,
+54 motor/listing combinations and mass/link contours use a verified Google Sheets
+readback. CSV refresh is explicit; there is no cloud credential or live sync.
+V4 is served from Jonathan's unchanged source with a theme/transfer bridge;
+its source hash, parameters, units and quasi-static hip sweep enter the browser
+library and sizing overlay. Keep V4 fixed-A/prescribed loads separate from the
+basic heaving-chassis model; no unvalidated motor/thermal or canonical physics
+claim. The user authorized ignoring the missing Jon AGENTS.md for this task
+and requested the linked housekeeping note in his app context.
+
+
 Owner: Andy Zhang. Updated: 2026-10-14. Status: experimental, imported against repository base `0b55ff6`. Publication and current revision are discoverable with `git log` at repository root.
 
 ## Merged original suspension tooling, 2026-10-14

@@ -19,7 +19,7 @@ function restoreStudy(frame,id){if(frame.dataset.study!==id)return;let saved=stu
 const studies=[['gallery','All motion studies','/animations/'],['counterbalance','Constant-lift lever','/counterbalance/'],['ratio','Wheel / link sizing, torque & travel','/force-plots/'],['design-examples','Alpha-zero design examples · labelled animations','/design-examples/'],['linear','Straight 2:1 leg','/animations/linear-leg/'],['coaxial','Independent coaxial wheel drive','/animations/coaxial-wheel-leg/'],['tilt','Tilted invertible leg','/animations/tilted-invertible-leg/'],['mirror','Mirrored left tilt','/animations/left-tilted-leg/'],['reindex','Historical reindexing alternative','/animations/two-position-left-leg/'],['fixed','Fixed 4:1 working strokes','/animations/fixed-ratio-left-leg/'],['paths','Mathematical path family','/animations/leg-path-family/'],['recorded','Recorded Pymunk playback','/recorded/'],['legacy-linkage','Archive · detailed linkage (retired)','/linkage/']];
 const counterbalanceBackend=backend=>['counterbalance_math','counterbalance_pymunk'].includes(backend);
 const activeCounterbalance=()=>tab==='studies'&&$('study-select').value==='counterbalance';
-const activeFrameKey=()=>tab==='physics'?(physicsModel==='inversion'?'inversion-physics':'physics'):tab==='math'?(mathModel==='inversion'?'inversion-math':'math'):tab==='studies'?($('study-select').value==='counterbalance'?'counterbalance':$('study-select').value==='legacy-linkage'?'linkage':'studies'):null;
+const activeFrameKey=()=>tab==='vsl'?'vsl':tab==='sizing'?'sizing':tab==='physics'?(physicsModel==='inversion'?'inversion-physics':'physics'):tab==='math'?(mathModel==='inversion'?'inversion-math':'math'):tab==='studies'?($('study-select').value==='counterbalance'?'counterbalance':$('study-select').value==='legacy-linkage'?'linkage':'studies'):null;
 const inversionBackend=backend=>backend?.startsWith('inversion_');
 const modelProfile=record=>inversionBackend(record.backend)?{model:'inversion',config:resolveInversionProfile(record.config)}:counterbalanceBackend(record.backend)?{model:'counterbalance',config:record.config}:record.config;
 function wheelNativeProfile(config,reference_inputs){
@@ -60,11 +60,13 @@ async function openInversion(preset=null,backend='pymunk'){
  status('Invertible designs use actual femur torque. Ground contact is Pymunk; matched independent mathematics holds J1.');
 }
 function selectTab(next){
- if(!['home','math','physics','studies','data','compare'].includes(next))next='home';const previous=activeFrameKey();tab=next;clearError();if(previous&&previous!==activeFrameKey())send(previous,{type:'motion-lab-deactivate'});
+ if(!['home','math','physics','vsl','sizing','studies','data','compare'].includes(next))next='home';const previous=activeFrameKey();tab=next;clearError();if(previous&&previous!==activeFrameKey())send(previous,{type:'motion-lab-deactivate'});
  document.querySelectorAll('[data-panel]').forEach(panel=>panel.hidden=panel.dataset.panel!==tab);
  document.querySelectorAll('[data-tab]').forEach(button=>{if(button.dataset.tab===tab)button.setAttribute('aria-current','page');else button.removeAttribute('aria-current');});
  if(tab==='math')showMathModel(mathModel);
  if(tab==='physics')showPhysicsModel();
+ if(tab==='vsl')ensureFrame('vsl','vsl-host','/vsl-v4/?embedded=1','Jonathan V4 VSL solver');
+ if(tab==='sizing')ensureFrame('sizing','sizing-host','/sizing/?embedded=1','Suspension and actuator sizing');
  if(tab==='studies')openStudy($('study-select').value||'gallery');
  if(tab==='compare'){void comparison.refresh();requestAnimationFrame(()=>comparison.resize());}
  if(tab==='data'){void dataBrowser.refresh();requestAnimationFrame(()=>$('data-panel').querySelectorAll('.js-plotly-plot').forEach(plot=>Plotly.Plots.resize(plot)));}
@@ -174,6 +176,7 @@ async function simulate(endpoint,config){
  }
 }
 async function showPlayback(config=null,result=null,reference_inputs=null){
+ if(!config&&['sizing','vsl'].includes(tab)){status('Sizing shows analytical load envelopes. Open a mathematical or physical model to generate a playback recording.');return;}
  if(config?.model==='inversion'||(!config&&activeFrameKey()?.startsWith('inversion-'))){const type=(result?.backend||frameConfigs.get(activeFrameKey())?.backend||'inversion_pymunk').endsWith('math')?'math':'pymunk';await openInversion(null,type);const key=type==='math'?'inversion-math':'inversion-physics';if(result)send(key,{type:'motion-lab-load-result',result});else if(config?.config)send(key,{type:'motion-lab-load-profile',config:config.config});return;}
  if(config?.model==='counterbalance'||!config&&activeCounterbalance()){
   const c=config?.config||configs.counterbalance,r=result||(!config?runs.counterbalance:null);
@@ -223,6 +226,7 @@ function monitorNative(session){
  void poll();
 }
 async function showNativeGui(selectedConfig=null,reference_inputs=null){
+ if(!selectedConfig&&['sizing','vsl'].includes(tab)){status('Sizing is an analytical screen with no native physics fixture. Choose a mathematical or physical model for the Pymunk GUI.');return;}
  clearError();const launchButton=$('show-gui');launchButton.disabled=true;
  try{
   let config=selectedConfig,reference=reference_inputs;
@@ -281,6 +285,8 @@ window.addEventListener('message',event=>{
  const key=[...frames].find(([,frame])=>frame.contentWindow===event.source)?.[0];if(!key)return;const data=event.data;
  if(data.type==='motion-lab-height'&&Number.isFinite(data.height))frames.get(key).style.height=Math.min(18000,Math.max(key==='gui'?680:600,data.height))+'px';
  else if(data.type==='motion-lab-ready'||data.type==='motion-lab-viewer-ready')markReady(key);
+ else if(data.type==='motion-lab-v4-sizing'&&key==='vsl'){sessionStorage.setItem('motion-lab-v4-sizing/v1',JSON.stringify(data.packet));selectTab('sizing');send('sizing',{type:'motion-lab-v4-overlay',packet:data.packet});status('V4 hip torque and kinematic speed transferred as a frozen overlay. The constant-lift model remains a separate comparison.');}
+ else if(data.type==='motion-lab-v4-save'&&key==='vsl')void (async()=>{await saveRecord({kind:'dataset',name:'Jon V4 · hip torque/speed sweep',result:data.packet});await dataBrowser.refresh();status('Saved V4 parameters, source hash and quasi-static sweep in Profiles & data.');})().catch(error);
  else if(data.type==='motion-lab-config'&&['math','pymunk','linkage','counterbalance_math','counterbalance_pymunk','inversion_math','inversion_pymunk'].includes(data.backend)){frameConfigs.set(key,{backend:data.backend,config:data.config,reference_inputs:data.reference_inputs});configs[data.backend]=data.config;if(counterbalanceBackend(data.backend))configs.counterbalance=data.config;}
  else if(data.type==='motion-lab-run'&&key!=='gui'){markReady(key);void keepRun(data.backend,data.result).catch(error);}
  else if(data.type==='motion-lab-profile')void keepProfile(data.backend,data.config,data.reference_inputs).catch(error);

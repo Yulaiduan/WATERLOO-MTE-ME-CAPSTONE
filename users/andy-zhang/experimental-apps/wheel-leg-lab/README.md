@@ -10,6 +10,20 @@ The later [generalized leg design report](../leg-design-study/README.md) is a
 separate offline HTML/PDF study, as requested by the owner. Its new equations,
 optimization and spring/motor results do not add controls or API routes here.
 
+## Suspension sizing and Jon V4, 2026-10-19
+
+Two new main tabs use the existing launcher and port4186:
+**Suspension & actuator sizing** compares a basic constant-lift spring, unequal
+links and chassis mass against the spreadsheet's nine Flipsky motors and four
+EG23 ratios (plus two commercial duplicate listings). It includes torque–speed
+bands, mass/link utilization contours, candidate tables, CSV catalog refresh,
+and JSON/CSV/library export. **Jon V4 · VSL solver** serves the original solver
+with its finite-pulley fitter/FBDs and transfers a frozen hip torque/speed sweep
+into sizing. Read [equations, provenance and limits](docs/actuator-sizing.md).
+These are conditional analytical screens, with no continuous motor/thermal or
+mechanical adapter certification. The source workbook remains authoritative;
+the bundled catalog is a verified dated readback, not a live connection.
+
 ## Unified browser workspace
 
 **Start Motion Lab.cmd** is the canonical launcher. Open http://127.0.0.1:4186/

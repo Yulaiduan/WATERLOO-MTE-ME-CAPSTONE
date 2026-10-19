@@ -20,6 +20,7 @@ import inversion
 from setup_preview import preview as setup_preview
 from suspension_architecture import constant_lift_profile
 import pymunk
+from vsl_integration import resource as vsl_resource
 
 ROOT=Path(__file__).resolve().parent
 RUN_LOCK=threading.Lock()
@@ -38,6 +39,16 @@ class Handler(SimpleHTTPRequestHandler):
         if compress: self.send_header('Content-Encoding','gzip')
         self.send_header('Content-Length',str(len(payload)));self.end_headers();self.wfile.write(payload)
     def do_GET(self):
+        route=self.path.split('?',1)[0]
+        if route.startswith('/vsl-v4/'):
+            try:
+                result=vsl_resource(route)
+                if result is None:return self.send_error(404,'Unknown V4 resource')
+                payload,mime=result
+                self.send_response(200);self.send_header('Content-Type',mime)
+                self.send_header('Cache-Control','no-cache');self.send_header('Content-Length',str(len(payload)))
+                self.end_headers();self.wfile.write(payload);return
+            except FileNotFoundError:return self.send_error(503,'V4 source missing; pull the complete repository.')
         if self.path.split('?',1)[0] in ['/','/index.html']:
             self.path='/index.html'
         if self.path=='/api/health':

@@ -1,5 +1,7 @@
 # Leg Solver context
 
+Pending shared-checkout housekeeping: [publish the intended app AGENTS.md](2026-10-19-agent-entry-note.md).
+
 ## V4 textbook10mm and clarified compensation — 2026-10-18
 
 This supersedes the percentage description below: user wants effective mg
