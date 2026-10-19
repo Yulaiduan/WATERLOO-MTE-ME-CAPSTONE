@@ -19,3 +19,13 @@ Preserve the original snapshot. New development belongs in the maintained apps,
 which document their different models: a reduced terrain workbench versus the
 ideal Pymunk linkage fixture. Restoration is verified for all 668 included files;
 this does not certify their old numerical or hardware assumptions.
+
+## PC transfer, 2026-10-19
+
+[The new supplement](../development-history-2026-10-19.json) retains 14 later
+ignored source/report/check files from the cancelled fixed-15-degree study and
+two browser inspection helpers. Read [the archive index](../context.md) for
+restoration and [the PC handoff](../../pc-handoff.md) for current work.
+The restorer adds an optional `--source` argument and v2 gzip/base64 support;
+its default v1 package, path/checksum checks and non-overwriting behavior remain.
+No archived helper is executed during capture or restoration.

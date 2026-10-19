@@ -3285,3 +3285,44 @@ Percent now means effective support/mg minus one; raw applied CCW motor torque i
 Keep nominal drivers off for finite fitted examples, refit after held-value changes, retain the literal90deg guard and preserve V1-V3.
 
 ---
+
+## Entry: 2026-10-19 — Andy Zhang workspace — preserve source and return to PC
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's experimental app context and historical source archive.
+- **Associated Issue/Task:** User requested updating and pushing all Capstone code, context and documentation for moving the workflow back to the PC. The clean checkout fast-forwarded from 3908c3b to fetched e91897a; existing maintained source was already published. Preserve remaining app-local historical source and provide a current PC continuation map.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact outgoing paths below; no deletions or changes to original ignored source.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/context.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/context/README.md`
+- `users/andy-zhang/experimental-apps/capstone-archive/development-history-2026-10-19.json`
+- `users/andy-zhang/experimental-apps/capstone-archive/restore_development_history.py`
+- `users/andy-zhang/experimental-apps/context.md`
+- `users/andy-zhang/experimental-apps/laptop-handoff.md`
+- `users/andy-zhang/experimental-apps/pc-handoff.md`
+
+- **API/Interface Changes:** Archive-only restore_development_history.py adds optional --source PACKAGE.json and capstone-historical-source/v2 per-file gzip-base64 decoding, while preserving the v1 default package, original sizes/SHA-256, path checks and new-directory-only behavior. New 14-file supplement preserves the superseded fixed-15-degree study's source, static HTML/PDF, selected JSON evidence and checks plus two historical browser inspection scripts. Update PC handoff, app/archive indexes and historical laptop pointer. No production API, model, dependencies, launcher, port, shared policy or canonical asset changes; Jonathan's fetched solver remains in its owning folder.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Python 3.13.12 restoration round trips pass for all 14 new files against untouched local originals and all 21 old supplement files against retained size/SHA-256. Existing destinations are rejected for both versions; traversal, checksum mismatch and unknown encoding each fail before output creation. New package is 520,678 bytes for 1,519,499 original bytes, below the 1 MiB blob limit. All 85 local Markdown links resolve and fences balance; git diff --check passes. Initial clean main and full-history checkout verified; fetched and fast-forwarded to e91897a, .githooks installed. Required working/staged/outgoing entry and scoped-gate commands run before publication. No archived payload code is executed. App/model suites, numerical searches, browser/native/GPU checks and destination-PC startup/restart are not rerun or certified by this source-transfer update.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated archive/context contribution. The entry read found missing users/jonathan-xie/experimental-apps/leg-solver/AGENTS.md at the fetched base; dependent work on that app stopped, no solver files were changed or executed, and the PC handoff records the missing file. Current browser profiles, installed environments, caches, generated bundles, raw runs/logs and private account/chat data are not transferred through Git. Historical numerical claims remain dated evidence, and the cancelled fixed-15-degree method remains superseded.
+
+## 4. Compute Saving Handoff State
+
+Read users/andy-zhang/experimental-apps/pc-handoff.md for the latest PC continuation map, existing launchers, source boundaries and copyable prompt.
+All maintained app code is already in main; the new 14-file archive supplement retains otherwise ignored historical source/report work with verified exact restoration, while both older packages and originals stay intact.
+Update the PC checkout while preserving local edits, rebuild only the needed local environments and verify actual startup there before claiming runtime readiness; retain current RMS/curved-path studies and all rejected-design history.
+
+---

@@ -1,5 +1,9 @@
 # Continue Capstone development on a laptop
 
+For the return to PC on 2026-10-19, use [pc-handoff.md](pc-handoff.md).
+This document preserves the earlier setup audit; its dated continuation state
+is superseded by the current app context and PC handoff.
+
 Owner: Andy Zhang with Codex. Updated: 2026-10-12.
 Status: fresh-clone reconstruction and actual Windows laptop setup verified.
 Other operating systems remain untested. No PC service is required.

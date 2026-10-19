@@ -1,9 +1,10 @@
 # Andy Zhang — experimental apps and toolkits
 
-Updated: 2026-10-14. Status: member experimental tools; no canonical robot validation implied.
+Updated: 2026-10-19. Status: member experimental tools; no canonical robot validation implied.
 
-For continuation on another machine, read [context.md](context.md) and the
-[laptop handoff and copyable prompt](laptop-handoff.md). Every app below has a
+For continuation on the PC, read [the current PC handoff](pc-handoff.md) and
+[context.md](context.md). The [laptop handoff](laptop-handoff.md) retains earlier
+setup evidence. Every app below has a
 root `context.md` linking its preserved model/design/validation/development
 records. Source, full Git history and archives travel with a normal clone;
 dependencies are recreated locally and browser data transfers by JSON.
@@ -18,4 +19,4 @@ engineering gates and a project-local restart launcher for any localhost server.
 | [Offline leg design report](leg-design-study/README.md) | Jonathan/Andy equations, bounded link/window optimization, spring/motor example, plots and PDF | Experimental numerical study; separate from Motion Lab tooling | Open Design Report.cmd or index.html directly; no server |
 | [Motion Lab](wheel-leg-lab/README.md) | Unified simulation/studies/library plus wheel/link sizing and torque sweep | Experimental; latest fresh-clone 70 JS tests and build pass; dated physics/native records remain in app docs | Start Motion Lab.cmd at 4186; familiar launch names are aliases |
 | [Terrain Mobility Atlas](terrain-mobility-atlas/README.md) | Former loose atlas, numerical terrain workbench, historical linkage and force calculator | Experimental; fresh-clone 49 model tests and build pass | Start Terrain Atlas.cmd at 4175; Start Capstone.cmd is a Motion Lab alias |
-| [Legacy Capstone archive](capstone-archive/README.md) | Original source/docs/data/output backup plus later local development source history | 668 original files and 21 supplemental source files restore with exact hashes | Python standard-library restoration to new directories; no server |
+| [Legacy Capstone archive](capstone-archive/README.md) | Original source/docs/data/output backup plus later local development source history | 668 original files, 21 October 12 source files and 14 October 19 historical source/report files | Python standard-library restoration to new directories; no server |

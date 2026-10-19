@@ -4,6 +4,24 @@ Owner: Andy Zhang. Updated: 2026-10-10. Status: historical preservation, not an 
 
 Portable continuation: [context.md](context.md) and [laptop handoff](../laptop-handoff.md).
 
+## Return-to-PC preservation, 2026-10-19
+
+The [new supplement](development-history-2026-10-19.json) preserves 14 previously
+ignored files (1,519,499 original bytes): the cancelled fixed-15-degree corridor
+study's source, offline HTML/PDF, selected evidence and checks, plus two browser
+inspection scripts. It is superseded history, not an active recommendation or
+new numerical validation. The original local files and earlier packages remain
+unchanged. The v2 package uses per-file gzip/base64 with original size/SHA-256;
+the restorer also retains v1 compatibility and its October 12 default.
+
+```sh
+python restore_development_history.py --source development-history-2026-10-19.json --output restored/pc-transfer-2026-10-19
+```
+
+Use a new output directory. Restoration checks bytes and paths without executing
+payloads; older scripts may require historical sibling dependencies. See the
+[PC handoff](../pc-handoff.md) for current development entry points.
+
 ## Supplemental development history, 2026-10-12
 
 The original snapshot below is unchanged. A separate

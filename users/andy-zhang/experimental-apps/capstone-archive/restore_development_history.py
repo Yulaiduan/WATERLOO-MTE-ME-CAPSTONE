@@ -1,13 +1,15 @@
 """Restore the supplemental historical development source without executing it.
 
-Run: python restore_development_history.py --output NEW_DIRECTORY
-Inputs: adjacent development-history-2026-10-12.json, byte/base64/SHA-256 records;
+Run: python restore_development_history.py [--source PACKAGE.json] --output NEW_DIRECTORY
+Inputs: default adjacent development-history-2026-10-12.json or explicit package;
+v1 base64 or v2 gzip-base64 records with byte sizes and SHA-256;
 no physical units or network. Outputs: exact source files under a new directory.
 Limitations: historical scratch/editing/QA helpers, not maintained runnable tools;
 never imports or executes payloads, modifies originals, or overwrites an output.
 """
 import argparse
 import base64
+import gzip
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
@@ -16,13 +18,15 @@ from pathlib import Path, PurePosixPath
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', type=Path, required=True)
+    parser.add_argument('--source', type=Path,
+                        default=Path(__file__).resolve().with_name('development-history-2026-10-12.json'))
     args = parser.parse_args()
     output = args.output.resolve()
     if output.exists():
         raise ValueError('Output must be a new directory; no files are overwritten.')
-    source = Path(__file__).resolve().with_name('development-history-2026-10-12.json')
+    source = args.source
     package = json.loads(source.read_text(encoding='utf-8'))
-    if package['schema'] != 'capstone-historical-source/v1':
+    if package['schema'] not in ('capstone-historical-source/v1', 'capstone-historical-source/v2'):
         raise ValueError('Unknown historical source schema.')
     verified, names = [], set()
     for entry in package['files']:
@@ -34,6 +38,10 @@ def main():
             raise ValueError('Unsafe or duplicate historical source path.')
         names.add(name)
         content = base64.b64decode(entry['base64'], validate=True)
+        if package['schema'] == 'capstone-historical-source/v2':
+            if entry.get('encoding') != 'gzip-base64':
+                raise ValueError('Unknown historical source encoding.')
+            content = gzip.decompress(content)
         if len(content) != entry['bytes'] or hashlib.sha256(content).hexdigest() != entry['sha256']:
             raise ValueError(f'Historical source checksum mismatch: {name}')
         verified.append((destination, content))

@@ -1,7 +1,7 @@
 # Andy's experimental apps — development context entry point
 
-Owner: Andy Zhang. Updated: 2026-10-15. Status: portable member experiments.
-Audit base: `2353a6f`; see Git history for the publication of this handoff.
+Owner: Andy Zhang. Updated: 2026-10-19. Status: portable member experiments.
+PC-transfer audit base: `e91897a`; the earlier laptop audit used `2353a6f`.
 
 This directory contains Andy's app/tool workspaces and offline design report. Each has
 a `context.md` entry point linking its existing detailed context and development
@@ -14,10 +14,11 @@ canonical locations. They are included by the same clone and linked below.
 | Offline leg design report | [leg-design-study/context.md](leg-design-study/context.md) | Static HTML/PDF, selected evidence, generalized equations and revision history; later labelled pose examples/GIFs are separately available in Motion Lab |
 | Motion Lab / Wheel Leg Lab | [wheel-leg-lab/context.md](wheel-leg-lab/context.md) | Current source, simulations, calculators, seven motion studies, tests, setup/start/stop launchers, model/decision/validation/handoff history |
 | Terrain Mobility Atlas / workbench | [terrain-mobility-atlas/context.md](terrain-mobility-atlas/context.md) | Atlas, reduced terrain workbench, historical linkage and force calculator, data provenance, source/tests/lockfile, design/decision/validation history |
-| Legacy and supplemental source archive | [capstone-archive/context.md](capstone-archive/context.md) | Exact 668-file original snapshot plus 21 later local development source/QA/editing files; verified restorers, never executed as current code |
+| Legacy and supplemental source archive | [capstone-archive/context.md](capstone-archive/context.md) | Exact 668-file original snapshot, 21 October 12 source files and 14 October 19 superseded source/report/check files; verified restorers, never executed as current code |
 
-Read [laptop-handoff.md](laptop-handoff.md) for a verified clone/setup procedure,
-the storage audit, current continuation state and a ready-to-paste laptop prompt.
+Read [pc-handoff.md](pc-handoff.md) for the current PC continuation map, archive
+audit and copyable prompt. [laptop-handoff.md](laptop-handoff.md) preserves the
+earlier verified clone/setup procedure and dated laptop evidence.
 The maintained [app index](README.md) gives entry points and experimental status.
 
 ## Shared development history
