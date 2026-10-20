@@ -1,0 +1,11 @@
+{
+  "publication_base": "307aae0cfd385ee6facd37e9b6cb5a79a2a83ecd",
+  "source_commit": "e91897a9cf9bb36ff3f20afc4c92ea5315cc46b7",
+  "original_source_sha256": {
+    "jon_single_leg_descent.py": "42f2cc3d531d272bdb5772024100c14897b7fe3dabe92775bdccb19a74c09d41",
+    "jon_descent_height_sweep.py": "0a1e8f2cea59c440f6596db452e071d2822a425248c2e3b30bf921067bace545",
+    "jon_baseline_descent.py": "fbb8ebbe758acc8d33c77547edf019fbeda2519cfc7f51bb2d2b0acc4c9e3ac3"
+  },
+  "original_profile_script_sha256": "a64777a88288903899d312ceb8659a5fbfb8e9c969ab8cd7bd06186b7e1617f6",
+  "portability_changes": "Study code copied to member app; paths, runtime discovery and output locations adapted. Original result JSONs retain original study provenance; rerun comparisons check physical metrics."
+}

@@ -3378,3 +3378,85 @@ Read docs/actuator-sizing.md for formulas, sheet provenance, explicit CSV refres
 The next engineering work is measured motor/controller thermal and voltage characterization, adapter and spring packaging, actual motion duty/contact inputs, and Jonathan's reviewed app AGENTS.md publication; no canonical robot validation has been substituted.
 
 ---
+
+## Entry: 2026-10-20 — Yulai Duan — passive block-descent studies for sharing
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Isolated passive-descent member experiment and curated research evidence.
+- **Associated Issue/Task:** User requested publishing the recent study batch and explicitly authorized push/merge. Start from current main 307aae0, preserving the older local checkout and unrelated team work. Explain how chassis descent supplies missing reach without implying controlled landing or restored ride height.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact outgoing paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `context/users/yulai-duan/2026-10-20-codex-descent-studies.md`
+- `context/users/yulai-duan/README.md`
+- `docs/README.md`
+- `docs/benchmarks/2026-10-18-jon-descent-heights/README.md`
+- `docs/benchmarks/2026-10-18-jon-descent-heights/assets/height-profiles.png`
+- `docs/benchmarks/2026-10-18-jon-descent-heights/results.json`
+- `docs/benchmarks/2026-10-18-jon-single-leg-descent/README.md`
+- `docs/benchmarks/2026-10-18-jon-single-leg-descent/assets/descent-closeup.png`
+- `docs/benchmarks/2026-10-18-jon-single-leg-descent/assets/descent-profile.png`
+- `docs/benchmarks/2026-10-18-jon-single-leg-descent/results.json`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/README.md`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/01-descent-comparison.pdf`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/01-descent-comparison.png`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/02-chassis-reaction.pdf`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/02-chassis-reaction.png`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/03-grounded-versus-airborne.pdf`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/03-grounded-versus-airborne.png`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/04-geometry-and-travel.pdf`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/04-geometry-and-travel.png`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/05-drift-and-clearance.pdf`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/assets/05-drift-and-clearance.png`
+- `docs/benchmarks/2026-10-19-jon-baseline-descent/results.json`
+- `docs/benchmarks/README.md`
+- `docs/design/simulation/assets/descent-profile-feasibility.pdf`
+- `docs/design/simulation/assets/descent-profile-feasibility.png`
+- `docs/design/simulation/assets/descent-profile-results.json`
+- `docs/design/simulation/descent-studies.md`
+- `docs/design/simulation/obstacle-profile.md`
+- `users/yulai-duan/experimental-apps/README.md`
+- `users/yulai-duan/experimental-apps/block-descent-study/.gitignore`
+- `users/yulai-duan/experimental-apps/block-descent-study/AGENTS.md`
+- `users/yulai-duan/experimental-apps/block-descent-study/README.md`
+- `users/yulai-duan/experimental-apps/block-descent-study/analyze_profile.py`
+- `users/yulai-duan/experimental-apps/block-descent-study/context/README.md`
+- `users/yulai-duan/experimental-apps/block-descent-study/encode_jon_descent_video.swift`
+- `users/yulai-duan/experimental-apps/block-descent-study/inputs/README.md`
+- `users/yulai-duan/experimental-apps/block-descent-study/inputs/screenshot-baseline.json`
+- `users/yulai-duan/experimental-apps/block-descent-study/inputs/spring-reference.json`
+- `users/yulai-duan/experimental-apps/block-descent-study/inputs/v4-model.md`
+- `users/yulai-duan/experimental-apps/block-descent-study/inputs/v4-pulley.html`
+- `users/yulai-duan/experimental-apps/block-descent-study/inputs/v4-textbook-10mm.json`
+- `users/yulai-duan/experimental-apps/block-descent-study/inputs/verify-pulley.cjs`
+- `users/yulai-duan/experimental-apps/block-descent-study/jon_baseline_descent.py`
+- `users/yulai-duan/experimental-apps/block-descent-study/jon_descent_height_sweep.py`
+- `users/yulai-duan/experimental-apps/block-descent-study/jon_descent_source_reference.cjs`
+- `users/yulai-duan/experimental-apps/block-descent-study/jon_single_leg_descent.py`
+- `users/yulai-duan/experimental-apps/block-descent-study/publication-provenance.json`
+- `users/yulai-duan/experimental-apps/block-descent-study/publication-validation.json`
+- `users/yulai-duan/experimental-apps/block-descent-study/requirements.txt`
+- `users/yulai-duan/experimental-apps/block-descent-study/verify_publication.py`
+
+- **API/Interface Changes:** No shared runtime/assets/controllers/interfaces change. Import the four study records into an isolated member toolkit with pinned inputs, dependencies, context and portable paths/Node/font discovery. Keep original compact result provenance and add a reproduction comparison plus team sharing index. Publish selected PNG/PDF evidence; exclude raw runs/logs/video/private chat/screenshots. Batch scripts write only ignored app-local results; no localhost service or startup automation.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** Reran 11 legacy single-leg cases, ten legacy height cases, 22 new-baseline cases and analytical quintic screening from the portable app with Python 3.11.16, MuJoCo 3.14.0, NumPy 2.4.6, Matplotlib 3.10.9 and Pillow 12.3.0. verify_publication.py passes 796 physical-metric comparisons with zero error; passive-trace SHA-256 and analytical values match; all nine PNG figures are pixel-identical. Source spring, geometry, Jacobian, energy, airborne ODE and timestep/contact checks pass as recorded. Entry architecture passes for all 754 repository files and 51 changed paths; preliminary gate passes all 36 regression tests. Initial link check found four missing companion links in the copied model note, corrected to pinned GitHub originals; initial whitespace check found a trailing blank log line, corrected. Recheck links/whitespace and exact staged/outgoing snapshots before publication. Canonical robot, full vehicle, hardware, motor/gearbox and cross-platform optional rendering/AVFoundation encoding are not certified.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to these isolated member experiments and curated research paths. Fixture integration checks are experimental evidence, not an approved robot baseline. Local original studies stay intact; no force push or policy/protection bypass is used.
+
+## 4. Compute Saving Handoff State
+
+Start at docs/design/simulation/descent-studies.md for plots, fixture explanations and dated records, then read the portable app README for reproduction.
+The new 8.75kg/20deg/200mm-wheel held-hip 100/150mm cases land at 275/299ms; 250/300mm exceed the remaining 156.6mm stroke, and heave restores contact through chassis descent/stop hits without establishing controlled recovery.
+Next resolve masses/support load, define landing/braking objectives and add actual drivetrain limits plus four-leg load sharing before choosing hardware; publication-validation.json records the exact reproduced evidence.
+
+---

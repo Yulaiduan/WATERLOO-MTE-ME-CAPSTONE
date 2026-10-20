@@ -1,0 +1,70 @@
+{
+  "status": "analytical screening; no new dynamics or hardware results",
+  "inputs": {
+    "wheel_radius_m": 0.1,
+    "block_height_m": 0.1,
+    "forward_speed_mps": 0.5,
+    "link_length_m": 0.3,
+    "initial_hip_angle_deg": 135,
+    "fixed_hip": true,
+    "edge_start_time_s": 0,
+    "quintic_rest_to_rest": true
+  },
+  "corner_clearance_duration_bound_s": 0.36813273182416995,
+  "critical_normalized_time": 0.3506451552129056,
+  "corner_clearance_bound_grid_refinement_difference_s": 5.551115123125783e-17,
+  "passive_trace": {
+    "edge_to_floor_s": 0.20550000000002744,
+    "precontact_downward_speed_mps": 2.45733036646063,
+    "sha256": "4b843ed64c9f8f079de59ce002535a569ded72d473ef36ebe24967b39614c081",
+    "path": "simulation/results/2026-10-18-jon-single-leg-descent/fixed-v05-b0/history.csv"
+  },
+  "targets": [
+    {
+      "duration_s": 0.1,
+      "peak_speed_mps": 1.875,
+      "peak_acceleration_mps2": 57.735026918962575,
+      "peak_jerk_mps3": 5999.999999999998,
+      "peak_joint_speed_radps": 5.175713862195493,
+      "peak_joint_acceleration_radps2": 180.99963450937523,
+      "clears_block_geometrically": false
+    },
+    {
+      "duration_s": 0.2,
+      "peak_speed_mps": 0.9375,
+      "peak_acceleration_mps2": 14.433756729740644,
+      "peak_jerk_mps3": 749.9999999999998,
+      "peak_joint_speed_radps": 2.5878569310977464,
+      "peak_joint_acceleration_radps2": 45.24990862734381,
+      "clears_block_geometrically": false
+    },
+    {
+      "duration_s": 0.3,
+      "peak_speed_mps": 0.625,
+      "peak_acceleration_mps2": 6.415002990995843,
+      "peak_jerk_mps3": 222.22222222222226,
+      "peak_joint_speed_radps": 1.7252379540651643,
+      "peak_joint_acceleration_radps2": 20.11107050104168,
+      "clears_block_geometrically": false
+    },
+    {
+      "duration_s": 0.4,
+      "peak_speed_mps": 0.46875,
+      "peak_acceleration_mps2": 3.608439182435161,
+      "peak_jerk_mps3": 93.74999999999997,
+      "peak_joint_speed_radps": 1.2939284655488732,
+      "peak_joint_acceleration_radps2": 11.312477156835952,
+      "clears_block_geometrically": true
+    }
+  ],
+  "example_at_100ms": {
+    "fast_quintic_drop_m": 0.05,
+    "maximum_collision_free_drop_m": 0.013397459621556126
+  },
+  "script_sha256": "a64777a88288903899d312ceb8659a5fbfb8e9c969ab8cd7bd06186b7e1617f6",
+  "versions": {
+    "python": "3.11.16",
+    "numpy": "2.4.6",
+    "matplotlib": "3.10.9"
+  }
+}

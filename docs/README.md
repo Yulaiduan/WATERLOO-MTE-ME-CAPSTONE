@@ -15,6 +15,7 @@ This folder is the home for the CAMEL project's technical and onboarding documen
 | [Terrain specifications for training](design/simulation/terrain-training-spec.md) | Notion terrain envelopes, payload targets, curriculum and evaluation | Source synthesis and proposed plan; no accepted requirements or training results |
 | [Requirement parameter research](benchmarks/2026-10-02-requirement-parameter-screen/README.md) and [relationship charts](benchmarks/2026-10-02-requirement-parameter-screen/parameter-relationships.md) | Link length, chassis mass/COM, spring tuning, slope and range estimates | Literature and analytical screening; proposed simulation inputs |
 | [Benchmarks](benchmarks/README.md) | Reproducible calculations and compact evidence | Analytical records; hardware and driven-terrain validation pending |
+| [Block-descent study batch](design/simulation/descent-studies.md) | October 18–19 single-leg fixtures, new 8.75 kg/20° baseline, heave and profile plots | 43 contact integrations plus analytical checks; assumed masses, no motor or full vehicle |
 
 ## Team documentation layout
 

@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "physics_scope": "isolated member research, not canonical robot validation",
+  "contact_integrations": 43,
+  "metric_comparisons": 796,
+  "max_physical_metric_absolute_error": 0.0,
+  "analytical_targets_and_geometry_match": true,
+  "passive_trace_sha256_matches": true,
+  "pixel_identical_figures": [
+    "docs/benchmarks/2026-10-18-jon-single-leg-descent/assets/descent-profile.png",
+    "docs/benchmarks/2026-10-18-jon-single-leg-descent/assets/descent-closeup.png",
+    "docs/benchmarks/2026-10-18-jon-descent-heights/assets/height-profiles.png",
+    "docs/benchmarks/2026-10-19-jon-baseline-descent/assets/05-drift-and-clearance.png",
+    "docs/benchmarks/2026-10-19-jon-baseline-descent/assets/04-geometry-and-travel.png",
+    "docs/benchmarks/2026-10-19-jon-baseline-descent/assets/01-descent-comparison.png",
+    "docs/benchmarks/2026-10-19-jon-baseline-descent/assets/02-chassis-reaction.png",
+    "docs/benchmarks/2026-10-19-jon-baseline-descent/assets/03-grounded-versus-airborne.png",
+    "docs/design/simulation/assets/descent-profile-feasibility.png"
+  ],
+  "source_sha256": {
+    "verify_publication.py": "8cec355c385d17c0f93601ea4ffe0dcec1750e44ae5f00336139d988f82d0314",
+    "jon_descent_source_reference.cjs": "c97060e7ea985c34ae18c91449890fb9b6bfd43e6261e952422ab3554e3d32b4",
+    "jon_single_leg_descent.py": "b02ea95c3a8833d54643017d1a619aa7e75bad21cd5903c1cbf89d86826a4091",
+    "analyze_profile.py": "014d1a56ad412069460ef131583624ad043a93f8b37304c036bba4a5bb1d329c",
+    "encode_jon_descent_video.swift": "0d219dbef34bac069d1d22108a1aa0afbfb52c8537f7466e5f8c8b39e16b31c8",
+    "jon_descent_height_sweep.py": "41ad2a3f10c8c7fc1419bf9138b74954ab930e850dc8a8a5196c10e271226621",
+    "jon_baseline_descent.py": "8d5514e22c94c06089dce0bb4d5dc67cba7e9ef454d5f9a047a8158f5aa0e7f5"
+  }
+}
