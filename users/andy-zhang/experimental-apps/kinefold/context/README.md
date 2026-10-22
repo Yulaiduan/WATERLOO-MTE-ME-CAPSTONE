@@ -203,3 +203,44 @@ Pymunk belts/indices explicitly reconstruct ideal constraints from returned q;
 actual A/B/C linkage positions are overlaid dashed, with sampled pin/angular
 residuals displayed next to playback time. Run notes and detailed fixture
 assumptions expand on demand; quarter-model scope and run controls stay visible.
+
+
+## Vertical chassis correction and exact V4 square input — 2026-10-22
+
+The user corrected the dynamics boundary condition: hip/chassis A moves vertically,
+with fixed horizontal position/pitch, and no guide rods drawn. This supersedes
+all fixed-hip dynamic descriptions above. Builder and equilibrium remain
+hip-relative design references; every tab is a native Kinefold surface.
+
+The exact V4 baseline retains m1=8.75kg, all other masses0, both300mm links and
+all existing spring parameters. Default profile: floating-chassis,6.5s,150mm
+height/plateau/gap,100mm/s,0.5s delay, zero rise/damping/added rotor inertia.
+Massless transmission pose can jump at an ideal input edge while chassis h/v
+stay continuous. Positive moving inertia or damping requires a declared finite
+rise; quintic ramps lie inside the nominal plateau. Weight support is not applied
+again as an extra force. Pymunk has a genuine constrained moving chassis body
+and exact condensed ideal linkage/inertia; it is not an all-body linkage engine.
+
+Project-v3 and new browser working/library keys migrate v2/v1 without changing
+old keys or geometry. Fixed-hip profiles remain archived as legacySolverConfig.
+A positive-mass legacy design receives a visibly declared10mm transition; no
+mass is substituted.18 state scenarios cover migration, preserved original data,
+validation bounds, failed persistence and archived-profile validation. The full
+native interface, search dictionary and docs describe the new boundary condition.
+
+The preview uses one fixed camera across all world frames, showing a chassis
+mass marker, exact ideal mechanism and prescribed base platen. No rods, collision
+terrain or exaggerated heave are shown. Chassis displacement relative to its
+initial height has an independent plot axis. Returned duplicate-time jump rows
+remain discontinuous in plots/playback. Peak hip speed across a jump is undefined.
+
+Both full default browser/API runs return656rows through6.5s with5exact square
+jumps, unchanged baseline masses and duration termination. Chassis range is
+about6.47mm; final Pymunk A height643.95mm and q150.67deg match the scrubber.
+The six Python groups verify source torque parity2.84e-14Nm, independent heave
+acceleration1.14e-13m/s², baseline cross-engine heave difference0.004197mm and
+energy residual4.26e-14J/1.67e-6J. Finite-rise trajectory/work-energy errors
+halve with dt refinement. Boundaries cap10000 input transitions; analytic output
+only rounds range endpoints within1e-10rad, otherwise it fails explicitly.
+Launcher reuse/stop/restart from unrelated cwd passes at4191. Parent architecture
+and browser review approved the experimental scope; hardware remains unvalidated.

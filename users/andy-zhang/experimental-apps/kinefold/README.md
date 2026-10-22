@@ -30,8 +30,8 @@ No login/boot automation is installed. Node.js is needed only for developer chec
   The front-left frame is +x forward, +y left, +z up; positive +y rotation is
   counterclockwise in the left-side x–z view (+x left, +z up, +y toward you).
 - **Export design** / **Import** retain the complete mechanism, view and shared
-  solver settings in a versioned `kinefold/project-v2` document. Legacy
-  `kinefold/mechanism-v1` files migrate explicitly. Invalid imports leave the
+  solver settings in a versioned `kinefold/project-v3` document. Legacy
+  `kinefold/mechanism-v1` and fixed-hip `project-v2` files migrate explicitly, preserving geometry and an archived prior profile. Invalid imports leave the
   current design unchanged. Browser storage is not shared between users or ports.
 
 The visual shell follows Motion Lab's app-owned sage/cream tabbed interface.
@@ -63,47 +63,58 @@ From this directory: `node verify.cjs` checks source parity, geometry, world
 forces/moments, finite-pulley energy derivatives, both spring laws and JSON state.
 `node verify-drawing.cjs` independently checks all index radii/orthogonality and
 finite-difference belt material velocities on both wraps of every pulley stage.
+`node verify-projects.cjs` checks migration/persistence safety; after Setup, run
+`.venv/Scripts/python.exe verify_dynamics.py` for exact square, independent heave,
+source parity, event continuity and cross-engine refinement checks.
 Run `python preview.py start --no-browser` for HTTP readiness without opening a
 browser. See [context](context/README.md) for actual verification and handoff.
 
-## Coupled solver workspaces — 2026-10-22
+## Native equilibrium and vertical-chassis workspaces — 2026-10-22
 
-Tab3 **Static solver** uses the retained Jon VSLv4 equations directly with the
-current builder design. It evaluates the current pose and181 working-range
-samples; the reported sampled peak is not a global bound. Hip torque signs
-remain positive about+y, counterclockwise in the x-left/z-up side view.
+All tabs use Kinefold's own interface. The retained finite-idler equations are
+reference evidence, attributed above; no source app or copied tab is embedded.
+Equilibrium evaluates the current builder and181 samples of its working range.
+The sampled peak is not a certified global maximum.
 
-Tab4 **Dynamic · analytical** integrates reduced equations with SciPy DOP853.
-Tab5 **Dynamic · 2D Pymunk** integrates constrained planar rigid bodies.
-Both consume the exact builder parameters and one shared saved run profile;
-they have no embedded reference bench or sibling service dependency.
+Both dynamic engines use one saved mechanism and profile. The chassis mass m1
+moves vertically with fixed horizontal position and pitch, while wheel height
+is prescribed. No guide rods are drawn. Analytical dynamics use reduced equations;
+Pymunk integrates a real vertically constrained chassis body, with the ideal
+transmission and moving-body inertia condensed into its force law. It is not
+an all-body rigid linkage, tire/collision or whole-vehicle simulation.
 
-Both carry a persistent **¼ MODEL · SINGLE LEG** badge. The fixture fixes hip A,
-locks θ₄ and integrates θ₂ through the same belt-coupled geometry and finite-idler
-spring route. It applies the builder's gravity and prescribed wheel load, then
-stops at a working-range limit. This is a fixed-hip mechanism test, not a floating
-corner suspension, terrain contact, tire model or full vehicle simulation.
-The supported mass is already per leg and is never divided by four again.
+V4 baseline /150mm square keeps m1=8.75kg, all other masses zero and adds no
+rotor inertia or damping. Its input is150mm high,150mm wide with150mm gaps,
+default speed100mm/s and initial delay0.5s. Run duration6.5s covers two cycles.
+Zero transition distance applies exact square events: chassis height and velocity
+remain continuous while the ideal massless linkage can change pose instantly.
+Do not interpret edge angular rates as finite peak jump speed. Positive moving
+inertia or damping requires a declared finite transition distance; quintic ramps
+lie inside the nominal plateau. Requested and applied traces are both retained.
 
-Moving masses and inertias must be explicit. m₁ stays at fixed A, contributes to
-weight-reference loading and adds no moving inertia. Uniform rods/discs and the
-reflected hip rotor inertia are labelled assumptions; custom centre-of-mass
-inertias are editable. The original static baseline's zero moving masses are
-never silently replaced. Choose the labelled dynamics example in00 Designs or
-enter your own moving masses. Holding-torque and zero-torque buttons change the
-shared profile only by explicit action.
+The world-frame preview uses one fixed camera over the full trajectory, a moving
+chassis mass marker and prescribed wheel-height platen. It preserves +x left,
++z up and +y toward the viewer. It does not render guide rods or pretend the base
+input is rolling collision terrain. Plots show requested/applied input, chassis
+and wheel height, chassis speed, hip angle, spring tension and wheel-input
+reaction. Reactions supply support dynamically; weight reference is not applied
+again as an extra gravity-sized force. Nonweight builder loads remain additional.
 
-Each run captures the project snapshot and model revision. Editing physical
-inputs or loading a profile marks prior results stale; late results for another
-revision are discarded. Real returned θ₂ samples drive the x-left/z-up preview,
-including the grid, carrier belts and wheel/pulley indices. Angle, angular rate,
-torque, energy and tension plots preserve their own units. JSON export includes
-the full project snapshot, run settings, warnings, diagnostics and output;
-CSV exports the sampled data. Results do not certify hardware or canonical physics.
+Projects use kinefold/project-v3, including all geometry, view and input/run
+settings. Version2 fixed-hip projects retain exact geometry and an archived
+legacySolverConfig; their original browser keys remain untouched. Migration
+notices identify the change in boundary conditions. Legacy positive-mass designs
+receive a declared10mm finite transition with no mass substitution. Export
+project JSON for portable backups; this browser's library is not cloud storage.
 
-Same-origin POST `/api/dynamics` accepts `{engine,params,runConfig}` and invokes
-`dynamics.py --request-stdin` using this app's `.venv` Python. The standard-library
-preview starts without physics packages, rejects malformed/nonfinite/oversized
-requests, allows one run at a time and stops a worker exceeding90 seconds.
-Missing dependencies give an actionable setup error. The original4191 launcher,
-authenticated stop and restart behavior remain unchanged; no boot/login automation.
+Each run captures the full project/profile and preserves rows, world frames,
+exact jump events and diagnostics. Result labels identify the captured design;
+geometry/profile edits mark old results stale. JSON run export contains the
+snapshot and engine output; CSV contains rows. No hardware validation is implied.
+
+Same-origin POST /api/dynamics accepts engine/params/runConfig and invokes
+dynamics.py --request-stdin using this app's isolated .venv. Run
+[Setup Kinefold.cmd](Setup%20Kinefold.cmd) once with Python3.12+ for pinned
+SciPy/Pymunk. Builder/equilibrium preview needs standard-library Python3.10+.
+The existing Start/Stop launchers preserve4191 and support readable errors and
+restart without Codex. No boot/login automation is installed.

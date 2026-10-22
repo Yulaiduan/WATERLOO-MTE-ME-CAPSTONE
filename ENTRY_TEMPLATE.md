@@ -3973,3 +3973,48 @@ Start the app with its existing launcher at4191; run Setup Kinefold.cmd once for
 Preserve explicit inertia assumptions, timestep refinement, actual Pymunk residual reporting and the distinction between this fixed-hip test and terrain or whole-vehicle behavior.
 
 ---
+
+
+## Entry: 2026-10-22 — Andy Zhang — Vertical chassis dynamics and exact V4 square input
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Native Kinefold floating quarter-model dynamics, saved profiles and world-frame preview.
+- **Associated Issue/Task:** User corrected both dynamic models to vertically guided floating chassis, exact V4 baseline masses and150mm-high/150mm-wide square wheel input, with no guide rods or direct copied reference tabs.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/variables.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_dynamics.py`
+- **API/Interface Changes:** Existing native dynamics endpoint now consumes floating-chassis profiles and returns dynamics-v2 world rows/frames, requested/applied input, vertical wheel-input reaction and explicit exact-square events. No gravity-sized support is applied twice. Genuine Pymunk chassis motion uses an ideal condensed linkage, explicitly distinguished from an all-body linkage simulation. Project-v3 migration preserves original geometry, old browser keys and archived fixed-hip profiles; positive-mass legacy designs receive a declared10mm transition. Native equilibrium heading, settings, dictionary and world-grid preview are updated. Source apps, retained V4 reference core and canonical components are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Existing3123 model/drawing assertions,18 project-state scenarios,6 floating dynamics groups, JS parsing and Python compilation pass. Full unmodified V4 baseline6.5s browser/native API runs in both engines return656rows with5exact150mm jumps and duration termination; h/v continuous across jumps. Independent heave acceleration error1.14e-13m/s², source-static parity2.84e-14Nm, baseline cross-engine heave difference0.004197mm, energy residuals4.26e-14J/1.67e-6J; finite-rise errors halve with dt refinement. Browser verifies exact masses/profile export, preserved legacy config, native equilibrium baseline, worldframe/no-rods playback and actual end scrub. Actual Start reuse/Stop/restart from unrelated cwd passes at4191. Input transition budget is bounded; range clamping is limited to1e-10rad numerical roundoff, with explicit failure beyond. Required repository checks precede publication. Hardware, collision terrain, tire fidelity and four-leg behavior remain unverified. Unrelated Laptop Access launchers are preserved and excluded.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app correction.
+
+## 4. Compute Saving Handoff State
+
+Both dynamic engines now move the chassis vertically under the same saved mechanism and exact150mm square baseline, with no invented link masses or rotor inertia.
+Use the app-local launcher at4191 and project-v3 exports; old fixed-hip data remains preserved and migration is explicit.
+Retain exact jump accounting, world-frame geometry, independent heave plots and the honest condensed-linkage Pymunk scope when extending the experiment.
+
+---

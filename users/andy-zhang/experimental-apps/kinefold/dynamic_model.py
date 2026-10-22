@@ -1,11 +1,12 @@
-"""Exact builder-linked V4 geometry and fixed-hip generalized dynamics.
+"""Exact builder-linked V4 geometry and vertical-slide chassis dynamics.
 
 Imported by dynamics.py; inputs are the complete builder mm/deg/kg/N design and
 explicit run configuration. Internal positions are source-horizontal/up in m,
 angles radians, inertias kg m²; exported coordinates are Kinefold x/y/z in mm.
 Outputs geometry, generalized mass, forces and conservative potential in SI.
-Experimental ideal nonslip belts, fixed hip/drive shaft, prescribed constant
-wheel force; no ground contact, chassis translation, friction or hardware claim.
+Experimental quarter model: A translates vertically, x/pitch and drive shaft
+are locked; wheel height is prescribed, not unilateral terrain contact. Ideal
+massless belts/cable; no friction, tire compliance or hardware validation.
 """
 import hashlib
 import json
@@ -18,14 +19,19 @@ BOUNDS = {'duration': (.05, 30), 'dt': (.0001, .01), 'outputHz': (1, 1000),
           'initialVelocityDegS': (-720, 720), 'hipTorqueNm': (-10000, 10000),
           'dampingNms': (0, 10000), 'hipRotorInertiaKgM2': (0, 1000),
           'I2': (0, 1000), 'I3': (0, 1000), 'I5': (0, 1000), 'I6': (0, 1000),
-          'iterations': (10, 500)}
+          'iterations': (10, 500), 'inputHeightMm': (0, 1000),
+          'inputPlateauMm': (.1, 10000), 'inputGapMm': (.1, 10000),
+          'inputSpeedMmS': (.1, 10000), 'inputRiseMm': (0, 1000),
+          'inputDelayS': (0, 30)}
 
 
 def defaults():
-    return dict(fixture='fixed-hip', duration=2, dt=.001, outputHz=100,
-                initialVelocityDegS=0, hipTorqueNm=0, dampingNms=.1,
-                hipRotorInertiaKgM2=.05, inertiaModel='uniform-rods-discs',
-                I2=0, I3=0, I5=0, I6=0, iterations=80)
+    return dict(fixture='floating-chassis', duration=6.5, dt=.001, outputHz=100,
+                initialVelocityDegS=0, hipTorqueNm=0, dampingNms=0,
+                hipRotorInertiaKgM2=0, inertiaModel='uniform-rods-discs',
+                I2=0, I3=0, I5=0, I6=0, iterations=80,
+                inputHeightMm=150, inputPlateauMm=150, inputGapMm=150,
+                inputSpeedMmS=100, inputRiseMm=0, inputDelayS=.5)
 
 
 def finite(value):
@@ -61,7 +67,7 @@ def validate(params, config):
             raise ValueError(f'{a}/{b} pulley pitch circles overlap or touch.')
     if set(config) != set(defaults()):
         raise ValueError('runConfig must contain exactly the documented solver configuration keys.')
-    if config['fixture'] != 'fixed-hip' or config['inertiaModel'] not in ('uniform-rods-discs', 'custom'):
+    if config['fixture'] != 'floating-chassis' or config['inertiaModel'] not in ('uniform-rods-discs', 'custom'):
         raise ValueError('Unknown fixture or inertia model.')
     for key, (lo, hi) in BOUNDS.items():
         if not finite(config[key]) or not lo <= config[key] <= hi:
@@ -72,6 +78,11 @@ def validate(params, config):
         raise ValueError('Run exceeds 100000 integration steps; increase dt or reduce duration.')
     if config['outputHz'] > 1 / config['dt'] + 1e-10:
         raise ValueError('outputHz must not exceed 1/dt.')
+    if 2 * config['inputRiseMm'] > config['inputPlateauMm']:
+        raise ValueError('Two input rises must fit inside the nominal square high interval.')
+    period = (config['inputPlateauMm'] + config['inputGapMm']) / config['inputSpeedMmS']
+    if 4 * math.ceil(max(0, config['duration'] - config['inputDelayS']) / period) > 10000:
+        raise ValueError('Run exceeds 10000 input transition boundaries; reduce input speed or duration.')
 
 
 def add(a, b):
@@ -105,14 +116,30 @@ class Model:
         if config['inertiaModel'] == 'custom':
             self.I = {key: config['I' + key] for key in self.I}
         self.I['2'] += config['hipRotorInertiaKgM2']
+        if p['m1'] <= 0:
+            raise ValueError('Floating chassis requires positive builder m1; no chassis mass is substituted.')
+        self.total_mass = sum(p['m' + key] for key in ('1', '2', '3', '5', '6'))
         self.force, self.Mw = self.loads()
         self.route = self.exit_route() if p['springEnabled'] else dict(applied=0, shift=0)
         self.reference_payout = self.geometry(math.pi / 2, reference=True)['payout'] if p['springEnabled'] else 0
         if p['springEnabled']:
             for q in self.candidates(self.lo, self.hi):
                 self.geometry(q)
+        # A Lipschitz bound on zC' certifies the gaps between samples as well;
+        # dense samples alone could miss a turning point at extreme belt ratios.
+        count = 400
+        curvature_bound = (p['L2'] + p['L3'] * self.k3 * self.k3) / 1000
+        slopes = [self.sites(self.lo + (self.hi - self.lo) * i / count)['6'][1][1] for i in range(count + 1)]
+        gap_bound = curvature_bound * (self.hi - self.lo) / (2 * count)
+        if min(slopes) <= gap_bound + 1e-7 and max(slopes) >= -gap_bound - 1e-7:
+            raise ValueError('Floating heave requires monotonic wheel-relative z with a nonzero slope throughout the working range; adjust geometry/range.')
+        self.slope_sign = 1 if slopes[0] > 0 else -1
+        self.exact_square = config['inputRiseMm'] == 0
+        if self.exact_square and config['inputHeightMm'] > 0:
+            if any(p['m' + key] != 0 or self.I[key] != 0 for key in ('2', '3', '5', '6')) or config['dampingNms'] != 0:
+                raise ValueError('Exact square jumps require massless moving links/wheel, zero moving/rotor inertias and zero hip damping. Set positive inputRiseMm (e.g. 10 mm) for a finite C2 rise; no impact law is invented.')
         if self.mass(self.q0)[0] <= 1e-12:
-            raise ValueError('Moving inertia is zero. Enter positive moving masses/inertias or an explicit hip rotor inertia.')
+            raise ValueError('Floating generalized inertia is zero at the initial pose.')
 
     def rotate(self, v):
         a = self.p['alpha'] * R
@@ -125,7 +152,9 @@ class Model:
             f = (p['Fn'] * math.sin(b) + p['Ft'] * math.cos(b), p['Fn'] * math.cos(b) - p['Ft'] * math.sin(b))
             ft = p['Ft']
         else:
-            f = (0, sum(p[k] for k in ('m1', 'm2', 'm3', 'm5', 'm6')) * p['g']) if p['loadMode'] == 'weight' else (-p['Fx'], p['Fz'])
+            # Static weight-reference Fn is not an additional dynamic force.
+            # Every builder mass already experiences gravity exactly once.
+            f = (0, 0) if p['loadMode'] == 'weight' else (-p['Fx'], p['Fz'])
             ft = f[0] * math.cos(b) - f[1] * math.sin(b)
         return f, p['rw'] * ft / 1000
 
@@ -145,10 +174,98 @@ class Model:
         return {key: tuple(self.rotate(v) for v in vs) for key, vs in pairs.items()}
 
     def mass(self, q):
+        return self.coefficients(q)[:2]
+
+    def floating_sites(self, q):
+        """Position/Jacobian/curvature at fixed prescribed wheel-centre height."""
         sites = self.sites(q)
-        M = sum(self.p['m' + key] * dot(v[1], v[1]) + self.I[key] * self.rates[key] ** 2 for key, v in sites.items())
-        derivative = sum(2 * self.p['m' + key] * dot(v[1], v[2]) for key, v in sites.items())
-        return M, derivative
+        C = sites['6']
+        sites['1'] = ((0, 0), (0, 0), (0, 0))
+        return {key: tuple((v[0], v[1] - C[i][1]) for i, v in enumerate(values))
+                for key, values in sites.items()}
+
+    def coefficients(self, q):
+        sites = self.floating_sites(q)
+        M = sum(self.p['m' + key] * dot(v[1], v[1]) for key, v in sites.items())
+        M += sum(self.I[key] * self.rates[key] ** 2 for key in self.I)
+        dM = sum(2 * self.p['m' + key] * dot(v[1], v[2]) for key, v in sites.items())
+        B = sum(self.p['m' + key] * v[1][1] for key, v in sites.items())
+        dB = sum(self.p['m' + key] * v[2][1] for key, v in sites.items())
+        return M, dM, B, dB
+
+    def input(self, t, side='right'):
+        """Requested square and applied trajectory, SI height/velocity/acceleration.
+
+        Positive rise uses C2 quintic ramps *inside* each nominal high interval.
+        Exact square has no finite derivative at events; left/right derivatives
+        returned here apply only to the open intervals on either side.
+        """
+        c = self.c
+        speed = c['inputSpeedMmS'] / 1000
+        high, period = c['inputPlateauMm'] / c['inputSpeedMmS'], (c['inputPlateauMm'] + c['inputGapMm']) / c['inputSpeedMmS']
+        elapsed = t - c['inputDelayS']
+        height = c['inputHeightMm'] / 1000
+        if elapsed < -1e-12 or (abs(elapsed) < 1e-12 and side == 'left'):
+            return dict(requested=0, applied=0, velocity=0, acceleration=0, distance=speed * max(0, elapsed))
+        phase = max(0, elapsed) % period
+        if phase < 1e-10 or period - phase < 1e-10:
+            phase = period if side == 'left' and elapsed > 0 else 0
+        if abs(phase - high) < 1e-10:
+            phase = high - 1e-11 if side == 'left' else high
+        requested = height if phase < high else 0
+        if self.exact_square or not requested:
+            return dict(requested=requested, applied=requested, velocity=0, acceleration=0, distance=speed * max(0, elapsed))
+        rise = c['inputRiseMm'] / c['inputSpeedMmS']
+        if phase < rise:
+            u, sign = phase / rise, 1
+        elif phase > high - rise:
+            u, sign = (high - phase) / rise, -1
+        else:
+            return dict(requested=height, applied=height, velocity=0, acceleration=0, distance=speed * elapsed)
+        smooth = u ** 3 * (10 + u * (-15 + 6 * u))
+        d = 30 * u * u * (1 - u) ** 2
+        dd = 60 * u * (1 - u) * (1 - 2 * u)
+        return dict(requested=height, applied=height * smooth, velocity=sign * height * d / rise,
+                    acceleration=height * dd / (rise * rise), distance=speed * max(0, elapsed))
+
+    def input_breaks(self):
+        c = self.c
+        high = c['inputPlateauMm'] / c['inputSpeedMmS']
+        period = (c['inputPlateauMm'] + c['inputGapMm']) / c['inputSpeedMmS']
+        rise = c['inputRiseMm'] / c['inputSpeedMmS']
+        out = set()
+        cycle = 0
+        while c['inputDelayS'] + cycle * period <= c['duration'] + 1e-12:
+            start = c['inputDelayS'] + cycle * period
+            for offset in ((0, high) if self.exact_square else (0, rise, high - rise, high)):
+                t = start + offset
+                if 0 <= t <= c['duration'] + 1e-12:
+                    out.add(min(c['duration'], t))
+            cycle += 1
+        return sorted(out)
+
+    def wheel_height(self, t, side='right'):
+        return self.p['rw'] / 1000 + self.input(t, side)['applied']
+
+    def chassis(self, t, q, velocity, acceleration=0, side='right'):
+        C = self.sites(q)['6']
+        base = self.input(t, side)
+        return (self.p['rw'] / 1000 + base['applied'] - C[0][1],
+                base['velocity'] - C[1][1] * velocity,
+                base['acceleration'] - C[1][1] * acceleration - C[2][1] * velocity * velocity)
+
+    def q_from_chassis(self, t, height, side='right'):
+        from scipy.optimize import brentq
+        target = self.wheel_height(t, side) - height
+        f = lambda q: self.sites(q)['6'][0][1] - target
+        a, b = f(self.lo), f(self.hi)
+        if abs(a) < 1e-13:
+            return self.lo
+        if abs(b) < 1e-13:
+            return self.hi
+        if a * b > 0:
+            raise ValueError('Prescribed wheel height and floating chassis exceed working travel.')
+        return brentq(f, self.lo, self.hi, xtol=1e-14)
 
     def raw_geometry(self, q):
         p = self.p
@@ -229,35 +346,70 @@ class Model:
         return {**z, 'force': F, 'torque': -F * z['derivative'] / 1000, 'energy': energy}
 
     def generalized(self, q):
-        sites = self.sites(q)
+        sites = self.floating_sites(q)
         gravity = -self.p['g'] * sum(self.p['m' + key] * v[1][1] for key, v in sites.items())
         return dot(self.force, sites['6'][1]) + self.Mw * self.K + gravity + self.spring(q)['torque']
 
-    def potential(self, q):
-        sites = self.sites(q)
-        return (self.p['g'] * sum(self.p['m' + key] * v[0][1] for key, v in sites.items())
-                + self.spring(q)['energy'] - dot(self.force, sites['6'][0]) - self.Mw * self.K * q)
+    def potential(self, q, t=0, side='right'):
+        sites = self.floating_sites(q)
+        r = self.wheel_height(t, side)
+        return (self.p['g'] * sum(self.p['m' + key] * (v[0][1] + r) for key, v in sites.items())
+                + self.spring(q)['energy'] - self.force[0] * sites['6'][0][0]
+                - self.force[1] * r - self.Mw * self.K * q)
 
-    def acceleration(self, q, velocity):
-        M, derivative = self.mass(q)
-        return (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity - .5 * derivative * velocity * velocity) / M
+    def acceleration(self, q, velocity, t=0, side='right'):
+        M, derivative, B, _ = self.coefficients(q)
+        return (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity
+                - .5 * derivative * velocity * velocity - B * self.input(t, side)['acceleration']) / M
+
+    def heave_acceleration(self, t, height, speed, side='right'):
+        """Independently transformed h-coordinate equation used by Pymunk."""
+        q = self.q_from_chassis(t, height, side)
+        C = self.sites(q)['6']
+        a, da = -C[1][1], -C[2][1]
+        base = self.input(t, side)
+        velocity = (speed - base['velocity']) / a
+        M, dM, B, _ = self.coefficients(q)
+        H = M / (a * a)
+        dH = dM / (a * a) - 2 * M * da / (a * a * a)
+        cross = B / a - H
+        force = (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity) / a
+        acceleration = (force - cross * base['acceleration'] - .5 * dH / a * (speed - base['velocity']) ** 2) / H
+        return q, velocity, acceleration
+
+    def reaction(self, t, q, velocity, acceleration, side='right'):
+        _, _, B, dB = self.coefficients(q)
+        return (self.total_mass * (self.input(t, side)['acceleration'] + self.p['g'])
+                + B * acceleration + dB * velocity * velocity - self.force[1])
 
     def hash(self):
         return hashlib.sha256(json.dumps(self.p, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
-    def observe(self, t, q, velocity, acceleration, actual=None):
+    def observe(self, t, q, velocity, acceleration, actual=None, side='right'):
         sites = self.sites(q)
         spring = self.spring(q)
-        kinetic = .5 * self.mass(q)[0] * velocity * velocity
-        potential = self.potential(q)
+        base = self.input(t, side)
+        M, _, Bcross, _ = self.coefficients(q)
+        kinetic = .5 * M * velocity * velocity + Bcross * velocity * base['velocity'] + .5 * self.total_mass * base['velocity'] ** 2
+        potential = self.potential(q, t, side)
         C, B = sites['6'][0], sites['5'][0]
         world = lambda p: [-p[0] * 1000, 0, p[1] * 1000]
-        frame = dict(t=t, theta2=q / R, A=[0, 0, 0], B=world(B), C=world(C), wheelAngle=self.K * (q - self.p['te'] * R) / R)
+        height, heave_v, heave_a = self.chassis(t, q, velocity, acceleration, side)
+        translated = lambda p: world((p[0], p[1] + height))
+        frame = dict(t=t, theta2=q / R, A=translated((0, 0)), B=translated(B), C=translated(C),
+                     chassisZMm=height * 1000, wheelZMm=self.wheel_height(t, side) * 1000,
+                     wheelAngle=self.K * (q - self.p['te'] * R) / R)
         if self.p['springEnabled']:
-            frame.update(D=world(mul(self.rotate(spring['D']), .001)), Q=world(mul(self.rotate(spring['Q']), .001)))
+            frame.update(D=translated(mul(self.rotate(spring['D']), .001)), Q=translated(mul(self.rotate(spring['Q']), .001)))
         if actual:
             frame.update(actual)
         row = dict(t=t, theta2=q / R, velocityDegS=velocity / R, accelerationDegS2=acceleration / R,
                    Fs=spring['force'], tauStatic=-self.generalized(q), tauApplied=self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity,
-                   kineticJ=kinetic, potentialJ=potential, energyJ=kinetic + potential, CxMm=-C[0] * 1000, CzMm=C[1] * 1000)
+                   kineticJ=kinetic, potentialJ=potential, energyJ=kinetic + potential,
+                   CxMm=-C[0] * 1000, CzMm=(C[1] + height) * 1000,
+                   chassisZMm=height * 1000, chassisVelocityMmS=heave_v * 1000,
+                   chassisAccelerationMmS2=heave_a * 1000, wheelZMm=self.wheel_height(t, side) * 1000,
+                   requestedInputMm=base['requested'] * 1000, appliedInputMm=base['applied'] * 1000,
+                   inputVelocityMmS=base['velocity'] * 1000, inputAccelerationMmS2=base['acceleration'] * 1000,
+                   inputReactionN=self.reaction(t, q, velocity, acceleration, side))
         return row, frame

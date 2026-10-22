@@ -1,12 +1,13 @@
-"""Run builder-linked analytical or genuine 2D Pymunk fixed-hip tests.
+"""Run Kinefold floating-chassis analytical and 2D Pymunk quarter models.
 
-Usage: .venv/Scripts/python.exe dynamics.py --request-stdin (JSON stdin), or
---defaults. Request {engine,params,runConfig}; builder mm/deg/kg/N, run seconds,
-Nm, Nms/rad and kg m². Emits JSON finite traces, actual Pymunk body frames,
-constraint/energy diagnostics and input snapshot. Experimental quarter-model
-fixed-hip prescribed-load mechanism; no chassis translation, terrain, impacts,
-cable mass/compliance, friction or hardware validation. Pymunk uses ideal gear
-constraints; belt preload bearing forces are not inferred from gear impulses.
+Usage: .venv/Scripts/python.exe dynamics.py --request-stdin, or --defaults.
+JSON builder inputs use mm/deg/kg/N; run controls use seconds/Nm/kg m².
+Outputs finite SI-energy/world-mm trajectories, reactions, events and diagnostics.
+The wheel-height actuator is prescribed; xA/pitch are locked, A heaves freely.
+Pymunk integrates a real m1 chassis body with a vertical groove; other masses
+and inertias are exactly condensed through ideal kinematics, not separate rigid
+link bodies. Exact square jumps are limited to massless undamped transmission.
+No tire contact, collision, impact law, chassis pitch or hardware validation.
 """
 import argparse
 import json
@@ -16,222 +17,239 @@ import sys
 from dynamic_model import Model, R, defaults
 
 
+def state_observation(model, t, q, v, side='right', actual=None):
+    return model.observe(t, q, v, model.acceleration(q, v, t, side), actual, side)
+
+
+def jump(model, t, q, v):
+    """Exact massless transmission jump: real chassis h and hdot stay continuous."""
+    before, _ = state_observation(model, t, q, v, 'left')
+    h, hd, _ = model.chassis(t, q, v, side='left')
+    new_q = model.q_from_chassis(t, h, 'right')
+    new_v = -hd / model.sites(new_q)['6'][1][1]
+    after, _ = state_observation(model, t, new_q, new_v, 'right')
+    actuator = model.c['hipTorqueNm'] * (new_q - q)
+    energy = after['energyJ'] - before['energyJ']
+    event = dict(t=t, type='exact-square-jump', before=before, after=after,
+                 inputJumpMm=after['appliedInputMm'] - before['appliedInputMm'],
+                 theta2JumpDeg=(new_q - q) / R, energyJumpJ=energy,
+                 actuatorWorkJumpJ=actuator, inputWorkJumpJ=energy - actuator,
+                 chassisPositionJumpMm=after['chassisZMm'] - before['chassisZMm'],
+                 chassisVelocityJumpMmS=after['chassisVelocityMmS'] - before['chassisVelocityMmS'],
+                 angularVelocityAtJump='undefined; rows contain finite one-sided velocities',
+                 inputReactionAtJump='no finite reaction assigned at the discontinuity')
+    return new_q, new_v, actuator, energy - actuator, event
+
+
+def powers(model, t, q, v, side='right'):
+    a = model.acceleration(q, v, t, side)
+    actuator = model.c['hipTorqueNm'] * v - model.c['dampingNms'] * v * v
+    return actuator, model.reaction(t, q, v, a, side) * model.input(t, side)['velocity']
+
+
+def finish_diagnostics(model, rows, diagnostics):
+    initial = rows[0]['energyJ']
+    diagnostics['maxWorkEnergyResidualJ'] = max(abs(r['energyJ'] - initial - r['actuatorDampingWorkJ'] - r['terrainWorkJ']) for r in rows)
+    diagnostics['minimumInputReactionN'] = min(r['inputReactionN'] for r in rows)
+    diagnostics['maximumInputReactionN'] = max(r['inputReactionN'] for r in rows)
+    return diagnostics
+
+
 def analytical(model):
     import numpy as np
     from scipy.integrate import solve_ivp
     c = model.c
-    def derivative(t, y):
-        q, v, work = y
-        return (v, model.acceleration(q, v), c['hipTorqueNm'] * v - c['dampingNms'] * v * v)
-    def lower(t, y):
-        return y[0] - model.lo
-    def upper(t, y):
-        return model.hi - y[0]
-    lower.terminal = upper.terminal = True
-    lower.direction = upper.direction = -1
-    initial = (model.q0, c['initialVelocityDegS'] * R, 0)
-    solution = solve_ivp(derivative, (0, c['duration']), initial, method='DOP853', rtol=1e-9, atol=1e-11,
-                         max_step=c['dt'], dense_output=True, events=(lower, upper))
-    if not solution.success:
-        raise ValueError(solution.message)
-    end = float(solution.t[-1])
-    times = list(np.arange(0, end + 1e-12, 1 / c['outputHz']))
-    if not times or end - times[-1] > 1e-10:
-        times.append(end)
-    rows, frames, max_balance = [], [], 0
-    initial_energy = model.observe(0, initial[0], initial[1], 0)[0]['energyJ']
-    for t in times:
-        q, v, work = (float(x) for x in solution.sol(t))
-        # Event-root floating error is allowed only at machine precision.
-        if model.lo - 1e-10 <= q <= model.hi + 1e-10:
-            q = min(model.hi, max(model.lo, q))
-        row, frame = model.observe(float(t), q, v, model.acceleration(q, v))
-        row['actuatorDampingWorkJ'] = work
-        max_balance = max(max_balance, abs(row['energyJ'] - initial_energy - work))
-        rows.append(row)
-        frames.append(frame)
-    return rows, frames, dict(termination='travel-limit' if solution.status == 1 else 'duration',
-                             elapsedSeconds=end, maxWorkEnergyResidualJ=max_balance,
-                             maxConstraintPositionErrorMm=0, maxConstraintAngleErrorDeg=0,
-                             evaluations=int(solution.nfev), integrator='SciPy DOP853',
-                             frameSource='exact analytical kinematics')
+    rows, frames, events = [], [], []
+    state = [model.q0, c['initialVelocityDegS'] * R, 0., 0.]
+    start, evaluations, termination = 0., 0, 'duration'
+    breaks = model.input_breaks()
+    boundaries = sorted(set(breaks + [c['duration']]))
 
-
-def pymunk_build(model):
-    import pymunk
-    p, c, q = model.p, model.c, model.q0
-    if p['m5'] == 0 and model.I['5'] != 0:
-        raise ValueError('Pymunk cannot represent zero m5 with nonzero I5. Enter positive builder m5 or zero custom I5.')
-    for key in ('2', '3', '6'):
-        if p['m' + key] <= 0:
-            raise ValueError('Pymunk requires positive builder m2, m3 and m6. Select Dynamic example · illustrative masses or enter physical masses; no mass is substituted.')
-    for key in ('2', '3', '6') + (('5',) if p['m5'] > 0 else ()):
-        if model.I[key] <= 0:
-            raise ValueError(f'Pymunk body {key} needs positive rotational inertia; select rod/disc estimates or enter custom I{key}.')
-    space = pymunk.Space()
-    space.gravity = (0, -p['g'])
-    space.iterations = int(c['iterations'])
-    sites = model.sites(q)
-    angles = {'2': q + math.pi - p['alpha'] * R,
-              '3': p['phi0'] * R + (math.pi - q) * (model.ab - 1) + math.pi - p['alpha'] * R,
-              '5': model.k5 * (q - p['te'] * R), '6': model.K * (q - p['te'] * R)}
-    velocity = c['initialVelocityDegS'] * R
-    bodies = {}
-    for key in ('2', '3', '6') + (('5',) if p['m5'] > 0 else ()):
-        body = pymunk.Body(p['m' + key], model.I[key])
-        body.position, body.angle = sites[key][0], angles[key]
-        body.velocity = tuple(x * velocity for x in sites[key][1])
-        body.angular_velocity = model.rates[key] * velocity
-        space.add(body)
-        bodies[key] = body
-    u, l, w = (bodies[key] for key in ('2', '3', '6'))
-    L, L3 = p['L2'] / 1000, p['L3'] / 1000
-    pivots = [pymunk.PivotJoint(space.static_body, u, (0, 0), (-L / 2, 0)),
-              pymunk.PivotJoint(u, l, (L / 2, 0), (-L3 / 2, 0)),
-              pymunk.PivotJoint(l, w, (L3 / 2, 0), (0, 0))]
-    if '5' in bodies:
-        pivots.append(pymunk.PivotJoint(u, bodies['5'], (L / 2, 0), (0, 0)))
-    gears = []
-    for key in ('3', '6') + (('5',) if '5' in bodies else ()):
-        rate = model.rates[key]
-        if abs(rate) < 1e-14:
-            gear = pymunk.GearJoint(space.static_body, bodies[key], bodies[key].angle, 1)
+    def append(t, y, side='right'):
+        q, v, wa, wi = (float(x) for x in y)
+        if q < model.lo - 1e-10 or q > model.hi + 1e-10:
+            raise ValueError('Analytical output exceeded the working angle limits.')
+        q = min(model.hi, max(model.lo, q))  # Roundoff at an event endpoint only.
+        row, frame = state_observation(model, float(t), q, v, side)
+        row.update(actuatorDampingWorkJ=wa, terrainWorkJ=wi, inputWorkJ=wi)
+        if rows and abs(rows[-1]['t'] - t) < 1e-11 and side != 'left' and rows[-1].get('eventSide') != 'before':
+            rows[-1], frames[-1] = row, frame
         else:
-            ratio = 1 / rate
-            gear = pymunk.GearJoint(u, bodies[key], bodies[key].angle * ratio - u.angle, ratio)
-        gears.append(gear)
-    for constraint in pivots + gears:
-        constraint.collide_bodies = False
-    space.add(*(pivots + gears))
-    # Sensor shapes describe the actual 2D bodies; they never introduce contact.
-    shapes = [pymunk.Segment(u, (-L / 2, 0), (L / 2, 0), .001),
-              pymunk.Segment(l, (-L3 / 2, 0), (L3 / 2, 0), .001), pymunk.Circle(w, p['rw'] / 1000)]
-    if '5' in bodies:
-        shapes.append(pymunk.Circle(bodies['5'], max(p['rd'], p['re']) / 1000))
-    for shape in shapes:
-        shape.sensor = True
-    space.add(*shapes)
-    return space, bodies, pivots, gears
+            rows.append(row)
+            frames.append(frame)
+        return row
 
-
-def actual_spring(model, q, horn):
-    """Apply the same route to actual Pymunk horn translation/rotation errors."""
-    ideal = model.spring(q)
-    if not model.p['springEnabled']:
-        return ideal
-    p = model.p
-    alpha = p['alpha'] * R
-    D = (1000 * (math.cos(alpha) * horn.x - math.sin(alpha) * horn.y),
-         1000 * (math.sin(alpha) * horn.x + math.cos(alpha) * horn.y))
-    dx, dy = D[0] - p['Su'], D[1] - p['Sv']
-    distance = math.hypot(dx, dy)
-    if distance <= p['rs'] + 1e-9:
-        raise ValueError('Actual Pymunk horn reached the idler; no tangent exists.')
-    if p['rs']:
-        psi = math.atan2(dy, dx) - math.acos(p['rs'] / distance)
-        psi_ideal = math.atan2(ideal['Q'][1] - p['Sv'], ideal['Q'][0] - p['Su'])
-        difference = math.atan2(math.sin(psi - psi_ideal), math.cos(psi - psi_ideal))
-        Q = (p['Su'] + p['rs'] * math.cos(psi), p['Sv'] + p['rs'] * math.sin(psi))
-        wrap = ideal['wrap'] + difference
-        tangent = math.sqrt(distance * distance - p['rs'] * p['rs'])
-    else:
-        Q, wrap, tangent = (p['Su'], p['Sv']), 0, distance
-    delta = tangent + p['rs'] * wrap - model.reference_payout
-    rate = 0 if p['springLaw'] == 'constant' else p['springK']
-    force = max(0, p['p0'] + rate * delta)
-    energy = force * force / (2 * rate) / 1000 if rate else p['p0'] * delta / 1000
-    return {**ideal, 'D': D, 'Q': Q, 'force': force, 'energy': energy,
-            'unit': ((Q[0] - D[0]) / tangent, (Q[1] - D[1]) / tangent)}
+    # Initial pose is defined before any t=0 input jump.
+    append(0, state, 'left' if 0 in breaks and model.exact_square else 'right')
+    if 0 in breaks and model.exact_square:
+        try:
+            nq, nv, wa, wi, event = jump(model, 0, *state[:2])
+            rows[-1]['eventSide'] = 'before'
+            state = [nq, nv, wa, wi]
+            append(0, state)['eventSide'] = 'after'
+            events.append(event)
+        except ValueError:
+            termination = 'input-jump-travel-limit'
+    for end in boundaries:
+        if termination != 'duration':
+            break
+        if end <= start + 1e-12:
+            continue
+        exact_end = model.exact_square and end in breaks
+        def derivative(t, y):
+            q, v = y[:2]
+            side = 'left' if exact_end and t >= end - 1e-12 else 'right'
+            a = model.acceleration(q, v, t, side)
+            wa, wi = powers(model, t, q, v, side)
+            return (v, a, wa, wi)
+        def lower(t, y):
+            return y[0] - model.lo
+        def upper(t, y):
+            return model.hi - y[0]
+        lower.terminal = upper.terminal = True
+        lower.direction = upper.direction = -1
+        solution = solve_ivp(derivative, (start, end), state, method='DOP853', rtol=1e-9, atol=1e-11,
+                             max_step=c['dt'], dense_output=True, events=(lower, upper))
+        if not solution.success:
+            raise ValueError(solution.message)
+        evaluations += solution.nfev
+        actual_end = float(solution.t[-1])
+        times = np.arange(math.floor(start * c['outputHz'] + 1e-9) + 1,
+                          math.floor(actual_end * c['outputHz'] + 1e-9) + 1) / c['outputHz']
+        for t in times:
+            if t < actual_end - 1e-10:
+                append(float(t), solution.sol(float(t)))
+        state = [float(x) for x in solution.y[:, -1]]
+        append(actual_end, state, 'left' if exact_end else 'right')
+        start = actual_end
+        if solution.status == 1:
+            termination = 'travel-limit'
+            break
+        if exact_end:
+            try:
+                nq, nv, wa, wi, event = jump(model, end, *state[:2])
+            except ValueError:
+                termination = 'input-jump-travel-limit'
+                events.append(dict(t=end, type='input-jump-rejected', reason='New prescribed wheel height exceeds working travel; stopped at pre-jump state.'))
+                break
+            rows[-1]['eventSide'] = 'before'
+            state = [nq, nv, state[2] + wa, state[3] + wi]
+            append(end, state)['eventSide'] = 'after'
+            events.append(event)
+    diagnostics = dict(termination=termination, elapsedSeconds=rows[-1]['t'],
+                       maxConstraintPositionErrorMm=0, maxConstraintAngleErrorDeg=0,
+                       evaluations=int(evaluations), integrator='SciPy DOP853 / floating q equation with exact input-event restart',
+                       frameSource='exact floating analytical kinematics')
+    return rows, frames, events, finish_diagnostics(model, rows, diagnostics)
 
 
 def pymunk_run(model):
-    p, c = model.p, model.c
-    space, bodies, pivots, gears = pymunk_build(model)
-    u, l, w = (bodies[key] for key in ('2', '3', '6'))
-    horn_local = (p['hornR'] / 1000 * math.cos(p['nu'] * R - math.pi) - p['L2'] / 2000,
-                  p['hornR'] / 1000 * math.sin(p['nu'] * R - math.pi))
-    q_of = lambda: u.angle - math.pi + p['alpha'] * R
-    world = lambda v: [-v[0] * 1000, 0, v[1] * 1000]
-    rows, frames = [], []
-    max_pin, max_angle, max_energy = 0, 0, 0
-    initial_energy = model.observe(0, model.q0, c['initialVelocityDegS'] * R, 0)[0]['energyJ']
-    work, t, next_sample = 0, 0, 0
-    termination = 'duration'
-    def observe(acceleration):
-        nonlocal max_pin, max_angle, max_energy
-        q, v = q_of(), u.angular_velocity
-        pin = max((j.a.local_to_world(j.anchor_a) - j.b.local_to_world(j.anchor_b)).length for j in pivots)
-        angular = max(abs(body.angle - ((q + math.pi - p['alpha'] * R) if key == '2' else
-                        p['phi0'] * R + (math.pi - q) * (model.ab - 1) + math.pi - p['alpha'] * R if key == '3' else
-                        model.rates[key] * (q - p['te'] * R))) for key, body in bodies.items())
-        max_pin, max_angle = max(max_pin, pin), max(max_angle, angular)
-        actual = dict(A=world(u.local_to_world((-p['L2'] / 2000, 0))),
-                      B=world(u.local_to_world((p['L2'] / 2000, 0))), C=world(w.position),
-                      wheelAngle=w.angle / R,
-                      bodyAnglesDeg={key: body.angle / R for key, body in bodies.items()},
-                      bodyPositionsMm={key: world(body.position) for key, body in bodies.items()},
-                      constraintPositionErrorMm=pin * 1000, constraintAngleErrorDeg=angular / R)
-        row, frame = model.observe(t, q, v, acceleration, actual)
-        spring = actual_spring(model, q, u.local_to_world(horn_local))
-        if p['springEnabled']:
-            frame.update(D=world(u.local_to_world(horn_local)), Q=world(tuple(v / 1000 for v in model.rotate(spring['Q']))))
-        kinetic = sum(.5 * body.mass * body.velocity.length_squared + .5 * body.moment * body.angular_velocity ** 2 for body in bodies.values())
-        potential = (p['g'] * sum(body.mass * body.position.y for body in bodies.values()) + spring['energy']
-                     - (model.force[0] * w.position.x + model.force[1] * w.position.y) - model.Mw * w.angle)
-        # Constant energy gauge: model potential uses -Mw*K*q, body angle uses K*(q-te).
-        potential -= model.Mw * model.K * p['te'] * R
-        row.update(Fs=spring['force'], kineticJ=kinetic, potentialJ=potential, energyJ=kinetic + potential,
-                   CxMm=-w.position.x * 1000, CzMm=w.position.y * 1000, actuatorDampingWorkJ=work)
-        max_energy = max(max_energy, abs(row['energyJ'] - initial_energy - work))
-        rows.append(row)
-        frames.append(frame)
-    observe(model.acceleration(model.q0, c['initialVelocityDegS'] * R))
-    next_sample = 1 / c['outputHz']
-    while t < c['duration'] - 1e-12:
-        dt = min(c['dt'], c['duration'] - t, max(1e-12, next_sample - t))
-        q, v = q_of(), u.angular_velocity
-        if ((q <= model.lo + 1e-12 and v < 0) or (q >= model.hi - 1e-12 and v > 0)):
-            termination = 'travel-limit'
+    import pymunk
+    c, p = model.c, model.p
+    space = pymunk.Space()
+    space.gravity = (0, -p['g'])
+    space.iterations = int(c['iterations'])
+    # Infinite moment enforces the explicitly locked pitch; no artificial
+    # rotational inertia or moving link mass is inserted.
+    body = pymunk.Body(p['m1'], math.inf)
+    initial_side = 'left' if model.exact_square and c['inputDelayS'] == 0 else 'right'
+    h, hd, _ = model.chassis(0, model.q0, c['initialVelocityDegS'] * R, side=initial_side)
+    body.position, body.velocity = (0, h), (0, hd)
+    space.add(body)
+    groove = pymunk.GrooveJoint(space.static_body, body, (0, -10000), (0, 10000), (0, 0))
+    groove.collide_bodies = False
+    space.add(groove)
+    rows, frames, events = [], [], []
+    t, wa, wi, next_sample = 0., 0., 0., 1 / c['outputHz']
+    termination, max_x = 'duration', 0.
+    boundaries = sorted(set(model.input_breaks() + [c['duration']]))
+    def read(side='right'):
+        q, v, ha = model.heave_acceleration(t, body.position.y, body.velocity.y, side)
+        return q, v, ha
+    def append(side='right'):
+        nonlocal max_x
+        q, v, _ = read(side)
+        row, frame = state_observation(model, t, q, v, side,
+                                      dict(A=[-body.position.x * 1000, 0, body.position.y * 1000],
+                                           bodyPositionsMm={'1': [-body.position.x * 1000, 0, body.position.y * 1000]},
+                                           bodyAnglesDeg={'1': body.angle / R},
+                                           constraintPositionErrorMm=abs(body.position.x) * 1000,
+                                           constraintAngleErrorDeg=abs(body.angle) / R))
+        row.update(chassisZMm=body.position.y * 1000, chassisVelocityMmS=body.velocity.y * 1000,
+                   actuatorDampingWorkJ=wa, terrainWorkJ=wi, inputWorkJ=wi)
+        max_x = max(max_x, abs(body.position.x))
+        if rows and abs(rows[-1]['t'] - t) < 1e-11 and side != 'left' and rows[-1].get('eventSide') != 'before':
+            rows[-1], frames[-1] = row, frame
+        else:
+            rows.append(row)
+            frames.append(frame)
+        return row
+    def apply_jump():
+        nonlocal wa, wi, termination
+        q, v, _ = read('left')
+        try:
+            _, _, da, di, event = jump(model, t, q, v)
+        except ValueError:
+            termination = 'input-jump-travel-limit'
+            events.append(dict(t=t, type='input-jump-rejected', reason='New prescribed wheel height exceeds working travel; stopped at pre-jump state.'))
+            return
+        rows[-1]['eventSide'] = 'before'
+        wa, wi = wa + da, wi + di
+        append('right')['eventSide'] = 'after'
+        events.append(event)
+    append(initial_side)
+    if initial_side == 'left':
+        apply_jump()
+    for end in boundaries:
+        if termination != 'duration':
             break
-        saved = {key: (body.position, body.velocity, body.angle, body.angular_velocity) for key, body in bodies.items()}
-        for body in bodies.values():
-            body.force = (0, 0)
-            body.torque = 0
-        u.torque = c['hipTorqueNm'] - c['dampingNms'] * v
-        beta = p['beta'] * R
-        patch = w.position - (p['rw'] / 1000) * __import__('pymunk').Vec2d(math.sin(beta), math.cos(beta))
-        w.apply_force_at_world_point(model.force, patch)
-        D = u.local_to_world(horn_local)
-        spring = actual_spring(model, q, D)
-        if p['springEnabled']:
-            # Horn pin is rigid on the femur; tangent direction uses the exact
-            # finite-idler path. Positive angular direction is source CCW/+y.
-            F = model.rotate(tuple(component * spring['force'] for component in spring['unit']))
-            u.apply_force_at_world_point(F, D)
-        space.step(dt)
-        new_q = q_of()
-        if new_q < model.lo or new_q > model.hi:
-            # Roll back the inadmissible step; never render an ideal/clipped pose
-            # that disagrees with the engine bodies. This test has no impact law.
-            for key, state in saved.items():
-                bodies[key].position, bodies[key].velocity, bodies[key].angle, bodies[key].angular_velocity = state
-            termination = 'travel-limit'
+        if end <= t + 1e-12:
+            continue
+        exact_end = model.exact_square and end in model.input_breaks()
+        while t < end - 1e-12:
+            step = min(c['dt'], end - t, max(1e-12, next_sample - t))
+            q, v, ha = read()
+            if (q <= model.lo + 1e-11 and v < 0) or (q >= model.hi - 1e-11 and v > 0):
+                termination = 'travel-limit'
+                break
+            before_power = powers(model, t, q, v)
+            saved = body.position, body.velocity
+            # Real gravity acts on m1 in Pymunk. Remaining force consists of the
+            # spring/actuator and exactly condensed link inertial reactions.
+            body.force = (0, p['m1'] * (ha + p['g']))
+            space.step(step)
+            new_t = t + step
+            side = 'left' if exact_end and new_t >= end - 1e-12 else 'right'
+            try:
+                nq, nv, _ = model.heave_acceleration(new_t, body.position.y, body.velocity.y, side)
+            except ValueError:
+                body.position, body.velocity = saved
+                termination = 'travel-limit'
+                break
+            after_power = powers(model, new_t, nq, nv, side)
+            wa += .5 * (before_power[0] + after_power[0]) * step
+            wi += .5 * (before_power[1] + after_power[1]) * step
+            t = new_t
+            if t >= next_sample - 1e-10 or t >= end - 1e-10:
+                append(side)
+                if t >= next_sample - 1e-10:
+                    next_sample += 1 / c['outputHz']
+            if not math.isfinite(body.position.y + body.velocity.y) or abs(body.velocity.y) > 1e6:
+                raise ValueError('Pymunk diverged; reduce timestep and inspect physical inputs.')
+        if termination != 'duration':
+            if t > rows[-1]['t'] + 1e-10:
+                append()
             break
-        new_v = u.angular_velocity
-        work += c['hipTorqueNm'] * (new_q - q) - .5 * c['dampingNms'] * (v * v + new_v * new_v) * dt
-        t += dt
-        if t >= next_sample - 1e-10 or t >= c['duration'] - 1e-10:
-            observe((new_v - v) / dt)
-            next_sample += 1 / c['outputHz']
-        if not math.isfinite(new_q + new_v) or abs(new_v) > 1e6:
-            raise ValueError('Pymunk diverged; reduce timestep or loading and inspect inertias.')
-    if t > rows[-1]['t'] + 1e-10:
-        observe(model.acceleration(q_of(), u.angular_velocity))
-    return rows, frames, dict(termination=termination, elapsedSeconds=t, maxWorkEnergyResidualJ=max_energy,
-                             maxConstraintPositionErrorMm=max_pin * 1000, maxConstraintAngleErrorDeg=max_angle / R,
-                             integrator='Pymunk 2D rigid bodies / iterative pivot and gear constraints',
-                             frameSource='actual Pymunk body transforms',
-                             rigidBodies=len(bodies), pivotConstraints=len(pivots), gearConstraints=len(gears))
+        if exact_end:
+            apply_jump()
+    diagnostics = dict(termination=termination, elapsedSeconds=t,
+                       maxConstraintPositionErrorMm=max_x * 1000, maxConstraintAngleErrorDeg=0,
+                       integrator='Pymunk real chassis heave body / transformed h equation / exact inertial condensation',
+                       frameSource='actual Pymunk chassis transform; exact ideal linkage reconstruction',
+                       rigidBodies=1, chassisBodyMassKg=body.mass, chassisPitchLocked=True,
+                       grooveConstraints=1, pivotConstraints=0, gearConstraints=0,
+                       linkageFormulation='ideal kinematic transmission; nonzero link inertia exactly condensed into chassis force')
+    return rows, frames, events, finish_diagnostics(model, rows, diagnostics)
 
 
 def simulate(payload):
@@ -240,21 +258,31 @@ def simulate(payload):
     if payload['engine'] not in ('analytical', 'pymunk'):
         raise ValueError('Unknown dynamics engine.')
     model = Model(payload['params'], payload['runConfig'])
-    rows, frames, diagnostics = analytical(model) if payload['engine'] == 'analytical' else pymunk_run(model)
-    warnings = ['¼ model · fixed-hip mechanism test: m1 remains fixed at A; prescribed wheel load is not a solved contact reaction.',
-                'Ideal massless nonslip belts and cable; fixed drive shaft theta4=0; no ground collision, chassis translation or impact law.',
-                'Rod/disc inertias and the entered hip rotor inertia are explicit modeling assumptions, not measured hardware values.']
-    if diagnostics['termination'] == 'travel-limit':
-        warnings.append('Working travel limit reached; run ends at the last admissible state before impact.')
+    rows, frames, events, diagnostics = analytical(model) if payload['engine'] == 'analytical' else pymunk_run(model)
+    warnings = ['¼ model: chassis A heaves freely; xA and pitch are fixed as by ideal vertical slide rods.',
+                'Wheel height is a prescribed actuator input. Signed inputReactionN can be negative; no unilateral tire/terrain contact or rod vertical support is modeled.',
+                'Weight-reference static Fn is not reapplied dynamically: gravity acts once on every builder mass. Explicit global/contact loads are additional applied loads.',
+                'Ideal massless nonslip belts and cable; fixed drive shaft theta4=0; no collisions, compliance or hardware validation.']
+    if model.exact_square:
+        warnings.append('Exact square events preserve chassis position/velocity. Massless transmission angles jump; angular velocity and finite reaction at the event itself are undefined. Rows report one-sided states and events report source work.')
+    else:
+        warnings.append('Applied input uses finite C2 quintic rises inside the nominal square high interval; requested and applied inputs are both returned.')
+    if diagnostics['termination'] != 'duration':
+        warnings.append('Working travel reached; run stops at the last admissible state without an invented impact response.')
     if payload['engine'] == 'pymunk':
-        warnings.append('Spring force is applied explicitly each timestep. Refine dt and inspect constraint/work-energy residuals before interpreting peaks. Gear constraints do not reproduce belt preload bearing loads.')
-    result = dict(schema='kinefold/dynamics-v1', engine=payload['engine'], params=model.p, runConfig=model.c,
-                  snapshot=dict(params=model.p, solverConfig=model.c), designHash=model.hash(), rows=rows, frames=frames,
-                  diagnostics={**diagnostics, 'initialStaticTorqueNm': -model.generalized(model.q0),
+        warnings.append('Pymunk integrates the actual m1 chassis body; linkage masses/inertias use exact inertial condensation, not separate rigid-link bodies. Refine dt before interpreting force peaks.')
+    result = dict(schema='kinefold/dynamics-v2', engine=payload['engine'], params=model.p, runConfig=model.c,
+                  snapshot=dict(params=model.p, solverConfig=model.c), designHash=model.hash(), rows=rows, frames=frames, events=events,
+                  diagnostics={**diagnostics, 'modelRevision': 'floating-chassis-v2',
+                               'initialStaticTorqueNm': -model.generalized(model.q0),
                                'initialGeneralizedInertiaKgM2': model.mass(model.q0)[0], 'resolvedInertiasKgM2': model.I,
-                               'wheelCoefficientK': model.K}, warnings=warnings,
-                  scope=dict(quarterModel=True, fixture='fixed-hip', coordinates='+x front / left in preview; +z up; +y toward viewer'))
-    # Reject NaN/Infinity rather than emitting nonstandard JSON.
+                               'builderMassesKg': {key: model.p['m' + key] for key in ('1', '2', '3', '5', '6')},
+                               'wheelCoefficientK': model.K, 'inputLaw': 'exact-spatial-square' if model.exact_square else 'C2-quintic-spatial-square',
+                               'inputSpeedIsStudyAssumption': True}, warnings=warnings,
+                  scope=dict(quarterModel=True, fixture='floating-chassis',
+                             coordinates='+x front / left in preview; +z up; +y toward viewer',
+                             chassis='vertical translation only; fixed horizontal position and pitch',
+                             input='prescribed wheel height, no unilateral terrain contact'))
     json.dumps(result, allow_nan=False)
     return result
 

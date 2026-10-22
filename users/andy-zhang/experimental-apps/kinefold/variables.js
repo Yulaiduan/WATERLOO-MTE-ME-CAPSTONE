@@ -1,6 +1,6 @@
 /** Design-field dictionary used by both controls and searchable conventions.
  * Loaded as a browser script before app.js. Values use mm/deg/kg/N/Nm; UI only.
- * Definitions describe this experimental fixed-hip planar model, not hardware.
+ * Definitions describe this experimental planar mechanism, not hardware.
  */
 globalThis.KinefoldFields = [
   {id:'geometry',title:'Geometry',note:'Links, pulleys & working range',sections:[
@@ -31,7 +31,7 @@ globalThis.KinefoldFields = [
       ['rs','r_s','Idler radius','mm',10,0,1000,'Finite idler pitch radius; exact tangent span plus clockwise wrap. Zero is an ideal point limit.']]]]},
   {id:'loading',title:'Loadings & preloads',note:'Mass, gravity & prescribed forces',sections:[
     ['Mass & gravity',[
-      ['m1','m₁','Chassis / corner','kg',8.75,0,10000,'Mass supported by this single leg at fixed hip A. This is a corner mass, not a full vehicle mass.'],
+      ['m1','m₁','Chassis / corner','kg',8.75,0,10000,'Single-leg chassis mass at A: fixed in builder/statics, moving vertically in dynamics. This is a corner mass, not a full vehicle mass.'],
       ['m2','m₂','Upper link','kg',0,0,1000,'Uniform upper-link mass acting at the midpoint of A–B.'],
       ['m3','m₃','Lower link','kg',0,0,1000,'Uniform lower-link mass acting at the midpoint of B–C.'],
       ['m5','m₅','Knee compound','kg',0,0,1000,'Compound pulley assembly mass at B. There is no separate m₄ in this model.'],
