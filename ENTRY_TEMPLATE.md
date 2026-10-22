@@ -3922,3 +3922,54 @@ The five-tab UI retains independent quarter-model dynamics, and its footer accur
 Preserve the current builder-to-static event boundary and do not imply automatic V4 dynamic routing or hardware validation.
 
 ---
+
+
+## Entry: 2026-10-22 — Andy Zhang — Shared Kinefold designs and native coupled solvers
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Isolated Kinefold project library and fixed-hip mechanism solvers.
+- **Associated Issue/Task:** User requested00 Designs with saved configurations/profiles and static, analytical and genuine2D Pymunk workspaces all using the mechanism builder model; GPT-6.1 Sol workers develop with parent architecture review.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/.gitignore`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/Setup Kinefold.cmd`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/requirements.txt`
+- `users/andy-zhang/experimental-apps/kinefold/solver-style.css`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/style.css`
+- `users/andy-zhang/experimental-apps/kinefold/variables.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_dynamics.py`
+- **API/Interface Changes:** Versioned project-v2 snapshots include exact mechanism parameters, view and shared solver profile; legacy mechanism-v1 migrates explicitly. Browser-local named library supports save/copy/rename/load/delete/undo and portable JSON without results. Native same-origin POST /api/dynamics accepts engine/params/runConfig and invokes this app's bounded .venv CLI; no sibling service/iframe remains. Both dynamic engines use the finite-idler mechanism, fixed hip A, locked theta4, prescribed loads, explicit moving masses and inertias, and travel-limit termination. Pymunk is actual constrained rigid bodies; preview distinguishes ideal belts/indices from actual linkage overlay and sampled residuals. Source apps, retained V4 core and canonical components are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Existing3123 numerical/drawing assertions,14 project/library scenario groups,6 Python dynamics tests, all JS parsing and Python compilation pass. Source-static parity maximum2.84e-14Nm; holding drift max4.33e-5deg; dt.002/.001/.0005 Pymunk trajectory errors decrease. Real0.3s native API runs return31rows/31frames for both engines; actionable missing-environment503 and cross-origin403 verified. Browser checks verify library/profile persistence, complete-project export/import on static, duplicate/rename/delete/undo via accessible dialogs, shared holding torque, both engines holding, Pymunk release trajectory/scrub/export and stale results. Native prompt/confirm failed in IAB and were replaced with in-page dialogs; an initial fetch overlapped deliberate lifecycle restart and was retried. Explicit load/import now synchronously persists validated working state (typing stays debounced) and pagehide flushes, fixing an immediate-reload race; actual immediate reload preserves both loaded example and restored baseline. Actual app-local Setup plus Start reuse/Stop/restart from unrelated cwd pass at4191. Required repository entry/workspace gates run before publication. No hardware, terrain contact, floating chassis or canonical physics claim.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app implementation.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now stores named complete designs and uses one shared mechanism/profile for static and both native fixed-hip quarter-model dynamics.
+Start the app with its existing launcher at4191; run Setup Kinefold.cmd once for its own pinned Python3.12+ solver environment, and export project JSON as a portable backup.
+Preserve explicit inertia assumptions, timestep refinement, actual Pymunk residual reporting and the distinction between this fixed-hip test and terrain or whole-vehicle behavior.
+
+---

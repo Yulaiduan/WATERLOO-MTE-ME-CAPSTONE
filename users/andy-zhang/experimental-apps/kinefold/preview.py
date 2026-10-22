@@ -3,7 +3,7 @@
 Invocation: python preview.py start [--no-browser] | stop | serve
 Inputs: adjacent app assets, fixed http://127.0.0.1:4191/ (no physical units).
 Outputs: detached loopback server, readable .preview/server.log and health state.
-Limitations: local single-user preview; no hosting, login service or simulation.
+Limitations: local single-user preview; experimental dynamics run in an app venv.
 """
 from __future__ import annotations
 
@@ -27,26 +27,57 @@ URL = "http://127.0.0.1:4191/"
 IDENTITY = hashlib.sha256(str(ROOT).casefold().encode()).hexdigest()[:20]
 STATE = ROOT / ".preview"
 ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
-          "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js", "solvers.js"}
+          "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js",
+          "solvers.js", "solver-style.css", "project-store.js", "designs.js"}
 
 
-SOLVER_LOCK = threading.Lock()
-LAB = ROOT.parent / "wheel-leg-lab"
+DYNAMICS_LOCK = threading.Lock()
+MAX_REQUEST_BYTES = 128 * 1024
+MAX_RESULT_BYTES = 16 * 1024 * 1024
 
-def start_solvers():
-    """Start/reuse the verified sibling bench through its durable launcher."""
-    with SOLVER_LOCK:
-        launcher = LAB / "Start-Pymunk.ps1"
-        if not launcher.exists():
-            raise RuntimeError("Restore the sibling wheel-leg-lab folder first.")
-        result = subprocess.run(["powershell.exe", "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(launcher), "-NoBrowser"], capture_output=True, text=True, timeout=50, creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
-        if result.returncode:
-            raise RuntimeError(result.stdout.strip() or result.stderr.strip() or "Run Setup Motion Lab.cmd first.")
-        with urlopen("http://127.0.0.1:4186/api/health", timeout=3) as response:
-            state=json.load(response)
-        if state.get("app") != "capstone-wheel-leg-lab" or Path(state.get("root", "")).resolve() != LAB.resolve():
-            raise RuntimeError("Port 4186 did not identify the expected Motion Lab checkout.")
-        return {"ready": True, "origin": "http://127.0.0.1:4186"}
+
+def reject_nonfinite(value):
+    """JSON input and engine output must contain finite numbers only."""
+    raise ValueError("Nonfinite JSON number: " + value)
+
+
+def run_dynamics(request):
+    """Integrate one bounded request in this app's installed physics environment."""
+    if not isinstance(request, dict) or set(request) != {"engine", "params", "runConfig"}:
+        return {"error": "Expected engine, params and runConfig only."}, 400
+    if not isinstance(request["engine"], str) or request["engine"] not in {"analytical", "pymunk"}:
+        return {"error": "Choose analytical or pymunk."}, 400
+    if not isinstance(request["params"], dict) or not isinstance(request["runConfig"], dict):
+        return {"error": "params and runConfig must be objects."}, 400
+    python = ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
+    if not python.is_file():
+        return {"error": "Dynamics dependencies are not installed. Run Setup Kinefold.cmd in this app folder, then retry. The builder and static solver remain available."}, 503
+    if not DYNAMICS_LOCK.acquire(blocking=False):
+        return {"error": "A dynamics run is already in progress. Wait for it to finish, then retry."}, 409
+    try:
+        result = subprocess.run(
+            [str(python), str(ROOT / "dynamics.py"), "--request-stdin"],
+            input=json.dumps(request, allow_nan=False), capture_output=True, text=True,
+            encoding="utf-8", errors="replace", timeout=90, cwd=ROOT,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
+        )
+        if len(result.stdout.encode("utf-8")) > MAX_RESULT_BYTES:
+            return {"error": "Result exceeded the local preview limit. Reduce duration or output sample rate."}, 422
+        try:
+            data = json.loads(result.stdout, parse_constant=reject_nonfinite)
+        except ValueError:
+            return {"error": "Dynamics engine did not return a valid result. Run Setup Kinefold.cmd to verify its environment. " + result.stderr.strip()[-1500:]}, 502
+        if not isinstance(data, dict):
+            return {"error": "Dynamics engine returned an unexpected response."}, 502
+        if result.returncode or "error" in data:
+            return {"error": str(data.get("error", "Dynamics integration failed."))}, 422
+        return data, 200
+    except subprocess.TimeoutExpired:
+        return {"error": "Dynamics run exceeded 90 seconds and was stopped. Reduce duration, relax the step or check the design."}, 504
+    except (OSError, ValueError) as error:
+        return {"error": str(error)}, 503
+    finally:
+        DYNAMICS_LOCK.release()
 
 
 def health():
@@ -93,15 +124,31 @@ def serve():
                 self.send_error(404)
 
         def do_POST(self):
-            if self.path == "/__kinefold_solvers":
-                if self.headers.get("Origin") != URL.rstrip("/") or self.headers.get("X-Kinefold-Request") != "solver-tabs":
-                    self.send_error(403)
+            if self.path == "/api/dynamics":
+                if self.headers.get("Origin") != URL.rstrip("/") or self.headers.get("X-Kinefold-Request") != "coupled-dynamics":
+                    payload = b'{"error":"Dynamics requests must come from this Kinefold page."}'
+                    self.send_response(403)
+                    self.send_header("Content-Type", "application/json")
+                    self.send_header("Content-Length", str(len(payload)))
+                    self.end_headers()
+                    self.wfile.write(payload)
                     return
                 try:
-                    result, status = start_solvers(), 200
-                except Exception as error:
-                    result, status = {"error": str(error)}, 503
-                payload = json.dumps(result).encode()
+                    length = int(self.headers.get("Content-Length", "0"))
+                    if not 0 < length <= MAX_REQUEST_BYTES:
+                        result, status = {"error": "Request body must be between 1 and 131072 bytes."}, 413
+                    elif self.headers.get("Content-Type", "").split(";", 1)[0].strip() != "application/json":
+                        result, status = {"error": "Send an application/json request."}, 415
+                    else:
+                        self.connection.settimeout(10)
+                        raw = self.rfile.read(length)
+                        if len(raw) != length:
+                            raise ValueError("Incomplete request body.")
+                        request = json.loads(raw, parse_constant=reject_nonfinite)
+                        result, status = run_dynamics(request)
+                except (ValueError, OSError) as error:
+                    result, status = {"error": str(error)}, 400
+                payload = json.dumps(result, allow_nan=False).encode()
                 self.send_response(status)
                 self.send_header("Content-Type", "application/json")
                 self.send_header("Content-Length", str(len(payload)))

@@ -137,3 +137,69 @@ were empty and all3123 existing model/drawing assertions passed.
 The global footer and opening scope descriptions now reflect the solver tabs.
 The user requested GPT-6.1 Sol development agents with the parent handling
 architecture and review; that working preference was followed for this finish.
+
+## Unified design profiles and native dynamics — 2026-10-22
+
+This supersedes the independent embedded-bench architecture described above.
+The owner asked for all solvers to use the mechanism builder and for a00 Designs
+workspace. Static and both native dynamic tabs now use the shared project-v2
+mechanism. Both dynamics use one saved runConfig; the Studio bridge emits
+monotonic revision/modelRevision snapshots and rejects malformed profile updates.
+The analytical/Pymunk output belongs to an exact captured snapshot: physical
+edits/load mark old results stale, and late results for another revision are
+rejected. JSON run export retains the full project, run settings and engine result;
+CSV retains returned rows. Playback uses real returned theta2, with one-scale
+x-left/z-up geometry, finite belt loops, spring path and body indices.
+
+The fixed-hip experimental fixture holds A and theta4; theta2 is the moving
+coordinate and the builder's prescribed wheel load remains external. No ground
+contact, floating chassis or whole-vehicle claim applies. m1 affects the weight
+reference but is fixed at A and adds no moving inertia. Moving masses are never
+substituted for the original zero-mass static baseline. The explicitly labelled
+00 Designs dynamics example supplies illustrative moving masses, while the
+inertia panel distinguishes uniform rods/discs, custom inertias and hip rotor.
+Static holding-torque and release actions update the saved profile explicitly.
+
+POST /api/dynamics replaces /__kinefold_solvers and no longer starts/requires4186.
+It validates origin/header/content/shape/nonfinite JSON and bounded body, serializes
+workers, and invokes the app .venv Python dynamics.py --request-stdin with a90s
+limit. Builder/static preview needs only standard-library Python; Setup Kinefold.cmd
+installs isolated numerical dependencies. Existing4191 Start/Stop launchers remain
+canonical; integrated launcher lifecycle checks belong to final validation.
+
+Development used separate worktrees and GPT-6.1 Sol agents under parent architecture
+review. Solver UI/server checks so far: node --check solvers.js and conventions.js,
+python -m py_compile preview.py, and four request-shape/missing-environment probes
+pass. Full combined browser/backend/start-restart evidence is recorded by the
+integration agent after all workspaces are assembled. Canonical physics remains
+NOT APPLICABLE to this isolated experimental app; hardware is unvalidated.
+
+
+## Integrated verification — 2026-10-22
+
+The parent reviewed architecture and delegated implementation to GPT-6.1 Sol
+workers in isolated worktrees. Integration retains one native project model and
+removes all sibling dynamic-service/iframe dependencies. The local app now has
+its own pinned SciPy/Pymunk environment and Setup Kinefold.cmd (Python3.12+).
+Actual setup/reuse/stop/start from an unrelated working directory passes at4191.
+
+All3123 existing model/drawing assertions,14 project/library scenario groups,
+all JS parsing and Python compilation pass. Six Python dynamics tests verify
+source-static parity (max2.84e-14Nm), energy derivatives, both-engine equilibrium
+(max Pymunk holding drift4.33e-5deg), travel termination, actual rigid frames,
+zero-mass validation and timestep refinement. Pymunk maximum angle errors versus
+the analytical trajectory decrease0.06897/0.03388/0.01679deg as dt halves from
+0.002 to0.001 to0.0005s; work-energy residuals likewise decrease.
+Real0.3s native API runs return31 rows/31 frames from each engine. Missing-env
+503 and foreign-origin403 errors are explicit. Browser checks cover saved
+profiles/reload, shared holding torque, project import on static, duplicate,
+rename/delete/undo, both-engine holding runs, release trajectory/scrub/export
+and stale-state marking. Native prompt/confirm were unsupported in IAB and are
+replaced with accessible in-page dialogs; a fetch failure during deliberate
+service lifecycle testing was retried after restart. No hardware/terrain or
+canonical robot validation is claimed.
+
+Pymunk belts/indices explicitly reconstruct ideal constraints from returned q;
+actual A/B/C linkage positions are overlaid dashed, with sampled pin/angular
+residuals displayed next to playback time. Run notes and detailed fixture
+assumptions expand on demand; quarter-model scope and run controls stay visible.

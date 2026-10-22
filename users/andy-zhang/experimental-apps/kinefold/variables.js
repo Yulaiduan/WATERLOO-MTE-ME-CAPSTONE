@@ -35,7 +35,7 @@ globalThis.KinefoldFields = [
       ['m2','m₂','Upper link','kg',0,0,1000,'Uniform upper-link mass acting at the midpoint of A–B.'],
       ['m3','m₃','Lower link','kg',0,0,1000,'Uniform lower-link mass acting at the midpoint of B–C.'],
       ['m5','m₅','Knee compound','kg',0,0,1000,'Compound pulley assembly mass at B. There is no separate m₄ in this model.'],
-      ['m6','m₆','Wheel assembly','kg',0,0,1000,'Wheel assembly mass at C. Masses are static loads; no inertia is integrated.'],
+      ['m6','m₆','Wheel assembly','kg',0,0,1000,'Wheel assembly mass at C. Builder/statics treats these masses as loads. Dynamics integrates the moving masses with the configured body inertias.'],
       ['g','g','Gravity','m/s²',9.81,0,100,'Gravity magnitude; gravitational force is [0, 0, −m g].']]],
     ['Applied wheel load',[
       ['Fx','F_x','Forward force','N',0,-100000,100000,'Signed global +x wheel-contact force. Only active in Global components mode.'],
