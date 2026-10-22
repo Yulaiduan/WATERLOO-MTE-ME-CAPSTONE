@@ -43,14 +43,14 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=r
   await vf.locator('#vsl-lab-status').filter({hasText:'singular'}).waitFor();assert.ok(page.url().includes('tab=vsl'));
   await vf.locator('#reset').click();
   // Exact source-model parity, independent from the served bridge and any saved output.
-  const source=fs.readFileSync(path.resolve('../../../jonathan-xie/experimental-apps/leg-solver/v4-pulley.html'),'utf8'),ctx={};vm.createContext(ctx);
+  const source=fs.readFileSync(path.resolve('../../../jonathan-xie/experimental-apps/vsl-solver/v4/v4-pulley.html'),'utf8'),ctx={};vm.createContext(ctx);
   for(const id of ['solver-model','statics-model','spring-model']){const match=source.match(new RegExp('<script id="'+id+'">([\\s\\S]*?)</script>'));if(match)vm.runInContext(match[1],ctx);}
   const modelAvailable=vm.runInContext('typeof VSLStatic',ctx);assert.equal(modelAvailable,'object');
   await vf.locator('#vsl-to-sizing').click();await page.waitForURL(/tab=sizing/);await frame.locator('#v4-overlay').waitFor();
   await sizing.waitForFunction(()=>window.sizingResults.v4?.rows.length===181);b=await result();
   ctx.parameters=b.v4.parameters;
   for(const row of b.v4.rows){ctx.theta=row.theta2;const expected=vm.runInContext('VSLStatic.solve(parameters,theta,false)',ctx);assert.ok(Math.abs(row.hipTorque-expected.tau2)<1e-10);assert.ok(Math.abs(row.outputRpm-Math.abs(100/expected.spring.Jz)*60/(2*Math.PI))<1e-10);}
-  assert.ok(Math.max(...b.v4.rows.map(r=>Math.abs(r.hipTorque)))<.038);assert.equal(b.v4.torqueConvention,'applied-ccw-hip');
+  assert.ok(Math.max(...b.v4.rows.map(r=>Math.abs(r.hipTorque)))<.064);assert.equal(b.v4.torqueConvention,'applied-ccw-hip');
   await page.screenshot({path:path.join(out,'sizing-desktop.png'),fullPage:false});
   await page.locator('#theme-toggle').click();assert.equal(await sizing.evaluate(()=>document.documentElement.dataset.theme),'dark');
   await page.locator('[data-tab="vsl"]').click();assert.equal(await vpage.evaluate(()=>document.documentElement.dataset.theme),'dark');

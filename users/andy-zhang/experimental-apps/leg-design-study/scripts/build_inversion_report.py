@@ -293,7 +293,7 @@ def render_pdf(d,e):
            'python inversion_search.py<br/>python -m unittest -v test_inversion_search<br/>'
            'python scripts/verify_inversion_geometry.py<br/>python scripts/build_inversion_report.py<br/>'
            'node scripts/verify_inversion_report.cjs</font>',9.5)
-    r.text(48,277,'Primary project sources: Jonathan leg-solver/v1-kinematics.html, '
+    r.text(48,277,'Primary project sources: Jonathan vsl-solver/v1/v1-kinematics.html, '
            'v2-quasi-static.html and v2-model.md; this app model.js and generalized_leg.py; '
            'new inversion_search.py, retained results and engine checks; docs/inversion-path-study.md. '
            'Read the revision map for the source base 865b5f1 and later publication.',9.5)

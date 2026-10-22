@@ -4,7 +4,7 @@
  */
 import test from 'node:test';import assert from 'node:assert/strict';import fs from 'node:fs';import vm from 'node:vm';import crypto from 'node:crypto';
 import {fromJon} from '../web/jon-profile.js';import {resolveEdit,angleTrace,applyPreset} from '../web/linkage-tools.js';import {normalizeImport,extractTables} from '../web/library.js';
-const source=fs.readFileSync(new URL('../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html',import.meta.url),'utf8');
+const source=fs.readFileSync(new URL('../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html',import.meta.url),'utf8');
 const scripts=Object.fromEntries([...source.matchAll(/<script id="([^"]+)">([\s\S]*?)<\/script>/g)].map(x=>[x[1],x[2]]));
 const context=vm.createContext({window:{}});vm.runInContext(fs.readFileSync(new URL('../web/jon-models.js',import.meta.url),'utf8'),context);const ref=context.window.JonReference;
 test('generated reference contains three exact original models and recorded source hashes',()=>{const bundle=fs.readFileSync(new URL('../web/jon-models.js',import.meta.url),'utf8');for(const id of ['solver-model','statics-model','global-maxima-model']){assert.ok(bundle.includes(scripts[id]));assert.equal(ref.source.models[id],crypto.createHash('sha256').update(scripts[id]).digest('hex'));}assert.equal(ref.source.sha256,crypto.createHash('sha256').update(source).digest('hex'));assert.equal(bundle.includes('<aside'),false);});

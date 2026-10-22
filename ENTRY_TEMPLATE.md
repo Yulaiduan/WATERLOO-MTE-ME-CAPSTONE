@@ -3460,3 +3460,233 @@ The new 8.75kg/20deg/200mm-wheel held-hip 100/150mm cases land at 275/299ms; 250
 Next resolve masses/support load, define landing/braking objectives and add actual drivetrain limits plus four-leg load sharing before choosing hardware; publication-validation.json records the exact reproduced evidence.
 
 ---
+
+## Entry: 2026-10-21 — Jonathan Xie — VSL version folders, automatic exit angle and Excel config library
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Jonathan's isolated VSL member calculator and path-only sibling consumers.
+- **Associated Issue/Task:** User requested inverse drive ratios, rw200mm, total mass8.75kg, force ×g preservation, working-range maximum-required ζ, version folders and an explicit local Excel config library. Keep p₀ extrapolated at90° if wrap is absent there; still reject a90° pin inside/on S. Local changes only; no commit or push requested.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact changed paths including both sides of moves:
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/context/README.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/force-travel-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-math.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-physics.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/generalized-leg-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/inversion-path-study.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/docs/revisions.md`
+- `users/andy-zhang/experimental-apps/leg-design-study/index.html`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_design_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/build_inversion_report.py`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_curved_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_force_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_inversion_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_rms_links.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_sweep_brief.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/scripts/verify_unequal_report.cjs`
+- `users/andy-zhang/experimental-apps/leg-design-study/tests/design-study.test.js`
+- `users/andy-zhang/experimental-apps/pc-handoff.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/context/README.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/actuator-sizing.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/docs/merged-linkage.md`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/build_jon_models.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/jon_reference_fixtures.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/scripts/verify_sizing.cjs`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/design-examples.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/tests/merged-linkage.test.js`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/vsl_integration.py`
+- `users/andy-zhang/experimental-apps/wheel-leg-lab/web/sizing/vsl-bridge.js`
+- `users/jonathan-xie/experimental-apps/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/.gitignore`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v2.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v3.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver v4.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/Open Leg Solver.cmd`
+- `users/jonathan-xie/experimental-apps/leg-solver/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/2026-10-19-agent-entry-note.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/plot-v3-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/tune-pulley-sample.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/tune-pulley-textbook.py`
+- `users/jonathan-xie/experimental-apps/leg-solver/v1-kinematics.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-full-range.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-hip-horn-geometry.svg`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-spring.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v3-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-model.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-pulley.html`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-sample-13kg-fitted.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-sample-13kg-point-rule.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook-10mm.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook-10mm.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-textbook.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.md`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-tuning.png`
+- `users/jonathan-xie/experimental-apps/leg-solver/v4-verification.json`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-global-maxima.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-kinematics.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-pulley.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-quasi-static.cjs`
+- `users/jonathan-xie/experimental-apps/leg-solver/verify-spring.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/.gitignore`
+- `users/jonathan-xie/experimental-apps/vsl-solver/Open VSL Solver v4.cmd`
+- `users/jonathan-xie/experimental-apps/vsl-solver/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/context/2026-10-19-agent-entry-note.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v1/Open Leg Solver.cmd`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v1/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v1/v1-kinematics.html`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v1/verify-kinematics.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v2/Open Leg Solver v2.cmd`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v2/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v2/v2-model.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v2/verify-global-maxima.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v2/verify-quasi-static.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/Open Leg Solver v3.cmd`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/plot-v3-sample.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/v3-full-range.png`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/v3-full-range.svg`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/v3-hip-horn-geometry.png`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/v3-hip-horn-geometry.svg`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/v3-model.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/v3-spring.html`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/v3-verification.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v3/verify-spring.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/Open Leg Solver v4.cmd`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/Open VSL Solver v4.cmd`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/config-library-columns.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/config-library-model.js`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/tune-pulley-sample.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/tune-pulley-textbook.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-configs.xlsx`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-default-library.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-model.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-pulley.html`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-sample-13kg-fitted.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-sample-13kg-point-rule.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-textbook-10mm.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-textbook-10mm.png`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-textbook-verification.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-textbook.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-tuning.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-tuning.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-tuning.png`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-verification.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/verify-library.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/verify-pulley.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/verify_excel.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/vsl_server.py`
+
+- **API/Interface Changes:** Rename leg-solver→vsl-solver and place each version in v1/v2/v3/v4. V4 qdc=rd/rc and qfe=rf/re; all physical radii/legacy driven imports retain meaning. Automatic fixed CW exit rotation is selected from analytic wrap extrema; 90° extrapolated payout cancels the constant routing offset in spring force/torque. Snapshot library adds stable DP IDs, explicit row Save/Load, selection/order/color/pin and 75 columns. Local Python stdlib HTTP bridge on127.0.0.1:8767 supports explicit XLSX saves, revisions, atomic replacement, prior-version backup and optional Tk Browse; normal launch reads v4-configs.xlsx. Standalone file HTML still calculates without Excel. Sibling readers/links point to version folders; Motion Lab serves the library-model dependency and hides the standalone Excel UI in its embedded frame. No shared runtime/assets/controllers/policies change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Initial entry check rejected a missing required Entry header, and the first whitespace check exposed CRLF churn in path-only consumers; corrected the new header and preserved original consumer line endings before final recheck. Staged tests pass: V1 3853, V2 statics16044/global29863, V3 28616, V4 91128 model assertions; 15037 library/ratio/mass/ζ checks and eight stdlib XLSX tests. V1–V3 HTML SHA256 preserved. Artifact Tool authors/recalculates/renders/inspects the initial75-column XLSX with one8.75kg baseline; no formula errors. Browser checks mass10kg→Fz98.1N at1g, qdc2→rd70/rc35, immutable row saves/load, group move, shading, pin/collapse, separate workbook Save Excel and unsaved cross-workbook draft recovery. Positive ζ62.735147° over100–270° retains wrap and displays extrapolated p₀; defaultζ−53.305793° stays horizontal. All24 SVGs finite, browser warning/error logs empty. Manual launcher starts from an unrelated working directory and repeated launch reuses server. Final repository path/link, entry/gate and installed-start checks are recorded in the delivery; native Tk picker and full Motion Lab GUI/engine suites not rerun. Numerical checks are experimental consistency, not hardware acceptance.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace and path-only sibling migration. No canonical assets or physical baseline changes.
+
+## 4. Compute Saving Handoff State
+
+Start from users/jonathan-xie/experimental-apps/vsl-solver/README.md and its root Open VSL Solver v4.cmd; direct HTML cannot automatically sync local Excel.
+The default8.75kg finite10mm-pulley fit is approximate (about±0.1262% support error), with p₀330.869283N, r_h62.2269495mm and S_u9.38777673mm; ζ changes routing, not torque.
+Use Row Save to capture a design and Save Excel to persist the library, preserve historical13kg fixtures and V1–V3 conventions, and resolve actual spring/cable/friction/3D and hardware constraints separately.
+
+---
+
+## Entry: 2026-10-21 — Jonathan Xie — flexible spring minimax fitting and physical hip torque signs
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Isolated VSL V4 member calculator, configuration state and model notes.
+- **Associated Issue/Task:** User requested Driving checkboxes for all seven spring inputs, arbitrary fitted subsets, peak-motor minimization with warnings, compact controls and physical signed hip torques. User confirmed minimizing max absolute tau2 at current loads, retaining physical sign reversals and tau4's own drive-shaft convention. Preserve the prior local folder/library work and existing user workbooks.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths in this continuation:
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/context/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/README.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/config-library-columns.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/config-library-model.js`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-flex-fit-verification.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-model.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-pulley.html`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-verification.json`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/verify-fit.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/verify-library.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/verify-pulley.cjs`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/verify_excel.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/vsl_server.py`
+
+- **API/Interface Changes:** Checked springDriving flags hold k/rh/Sv/rs/p0/nu/Su; unchecked values fit, with defaults holding k/Sv/rs/nu. The retired nominal driver no longer adjusts live fields; legacy resolved values still load. VSLFit.fit minimizes sampled peak absolute motor tau2 at fixed current alpha/beta/loads using interval/polygon linear k/p0 minimax and bounded multistart geometric search, followed by6501-pose verification. A background worker keeps the interface responsive; stale input changes discard results. No-free-variable, low-freedom, search-bound, zero-tension and ideal point-radius warnings appear beneath the fit button. Physical tauG=-old tauG and tau2=-tauG-tauS preserve motor/spring forces and energy. JSON/library snapshots persist all seven flags; legacy saved tauG outputs migrate idempotently. Excel files are not rewritten automatically; Save Excel persists the migrated representation. Remove two old buttons and duplicate sidebar alpha/theta controls; preserve phi0 and identify master endpoints. Legacy support-error fitting remains only for historical numerical evidence.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 91128 V4 tangency/energy/FBD/peak assertions pass with the new gravity sign; 15041 library/ratio/mass/exit/migration assertions,3680 flexible-fit assertions and nine XLSX unit tests pass. Test zero through seven free inputs, exact one/two-linear-variable point cases, exact held-value preservation and physical signed balance/load reversal. Normal8.75kg finite10mm fit peaks at0.02377072Nm, verified6501 poses; all-free search reaches flagged ideal rs0 with roundoff residual. Real browser background fits, one-free and none-free warnings, all-seven-free point warning,75-column row mask save/load and separate-workbook round trip pass. Staging first exposed an incorrectly encoded test string and nonexistent worker script ID; both repaired before installation. Existing baseline workbooks and prior member edits are preserved. Final source/link/entry/gate checks and installed launch verification are reported in delivery. These are numerical/member-app checks; no physical spring, hardware or full Motion Lab engine validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app; no shared assets, runtime, policy or physical baseline changes.
+
+## 4. Compute Saving Handoff State
+
+Open the existing root VSL V4 launcher; checked spring Driving values stay fixed and unchecked values fit only when requested, with all selections saved in config snapshots.
+Hip signs now obey tau2+tauG+tauS=0 with each positive CCW on Link2, while actual motor torque is unchanged and tau4 retains its drive-shaft sign.
+Use the result box and bounds tooltip, retain rs as Driving for a chosen real pulley, and explicitly Row Save/Save Excel after fitting or migrating a legacy library; numerical search is bounded and sampled, not a global or hardware certificate.
+
+---
+
+## Entry: 2026-10-22 — Jonathan Xie — support error autoscaling and signed kg axis
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** VSL V4 hip pulley support-error chart.
+- **Associated Issue/Task:** Fit the actual error range and show signed kg-equivalent and percent support differences.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-pulley.html`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-model.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/context/README.md`
+- **API/Interface Changes:** Support chart fits finite sampled min/max with8% padding, including one-sided curves; constant/empty series receive finite fallback bounds. Left ticks show Δkg=m_total*error_percent/100, right ticks percent, with both in hover. Negative kg means support below target weight. Raw torque, spring model, saved state and workbooks retain their behavior.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** All embedded scripts parse. Focused rendered-chart checks pass for mixed-sign, positive-only, negative-only, constant-zero/nonzero and undefined zero-mass data, including −1kg=−10% at10kg. Live browser default spans−0.146320% to+0.146318%, rather than±10%; hover at100° shows−0.01104kg (−0.1261%) for8.75kg. Browser visual and console checks, repository entry/gate and whitespace checks complete before delivery. No physical model or workbook change; canonical robot tests not run.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app chart change.
+
+## 4. Compute Saving Handoff State
+
+The V4 support chart now autoscales and shows the same signed error in kg on the left and percent on the right.
+The conversion is Δkg=Feq/g−m_total, so a negative value means deficient equivalent spring support.
+Keep zero-weight/Jacobian undefined handling and separate raw-torque scaling; saved configurations and Excel require no migration.
+
+---

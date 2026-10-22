@@ -9,7 +9,7 @@ const {pathToFileURL}=require('node:url'),assert=require('node:assert/strict'),c
 const root=path.resolve(__dirname,'..'),hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 (async()=>{
  const d=JSON.parse(fs.readFileSync(path.join(root,'docs/unequal-inversion-results.json'),'utf8'));
- const sourcePath=path.resolve(root,'../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html');
+ const sourcePath=path.resolve(root,'../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html');
  const source=fs.readFileSync(sourcePath,'utf8'),context=vm.createContext({Math});
  for(const id of ['solver-model','statics-model'])vm.runInContext(source.match(new RegExp(`<script id="${id}">([\\s\\S]*?)<\\/script>`))[1],context);
  vm.runInContext('globalThis.ref={VSL,VSLStatic}',context);

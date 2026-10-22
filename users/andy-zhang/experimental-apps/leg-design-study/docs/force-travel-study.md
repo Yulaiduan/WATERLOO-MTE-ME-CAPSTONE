@@ -264,7 +264,7 @@ The builder uses retained evidence, not a silent new search or simulation.
 Report reading needs no runtime, server or internet. The browser verifier uses
 the sibling locked Playwright and installed Edge/Chrome; screenshots/print QA
 and raw frames remain ignored. Source geometry/statics:
-[Jonathan V2](../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html),
+[Jonathan V2](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html),
 [Andy 2D model](../model.js), [generalized engine](../generalized_leg.py).
 No canonical robot, hardware, structural, GPU, other-OS, physical contact/impact
 or three-dimensional packaging validation is claimed.

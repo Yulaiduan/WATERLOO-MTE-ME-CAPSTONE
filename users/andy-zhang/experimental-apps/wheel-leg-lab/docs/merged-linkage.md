@@ -23,8 +23,8 @@ only, preserving spring, input and mass settings. Changing force convention
 preserves the current world force; a beta sweep then holds the chosen components.
 
 The embedded audit runs the exact three analytical scripts from
-[Jonathan's v2](../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html).
-[His model record](../../../../jonathan-xie/experimental-apps/leg-solver/v2-model.md)
+[Jonathan's v2](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html).
+[His model record](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-model.md)
 owns the tangent-span, equilibrium and preload assumptions. The build copies
 only those functions, with source/model SHA-256 hashes; it does not copy his
 editor. Five FBDs and their force/direction tables, twelve loading plots, three

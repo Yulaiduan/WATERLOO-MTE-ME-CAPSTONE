@@ -16,9 +16,9 @@ validation evidence for this revision.
 ## Provenance and conventions
 
 Starting repository revision: `6c74cfd` on main. The two sources are
-[Jonathan V1](../../../../jonathan-xie/experimental-apps/leg-solver/v1-kinematics.html)
-and [Jonathan V2](../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html),
-with [V2's model](../../../../jonathan-xie/experimental-apps/leg-solver/v2-model.md).
+[Jonathan V1](../../../../jonathan-xie/experimental-apps/vsl-solver/v1/v1-kinematics.html)
+and [Jonathan V2](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html),
+with [V2's model](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-model.md).
 Jonathan's published folder has README and context/README.md, but no app-level
 AGENTS.md or context.md; the repository rules apply. His standalone source is
 retained unchanged. The user's supplied screenshot is the initial parameter

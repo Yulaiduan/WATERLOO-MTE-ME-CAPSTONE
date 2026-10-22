@@ -24,7 +24,7 @@
     }
     return {schema:'motion-lab-v4-sizing/v1',parameters:p,springDriven:window.VSLApp.springDriven,verticalSpeed_mm_s:speed,rows,
       units:{theta2:'deg',hipTorque:'N m',gravityTorque:'N m',springTorque:'N m',outputRpm:'rpm',Jz_mm_per_rad:'mm/rad',springForce:'N',compensationPercent:'%',dz_mm:'mm'},
-      source:'users/jonathan-xie/experimental-apps/leg-solver/v4-pulley.html',sourceSha256:document.querySelector('meta[name="vsl-source-sha256"]').content,
+      source:'users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-pulley.html',sourceSha256:document.querySelector('meta[name="vsl-source-sha256"]').content,
       torqueConvention:'applied-ccw-hip',generated:new Date().toISOString(),scope:'Fixed-A V4 quasi-static torque with prescribed contact loads; kinematic speed only; no inertia/contact/thermal validation.'};
   }
   for(const [id,type]of [['vsl-to-sizing','motion-lab-v4-sizing'],['vsl-save-study','motion-lab-v4-save']])document.getElementById(id).onclick=()=>{

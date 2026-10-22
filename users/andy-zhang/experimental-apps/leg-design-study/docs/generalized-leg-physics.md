@@ -3,7 +3,7 @@
 Author: Andy Zhang with Codex. Updated: 2026-10-14. Status: experimental mathematical and rigid-body cross-checks, not accepted hardware or canonical robot validation.
 
 [generalized_leg.py](../generalized_leg.py) adds a new isolated model. Jonathan's
-[V2 model](../../../../jonathan-xie/experimental-apps/leg-solver/v2-model.md), Andy's
+[V2 model](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-model.md), Andy's
 saved equal-link solvers and all historical profiles remain unchanged. The
 dual-rope knee-pulley design remains **IMPOSSIBLE / rejected**; it is not among
 the nine generalized spring mechanisms. A separately named

@@ -9,8 +9,9 @@ from pathlib import Path
 import hashlib
 import mimetypes
 
-SOURCE = Path(__file__).resolve().parents[3] / 'jonathan-xie/experimental-apps/leg-solver'
+SOURCE = Path(__file__).resolve().parents[3] / 'jonathan-xie/experimental-apps/vsl-solver/v4'
 FILES = {
+    'config-library-model.js',
     'v4-pulley.html', 'v4-model.md', 'v2-model.md', 'v4-textbook.md',
     'v4-textbook-10mm.json', 'v4-textbook-10mm.png', 'v4-tuning.md',
     'v4-tuning.png', 'v3-model.md', 'v4-sample-13kg-fitted.json',
@@ -24,12 +25,14 @@ def resource(route):
     name = route[len('/vsl-v4/'):] or 'v4-pulley.html'
     if name not in FILES:
         return None
-    raw = (SOURCE / name).read_bytes()
+    aliases = {'v2-model.md': SOURCE.parent/'v2/v2-model.md', 'v3-model.md': SOURCE.parent/'v3/v3-model.md'}
+    raw = aliases.get(name, SOURCE/name).read_bytes()
     if name == 'v4-pulley.html':
         sha = hashlib.sha256(raw).hexdigest()
         text = raw.decode('utf-8')
         text = text.replace('</head>', f'<meta name="vsl-source-sha256" content="{sha}">'
                             '<link rel="stylesheet" href="/sizing/vsl-theme.css">'
+                            '<script>window.VSL_EMBEDDED=true;</script>'
                             '<script src="/theme.js"></script></head>', 1)
         text = text.replace('</body>', '<script src="/sizing/vsl-bridge.js"></script></body>', 1)
         return text.encode('utf-8'), 'text/html; charset=utf-8'

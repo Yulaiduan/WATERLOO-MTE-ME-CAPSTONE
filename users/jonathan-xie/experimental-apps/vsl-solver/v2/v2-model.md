@@ -4,7 +4,7 @@ Author: Jonathan Xie with Codex. Updated: 2026-10-14. Status: experimental analy
 
 Open [v2-quasi-static.html](v2-quasi-static.html) in a browser. All code and styles
 are embedded, with no packages, server or external data required. The original
-[v1-kinematics.html](v1-kinematics.html) remains a separate program, updated with
+[v1-kinematics.html](../v1/v1-kinematics.html) remains a separate program, updated with
 the two requested travel-direction angles.
 
 ## Clarified names, angles and inputs
@@ -244,7 +244,7 @@ endpoints, negative dz, multibranch inverses and a zero-width height domain. Max
 9.722e-13 N; moment residual 3.624e-13 Nm; analytic virtual-work torque discrepancy
 3.979e-13 Nm. These are numerical consistency checks, not hardware measurements.
 
-Browser verification and repository checks are recorded in [app context](context/README.md).
+Browser verification and repository checks are recorded in [app context](../context/README.md).
 No inertia integration, acceleration, spring/damper, ground rolling constraint,
 unilateral contact/friction feasibility, impact, strength or 3D clearance is solved.
 Overlapping pitch circles disable statics until repaired. Curves are finite-sampled;

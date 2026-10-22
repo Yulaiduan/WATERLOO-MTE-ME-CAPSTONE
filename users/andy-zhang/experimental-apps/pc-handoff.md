@@ -40,7 +40,7 @@ between computers. Rebuild from each app's manifests when needed.
 | Terrain Atlas/workbench | [Context](terrain-mobility-atlas/context.md) | Maintained atlas, reduced terrain model and historical linkage; measured and synthetic inputs remain distinct |
 | Historical source | [Archive context](capstone-archive/context.md) | Original 668-file snapshot, October 12 supplement and newly preserved October 19 supplement |
 | Shared controls | [Andy's project context](../../../context/users/andy-zhang/README.md) | Curated controls discussions, unresolved interfaces and source links |
-| New upstream solver | [Jonathan's solver README](../../jonathan-xie/experimental-apps/leg-solver/README.md), [V4 model](../../jonathan-xie/experimental-apps/leg-solver/v4-model.md), [context](../../jonathan-xie/experimental-apps/leg-solver/context/README.md) | Fetched at `e91897a`, titled “V4 VSL Solver (constant force pulley)”; retained in its existing member folder |
+| New upstream solver | [Jonathan's solver README](../../jonathan-xie/experimental-apps/vsl-solver/README.md), [V4 model](../../jonathan-xie/experimental-apps/vsl-solver/v4/v4-model.md), [context](../../jonathan-xie/experimental-apps/vsl-solver/context/README.md) | Fetched at `e91897a`, titled “V4 VSL Solver (constant force pulley)”; retained in its existing member folder |
 
 The Jonathan solver's app-local `AGENTS.md` is absent at the audit base. No solver
 edits, execution or new validation were performed here; resolve that missing

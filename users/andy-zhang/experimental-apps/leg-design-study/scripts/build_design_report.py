@@ -583,7 +583,7 @@ def render(r,d):
            'app environment. The report data records exact configurations, scenario policies, profiles, '
            'source SHA256 fingerprints and base revision 6c74cfd.',8.8)
     r.text(48,247,'Primary sources and repository map',11,NAVY,bold=True)
-    r.text(48,224,'Jonathan immutable <b>leg-solver/v1-kinematics.html</b>, '
+    r.text(48,224,'Jonathan immutable <b>vsl-solver/v1/v1-kinematics.html</b>, '
            '<b>v2-quasi-static.html</b> and <b>v2-model.md</b>; Andy <b>docs/link-sizing.md</b>, '
            '<b>generalized-leg-math.md</b>, <b>generalized-leg-study.md</b>, '
            '<b>generalized-leg-physics.md</b> and <b>impact-load-envelope.md</b>. '

@@ -1,0 +1,84 @@
+{
+  "schema": "general-vsl/v4-pulley",
+  "parameters": {
+    "L2": 300,
+    "L3": 300,
+    "ra": 50,
+    "rb": 25,
+    "rc": 35,
+    "rd": 35,
+    "re": 25,
+    "rf": 25,
+    "rw": 100,
+    "alpha": 0,
+    "phi0": 0,
+    "te": 100,
+    "tc": 165,
+    "m1": 13,
+    "m2": 0,
+    "m3": 0,
+    "m5": 0,
+    "m6": 0,
+    "g": 9.81,
+    "beta": 0,
+    "Fn": 127.53,
+    "Ft": 0,
+    "Fy": 0,
+    "Fz": 127.53,
+    "loadMode": "yz",
+    "Tab0": 0,
+    "Tcd0": 0,
+    "Tef0": 0,
+    "springEnabled": true,
+    "springK": 8,
+    "hornR": 95.5636321098142,
+    "Sv": 100,
+    "rs": 0.1,
+    "p0": 36.33897920981905,
+    "nu": 0,
+    "Su": 0.04952355135365927
+  },
+  "driven": {
+    "q23": "q23",
+    "qab": "qab",
+    "qcd": "qcd",
+    "qef": "qef"
+  },
+  "springDriven": null,
+  "ranges": {
+    "alpha": {
+      "min": 0,
+      "max": 30
+    },
+    "beta": {
+      "min": 0,
+      "max": 90
+    },
+    "Fn": {
+      "min": 0,
+      "max": 200
+    },
+    "Ft": {
+      "min": -100,
+      "max": 100
+    },
+    "Fy": {
+      "min": -100,
+      "max": 100
+    },
+    "Fz": {
+      "min": 0,
+      "max": 200
+    }
+  },
+  "theta2": 135,
+  "absoluteTorques": false,
+  "fullTravel": false,
+  "clampRanges": true,
+  "view": {
+    "showTau2": true,
+    "showTau4": true,
+    "showWheelForces": true
+  },
+  "torqueConvention": "applied-ccw"
+}

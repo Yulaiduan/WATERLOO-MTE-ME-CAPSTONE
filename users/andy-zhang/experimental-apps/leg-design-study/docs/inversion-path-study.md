@@ -288,9 +288,9 @@ HTML/PDF needs no runtime or server. Use [Open Inversion Report.cmd](../Open%20I
 on Windows. Search timing is informational; selected geometry and metrics are
 deterministic, while the retained elapsed-time field may vary on reproduction.
 
-Sources: Jonathan's [V1](../../../../jonathan-xie/experimental-apps/leg-solver/v1-kinematics.html),
-[V2](../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html),
-[V2 model record](../../../../jonathan-xie/experimental-apps/leg-solver/v2-model.md),
+Sources: Jonathan's [V1](../../../../jonathan-xie/experimental-apps/vsl-solver/v1/v1-kinematics.html),
+[V2](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html),
+[V2 model record](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-model.md),
 this app's [model](../model.js), [physical model](../generalized_leg.py),
 [search](../inversion_search.py), and [actual-engine verifier](../scripts/verify_inversion_geometry.py).
 The [revision map](revisions.md) and [validation record](validation.md) retain

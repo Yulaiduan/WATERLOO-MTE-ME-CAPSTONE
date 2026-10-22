@@ -10,7 +10,7 @@ const crypto=require('node:crypto');const root=path.resolve(__dirname,'..');
 const hash=p=>crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 (async()=>{
  const data=JSON.parse(fs.readFileSync(path.join(root,'docs/force-travel-results.json'),'utf8'));
- const sourcePath=path.resolve(root,'../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html');
+ const sourcePath=path.resolve(root,'../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html');
  const source=fs.readFileSync(sourcePath,'utf8'),ctx=vm.createContext({Math});
  for(const id of ['solver-model','statics-model'])vm.runInContext(source.match(new RegExp(`<script id="${id}">([\\s\\S]*?)<\\/script>`))[1],ctx);
  vm.runInContext('globalThis.ref={VSL,VSLStatic};',ctx);

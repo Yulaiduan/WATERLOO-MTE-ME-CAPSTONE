@@ -6,7 +6,7 @@ sample geometry is a numerical fit, not an accepted hardware design.
 Open [v3-spring.html](v3-spring.html), or double-click
 [Open Leg Solver v3.cmd](Open%20Leg%20Solver%20v3.cmd). Standalone offline HTML;
 no server, package installation or internet is needed for normal use. V1 and V2
-remain separate. The [V2 model](v2-model.md) owns the unchanged belt and load model.
+remain separate. The [V2 model](../v2/v2-model.md) owns the unchanged belt and load model.
 
 ## Geometry and spring law
 

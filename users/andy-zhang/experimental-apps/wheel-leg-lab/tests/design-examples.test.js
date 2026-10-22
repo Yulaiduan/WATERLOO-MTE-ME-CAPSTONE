@@ -11,7 +11,7 @@ import vm from 'node:vm';
 import crypto from 'node:crypto';
 import {data} from '../web/design-examples/data.js';
 import {pose,phaseAngle,trace} from '../web/design-examples/model.js';
-const source=new URL('../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html',import.meta.url);
+const source=new URL('../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html',import.meta.url);
 const text=fs.readFileSync(source,'utf8'),context=vm.createContext({Math});
 vm.runInContext(text.match(/<script id="solver-model">([\s\S]*?)<\/script>/)[1],context);
 vm.runInContext('globalThis.original=VSL;',context);

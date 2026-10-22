@@ -4,9 +4,9 @@ Author: Andy Zhang with Codex. Updated: 2026-10-14. Status: experimental
 analytical study; dimensions below are conditional candidates, not hardware acceptance.
 
 The new [model](../model.js) preserves the conventions of
-Jonathan's immutable [v1](../../../../jonathan-xie/experimental-apps/leg-solver/v1-kinematics.html)
-and [v2](../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html),
-with the [v2 derivation](../../../../jonathan-xie/experimental-apps/leg-solver/v2-model.md)
+Jonathan's immutable [v1](../../../../jonathan-xie/experimental-apps/vsl-solver/v1/v1-kinematics.html)
+and [v2](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html),
+with the [v2 derivation](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-model.md)
 as the source for quasi-static equilibrium. The existing
 [equal-link sizing study](../../wheel-leg-lab/docs/link-sizing.md) remains a separately reproducible special case.
 

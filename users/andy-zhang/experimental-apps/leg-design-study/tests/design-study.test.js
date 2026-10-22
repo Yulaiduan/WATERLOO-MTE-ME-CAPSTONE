@@ -11,7 +11,7 @@ import {metrics as equalMetrics} from '../../wheel-leg-lab/web/force-plots/link-
 const M=globalThis.DesignStudyModel;
 const cfg=(changes={})=>({...structuredClone(M.DEFAULT_CONFIG),...changes});
 const near=(a,b,tol=1e-8)=>assert.ok(Math.abs(a-b)<=tol,`${a} vs ${b}`);
-const original=fs.readFileSync(new URL('../../../../jonathan-xie/experimental-apps/leg-solver/v2-quasi-static.html',import.meta.url),'utf8');
+const original=fs.readFileSync(new URL('../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-quasi-static.html',import.meta.url),'utf8');
 const context=vm.createContext({Math});
 for(const id of ['solver-model','statics-model']) {
   const script=original.match(new RegExp(`<script id="${id}">([\\s\\S]*?)<\\/script>`))[1];

@@ -132,7 +132,7 @@ after editing V4. Save V4 sweep stores parameters, source hash, units and sample
 as a dataset in Profiles & data. These records have no fabricated time axis.
 
 The missing sibling AGENTS.md was reported. The user asked to ignore it for this
-task and leave a [handoff note](../../../../jonathan-xie/experimental-apps/leg-solver/context/2026-10-19-agent-entry-note.md)
+task and leave a [handoff note](../../../../jonathan-xie/experimental-apps/vsl-solver/context/2026-10-19-agent-entry-note.md)
 for Jonathan's next Codex session. No substitute agent rules were invented.
 
 ## Validation

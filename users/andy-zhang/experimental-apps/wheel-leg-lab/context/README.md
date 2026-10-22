@@ -1,5 +1,16 @@
 # Wheel Leg Lab context
 
+## VSL source relocation — 2026-10-21
+
+Jonathan renamed leg-solver to vsl-solver and placed each version in its own
+folder. Active source readers and links now use those versioned paths; V1–V3
+HTML hashes and this app’s numerical evidence are unchanged. Motion Lab’s V4
+adapter serves the required library-model asset and suppresses the standalone
+Excel panel inside its iframe; use Jonathan’s root launcher for XLSX sync.
+Only path/resource parity is checked in this migration; the complete Motion Lab
+GUI/native simulation suite was not rerun.
+
+
 ## Suspension sizing and V4 integration, 2026-10-19
 
 Read [the sizing record](../docs/actuator-sizing.md). New main tabs `sizing` and

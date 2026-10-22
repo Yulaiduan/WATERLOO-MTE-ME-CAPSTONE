@@ -8,7 +8,7 @@ design history; Git and the repository contribution log retain exact changes.
 | `2353a6f`, 2026-10-12 | Equal-link sizing for 200 mm wheel radius and 200 mm usable lift; buffers, peak/mean/flatness | [Link sizing](../../wheel-leg-lab/docs/link-sizing.md) and its original result scope |
 | `7cfacbf`, 2026-10-12 | Actual laptop runtime/dependency reconstruction and both local app lifecycles | [Laptop handoff](../../laptop-handoff.md) |
 | `3bbe964`, 2026-10-12 | Upward wheel-centre angle, individual torque curves, lift/RMS score, explicit hip/knee work mapping | [Link sizing](../../wheel-leg-lab/docs/link-sizing.md), [validation](validation.md) |
-| `6c74cfd`, source baseline for 2026-10-14 | Jonathan V1/V2 and bounded global headline maxima available on main | [Jonathan V2 model](../../../../jonathan-xie/experimental-apps/leg-solver/v2-model.md) |
+| `6c74cfd`, source baseline for 2026-10-14 | Jonathan V1/V2 and bounded global headline maxima available on main | [Jonathan V2 model](../../../../jonathan-xie/experimental-apps/vsl-solver/v2/v2-model.md) |
 | 2026-10-14 generalized design study | Merge variable-ratio/alpha conventions with sizing, explicit control windows and spring/motor example; exact publication hash is the commit adding this row | [Design study](generalized-leg-study.md), [math](generalized-leg-math.md), [physics](generalized-leg-physics.md) |
 
 Use `git log --oneline -- users/andy-zhang/experimental-apps/leg-design-study`
