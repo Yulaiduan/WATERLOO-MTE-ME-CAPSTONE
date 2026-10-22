@@ -3849,3 +3849,41 @@ Use its current launcher at127.0.0.1:4191, inspect tiny parts with Spring detail
 Preserve the distinction between ideal geometry and the schematic remote coil housing, and rerun both numerical suites when changing carrier-relative belt or body-angle mappings.
 
 ---
+
+## Entry: 2026-10-22 — Andy Zhang — Kinefold static and quarter-model dynamic tabs
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold solver workspaces and local service connection.
+- **Associated Issue/Task:** User requested a third Jon VSLv4 static tab, analytical dynamics and2D Pymunk dynamics, with explicit quarter-model indicators.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/style.css`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- **API/Interface Changes:** Five accessible tabs and direct query URLs. Static results use current builder parameters through unchanged V4 core for signed torques,181-pose sweep, sampled peak, belt tensions and FBD residuals. Dynamic tabs embed existing independently configured Motion Lab SciPy/Pymunk benches, each with quarter-model badge, fixture boundaries and coordinate/input notice. Same-origin guarded POST /__kinefold_solvers starts/reuses the sibling durable launcher and verifies app/root health. No automatic V4-to-dynamic parameter conversion, shared-engine change or canonical model claim.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** JS parsing and existing3123 numerical/drawing assertions pass. Browser static baseline shows tau2-0.027Nm, Fs570.491N, sampled peak0.063Nm and zero-to-displayed-precision FBD residuals; connected dynamic frames and quarter-model notices render with no browser errors. Real1s analytical and Pymunk API runs each return1000 rows/112 frames with finite JSON. Analytical warnings empty; Pymunk reports its existing explicit-force timestep and ideal-rope caveat. Initial0.05s probe rejected by existing range validation, corrected to1s. Project-local Kinefold stop/start and lazy verified Motion Lab startup/reuse pass; final restart and repository gates run before delivery. No full source-engine regression, hardware or canonical physics validation is claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app integration.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now has five tabs, with its V4 static workspace using builder inputs and two working quarter-model dynamic reference benches.
+Dynamic benches retain their own setup and coordinate conventions, explicitly distinguish their fixtures from V4 routing, and start through the sibling durable launcher when opened.
+Continue from the app README, preserve quarter-model indicators and avoid implying automatic builder-to-dynamic equivalence until an explicit mechanical mapping is implemented and verified.
+
+---

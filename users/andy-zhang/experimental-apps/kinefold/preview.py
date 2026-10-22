@@ -27,7 +27,26 @@ URL = "http://127.0.0.1:4191/"
 IDENTITY = hashlib.sha256(str(ROOT).casefold().encode()).hexdigest()[:20]
 STATE = ROOT / ".preview"
 ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
-          "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js"}
+          "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js", "solvers.js"}
+
+
+SOLVER_LOCK = threading.Lock()
+LAB = ROOT.parent / "wheel-leg-lab"
+
+def start_solvers():
+    """Start/reuse the verified sibling bench through its durable launcher."""
+    with SOLVER_LOCK:
+        launcher = LAB / "Start-Pymunk.ps1"
+        if not launcher.exists():
+            raise RuntimeError("Restore the sibling wheel-leg-lab folder first.")
+        result = subprocess.run(["powershell.exe", "-NoLogo", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", str(launcher), "-NoBrowser"], capture_output=True, text=True, timeout=50, creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0)
+        if result.returncode:
+            raise RuntimeError(result.stdout.strip() or result.stderr.strip() or "Run Setup Motion Lab.cmd first.")
+        with urlopen("http://127.0.0.1:4186/api/health", timeout=3) as response:
+            state=json.load(response)
+        if state.get("app") != "capstone-wheel-leg-lab" or Path(state.get("root", "")).resolve() != LAB.resolve():
+            raise RuntimeError("Port 4186 did not identify the expected Motion Lab checkout.")
+        return {"ready": True, "origin": "http://127.0.0.1:4186"}
 
 
 def health():
@@ -74,6 +93,21 @@ def serve():
                 self.send_error(404)
 
         def do_POST(self):
+            if self.path == "/__kinefold_solvers":
+                if self.headers.get("Origin") != URL.rstrip("/") or self.headers.get("X-Kinefold-Request") != "solver-tabs":
+                    self.send_error(403)
+                    return
+                try:
+                    result, status = start_solvers(), 200
+                except Exception as error:
+                    result, status = {"error": str(error)}, 503
+                payload = json.dumps(result).encode()
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+                return
             if self.path != "/__kinefold_stop" or self.headers.get("X-Kinefold-Token") != token:
                 self.send_error(403)
                 return

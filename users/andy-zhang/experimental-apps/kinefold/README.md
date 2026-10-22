@@ -45,8 +45,8 @@ the isometric view is an orthographic projection. No wheel width is invented.
 
 V4 uses a **linear coil with approximately constant support**, not constant cable
 tension. Both that reference and an **ideal constant cable-force** option are
-explicitly available. No fitting, torque charts, terrain solver or dynamics run
-is included. Wheel loads are prescribed; gravity acts on the individual masses.
+explicitly available in the builder. The separate static tab now shows signed
+torque sweeps, belt tensions and equilibrium residuals from these same inputs. Wheel loads are prescribed; gravity acts on the individual masses.
 The default 8.75 kg is a single-leg supported mass, not a whole-vehicle mass.
 Remote spring housing is schematic. Cable stretch, friction, strength, contact,
 manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses.
@@ -59,3 +59,26 @@ forces/moments, finite-pulley energy derivatives, both spring laws and JSON stat
 finite-difference belt material velocities on both wraps of every pulley stage.
 Run `python preview.py start --no-browser` for HTTP readiness without opening a
 browser. See [context](context/README.md) for actual verification and handoff.
+
+## Solver workspaces — 2026-10-22
+
+Tab3 **Static solver** uses the retained Jon VSLv4 equations directly with the
+current builder design. It evaluates the current pose and181 working-range
+samples; the reported sampled peak is not a global bound. Hip torque signs
+remain positive about+y, counterclockwise in the x-left/z-up side view.
+
+Tab4 **Dynamic · analytical** connects the existing Motion Lab SciPy DOP853
+bench. Tab5 **Dynamic · 2D Pymunk** connects its actual rigid-body engine.
+Both carry a persistent **¼ MODEL · SINGLE LEG** badge and scope block.
+These are independently configured reference benches, not automatic dynamic
+versions of the builder's V4 cable route. Their engine x/y correspond to
+Kinefold -x/z. The supported corner mass is entered in each bench; the app
+neither assumes equal vehicle load sharing nor divides it by four again.
+
+Opening a dynamic tab starts/reuses the sibling Motion Lab service at4186
+through its verified durable launcher. A new checkout needs that app's
+[documented setup](../wheel-leg-lab/README.md) once. Missing prerequisites appear
+as a readable retry message. The Kinefold launcher remains the entry at4191.
+Motion Lab is shared with its own app and stays running when Kinefold stops;
+use its [Stop Motion Lab.cmd](../wheel-leg-lab/Stop%20Motion%20Lab.cmd) to stop
+that service when it is no longer needed. No boot/login automation is added.

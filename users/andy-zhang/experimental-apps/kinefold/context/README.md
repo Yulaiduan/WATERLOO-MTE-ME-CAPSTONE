@@ -104,3 +104,24 @@ zero baseline wheel index rotation, zoom, exact40/30px pan, independent layers,
 parameter shortcuts and linked reference search. Browser warning/error logs are
 empty. Mobile, hardware and full dynamic source-app suites are not run.
 The app server was restarted after adding the new allowlisted browser module.
+
+## Static and quarter-model dynamic tabs — 2026-10-22
+
+The user's new request expands the earlier two-tab scope to five tabs: builder,
+conventions, V4 static solver, analytical dynamics and2D Pymunk dynamics.
+Static results use the live builder parameters and existing V4 core, including
+spring law and load convention; 181 samples provide a labelled sampled peak.
+Both dynamic tabs embed actual Motion Lab engines with persistent quarter-model
+scope indicators and independent-input/coordinate notices. They do not silently
+map the V4 finite-idler architecture into Motion Lab's different dynamic fixtures.
+The tab navigation, keyboard order and direct query URLs cover all five entries.
+
+The same-origin-only POST /__kinefold_solvers lazily calls the sibling durable
+NoBrowser launcher, verifies app identity/root at4186, and returns readable
+startup errors. Shared Motion Lab remains alive when Kinefold stops; its own
+Stop launcher controls that service. Existing setup dependencies are unchanged.
+Browser verifies static values and connected frames/badges; real one-second
+API runs return1000 rows and112 frames from each engine. SciPy warnings are empty;
+Pymunk retains its explicit-force timestep-refinement and ideal-rope caveat.
+An initial0.05s probe was rejected by existing input validation;1s is accepted.
+Existing3123 model/drawing assertions pass. No hardware/canonical physics claim.
