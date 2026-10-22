@@ -70,3 +70,37 @@ hook resolving python3 to the Windows Store alias. The launcher files now use
 LF and are rechecked through actual start/stop/restart; hooks use the existing
 CAMEL_PYTHON override pointing to installed Python for the publication command.
 No hook code, global interpreter setting or shared policy is changed.
+
+## Mechanism inspection and geometrical preview — 2026-10-22
+
+The user requested a UI reassessment against the original two-tab brief, then
+specifically asked for geometrically correct previews, a grid, belt rotation
+indicators and wheel/pulley index axes. Tab1 remains a mechanism builder and
+Tab2 remains conventions; +x left/+z up and +y toward the side-view observer
+are preserved. No solver chart, terrain run or optimizer is added.
+
+The preview now uses its actual viewport, readable labels, calibrated mm grid,
+Mechanism/Full travel/Spring detail framing, zoom, panning and exact index axes
+for all six pulleys plus the wheel. Independent belt material markers use the
+carrier-relative angular displacement and exact common-tangent perimeter.
+The default wheel stays level because K=0. Pulleys/indices remain visible when
+belts are hidden. The isometric camera uses orthogonal equal-length projection
+rows; the illustrative wheel width was removed. The remote coil housing alone
+remains explicitly schematic; length/radius/tangent geometry shares one scale.
+
+Inputs have direct ? links to their definitions, the parameter column scrolls
+independently and its group shortcuts keep the preview in view. Tab2 has top
+search, section shortcuts, 81 individually explained variable entries and an
+actual baseline topology drawing. Search handles theta2 and Unicode subscripts.
+
+Verification: existing 2000 model checks plus1123 drawing checks pass. Independent
+finite-difference velocities on both wraps of all3 belt stages agree with their
+pulley surface velocities to1.75e-7mm/rad; index radii and perpendicular axes
+are exact within numerical tolerance. Actual rendered side-view femur/wheel
+and tibia/wheel radius ratios are1.500008; wheel/grid spacing is2.000025 for the
+300mm links/200mm wheel/100mm grid (SVG coordinates round to0.001px). Browser
+checks confirm seven axes,32 baseline material dots, pose-dependent belt travel,
+zero baseline wheel index rotation, zoom, exact40/30px pan, independent layers,
+parameter shortcuts and linked reference search. Browser warning/error logs are
+empty. Mobile, hardware and full dynamic source-app suites are not run.
+The app server was restarted after adding the new allowlisted browser module.

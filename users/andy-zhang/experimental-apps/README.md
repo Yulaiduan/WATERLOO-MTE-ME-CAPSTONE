@@ -16,7 +16,7 @@ engineering gates and a project-local restart launcher for any localhost server.
 
 | App | Purpose | Status | Verified startup |
 | --- | --- | --- | --- |
-| [Kinefold](kinefold/README.md) | New mechanism builder with V4 cable suspension, front-left coordinates and illustrated conventions | Experimental geometry; 2,000 numerical checks plus browser/start-restart validation | Start Kinefold.cmd at 4191; installed Python only |
+| [Kinefold](kinefold/README.md) | New mechanism builder with V4 cable suspension, front-left coordinates and illustrated conventions | Experimental geometry; 3,123 numerical checks plus browser/start-restart validation | Start Kinefold.cmd at 4191; installed Python only |
 | [Offline leg design report](leg-design-study/README.md) | Jonathan/Andy equations, bounded link/window optimization, spring/motor example, plots and PDF | Experimental numerical study; separate from Motion Lab tooling | Open Design Report.cmd or index.html directly; no server |
 | [Motion Lab](wheel-leg-lab/README.md) | Unified simulation/studies/library plus wheel/link sizing and torque sweep | Experimental; latest fresh-clone 70 JS tests and build pass; dated physics/native records remain in app docs | Start Motion Lab.cmd at 4186; familiar launch names are aliases |
 | [Terrain Mobility Atlas](terrain-mobility-atlas/README.md) | Former loose atlas, numerical terrain workbench, historical linkage and force calculator | Experimental; fresh-clone 49 model tests and build pass | Start Terrain Atlas.cmd at 4175; Start Capstone.cmd is a Motion Lab alias |

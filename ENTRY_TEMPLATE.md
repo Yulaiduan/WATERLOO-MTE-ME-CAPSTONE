@@ -3808,3 +3808,44 @@ Use installed Python via the existing CAMEL_PYTHON override when this PC's pytho
 The app remains at127.0.0.1:4191 with the full x-left/right-hand-rule preview and convention corrections.
 
 ---
+
+## Entry: 2026-10-22 — Andy Zhang — Kinefold UI inspection and exact belt/pulley indicators
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Isolated Kinefold builder and conventions UI.
+- **Associated Issue/Task:** User requested autonomous UI refinements keeping tab1 mechanism-only/tab2 conventions, x-left/z-up, then requested geometric correctness, a grid, belt rotation indicators and wheel/pulley index axes.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/style.css`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview-geometry.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify-drawing.cjs`
+- **API/Interface Changes:** New dependency-free preview-geometry module derives exact belt loops/material movement and all six pulley plus wheel index axes from the unchanged V4 model. Calibrated mm grid follows camera zoom/pan. Correct orthographic isometric projection; omit invented wheel thickness and label the remote coil housing schematic. Add viewport-sized rendering, readable part labels, Mechanism/Full travel/Spring detail framing, zoom/pan, independent layers, parameter navigation and direct variable-help links. Conventions gain global search, section navigation,81 individual entries and a same-scale baseline topology diagram. Existing JSON gains only optional view-layer booleans with backward-compatible defaults; model parameters, physical coordinates, torque signs and reference solver blocks are unchanged. The local server allowlist adds preview-geometry.js.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** `node verify.cjs` passes2000 existing checks and `node verify-drawing.cjs` passes1123 new index/radius/orthogonality and independent no-slip material-velocity checks on both wraps of all3 belt stages; max velocity error1.75e-7mm/rad. JS parsing passes. Actual SVG side-view ratios are1.500008 for each300mm link versus200mm wheel radius, and2.000025 for wheel radius versus100mm grid, consistent with0.001px SVG rounding. Browser verifies7 index axes,32 default material markers, pose-dependent belt payout, baseline wheel K0 cancellation, zoom125%,40/30px pan, belt hiding with all indices retained, group shortcuts, input-help search,theta2 alias and81-entry dictionary/topology. Console errors/warnings are empty. App-local server stop/start passes with the new asset whitelist; final asset/link, staged whitespace and repository workspace checks precede publication. Mobile/hardware/source-app dynamic suites are not rerun; this is analytical/view consistency only.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member UI/model-view change; no shared runtime, policy or physical baseline changed.
+
+## 4. Compute Saving Handoff State
+
+Kinefold keeps the requested builder/conventions split and x-left/z-up frame, with calibrated geometry, exact belt material markers and pulley/wheel index axes.
+Use its current launcher at127.0.0.1:4191, inspect tiny parts with Spring detail or zoom/pan, and use input ? links and top-level reference search for definitions.
+Preserve the distinction between ideal geometry and the schematic remote coil housing, and rerun both numerical suites when changing carrier-relative belt or body-angle mappings.
+
+---
