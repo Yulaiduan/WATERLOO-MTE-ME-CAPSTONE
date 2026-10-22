@@ -3887,3 +3887,38 @@ Dynamic benches retain their own setup and coordinate conventions, explicitly di
 Continue from the app README, preserve quarter-model indicators and avoid implying automatic builder-to-dynamic equivalence until an explicit mechanical mapping is implemented and verified.
 
 ---
+
+## Entry: 2026-10-22 — Andy Zhang — Kinefold live static import refresh
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold static workspace and scope wording.
+- **Associated Issue/Task:** Finish solver-tab integration with current builder inputs even when importing directly on the static tab; use GPT-6.1 Sol development with parent architecture review.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- **API/Interface Changes:** Selected static workspace receives the current primitive parameter snapshot after builder updates/imports. Global footer and opening descriptions reflect the five workspaces. V4 core, JSON schema and independent dynamic fixtures are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** `node --check app.js`, `node verify.cjs` (2000 assertions) and `node verify-drawing.cjs` (1123 assertions) pass. Actual browser file import while static stays selected changes mass/pose to10kg/145deg and immediately shows Fz98.1N, hip torque -6.014Nm, spring tension678.474N and sampled peak7.044Nm. Restored8.75kg/132.5deg baseline. Browser warnings/errors empty; reloaded page shows corrected footer. Required entry/workspace gates run before publication. Launchers/services are unchanged from the start/restart-verified preceding entry; no hardware, full engine regression or canonical physics validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app correction.
+
+## 4. Compute Saving Handoff State
+
+The static tab now follows imported designs immediately without requiring a tab switch.
+The five-tab UI retains independent quarter-model dynamics, and its footer accurately describes experimental models.
+Preserve the current builder-to-static event boundary and do not imply automatic V4 dynamic routing or hardware validation.
+
+---

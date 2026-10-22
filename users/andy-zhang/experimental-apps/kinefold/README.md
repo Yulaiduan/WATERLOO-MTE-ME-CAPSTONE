@@ -1,7 +1,7 @@
 # Kinefold
 
-Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism builder; no
-canonical robot, hardware acceptance or dynamic simulation is implied.
+Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver workspace;
+no canonical robot or hardware acceptance is implied.
 
 Double-click **[Start Kinefold.cmd](Start%20Kinefold.cmd)** and wait for Ready,
 then open <http://127.0.0.1:4191/>. It requires installed Python 3.10+ only;

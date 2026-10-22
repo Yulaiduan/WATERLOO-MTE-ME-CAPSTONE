@@ -4,9 +4,9 @@ Andy Zhang with Codex, 2026-10-22. Started from main `5e52a12`.
 Experimental app; no canonical robot or hardware acceptance.
 
 The user requested a separately named future combined motion/terrain/VSL tool,
-starting with mechanism builder tab 1 and a conventions tab. Kinefold only
-implements those two requested workspaces. Follow Motion Lab's app-owned
-sage/cream shell. Keep future terrain/dynamics work outside this first scope.
+starting with mechanism builder tab 1 and a conventions tab. The initial two workspaces are now joined by static and quarter-model dynamic
+solver tabs, as requested later on the same date. Follow Motion Lab's app-owned
+sage/cream shell; terrain remains outside the implemented scope.
 
 Reference source: Jonathan's `vsl-solver/v4/v4-pulley.html`; retained solver,
 statics and finite-idler spring blocks are unchanged and hashed in reference.json.
@@ -125,3 +125,15 @@ API runs return1000 rows and112 frames from each engine. SciPy warnings are empt
 Pymunk retains its explicit-force timestep-refinement and ideal-rope caveat.
 An initial0.05s probe was rejected by existing input validation;1s is accepted.
 Existing3123 model/drawing assertions pass. No hardware/canonical physics claim.
+
+## Static import freshness — 2026-10-22
+
+The static workspace now refreshes immediately when a design is imported while
+that tab remains selected. The existing V4 core and JSON schema are unchanged.
+A real browser file import changed m1 to10kg and theta2 to145deg, immediately
+showing Fz98.1N, hip torque -6.014Nm, tension678.474N and sampled peak7.044Nm.
+The8.75kg/132.5deg baseline was restored after testing. Browser warnings/errors
+were empty and all3123 existing model/drawing assertions passed.
+The global footer and opening scope descriptions now reflect the solver tabs.
+The user requested GPT-6.1 Sol development agents with the parent handling
+architecture and review; that working preference was followed for this finish.
