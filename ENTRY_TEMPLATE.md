@@ -3690,3 +3690,121 @@ The conversion is Δkg=Feq/g−m_total, so a negative value means deficient equi
 Keep zero-weight/Jacobian undefined handling and separate raw-torque scaling; saved configurations and Excel require no migration.
 
 ---
+
+## Entry: 2026-10-22 — Andy Zhang — Kinefold mechanism builder and front-left conventions
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** New isolated Kinefold member app, first mechanism-builder and conventions workspaces.
+- **Associated Issue/Task:** User requested a separately named combination-tool foundation using Motion Lab UI and Jon VSL v4 mechanism/cable spring, left grouped design inputs/right preview, complete toggleable conventions and x-forward/y-left/z-up coordinates.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths:
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/.gitignore`
+- `users/andy-zhang/experimental-apps/kinefold/AGENTS.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/Start Kinefold.cmd`
+- `users/andy-zhang/experimental-apps/kinefold/Stop Kinefold.cmd`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/model.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/reference-v4.js`
+- `users/andy-zhang/experimental-apps/kinefold/reference.json`
+- `users/andy-zhang/experimental-apps/kinefold/style.css`
+- `users/andy-zhang/experimental-apps/kinefold/variables.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify.cjs`
+- **API/Interface Changes:** New `kinefold/mechanism-v1` JSON snapshot and self-contained browser app. Retain Jon V4 analytical blocks with LF-normalized source hashes; map old global y/z to new x/z by x=-old_y, z=old_z and old+x to new+y. All axial torque signs obey the right-hand rule. Expose V4 linear-coil/constant-lift reference and a distinct ideal constant-cable-force law; mass-following weight/global/contact modes, three belt preloads, exact finite-idler routing, side/isometric geometry, layer controls and kinematic playback. No source app, canonical asset, shared runtime, enforcement or accepted robot baseline is changed. App-local AGENTS.md is an inherited experiment scaffold, not a shared enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** `node verify.cjs` passes 2000 assertions for source parity after LF normalization, 150 varied geometry/load cases, applied force/moment signs, FBD/virtual-work balance, both spring laws, energy finite differences and validated JSON; zero geometry error and max cable-energy derivative discrepancy1.74e-9Nm. Initial harness runs exposed an incorrect relative source path and Windows EOL assumptions, corrected without loosening numerical limits. Actual browser checks cover geometry edits, isometric/load layers, ideal constant force, pose scrub/play, mass10kg->Fz98.1N, global/contact conversion, invalid tangent feedback, empty pose rejection, independently expandable conventions/dictionary search, real JSON download/import and reload persistence; console warnings/errors empty. Windows project-local launcher starts from unrelated directories, reuses, stops only its scoped authenticated server and restarts at4191; assets HTTP200 and Python compile checked in final validation. Current desktop inspected; mobile, hardware and complete Motion Lab dynamic/native suites not run. Repository structure/log, require-passed, workspace gate and whitespace/link checks run before delivery. These are experimental consistency checks only.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated new member app and Markdown index/log; no robot physical baseline is changed.
+
+## 4. Compute Saving Handoff State
+
+Kinefold is a separate dependency-free app at users/andy-zhang/experimental-apps/kinefold, with grouped mechanism inputs, live geometry and a complete conventions tab.
+Restart with its Start Kinefold.cmd at127.0.0.1:4191; preserve V4 coil versus constant-force distinctions, fixed-hip/prescribed-load limits, JSON schema and the proper front-left coordinate rotation.
+Read its context/README.md and source provenance before future terrain/dynamics additions; Motion Lab's V4 embeds Jon's original math while its separate dynamic benches solve different fixtures, and that comparison stays out of the product.
+
+---
+
+## Entry: 2026-10-22 — Andy Zhang — Kinefold x-left preview and right-hand-rule illustrations
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold preview camera, conventions and app context.
+- **Associated Issue/Task:** User requested the whole mechanism preview flipped so +x points left and +z up, with matching conventions and torque directions.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- **API/Interface Changes:** Side and oblique projections reverse horizontal screen coordinates; labels/dimensions remain readable. +y points toward the viewer in the left-side view and positive +y torque appears counterclockwise. Mirrored convention overview, counterclockwise torque arc and searchable definitions agree. Physical coordinates, analytical equations and JSON schema retain their meanings. Corrects the initial verbal description of y pointing into the screen.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Existing `node verify.cjs` passes 2000 assertions with unchanged geometry/force results. JavaScript parsing succeeds. Actual browser inspection shows the complete flipped mechanism, x-left/z-up axes, correct dot/out-of-screen y marker and counterclockwise torque illustration; baseline numerical cards remain unchanged. Prior project-local launcher start/reuse/stop/restart verification remains applicable because launcher/runtime files are unchanged. Final repository entry/require-passed/workspace and whitespace checks run before delivery. No hardware, terrain or dynamics validation is claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member UI/convention correction.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now draws the entire mechanism with forward +x to the left and +z up.
+The front-left leg remains in its physical frame, with +y toward the viewer and positive +y torque counterclockwise in side view.
+Continue with the existing app-root launcher at127.0.0.1:4191 and preserve these camera/coordinate distinctions in future preview changes.
+
+---
+
+## Entry: 2026-10-22 — Andy Zhang — Kinefold launcher staging correction
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold launcher text and validation handoff.
+- **Associated Issue/Task:** Complete validation/publication of the requested mechanism builder and x-left preview.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/Start Kinefold.cmd`
+- `users/andy-zhang/experimental-apps/kinefold/Stop Kinefold.cmd`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- **API/Interface Changes:** Launcher text normalized to LF; commands, host, port and application behavior unchanged. Use the hooks' existing CAMEL_PYTHON environment override for this command because python3 resolves to a Windows Store alias. No hook bypass or shared enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Initial staged whitespace check flagged launcher CRLF lines and the attempted commit stopped at the python3 Store alias before validation. Normalize only the two owned launchers, recheck real start/reuse/stop/restart and staged whitespace, then run the configured staged and pre-push gates with installed Python via CAMEL_PYTHON. Existing 2000 numerical assertions, UI/JSON verification and final repository workspace checks remain applicable; source/physics are unchanged.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member launcher/text correction.
+
+## 4. Compute Saving Handoff State
+
+The new Kinefold launchers now satisfy the repository's staged whitespace policy.
+Use installed Python via the existing CAMEL_PYTHON override when this PC's python3 points to the Store alias; do not modify or bypass hooks.
+The app remains at127.0.0.1:4191 with the full x-left/right-hand-rule preview and convention corrections.
+
+---

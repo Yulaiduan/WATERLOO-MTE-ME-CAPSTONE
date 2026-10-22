@@ -1,0 +1,72 @@
+# Kinefold context
+
+Andy Zhang with Codex, 2026-10-22. Started from main `5e52a12`.
+Experimental app; no canonical robot or hardware acceptance.
+
+The user requested a separately named future combined motion/terrain/VSL tool,
+starting with mechanism builder tab 1 and a conventions tab. Kinefold only
+implements those two requested workspaces. Follow Motion Lab's app-owned
+sage/cream shell. Keep future terrain/dynamics work outside this first scope.
+
+Reference source: Jonathan's `vsl-solver/v4/v4-pulley.html`; retained solver,
+statics and finite-idler spring blocks are unchanged and hashed in reference.json.
+Kinefold's adapter maps source [y,z] to new [-y,0,z], equivalently x=-source_y,
+z=source_z, and old +x to new +y. The left-side camera now places +x left and +z up, with +y toward the viewer;
+positive +y torque and source-positive rotations appear counterclockwise.
+This supersedes the initial x-right preview; physical coordinates, scalar
+torque signs and saved designs retain their meanings.
+β patch direction is from down toward forward: P-C = rw[sinβ,0,-cosβ].
+Positive Ft points backward at β=0 and gives positive wheel τ_y.
+
+V4's default 8.75kg/300mm/200mm-wheel baseline uses its linear coil and exact
+finite-idler cable path. An explicitly selected ideal constant-force option
+uses k=0 at the entered p0. The stored coil rate survives switching laws.
+Weight-reference load follows all five masses; global/contact modes preserve
+prescribed force values independently. Fixed-A masses and loads are static;
+animation simply prescribes θ2. Remote spring housing is schematic.
+
+No source-app comparison is presented in the product. Motion Lab's V4 iframe
+serves Jon's original blocks (see its actuator-sizing record); its separate
+SciPy/Pymunk suspension models instead move the chassis and include dynamics.
+The owner requested that distinction as a chat answer, not as new tool content.
+
+Validation: `node verify.cjs` passes 2,000 assertions: retained-source parity
+(after LF normalization), varied unequal-link geometry, applied world forces,
+right-hand-rule moments, FBD/virtual-work balance, both spring laws, energy
+finite differences and rejected invalid/unknown JSON. Geometry error is zero;
+maximum cable-energy derivative error is 1.74e-9 Nm. Initial harness path/EOL
+assumptions failed and were corrected; no physical tolerance was relaxed.
+Browser checks verify live length edits, side/isometric/layer controls, constant
+force at 160 degrees, mass10kg -> Fz98.1N, global/contact conversion, invalid
+idler errors, blank pose handling, playback, dictionary search, independent
+section collapse, actual JSON download/import and reload persistence. Browser
+warning/error logs are empty. The current desktop viewport was visually checked;
+mobile/hardware/full source-app dynamic suites were not run.
+Actual app-root launcher started from unrelated working directories, reused its
+running instance, stopped only its authenticated service and restarted at the
+same URL. All served assets return HTTP200; Python compilation and repository
+structure/log/workspace gate checks are performed in final validation.
+Canonical physics is NOT APPLICABLE to this isolated member experiment.
+Restart: project-local Start Kinefold.cmd; stop with Stop Kinefold.cmd.
+URL: http://127.0.0.1:4191/. Python standard library; no package setup.
+
+## X-left preview correction — 2026-10-22
+
+The user requested the entire mechanism preview to face +x left, with +z up.
+Both side and oblique projections now flip horizontally, including links,
+wheel, spring route, travel, load arrows and dimension geometry; text remains
+readable. The left-side camera looks along -y, so +y points toward the viewer
+and positive +y moments appear counterclockwise. The overview illustration,
+torque arrow, axis markers and dictionary agree with this right-handed frame.
+This also corrects the earlier verbal claim that +y would point into the screen.
+
+The 2,000 existing numerical assertions still pass; source geometry/forces and
+saved parameter meanings are unchanged. Live browser inspection confirms the
+mirrored mechanism and counterclockwise torque illustration; current baseline
+readouts remain 435.6mm travel, 570.5N cable force and -442.4mm wheel-centre z.
+
+Final staged checks exposed CRLF-as-whitespace in the new launchers and a Git
+hook resolving python3 to the Windows Store alias. The launcher files now use
+LF and are rechecked through actual start/stop/restart; hooks use the existing
+CAMEL_PYTHON override pointing to installed Python for the publication command.
+No hook code, global interpreter setting or shared policy is changed.

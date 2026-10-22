@@ -1,0 +1,8 @@
+{
+  "source": "users/jonathan-xie/experimental-apps/vsl-solver/v4/v4-pulley.html",
+  "revision": "5e52a12",
+  "source_sha256": "37767388cfd20ae6fe7a03fd932a75f13660f773db5c875b6d902f3a35208cff",
+  "retained_blocks_sha256": "901bd62627bf5d3709f8a3fc9aabded2a646d86b4988d6df52ef19d69d5fa7d6",
+  "note": "Unchanged kinematics, statics and finite-pulley spring blocks; app UI/fit/plots excluded.",
+  "newline_normalization": "LF"
+}
