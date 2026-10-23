@@ -1,8 +1,8 @@
-/** Versioned Kinefold project validation and browser-local design library.
+/** Versioned project validation, legacy browser recovery and app-folder library.
  * Load after model.js/variables.js; Node verification uses a VM. Inputs are
  * builder mm/deg/kg/N parameters, view flags and SI solver settings. Outputs are
  * validated project-v3 snapshots and explicit storage results; no runs are saved.
- * Browser-local persistence is not a backup; portable JSON is the recovery path.
+ * App-folder profiles and portable exports persist independently of the browser.
  */
 globalThis.KinefoldProjects=(()=>{
 'use strict';
@@ -63,5 +63,35 @@ function createStore(storage){
   duplicate(project,name){return validate({...project,id:id(),name:title(name),createdAt:new Date().toISOString(),updatedAt:new Date().toISOString()});}
  };
 }
-return {schema,viewDefaults,solverDefaults,validateConfig,validate,baseline,decode,clone,content,createStore,id,title};
+function createDiskStore(storage,request=async payload=>{
+ const response=await fetch('/api/profiles',{method:'POST',headers:{'Content-Type':'application/json','X-Kinefold-Request':'coupled-dynamics'},body:JSON.stringify(payload),keepalive:JSON.stringify(payload).length<60000});
+ let result;try{result=await response.json();}catch{throw Error('The profile server returned an unreadable response. Restart Kinefold and reload.');}
+ if(!response.ok||!result.ok)throw Error(result.error||'Profile storage request failed.');return result;
+}){
+ let state={designs:[],working:null,revision:0},error='',notice='',initialized=false,blocked=false,pending=0,queue=Promise.resolve();
+ const legacy=createStore(storage),legacyRestore=()=>legacy.restore();
+ const adopt=result=>{if(!Array.isArray(result.designs)||!Number.isInteger(result.revision))throw Error('Invalid profile-server response.');const designs=result.designs.map(validate),working=result.working===null?null:validate(result.working);state={designs,working,revision:result.revision};};
+ const ready=(async()=>{try{
+  const disk=await request({action:'list'});adopt(disk);
+  if(!disk.migrated){if(legacy.error)throw Error(legacy.error);const restored=legacyRestore(),browserBackup={};for(const key of ['kinefold-library-v3','kinefold-library-v2','kinefold-project-v3','kinefold-project-v2','kinefold-design-v1']){const raw=storage.getItem(key);if(raw!==null)browserBackup[key]=raw;}
+   const migrated=await request({action:'migrate',expectedRevision:state.revision,designs:legacy.list(),working:restored?.project||null,browserBackup});adopt(migrated);
+   notice=Object.keys(browserBackup).length?'Browser profiles and the exact working copy were copied to profiles/library.json. Original browser keys and profiles/browser-backup.json are retained unchanged.':'Profiles now save in this app’s profiles/ folder.';
+  }else notice='Loaded profiles/library.json. App-folder profiles are authoritative. Older data in this browser was not imported again; use Recover browser profiles below to recover it without replacing current designs.';
+  initialized=true;return store;
+ }catch(e){error=e.message;blocked=true;throw e;}})();
+ // Initialization is exposed through ready; attach a handler before later modules run.
+ ready.catch(()=>{});
+ function enqueue(action,values){pending++;const operation=queue.then(async()=>{await ready;if(blocked)throw Error(error||'Profile writes are blocked. Reload to recover.');const result=await request({action,expectedRevision:state.revision,...values});adopt(result);return result;});queue=operation.catch(e=>{error=e.message;blocked=true;}).finally(()=>{pending--;});return operation;}
+ const store={ready,get pending(){return pending;},get initialized(){return initialized;},get error(){return error;},get notice(){return notice;},
+  list:()=>clone(state.designs),restore:()=>initialized?(state.working?{project:clone(state.working),migrated:false}:null):legacyRestore(),
+  committedWorking:()=>state.working?clone(state.working):null,
+  async autosave(project){const p=validate(project);await enqueue('working',{project:p});return clone(p);},
+  async save(project){const p=validate(project);p.updatedAt=new Date().toISOString();await enqueue('save',{project:p});return clone(p);},
+  async remove(projectId){const found=state.designs.find(p=>p.id===projectId);if(!found)throw Error('Design is no longer in this library.');await enqueue('remove',{id:projectId});return clone(found);},
+  duplicate:legacy.duplicate,
+  async recoverBrowser(){await ready;if(legacy.error)throw Error(legacy.error);const old=legacy.list(),working=legacyRestore()?.project;if(working&&!old.some(p=>content(p)===content(working)))old.push({...working,name:(working.name+' · recovered working copy').slice(0,80)});let added=0;for(const project of old){if(state.designs.some(p=>content(p)===content(project)))continue;await store.save({...project,id:id(),name:project.name});added++;}return added;},
+  async saveArtifact(filename,value,mime='application/json'){await ready;const content=typeof value==='string'?value:JSON.stringify(value,null,2)+'\n';const result=await request({action:'export',name:filename,content,mime});return result.path;}
+ };return store;
+}
+return {schema,viewDefaults,solverDefaults,validateConfig,validate,baseline,decode,clone,content,createStore,createDiskStore,id,title};
 })();

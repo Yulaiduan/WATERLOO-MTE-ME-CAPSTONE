@@ -22,6 +22,9 @@ from urllib.error import URLError
 from urllib.request import Request, urlopen
 import webbrowser
 
+from viewer_service import ViewerService
+from profile_service import ProfileService, MAX_BYTES as PROFILE_MAX_BYTES
+
 ROOT = Path(__file__).resolve().parent
 URL = "http://127.0.0.1:4191/"
 IDENTITY = hashlib.sha256(str(ROOT).casefold().encode()).hexdigest()[:20]
@@ -29,7 +32,8 @@ STATE = ROOT / ".preview"
 ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js",
           "solvers.js", "solver-style.css", "project-store.js", "designs.js",
-          "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css"}
+          "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",
+          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css"}
 
 
 DYNAMICS_LOCK = threading.Lock()
@@ -94,6 +98,8 @@ def is_ours(value):
 
 
 def serve():
+    viewer = ViewerService(ROOT)
+    profiles = ProfileService(ROOT)
     token = secrets.token_urlsafe(32)
 
     class Handler(SimpleHTTPRequestHandler):
@@ -125,9 +131,9 @@ def serve():
                 self.send_error(404)
 
         def do_POST(self):
-            if self.path == "/api/dynamics":
+            if self.path in {"/api/dynamics", "/api/viewer", "/api/profiles"}:
                 if self.headers.get("Origin") != URL.rstrip("/") or self.headers.get("X-Kinefold-Request") != "coupled-dynamics":
-                    payload = b'{"error":"Dynamics requests must come from this Kinefold page."}'
+                    payload = b'{"error":"Requests must come from this Kinefold page."}'
                     self.send_response(403)
                     self.send_header("Content-Type", "application/json")
                     self.send_header("Content-Length", str(len(payload)))
@@ -136,8 +142,9 @@ def serve():
                     return
                 try:
                     length = int(self.headers.get("Content-Length", "0"))
-                    if not 0 < length <= MAX_REQUEST_BYTES:
-                        result, status = {"error": "Request body must be between 1 and 131072 bytes."}, 413
+                    limit = PROFILE_MAX_BYTES if self.path == "/api/profiles" else MAX_REQUEST_BYTES
+                    if not 0 < length <= limit:
+                        result, status = {"error": f"Request body must be between 1 and {limit} bytes."}, 413
                     elif self.headers.get("Content-Type", "").split(";", 1)[0].strip() != "application/json":
                         result, status = {"error": "Send an application/json request."}, 415
                     else:
@@ -146,7 +153,12 @@ def serve():
                         if len(raw) != length:
                             raise ValueError("Incomplete request body.")
                         request = json.loads(raw, parse_constant=reject_nonfinite)
-                        result, status = run_dynamics(request)
+                        if self.path == "/api/dynamics":
+                            result, status = run_dynamics(request)
+                        elif self.path == "/api/viewer":
+                            result, status = viewer.handle(request)
+                        else:
+                            result, status = profiles.handle(request)
                 except (ValueError, OSError) as error:
                     result, status = {"error": str(error)}, 400
                 payload = json.dumps(result, allow_nan=False).encode()
@@ -173,7 +185,10 @@ def serve():
         STATE.mkdir(exist_ok=True)
         (STATE / "server.json").write_text(json.dumps({"root": IDENTITY, "token": token}), encoding="utf-8")
         print(f"Kinefold ready at {URL}", flush=True)
-        server.serve_forever(poll_interval=.15)
+        try:
+            server.serve_forever(poll_interval=.15)
+        finally:
+            viewer.close()
 
 
 def start(open_browser=True):

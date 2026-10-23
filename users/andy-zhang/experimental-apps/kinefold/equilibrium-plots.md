@@ -56,7 +56,8 @@ Shared-design updates invalidate all relevant data, including imports while the
 equilibrium tab is selected. Plot preferences are local UI state, separate from
 portable project-v3 physical parameters and run profiles.
 
-JSON export contains all 17 chart datasets, the current portable project,
+Exports are saved in the app’s exports/ folder, with a relative path shown in
+the UI; the browser Downloads folder is not used. JSON export contains all 17 chart datasets, the current portable project,
 diagnostic options and source manifest. Selected-axis CSV begins with one
 `# ` JSON metadata line (design, ranges and axis), followed by ordinary CSV;
 skip that first line in CSV software. Null/undefined data stays empty in CSV.

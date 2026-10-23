@@ -17,7 +17,8 @@ No login/boot automation is installed. Node.js is needed only for developer chec
 
 - **00 Designs:** named saved mechanisms and shared run profiles, a working
   draft, explicit example templates and portable project JSON. Storage
-  is local to this browser/origin; export backups for another PC or browser.
+  is saved in this app’s profiles/library.json. Working copies and named designs
+  include the complete geometry and solver profile; exports stay in exports/.
 - **01 Mechanism builder:** Geometry, Suspension, Loadings & preloads at left;
   live side/isometric mechanism preview at right, with layers, dimension labels,
   full-range travel path, pose scrub and prescribed kinematic playback. Mechanism,
@@ -38,7 +39,8 @@ No login/boot automation is installed. Node.js is needed only for developer chec
 - **Export design** / **Import** retain the complete mechanism, view and shared
   solver settings in a versioned `kinefold/project-v3` document. Legacy
   `kinefold/mechanism-v1` and fixed-hip `project-v2` files migrate explicitly, preserving geometry and an archived prior profile. Invalid imports leave the
-  current design unchanged. Browser storage is not shared between users or ports.
+  current design unchanged. Existing browser data is retained as a migration backup;
+  the app-folder store becomes authoritative after startup.
 
 The visual shell follows Motion Lab's app-owned sage/cream tabbed interface.
 This is a separate app: it neither changes nor imports the Motion Lab UI/runtime.
@@ -107,11 +109,11 @@ inertia or damping requires a declared finite transition distance; quintic ramps
 lie inside the nominal plateau. Requested and applied traces are both retained.
 
 The world-frame preview uses one fixed camera over the full trajectory, a moving
-chassis mass marker and prescribed wheel-height platen. It preserves +x left,
+chassis mass marker and horizontally translating prescribed spatial floor. It preserves +x left,
 +z up and +y toward the viewer. It does not render guide rods or pretend the base
-input is rolling collision terrain. Plots show requested/applied input, chassis
-and wheel height, chassis speed, hip angle, spring tension and wheel-input
-reaction. Reactions supply support dynamically; weight reference is not applied
+input is rolling collision terrain. Native expandable categories contain17 matching dynamic plots for motion,
+kinematics, forces and energy/numerical checks. A paired run captures identical
+inputs once and compares exact time/event-side samples with overlays and errors. Reactions supply support dynamically; weight reference is not applied
 again as an extra gravity-sized force. Nonweight builder loads remain additional.
 
 Projects use kinefold/project-v3, including all geometry, view and input/run
@@ -119,7 +121,7 @@ settings. Version2 fixed-hip projects retain exact geometry and an archived
 legacySolverConfig; their original browser keys remain untouched. Migration
 notices identify the change in boundary conditions. Legacy positive-mass designs
 receive a declared10mm finite transition with no mass substitution. Export
-project JSON for portable backups; this browser's library is not cloud storage.
+project JSON for portable backups. Profiles are local app-folder files, not cloud storage.
 
 Each run captures the full project/profile and preserves rows, world frames,
 exact jump events and diagnostics. Result labels identify the captured design;
@@ -132,3 +134,36 @@ dynamics.py --request-stdin using this app's isolated .venv. Run
 SciPy/Pymunk. Builder/equilibrium preview needs standard-library Python3.10+.
 The existing Start/Stop launchers preserve4191 and support readable errors and
 restart without Codex. No boot/login automation is installed.
+
+
+## Dynamic comparison, desktop viewer and app-folder files
+
+Read [dynamic analysis](dynamic-analysis.md) for plot definitions, event-aware
+comparison, shared playback time and spatial-floor conventions. Run both & compare
+uses one captured mechanism/profile; mismatched/stale data is blocked. Comparison
+JSON includes both snapshots and raw results. Requested sharp and applied finite
+profiles move right (−x), synchronized to time and the exact wheel-height input.
+This adds no collision/rolling model.
+
+Open desktop Pymunk launches a real Tk results-playback window after computing
+the captured case with Pymunk. It shows actual chassis frames and ideal linkage,
+with pause, scrub and replay. The app owns one closable process; Stop Kinefold
+also closes it. No new package dependency is required on this verified Python/Tk
+installation. Failure/status messages identify missing runtime or opening errors.
+
+Named designs and the exact working copy now live in [profiles](profiles/README.md),
+with atomic revision-checked writes. Initial migration retains the original
+browser keys and writes an immutable profiles/browser-backup.json; another browser’s
+old designs can be recovered explicitly without replacing current disk data.
+All project, equilibrium, dynamic and comparison exports write into
+[exports](exports/README.md), with a saved relative path shown in the app. Export
+buttons no longer send files to Downloads. These generated JSON/CSV files are
+ignored by Git and remain on this PC after Codex/server shutdown. The five known
+older QA downloads were moved into .preview/recovered-downloads inside this app;
+unrelated Downloads files were untouched.
+
+Developer checks: node verify-dynamic-analysis.cjs --real checks paired actual
+baseline trajectories and frontend/Python input-law parity; node verify-projects.cjs
+checks browser-to-disk migration and failure safety. App .venv Python
+verify_profiles.py tests atomic files/revisions/exports, and verify_viewer.py --gui
+runs actual native Pymunk/Tk lifecycle and controls. Hardware remains unvalidated.

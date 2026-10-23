@@ -316,3 +316,58 @@ small screens use one column. Pointer hover maps screen coordinates through the
 actual SVG screen CTM, preserving correct coordinates under letterboxing. Parent
 architecture/coverage/UI review approved before repository publication. No new
 dynamics runs were needed or claimed for this presentation-only change.
+
+## Matched dynamic workspaces, desktop viewer and disk profiles — 2026-10-22
+
+Both dynamic tabs now use17 matching native plots in lazy Motion/Input,
+Kinematics, Forces/Actuation and Energy/Numerics categories. Shared playback
+retains simulationtime and exact before/after side between engines. Run both &
+compare captures one project/profile once; mechanism hash, fullparams/config and
+exact time/eventSide must match. Overlays, Pymunk-minus-analytical sampled max/RMS
+errors, overlap/sample counts and early-termination reasons remain available in
+both tabs. There is no interpolation across jumps or extrapolation. Diagnostic
+rates/reactions break at exact jumps; no dynamic belt/pin-force solve is implied.
+
+The prescribed spatial square moves toward−x/screenright, anchored under current
+wheelCx. Requested sharp and applied quintic/exact profiles match backend input
+at the wheel, includingdelay and eventside. The fixed world camera preserves
+actual heave; floor motion adds no rolling/collision physics. Tiny values use
+scientific notation and SVG hover/cursors use actual content coordinates.
+[Dynamic analysis](../dynamic-analysis.md) records chart and comparison meaning.
+
+Open desktop Pymunk computes the captured Pymunkcase, then opens a real Tk results-
+playback window with actual chassis frames and ideal condensed linkage. Pause,
+scrub, replay, worldgrid and movingfloor are native. The bounded same-origin
+/api/viewer accepts onlyopen/status/close and a fixed appscript/runtime; it owns
+one closable process, which also closes with the server. Nativewindow/readiness,
+controls and geometry were actually inspected through the approved desktop UI.
+
+Profiles now persist in profiles/library.json (nameddesigns +exactworkingcopy +
+optimisticrevision), with atomic validation and rollback on failure. Migration
+keeps originalbrowserkeys and an immutable profiles/browser-backup.json; explicit
+recovery copies laterbrowserdata without replacingcurrentdiskstate. Startup is
+blocked untilstorageinitialization succeeds. All project/static/dynamic/comparison
+exports use the bounded /api/profiles endpoint and write unique files in exports/;
+no exportbutton sendsfiles toDownloads. Five knownolderQA downloads were moved
+into app.preview/recovered-downloads byparent, unrelatedfiles untouched.
+
+Validation:2788 presentation/comparison assertions include64 independent Python
+Model.input probes and actual6.5s baseline engines with656 matched pairs; max
+baselineheaveerror0.00419668mm. Existing2000 model/1123drawing assertions and27
+project/disk-state groups pass;11 Python profile tests cover atomicfailure,
+conflicts, immutablebackup, corruption,6MiBexports, path/size limits andg0.
+Nativeisolatedworker GUItest passesall7 cases; mainnon-GUI rerun passes5 with2
+GUIcases explicitlyskipped, supplemented byparent actualnativevisual/control QA.
+JSparse/Pythoncompile/diffchecks pass. All3foreignOriginAPIs reject403; unsafe
+exportpath rejects400. Engineequations/referencehashes remain unchanged.
+
+Actualbrowsermigration preserves2nameddesigns and workingpose140.8954° with full
+150/150/150mm@100mm/s,6.5s profile. Diskworking and namedlibrary deep-equal the
+originalbrowserbackups aftersaveas/reload/delete/import QA. Eightactualexports
+(5JSON/3CSV, including3.027MBcomparison and3.283MBstaticdata) parse insideexports/,
+with noKinefoldfiles leftinDownloads. Browsercurrentpose pairhas656samples each,
+shared2.48s cursor andcomparisonfield changes pass,17plotcategories/floormotion
+play pass, no consoleerrors. Individualexportbuttons arevisiblebesideRunboth.
+LauncherStop/start/reuse from unrelatedcwd passes4191 afterbackendintegration;
+server remainsrunning. Parentarchitecture/browser/native/diskreview approved
+beforepublication; no hardware/collision/fullvehicle validation is claimed.

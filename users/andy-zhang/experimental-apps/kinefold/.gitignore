@@ -1,3 +1,7 @@
 .preview/
 __pycache__/
 .venv/
+/profiles/*
+!/profiles/README.md
+/exports/*
+!/exports/README.md

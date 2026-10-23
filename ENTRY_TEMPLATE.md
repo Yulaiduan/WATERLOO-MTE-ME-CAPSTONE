@@ -4098,3 +4098,58 @@ Use app-local Start Kinefold.cmd and4191; read equilibrium-plots.md for series/s
 Preserve immutable reference equations, sampled-versus-bounded distinctions and shared-design invalidation when extending plots; floating dynamics and saved project profiles are unchanged.
 
 ---
+
+## Entry: 2026-10-22 — Andy Zhang — Matched dynamic analysis, desktop playback and app-folder profiles
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental dynamic presentation and local persistence.
+- **Associated Issue/Task:** User requested matching categorized dynamic plots/comparison, a horizontally moving square floor, actual desktop Pymunk window, and all profiles/exports kept within Capstone instead of Downloads.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/.gitignore`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.md`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium-plots.md`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium.js`
+- `users/andy-zhang/experimental-apps/kinefold/exports/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/profiles/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-dynamic-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/viewer_service.py`
+- **API/Interface Changes:** New native dynamic analysis/results modules provide17 matching plots, exact-time/event-side same-snapshot comparison, contextual exports and shared playback. Same-origin bounded /api/viewer owns one fixed-script Pymunk/Tk results-playback process; /api/profiles provides atomic revision-checked app-folder designs/working copies and unique exports. Existing browser data remains backed up unchanged; project-v3 schema/stable tabs and dynamics equations are unchanged. All export callers now write exports/ through the service; new profiles/ and exports/ READMEs track purpose while generated JSON/CSV remains ignored. No source app/canonical changes; unrelated ignored Laptop Access launchers preserved.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** node verify-dynamic-analysis.cjs --real passes2788 assertions incl64 independent Python input-law probes, actual default6.5s runs/656 exact pairs and maxheaveerror0.00419668mm; wronghash/profile/params/eventside and partialcoverage checks pass. Existing3123 model/drawing assertions and27 project/disk-state groups pass;11 Python profile tests pass (atomicreplace failures/conflicts/corruption/immutablebackup/6MiBexports/pathsize/g0). Nativeisolated GUI tests pass7; mainnon-GUI run passes5/skips2, supplemented byactualparent desktopUI inspection of window/controls/floor. JSparse/Pythoncompile/whitespace pass. Actualsame-origin APIs rejectforeignOrigin403 andunsafepath400. CUA verifies17matchingplots/enginepair/shared2.48scursor/comparisonfieldcursor/floorplay/nativeopen/noerrors; current140.8954° posepair656rows each. Migration/saveas/reload/delete/import leavesexact2nameddesigns andworking/profile deeply equal originalbrowserbackup. All8 actualexports (5JSON/3CSV,3.027MBcomparison/3.283MBstatic) parse insideapp exports/, noneDownloads. Parent movedonly5knownolderKinefoldQA downloads intoapp.preview/recovered-downloads. AppStop/start/reuse from unrelatedcwd at4191 passes afterserviceintegration; server remainsrunning. Parentarchitecture/browser/native/disk QA approved. Requiredexact-snapshot repository gates/hooks precedepublication; no newengine/hardware/collision/fullvehicle validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app presentation/persistence.
+
+## 4. Compute Saving Handoff State
+
+Both native dynamic workspaces now compare one captured mechanism/profile with categorized plots, event-aware errors, synchronized movingfloor and a genuine closable Pymunk desktop results-playback window.
+Use app-local Start Kinefold.cmd at4191; profiles/library.json stores exactnamed/workingdesigns, exports/ stores everyartifact, and originalbrowserkeys/backup remain preserved.
+Retain exacteventside alignment, condensed-linkage scope, atomicrevision checks and fixed-root process/file APIs; read dynamic-analysis.md and appcontext for actualevidence and limitations.
+
+---
