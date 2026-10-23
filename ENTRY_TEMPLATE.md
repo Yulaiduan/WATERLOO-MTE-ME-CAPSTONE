@@ -4018,3 +4018,39 @@ Use the app-local launcher at4191 and project-v3 exports; old fixed-hip data rem
 Retain exact jump accounting, world-frame geometry, independent heave plots and the honest condensed-linkage Pymunk scope when extending the experiment.
 
 ---
+
+
+## Entry: 2026-10-22 — Andy Zhang — V4 static-limit validation of floating dynamics
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental floating-chassis analytical and Pymunk validation.
+- **Associated Issue/Task:** User requested running both dynamic solvers as static and checking agreement with Jon's VSL v4.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/static-validation.md`
+- `users/andy-zhang/experimental-apps/kinefold/validate_static.py`
+- **API/Interface Changes:** None. Added standalone validation against original hash-verified Jon HTML analytical blocks executed directly by Node. No runtime/UI/profile, source app, launchers or canonical component changes. At beta0 the source gets total vertical force Mg and matching horizontal force; offset rim-vs-centre support is explicitly corrected by tauJon-tauFloating=rw*R*sin(beta)*K, R=Mg-FzExtra. Scope is hip torque, spring law, geometry, derived support and actual held chassis pose; belt/pin forces and independently measured contact reaction are not asserted.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** App .venv Python validate_static.py --output .preview/static-validation.json passes:63 direct beta0 cases plus9 support-moment-corrected offset cases,144 actual one-second integrations and4 expected-motion negative controls; every run ends by duration. Original source and retained-block hashes verified, independent original FBD residuals and centre geometry checked. Max holding-torque error5.684e-14Nm, spring error3.411e-13N, centre error1.137e-13mm; chassis drift7.958e-13mm analytical/0mm Pymunk, angle drift3.126e-13/2.842e-13deg and derived support error2.274e-13N. Baseline132.5deg requires -0.027168833380Nm,570.491044815N cable force and85.8375N support. Zero-torque baseline moves as expected because V4 assistance is approximate; uncorrected offset support also moves, while corrected holding runs pass. Initial harness import ordering and an incorrect no-event assumption for scheduled zero-height boundaries were fixed before the full clean run; no tolerance relaxed. Python compilation, Markdown links, diff whitespace and required repository entry/workspace checks precede publication. No server/browser/profile state touched; launcher lifecycle was not rerun because none changed. Hardware/contact/all-body linkage and canonical robot physics remain unvalidated.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app validation.
+
+## 4. Compute Saving Handoff State
+
+Both floating engines match original V4 statics in63 directly equivalent cases and9 offset cases after the explicitly documented support-location moment correction.
+Reproduce with app .venv Python validate_static.py and read static-validation.md; baseline zero hip torque is intentionally not exact equilibrium.
+Preserve the distinction between actual held heave pose, derived ideal support/spring readouts and unverified belt/pin/contact forces when extending the experiment.
+
+---

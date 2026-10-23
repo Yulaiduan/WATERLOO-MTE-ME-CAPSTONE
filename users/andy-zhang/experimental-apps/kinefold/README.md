@@ -66,6 +66,9 @@ finite-difference belt material velocities on both wraps of every pulley stage.
 `node verify-projects.cjs` checks migration/persistence safety; after Setup, run
 `.venv/Scripts/python.exe verify_dynamics.py` for exact square, independent heave,
 source parity, event continuity and cross-engine refinement checks.
+Run `.venv/Scripts/python.exe validate_static.py` for both engines' actual
+flat-input holding runs against Jon's original HTML; see the
+[static-limit comparison](static-validation.md) for results and load mapping.
 Run `python preview.py start --no-browser` for HTTP readiness without opening a
 browser. See [context](context/README.md) for actual verification and handoff.
 

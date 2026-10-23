@@ -244,3 +244,27 @@ halve with dt refinement. Boundaries cap10000 input transitions; analytic output
 only rounds range endpoints within1e-10rad, otherwise it fails explicitly.
 Launcher reuse/stop/restart from unrelated cwd passes at4191. Parent architecture
 and browser review approved the experimental scope; hardware remains unvalidated.
+
+## Dynamic static-limit validation — 2026-10-22
+
+The owner asked to run both floating dynamics as static and compare with Jon's
+VSLv4. [The comparison](../static-validation.md) and
+[reproducible script](../validate_static.py) use original hash-verified HTML
+analytical blocks directly in Node, independently of Python/adapter expectations.
+72 matched cases produce144 actual one-second engine rollouts, all duration
+termination: baseline, unequal geometry/ratios, masses, alpha, both spring laws,
+idler variants and additional loads. Maximum torque error5.69e-14Nm, spring
+error3.42e-13N; maximum chassis drift7.96e-13mm analytical and0mm Pymunk.
+Baseline132.5deg requires -0.027168833380Nm, Fs570.491044815N and85.8375N support.
+
+Mapping is essential: dynamic support acts vertically atC, while Jon's total
+wheel load acts at rimP. Supply Jon totalverticalMg and the same horizontal
+load; tauJon-tauFloating=rw*R*sin(beta)*K for supportR=Mg-FzExtra. Baselinebeta0
+matches directly; offsetbeta25/Knonzero matches after removing only the support
+rim moment. Zero-torque baseline and uncorrected-offset negative controls move
+as expected. Support/spring readouts are derived force-law quantities, not
+independently measured Pymunk contact reactions; individual belt/pin forces are
+not validated. No runtime/UI/profile or source-app changes, no server lifecycle
+change; saved150mm square settings remain intact. An import-order harness error
+and a mistaken assumption that zero-height inputs emit no scheduled events were
+fixed before the clean final check; no numerical tolerance was relaxed.
