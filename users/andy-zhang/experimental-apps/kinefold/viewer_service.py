@@ -50,8 +50,13 @@ class ViewerService:
             if set(request) != {'action'}:
                 raise ValueError('status and close accept only action.')
             return None
-        if not {'action', 'params', 'runConfig'} <= set(request) or set(request) - {'action', 'params', 'runConfig', 'name', 'contactConfig', 'caseConfig'}:
+        if not {'action', 'params', 'runConfig'} <= set(request) or set(request) - {'action', 'params', 'runConfig', 'name', 'contactConfig', 'caseConfig', 'motorConfig'}:
             raise ValueError('open requires action, params and runConfig; optional name and contactConfig only.')
+        if 'motorConfig' in request:
+            from motor_model import Motor
+            if not isinstance(request['motorConfig'],dict):
+                raise ValueError('motorConfig must be an object when supplied.')
+            Motor.resolve(request['motorConfig'])
         encoded = json.dumps(request, allow_nan=False)
         if len(encoded.encode('utf-8')) > ViewerService.MAX_REQUEST_BYTES:
             raise ValueError('Viewer request exceeds 131072 bytes.')
@@ -66,9 +71,9 @@ class ViewerService:
         if isinstance(contact,dict) and contact.get('mode') == 'terrain-contact':
             from contact_dynamics import validate_contact_request
             validate_contact_request({'engine': 'pymunk', 'params': request['params'],
-                                      'runConfig': request['runConfig'], 'contactConfig': contact, **({'caseConfig':request['caseConfig']} if 'caseConfig' in request else {})})
+                                      'runConfig': request['runConfig'], 'contactConfig': contact, **({'caseConfig':request['caseConfig']} if 'caseConfig' in request else {}), **({'motorConfig':request['motorConfig']} if 'motorConfig' in request else {})})
         else:
-            Model(request['params'], request['runConfig'])
+            Model(request['params'], request['runConfig'], request.get('motorConfig'))
         snapshot = json.loads(encoded)
         snapshot['name'] = name.strip() or 'Captured design'
         return snapshot

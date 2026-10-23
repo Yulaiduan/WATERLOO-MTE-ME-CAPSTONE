@@ -40,7 +40,7 @@ def is_contact(result):
 
 def simulate_snapshot(snapshot):
     """Dispatch the captured payload to its fixed genuine Pymunk backend."""
-    request = {'engine': 'pymunk', 'params': snapshot['params'], 'runConfig': snapshot['runConfig']}
+    request = {'engine': 'pymunk', 'params': snapshot['params'], 'runConfig': snapshot['runConfig'], **({'motorConfig':snapshot['motorConfig']} if 'motorConfig' in snapshot else {})}
     if (snapshot.get('contactConfig') or {}).get('mode') == 'terrain-contact':
         from contact_dynamics import simulate_contact
         return simulate_contact({**request, 'contactConfig': snapshot['contactConfig'], **({'caseConfig':snapshot['caseConfig']} if 'caseConfig' in snapshot else {})})

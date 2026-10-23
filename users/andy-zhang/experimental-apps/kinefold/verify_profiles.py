@@ -42,6 +42,17 @@ class ProfileTests(unittest.TestCase):
         raw = {"kinefold-project-v3": json.dumps(working), "kinefold-library-v3": json.dumps({"schema": "kinefold/library-v3", "designs": [first, second]})}
         return self.call("migrate", expectedRevision=0, designs=[first, second], working=working, browserBackup=raw), raw
 
+    def test_optional_motor_profile_roundtrip_and_null_rejection(self):
+        from motor_model import DEFAULTS
+        state, _ = self.migrate()
+        value = project('Motor study')
+        value['motorConfig'] = dict(DEFAULTS, enabled=True, gearRatio=10, rotorInertiaKgM2=.002)
+        result = self.call('working', expectedRevision=state['revision'], project=value)
+        self.assertEqual(result['working']['motorConfig'], value['motorConfig'])
+        self.assertEqual(ProfileService(self.root).handle({'action':'list'})[0]['working'], value)
+        invalid = dict(value, motorConfig=None)
+        self.call('working', status=400, expectedRevision=result['revision'], project=invalid)
+
     def test_migration_exact_working_pose_two_saved_designs_and_reload(self):
         state, raw = self.migrate()
         self.assertEqual(len(state["designs"]), 2)

@@ -519,3 +519,41 @@ checks pass at4191. Parent final browser/architecture approval: merged four-tab 
 Assumptions: four top-level workspaces, stable old URL aliases, library collapsed
 by default, and engineering illustrations remain SVG. Builder Play labels
 last-settled static results and refreshes after the pose settles.
+
+
+## 2026-10-23 — optional motor inertia, reduction, cogging and losses
+
+The optional project-v3 motorConfig is shared across both dynamic tabs, storage,
+captured comparisons, exports and native playback. No existing profile receives
+this block automatically. Default command basis stays joint-side; explicit
+motor-side commands convert through positive reduction N. Rotor inertia reflects
+as N²Jm and adds to legacy additional joint inertia; hip damping is separately
+joint-side. Sinusoidal cogging uses fixed q=0 phase and conservative potential;
+regularized Coulomb/viscous friction has nonnegative integrated motor loss and
+explicit phase/drag resolution guards. These idealizations supply no measured
+hardware values, gearbox compliance, stiction or electrical efficiency model.
+
+The prescribed-height equations include physical reflected inertia and energy.
+Analytical contact uses variable mass with its Christoffel term for smooth forces,
+contact/stops and projection. Pymunk couples a scalar rotor in the same native
+PGS iterations without fake translational mass or altered wheel spin inertia.
+The private ABI is limited to verified WindowsAMD64/Pymunk7.3.0/Munk2D
+2.0.1-ade7ed72849e60289eefb7a41e79ae6322fefaf3; other ABIs reject nonzeroJ.
+Actual rotor angle/rate drive native motor work/KE/losses. Signed numerical
+constraint work and coupled free-to-solved KE remain separate from motor loss;
+contact/stop physical-loss partition is null when unavailable. No tight energy
+conservation or impact peak claim is made. See motor-model.md.
+
+Combined50 physics tests pass, including independent N/N², conservative cogging,
+reverse-speed losses, held impact, physical native impulse coupling, stops,
+friction/cogging guards and legacy source/contact cases. Motor impact discrepancy
+refines0.546505→0.283404→0.144773mm atdt.0005/.00025/.000125. Bench motor finite-rise
+error0.015915mm, ledgers3.61e-14/5.34e-6J. Native ABI suite7 tests includes actual
+floor impact and callback lifecycle/version rejection. UI/state checks33 profile
+groups,14 temporary-disk tests,6 balance conversion,48 comparison,3404 Plotlytrace
+and19 delayed lifecycle assertions pass. The initial zero native motor-work bug
+was fixed by capturing actual rotor angle before prepare(), with an independent
+τshaft·Δθshaft identity regression. A late async Plotly purge race was addressed
+with per-host serialized operations, generations and deferred destruction;
+obsolete work is skipped, current errors still surface, and owned ResizeObserver
+replaces Plotly's independent responsive resize callback. Parent final browser/architecture review passes shared motor controls, reload persistence, invalidN rejection and disabled zero effects; eight motor Plotly plots and comparison selectors; actual native desktop open/status/2s/close (manual native visual inspection not claimed). Corrected201-sample100mm Landing pair, N10/Jm.002/motor-basis2Nm, both arrested: max heave difference2.31726mm, motor-work difference0.0363737J, loss difference0.00045759J; final work−6.90556195/−6.94193569J. Numerical ledger maxima2.364J Pymunk versus0.08362J analytical remain explicit, not tight conservation. Captured motor profiles match in4,456,913byte comparisonJSON; CSV201rows/246155bytes parse in app exports/. Final delayed-chart repro passes two paired runs, rapid work/loss/rotor selectors, themes, result replacement and original-profile import/stale purge, with no new console warning/error. Current working and4 named designs deeply equal pre-motor-library backup after exact UI restore (revision85). Proof .preview/motor-comparison-final.png remains ignored.

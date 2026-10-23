@@ -20,7 +20,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['kinematics', 'wheel-x', 'Wheel-centre horizontal displacement', 'mm', series(['wheelDisplacementXMm', 'C_x − initial C_x'])],
     ['forces', 'spring', 'Spring cable tension', 'N', series(['Fs', 'Cable tension'])],
     ['forces', 'reaction', 'Signed vertical wheel-input reaction', 'N', series(['inputReactionN', 'Input actuator reaction'])],
-    ['forces', 'torques', 'Applied & balance-reference torques', 'N·m', series(['motorTorqueNm', 'Motor command'], ['dampingTorqueNm', 'Damping'], ['tauApplied', 'Net actuation'], ['tauStatic', 'Instantaneous balance reference'])],
+    ['forces', 'torques', 'Applied & balance-reference torques', 'N·m', series(['motorTorqueNm', 'Motor command'], ['dampingTorqueNm', 'Damping'], ['tauApplied', 'Command + friction/damping'], ['tauStatic', 'Instantaneous balance reference'])],
     ['energy', 'energy', 'Energy accounting', 'J', series(['kineticJ', 'Kinetic'], ['potentialJ', 'Effective potential'], ['energyJ', 'Total'])],
     ['energy', 'work', 'Cumulative supplied work', 'J', series(['actuatorDampingWorkJ', 'Actuation + damping'], ['inputWorkJ', 'Wheel input'])],
     ['energy', 'residual', 'Work–energy residual', 'J', series(['workEnergyResidualJ', 'E − E₀ − W_act − W_input'])],
@@ -52,6 +52,16 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['energy','case-ledger','Engine energy-ledger residual · refine dt','J',series(['energyBalanceResidualJ','Unresolved ledger residual'],['positionStabilizationJ','Analytical position-projection energy'])],
     ['energy','case-contact-loss','Contact / stop impulse losses','J',series(['contactDissipationJ','Contact impulse loss'],['stopDissipationJ','Travel-stop loss'])],
   ].map(([group,id,title,unit,keys])=>({group,id,title,unit,series:keys}));
+  const motorManifest=[
+    ['motor','motor-speed','Motor shaft speed','rad/s',series(['motorVelocityRadS','Shaft angular speed'])],
+    ['motor','motor-command','Motor and joint electromagnetic torque','N·m',series(['shaftCommandNm','Motor shaft command'],['jointElectromagneticNm','Joint electromagnetic command'])],
+    ['motor','motor-passive','Joint-side cogging and friction','N·m',series(['jointCoggingNm','Conservative cogging'],['jointFrictionNm','Motor friction'],['jointPassiveNm','Total motor passive torque'])],
+    ['motor','motor-energy','Rotor kinetic and detent potential energy','J',series(['rotorKineticJ','Motor rotor kinetic'],['legacyJointRotorKineticJ','Additional joint inertia kinetic'],['coggingPotentialJ','Cogging potential'])],
+    ['motor','motor-loss','Motor dissipated energy','J',series(['motorDissipatedJ','Motor losses'])],
+    ['motor','motor-constraint','Rotor kinematic constraint residual','rad/s',series(['rotorConstraintVelocityErrorRadS','Rotor speed residual'])]
+    ,['motor','motor-position-residual','Rotor joint-angle constraint residual','rad',series(['rotorConstraintPositionResidualRad','Native rotor − ideal q'])]
+    ,['motor','motor-numerical-work','Native rotor constraint work · numerical','J',series(['rotorConstraintImpulseWorkJ','Signed native constraint impulse work'],['coupledConstraintKineticLossJ','Signed coupled free-to-solved KE change'])]
+  ].map(([group,id,title,unit,keys])=>({group,id,title,unit,series:keys}));
   const comparisonFields = [
     ['chassisDisplacementMm', 'Chassis displacement', 'mm'],
     ['chassisVelocityMmS', 'Chassis speed', 'mm/s'],
@@ -59,11 +69,13 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['Fs', 'Spring tension', 'N'],
     ['inputReactionN', 'Wheel-input reaction', 'N'],
     ['workEnergyResidualJ', 'Work–energy residual', 'J'],
+    ['rotorKineticJ','Motor rotor energy','J'],['shaftCommandNm','Motor shaft command','N·m'],
   ];
   const contactComparisonFields = [
     ['chassisDisplacementMm','Chassis displacement','mm'],['chassisVelocityMmS','Chassis speed','mm/s'],
     ['theta2','Hip angle','°'],['wheelAngularVelocityDegS','Wheel spin','°/s'],['Fs','Spring tension','N'],
     ['contactNormalForceN','Contact normal · interval mean','N'],['motorTorqueNm','Motor torque','N·m'],
+    ['rotorKineticJ','Motor rotor energy','J'],['shaftCommandNm','Motor shaft command','N·m'],['motorDissipatedJ','Motor dissipated energy','J'],
     ['chassisKineticJ','Chassis kinetic energy','J'],['motorWorkJ','Motor work','J'],['energyBalanceResidualJ','Energy-ledger residual','J'],
   ];
   function stable(value) {
@@ -71,7 +83,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}';
     return JSON.stringify(value);
   }
-  function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null}); }
+  function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null}); }
   function enrich(result) {
     const p = result.params, config = result.runConfig, ref = Kinefold.reference(p);
     const ratios = KinefoldV4.VSL.ratios(ref), k3 = 1 - ratios.qab, k5 = 1 - 1 / ratios.qdc;
@@ -79,13 +91,17 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     return result.rows.map((row, i) => {
       const pose = KinefoldV4.VSL.state(ref, row.theta2), frame = result.frames[i], contact=result.scope?.mode==='terrain-contact';
       const driveRate=contact?ratios.qdc*ratios.qfe*(row.wheelAngularVelocityDegS-k6*row.velocityDegS):0;
+      const structuralRotor=!contact||result.engine==='analytical'||!(config.hipRotorInertiaKgM2+(result.motorConfig?.enabled?result.motorConfig.gearRatio**2*result.motorConfig.rotorInertiaKgM2:0));
       return {...row, chassisDisplacementMm: row.chassisZMm - first.chassisZMm,
         wheelDisplacementXMm: row.CxMm - first.CxMm,
         theta3: pose.t3, theta4:contact?row.theta4:0,theta5: contact?row.theta5:pose.t5, theta6: contact?row.theta6:pose.t6,
         rate3: k3 * row.velocityDegS,rate4:driveRate, rate5: k5 * row.velocityDegS+driveRate/ratios.qdc, rate6: contact?row.wheelAngularVelocityDegS:k6 * row.velocityDegS,
         accel3:Number.isFinite(row.accelerationDegS2)?k3*row.accelerationDegS2:null, accel5:Number.isFinite(row.accelerationDegS2)?k5*row.accelerationDegS2:null, accel6:Number.isFinite(row.accelerationDegS2)?k6*row.accelerationDegS2:null,
+        rotorConstraintVelocityErrorRadS:Number.isFinite(row.rotorConstraintVelocityResidualRadS)?row.rotorConstraintVelocityResidualRadS:structuralRotor?0:null,
+        rotorConstraintPositionResidualRad:Number.isFinite(row.rotorConstraintPositionResidualRad)?row.rotorConstraintPositionResidualRad:structuralRotor?0:null,
+        motorDissipatedJ:Number.isFinite(row.motorDissipatedJ)?row.motorDissipatedJ:Number.isFinite(row.motorFrictionLossJ)?row.motorFrictionLossJ:null,
         motorTorqueNm: Number.isFinite(row.motorTorqueNm)?row.motorTorqueNm:config.hipTorqueNm, dampingTorqueNm: -config.dampingNms * row.velocityDegS * Math.PI / 180,
-        workEnergyResidualJ: [row.energyJ,first.energyJ,row.actuatorDampingWorkJ,row.inputWorkJ].every(Number.isFinite)?row.energyJ-first.energyJ-row.actuatorDampingWorkJ-row.inputWorkJ:null,
+        workEnergyResidualJ: [row.energyJ,first.energyJ,row.actuatorDampingWorkJ,row.inputWorkJ].every(Number.isFinite)?row.energyJ-first.energyJ-row.actuatorDampingWorkJ-row.inputWorkJ+(Number.isFinite(row.motorFrictionLossJ)?row.motorFrictionLossJ:Number.isFinite(row.motorDissipatedJ)?row.motorDissipatedJ:0):null,
         constraintPositionErrorMm: frame.constraintPositionErrorMm ?? (result.engine === 'analytical' ? 0 : null),
         constraintAngleErrorDeg: frame.constraintAngleErrorDeg ?? (result.engine === 'analytical' ? 0 : null)};
     });
@@ -94,6 +110,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
 
     if (a && b && (a.engine !== 'analytical' || b.engine !== 'pymunk')) return {valid:false,reason:'Choose one analytical run and one Pymunk run.'};
     if (!a || !b) return {valid: false, reason: 'Run both engines on the same captured mechanism and input profile.'};
+    if(stable(a.motorConfig||null)!==stable(b.motorConfig||null))return {valid:false,reason:'Motor/gear profiles differ. Run both from the same captured design.'};
     if (a.scope?.mode !== b.scope?.mode || stable(a.contactConfig||null)!==stable(b.contactConfig||null) || stable(a.caseConfig||null)!==stable(b.caseConfig||null)) return {valid:false,reason:'Interaction, material or case profiles differ. Run both on the same captured snapshot.'};
     const fields=a.scope?.mode==='terrain-contact'?contactComparisonFields:comparisonFields;
     if (!a.designHash || a.designHash !== b.designHash || stable(a.params) !== stable(b.params))
@@ -156,5 +173,5 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     }
     return {requested, applied, atWheel: inputAtDistance(config, distance, row.eventSide === 'before' ? 'left' : 'right'), distance, dense: end - start >= 2000};
   }
-  return {manifest,contactManifest, comparisonFields, stable, snapshotKey, enrich, comparison, inputAtDistance, floor};
+  return {manifest,contactManifest,motorManifest, comparisonFields, stable, snapshotKey, enrich, comparison, inputAtDistance, floor};
 })();

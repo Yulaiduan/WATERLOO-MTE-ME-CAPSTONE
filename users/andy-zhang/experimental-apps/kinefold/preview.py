@@ -35,7 +35,7 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js",
           "solvers.js", "solver-style.css", "project-store.js", "designs.js",
           "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",
-          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js", "case-ui.js", "plotly-runtime.js", "plotly.css", "studio.css"}
+          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js", "case-ui.js", "plotly-runtime.js", "plotly.css", "studio.css", "motor-ui.js"}
 
 
 VENDOR_ROUTE = "/vendor/plotly-basic-4.1.2.min.js"
@@ -66,7 +66,7 @@ def reject_nonfinite(value):
 
 def run_dynamics(request):
     """Integrate one bounded request in this app's installed physics environment."""
-    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "study"}):
+    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "motorConfig", "study"}):
         return {"error": "Expected engine, params, runConfig and optional contactConfig/caseConfig only."}, 400
     if not isinstance(request["engine"], str) or request["engine"] not in {"analytical", "pymunk"}:
         return {"error": "Choose analytical or pymunk."}, 400
@@ -79,7 +79,7 @@ def run_dynamics(request):
     study = request.get("study")
     if study is not None and (study != "minimum-landing-torque" or not contact_mode):
         return {"error": "Landing assessment requires actual contact and the known minimum-torque study."}, 400
-    payload = request if contact_mode else {key: request[key] for key in ("engine", "params", "runConfig")}
+    payload = request if contact_mode else {key: request[key] for key in ("engine", "params", "runConfig", "motorConfig") if key in request}
     script = "contact_study.py" if study else ("analytical_contact.py" if contact_mode and request["engine"] == "analytical" else "contact_dynamics.py" if contact_mode else "dynamics.py")
     python = ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     if not python.is_file():

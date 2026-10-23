@@ -12,13 +12,15 @@ let assertions=0;
 const ok=(value,message)=>{assert.ok(value,message);assertions++;};
 const near=(a,b,tol=1e-8)=>ok(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<tol,`${a} versus ${b}`);
 function result(engine){return {engine,designHash:'same-mechanism',params:{...M.defaults},runConfig:{...config},diagnostics:{termination:'duration'},
-rows:[{t:0},{t:.5,eventSide:'before'},{t:.5,eventSide:'after'},{t:1}].map((r,i)=>({...r,chassisZMm:600+i,chassisVelocityMmS:1,theta2:130+i,velocityDegS:2,accelerationDegS2:3,CxMm:i,wheelZMm:100,Fs:500+i,inputReactionN:85,kineticJ:1,potentialJ:9,energyJ:10+i,actuatorDampingWorkJ:0,inputWorkJ:i})),frames:[{},{},{},{}]};}
+rows:[{t:0},{t:.5,eventSide:'before'},{t:.5,eventSide:'after'},{t:1}].map((r,i)=>({...r,chassisZMm:600+i,chassisVelocityMmS:1,theta2:130+i,velocityDegS:2,accelerationDegS2:3,CxMm:i,wheelZMm:100,Fs:500+i,inputReactionN:85,kineticJ:1,potentialJ:9,rotorKineticJ:0,shaftCommandNm:0,motorDissipatedJ:0,energyJ:10+i,actuatorDampingWorkJ:0,inputWorkJ:i})),frames:[{},{},{},{}]};}
 const a=result('analytical'),b=result('pymunk');
 ok(A.manifest.length===17);ok(new Set(A.manifest.map(x=>x.id)).size===17);
 const enriched=A.enrich(a);near(enriched[1].rate3,-2);near(enriched[1].rate6,0);near(enriched[1].theta3,49);near(enriched[1].workEnergyResidualJ,0);
 ok(enriched[0].constraintPositionErrorMm===0);ok(A.enrich(b)[0].constraintPositionErrorMm===null);
 let comparison=A.comparison(a,b);ok(comparison.valid);ok(comparison.matched===4);ok(comparison.complete);ok(comparison.stats.every(s=>s.maxAbs===0));
 ok(!A.comparison(a,{...b,designHash:'wrong'}).valid);
+ok(!A.comparison(a,{...b,motorConfig:{...P.motorDefaults,enabled:true,gearRatio:10}}).valid,'different motor model cannot compare');
+ok(A.snapshotKey({...P.baseline(),motorConfig:{...P.motorDefaults,enabled:true}})!==A.snapshotKey(P.baseline()),'motor profile invalidates captured snapshot');
 ok(!A.comparison(a,{...b,runConfig:{...config,inputSpeedMmS:101}}).valid);
 ok(!A.comparison(a,{...b,params:{...M.defaults,m1:10}}).valid);
 ok(!A.comparison(a,{...b,engine:'analytical'}).valid);

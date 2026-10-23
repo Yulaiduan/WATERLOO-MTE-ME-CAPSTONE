@@ -55,7 +55,7 @@ class ContactChecks(unittest.TestCase):
     def test_all_unsupported_geometry_and_request_guards(self):
         variants=[({'L3':299},{}),({'ra':59},{}),({'m2':.1},{}),({'m3':.1},{}),({'m5':.1},{}),
                   ({'m6':0},{}),({'m1':0},{}),({'te':90},{}),({'loadMode':'contact'},{}),
-                  ({},{'hipRotorInertiaKgM2':.1}),({},{'inertiaModel':'custom'}),({},{'I6':.1}),({},{'inputRiseMm':1})]
+                  ({},{'inertiaModel':'custom'}),({},{'I6':.1}),({},{'inputRiseMm':1})]
         for p,c in variants:
             with self.subTest(p=p,c=c),self.assertRaises(ValueError):validate_contact_request(self.payload(p,**c))
         for key,value in (('mode','bench'),('friction',-1),('friction',float('nan')),('restitution',.1),('drive','locked')):

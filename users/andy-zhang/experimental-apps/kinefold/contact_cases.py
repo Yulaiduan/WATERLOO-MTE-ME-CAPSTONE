@@ -9,6 +9,7 @@ import math
 import hashlib
 import json
 from dynamic_model import Model, R, mul, validate, finite
+from motor_model import Motor
 
 CASE_DEFAULTS = dict(kind='terrain-stability',jumpTorqueNm=20.,landingDropMm=100.,
     landingOpenFraction=2/3,landingBrakeTorqueNm=20.,landingBrakeLimitNm=200.,
@@ -41,8 +42,8 @@ class ContactGeometry(Model):
             raise ValueError('Terrain contact requires positive explicit m1 and m6; no mass is substituted.')
         if any(p[k] != 0 for k in ('m2', 'm3', 'm5')):
             raise ValueError('Terrain contact supports massless links/idler only: m2=m3=m5=0.')
-        if c['inertiaModel'] != 'uniform-rods-discs' or any(c[k] != 0 for k in ('I2', 'I3', 'I5', 'I6', 'hipRotorInertiaKgM2')):
-            raise ValueError('Terrain contact requires uniform wheel-disc inertia and zero additional/custom/rotor inertia.')
+        if c['inertiaModel'] != 'uniform-rods-discs' or any(c[k] != 0 for k in ('I2', 'I3', 'I5', 'I6')):
+            raise ValueError('Terrain contact requires uniform wheel-disc inertia and zero custom wheel/link inertia.')
         if abs(p['L2'] - p['L3']) > 1e-10 or abs(p['ra'] / p['rb'] - 2) > 1e-12:
             raise ValueError('Terrain contact requires certified straight travel: equal L2/L3 and ra/rb=2. Curved guide geometry is unsupported.')
         if c['inputRiseMm'] != 0:
@@ -52,6 +53,8 @@ class ContactGeometry(Model):
         if p['te'] == p['tc']:
             raise ValueError('Terrain contact requires a nonempty monotonic working range.')
         self.p, self.c = p, c
+        self.motor=Motor.resolve()
+        self.Jref=c['hipRotorInertiaKgM2']
         self.q0, self.lo, self.hi = p['theta2'] * R, p['te'] * R, p['tc'] * R
         self.ab, self.dc, self.fe = p['ra'] / p['rb'], p['rd'] / p['rc'], p['rf'] / p['re']
         self.k3, self.k5 = 1-self.ab, 1-1/self.dc
@@ -93,7 +96,7 @@ class ContactGeometry(Model):
 
 
 def validate_contact_request(payload):
-    if not isinstance(payload,dict) or set(payload) not in ({'engine','params','runConfig','contactConfig'}, {'engine','params','runConfig','contactConfig','caseConfig'}):
+    if not isinstance(payload,dict) or not {'engine','params','runConfig','contactConfig'}<=set(payload) or set(payload)-{'engine','params','runConfig','contactConfig','caseConfig','motorConfig'}:
         raise ValueError('Contact request requires exactly engine, params, runConfig and contactConfig.')
     if payload['engine'] not in ('pymunk','analytical'):
         raise ValueError('Contact engine must be analytical or pymunk.')
@@ -108,6 +111,11 @@ def validate_contact_request(payload):
         raise ValueError('This contact model requires zero restitution.')
     case=resolve_case(payload)
     model=ContactGeometry(payload['params'],payload['runConfig'])
+    if 'motorConfig' in payload and not isinstance(payload['motorConfig'],dict):
+        raise ValueError('motorConfig must be an object when supplied.')
+    model.motor=Motor.resolve(payload.get('motorConfig'))
+    model.motor_config_present='motorConfig' in payload
+    model.Jref=model.c['hipRotorInertiaKgM2']+model.motor.reflected_inertia
     if case['kind'] in ('jump','landing') and model.axis[1]*model.jacobian((model.lo+model.hi)/2)<=0:
         raise ValueError('Jump/landing require tc to be the geometrically compressed endpoint; this straight-path branch reverses that convention.')
     if case['kind']=='landing' and case['brakeStrategy']=='energy-sized' and abs(model.axis[0])>1e-10:
@@ -150,7 +158,7 @@ def terrain_spec(m,case):
 
 
 def model_identity(m,contact,case):
-    return hashlib.sha256(json.dumps(dict(params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(dict(params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
 def usable_compression(m,q,case):
@@ -172,22 +180,25 @@ def usable_compression(m,q,case):
 def energy_estimate(m,case):
     q,h,x,z=initial_conditions(m,case);qc=m.hi
     if case['kind']=='jump':
-        work=case['jumpTorqueNm']*(m.hi-m.lo)
+        work=m.motor.joint_command(case['jumpTorqueNm'])*(m.hi-m.lo)
         spring=m.spring(m.hi)['energy']-m.spring(m.lo)['energy']
-        return dict(averageTorqueNm=None,motorWorkToExtensionJ=work,springReleaseToExtensionJ=spring,
-            idealGrossCOMRiseMm=max(0,work+spring)/((m.p['m1']+m.p['m6'])*m.p['g'])*1000 if m.p['g']>0 else None,
-            meaning='Available motor and spring work divided by total weight; includes stance rise, excludes stop/contact losses, not guaranteed jump apex.')
+        cogging=m.motor.motor_state(m.hi,0,0)['coggingPotentialJ']-m.motor.motor_state(m.lo,0,0)['coggingPotentialJ']
+        return dict(averageTorqueNm=None,motorWorkToExtensionJ=work,springReleaseToExtensionJ=spring,coggingReleaseToExtensionJ=cogging,
+            idealGrossCOMRiseMm=max(0,work+spring+cogging)/((m.p['m1']+m.p['m6'])*m.p['g'])*1000 if m.p['g']>0 else None,
+            meaning='Available motor, spring and cogging work divided by total weight; includes stance rise, excludes friction/contact/stop losses and retained rotor kinetic energy, not guaranteed jump apex.')
     if case['kind']=='terrain-stability':return dict(averageTorqueNm=None,meaning='No single energy-sized torque for moving terrain.')
     if abs(m.axis[0])>1e-10:return dict(averageTorqueNm=None,applicable=False,meaning='Chassis-only energy estimate requires a vertical guide and fixed wheel centre after impact; use dynamic search for tilted geometry.')
     # Conservative energy-to-constant-angle-work estimate, wheel held at floor.
     qc=usable_compression(m,q,case)
     travel=qc-q
     delta_h=m.sites(qc)['6'][0][1]-m.sites(q)['6'][0][1]
-    energy=m.p['m1']*m.p['g']*case['landingDropMm']/1000
+    kappa=m.Jref/m.jacobian(q)**2
+    energy=m.p['m1']**2/(m.p['m1']+kappa)*m.p['g']*case['landingDropMm']/1000
     energy+=m.p['m1']*m.p['g']*delta_h+m.spring(q)['energy']-m.spring(qc)['energy']
+    energy+=m.motor.motor_state(q,0,0)['coggingPotentialJ']-m.motor.motor_state(qc,0,0)['coggingPotentialJ']
     return dict(energyToAbsorbJ=max(0,energy),availableCompressionRad=max(0,travel),usableCompressionEndDeg=qc/R,
-        averageTorqueNm=max(0,energy)/travel if travel>0 else None,
-        meaning='Post-wheel-impact chassis energy/work average over usable compression before stop/underside threshold; vertical flat-floor estimate excludes wheel impact loss, redistribution and is not a guaranteed dynamic peak or successful arrest.')
+        averageTorqueNm=max(0,energy)/travel if travel>0 else None,averageTorqueBasis='joint',
+        meaning='Plastic flat-floor impact projected through the rotor-coupled mass matrix, then conservative gravity/spring/cogging work over usable compression. Motor losses excluded. Average joint torque is not a guaranteed dynamic peak or successful arrest.')
 
 
 class CaseController:
@@ -198,10 +209,10 @@ class CaseController:
             raise ValueError('Energy-sized braking has no usable compression stroke before the entered underside threshold; adjust the case or use an entered torque.')
     def torques(self,q,qd,contacted=False):
         self.contacted=self.contacted or contacted;m,c=self.m,self.case
-        hold=brake=0.;motor=m.c['hipTorqueNm'];phase='terrain'
+        hold=brake=0.;motor=m.motor.joint_command(m.c['hipTorqueNm']);phase='terrain'
         if c['kind']=='jump':
             if q<=m.lo+1e-7:self.extended=True
-            motor=0. if self.extended else -c['jumpTorqueNm'];phase='jump-coast' if self.extended else 'jump-extension'
+            motor=0. if self.extended else -m.motor.joint_command(c['jumpTorqueNm']);phase='jump-coast' if self.extended else 'jump-extension'
         elif c['kind']=='landing':
             if not self.contacted:
                 # Relative acceleration zero under free fall, even on tilted guides:
@@ -209,20 +220,23 @@ class CaseController:
                 ax,az=m.axis;M=m.p['m1']+m.p['m6'];mw=m.p['m6']
                 fx,fz=m.force
                 fhold=-(ax*fx+az*fz-mw*az*fz/M)
-                hold=fhold*m.jacobian(q)-m.spring(q)['torque']+m.c['dampingNms']*qd
+                hold=fhold*m.jacobian(q)-m.spring(q)['torque']+m.c['dampingNms']*qd-m.motor.motor_state(q,qd,0)['jointPassiveNm']
                 motor=hold;phase='landing-hold'
             else:
-                requested=c['landingBrakeTorqueNm'] if c['brakeStrategy']=='entered' else self.energy['averageTorqueNm']
-                brake=-min(requested,c['landingBrakeLimitNm']) if qd>0 else 0.
+                requested=m.motor.joint_command(c['landingBrakeTorqueNm']) if c['brakeStrategy']=='entered' else self.energy['averageTorqueNm']
+                brake=-min(requested,m.motor.joint_command(c['landingBrakeLimitNm'])) if qd>0 else 0.
                 motor=brake;phase='landing-brake' if qd>0 else 'landing-release'
-        return dict(motorTorqueNm=motor,holdTorqueNm=hold,brakeTorqueNm=brake,controllerPhase=phase)
+        ms=m.motor.motor_state(q,qd,motor)
+        ms.pop('rotorKineticJ',None);ms.pop('coggingPotentialJ',None)
+        return dict(motorTorqueNm=motor,holdTorqueNm=hold,brakeTorqueNm=brake,controllerPhase=phase,**ms)
 
 
 def energy_fields(m,q,h,vh,sd,omega):
     ax,az=m.axis;s=m.distance(q);p=m.p
     chassis=.5*p['m1']*vh*vh
     wheel=.5*p['m6']*((ax*sd)**2+(vh+az*sd)**2)+.5*m.I['6']*omega*omega
-    return dict(chassisKineticJ=chassis,wheelKineticJ=wheel,springEnergyJ=m.spring(q)['energy'],
+    qd=sd/m.jacobian(q);ms=m.motor.motor_state(q,qd,0)
+    return dict(chassisKineticJ=chassis,wheelKineticJ=wheel,rotorKineticJ=.5*m.motor.reflected_inertia*qd*qd,legacyJointRotorKineticJ=.5*m.c['hipRotorInertiaKgM2']*qd*qd,coggingPotentialJ=ms['coggingPotentialJ'],springEnergyJ=m.spring(q)['energy'],
         gravityEnergyJ=p['g']*(p['m1']*h+p['m6']*(h+az*s)))
 
 
@@ -251,7 +265,8 @@ def stopping_demand(m,q,qd,vh,case=None):
     remain=target-q
     if remain<=1e-9 or vh>=0:return None
     delta_h=m.sites(target)['6'][0][1]-m.sites(q)['6'][0][1]
-    energy=.5*m.p['m1']*vh*vh+m.p['m1']*m.p['g']*delta_h+m.spring(q)['energy']-m.spring(target)['energy']
+    energy=.5*m.Jref*qd*qd+.5*m.p['m1']*vh*vh+m.p['m1']*m.p['g']*delta_h+m.spring(q)['energy']-m.spring(target)['energy']
+    energy+=m.motor.motor_state(q,0,0)['coggingPotentialJ']-m.motor.motor_state(target,0,0)['coggingPotentialJ']
     return max(0,energy/remain)
 
 
@@ -260,6 +275,7 @@ def minimum_required_torque(payload,simulate,iterations=5):
     import copy
     case=resolve_case(payload)
     if case['kind']!='landing':raise ValueError('Torque search requires landing case.')
+    motor=Motor.resolve(payload.get('motorConfig'));basis=motor.config['commandBasis'] if motor.enabled else 'joint'
     trials=[];limit=case['landingBrakeLimitNm']
     def trial(torque):
         request=copy.deepcopy(payload);request['caseConfig']={**case,'brakeStrategy':'entered','landingBrakeTorqueNm':torque}
@@ -271,17 +287,17 @@ def minimum_required_torque(payload,simulate,iterations=5):
     for torque in sorted(set(limit*i/4 for i in range(5))):trial(torque)
     passes=[r['torqueNm'] for r in trials if r['success']]
     limitation='Lowest passing tested torque and local bracket only; nonmonotone feasibility, timestep and observation duration prevent a global minimum claim.'
-    if not passes:return dict(feasible=False,status='no-passing-tested-torque',torqueNm=None,limitNm=limit,
+    if not passes:return dict(commandBasis=basis,feasible=False,status='no-passing-tested-torque',torqueNm=None,limitNm=limit,
         reason='No passing tested torque in the bounded coarse scan.',evaluations=len(trials),trials=trials,limitation=limitation)
     hi=min(passes)
-    if hi==0:return dict(feasible=True,status='passing-tested-torque',torqueNm=0.,lowerBoundNm=0.,limitNm=limit,
+    if hi==0:return dict(commandBasis=basis,feasible=True,status='passing-tested-torque',torqueNm=0.,lowerBoundNm=0.,limitNm=limit,
         evaluations=len(trials),trials=trials,limitation=limitation)
     lo=max(r['torqueNm'] for r in trials if r['torqueNm']<hi and not r['success'])
     for _ in range(min(7,max(0,iterations))):
         mid=(lo+hi)/2
         if trial(mid):hi=mid
         else:lo=mid
-    return dict(feasible=True,status='passing-tested-bracket',torqueNm=hi,lowerBoundNm=lo,limitNm=limit,
+    return dict(commandBasis=basis,feasible=True,status='passing-tested-bracket',torqueNm=hi,lowerBoundNm=lo,limitNm=limit,
         evaluations=len(trials),trials=trials,limitation=limitation)
 
 
@@ -289,3 +305,15 @@ def floor_under_hip(spec,t):
     """Highest exact terrain surface under the x-fixed hip, in source metres."""
     offset=spec['speed']*t
     return max([0.]+[spec['height'] for b in spec['boxes'] if b[0][0]+offset<=0<=b[1][0]+offset])
+
+
+def check_motor_step(m,qd,dt):
+    """Bound explicit regularized-friction decay and resolve cogging phase."""
+    m.motor.check_step(qd,dt)
+    if not m.motor.enabled:return
+    c=m.motor.config;n=c['gearRatio']
+    slope=n*n*(c['coulombFrictionNm']/c['frictionVelocityScaleRadS']+c['viscousFrictionNms'])
+    mu=m.p['m6']-(m.p['m6']*m.axis[1])**2/(m.p['m1']+m.p['m6'])
+    inertia=m.Jref+mu*m.jacobian_min**2
+    if slope>0 and dt*slope/inertia>.5:
+        raise ValueError(f'Motor friction is underresolved; reduce dt below {(.5*inertia/slope):.8g} s for the regularized friction slope.')

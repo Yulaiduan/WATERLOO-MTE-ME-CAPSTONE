@@ -11,6 +11,7 @@ massless belts/cable; no friction, tire compliance or hardware validation.
 import hashlib
 import json
 import math
+from motor_model import Motor
 
 R = math.pi / 180
 TAU = 2 * math.pi
@@ -98,8 +99,10 @@ def dot(a, b):
 
 
 class Model:
-    def __init__(self, params, config):
+    def __init__(self, params, config, motorConfig=None):
         validate(params, config)
+        self.motor = Motor.resolve(motorConfig)
+        self.motor_config_supplied = motorConfig is not None
         self.p, self.c = dict(params), dict(config)
         p = self.p
         self.q0 = p['theta2'] * R
@@ -116,6 +119,7 @@ class Model:
         if config['inertiaModel'] == 'custom':
             self.I = {key: config['I' + key] for key in self.I}
         self.I['2'] += config['hipRotorInertiaKgM2']
+        self.I['2'] += self.motor.reflected_inertia
         if p['m1'] <= 0:
             raise ValueError('Floating chassis requires positive builder m1; no chassis mass is substituted.')
         self.total_mass = sum(p['m' + key] for key in ('1', '2', '3', '5', '6'))
@@ -136,7 +140,8 @@ class Model:
         self.slope_sign = 1 if slopes[0] > 0 else -1
         self.exact_square = config['inputRiseMm'] == 0
         if self.exact_square and config['inputHeightMm'] > 0:
-            if any(p['m' + key] != 0 or self.I[key] != 0 for key in ('2', '3', '5', '6')) or config['dampingNms'] != 0:
+            if (any(p['m' + key] != 0 or self.I[key] != 0 for key in ('2', '3', '5', '6')) or config['dampingNms'] != 0
+                    or (self.motor.enabled and any(self.motor.config[k] != 0 for k in ('coulombFrictionNm', 'viscousFrictionNms')))):
                 raise ValueError('Exact square jumps require massless moving links/wheel, zero moving/rotor inertias and zero hip damping. Set positive inputRiseMm (e.g. 10 mm) for a finite C2 rise; no impact law is invented.')
         if self.mass(self.q0)[0] <= 1e-12:
             raise ValueError('Floating generalized inertia is zero at the initial pose.')
@@ -348,18 +353,30 @@ class Model:
     def generalized(self, q):
         sites = self.floating_sites(q)
         gravity = -self.p['g'] * sum(self.p['m' + key] * v[1][1] for key, v in sites.items())
-        return dot(self.force, sites['6'][1]) + self.Mw * self.K + gravity + self.spring(q)['torque']
+        return (dot(self.force, sites['6'][1]) + self.Mw * self.K + gravity + self.spring(q)['torque']
+                + self.motor.motor_state(q, 0, 0)['jointCoggingNm'])
 
     def potential(self, q, t=0, side='right'):
         sites = self.floating_sites(q)
         r = self.wheel_height(t, side)
         return (self.p['g'] * sum(self.p['m' + key] * (v[0][1] + r) for key, v in sites.items())
                 + self.spring(q)['energy'] - self.force[0] * sites['6'][0][0]
-                - self.force[1] * r - self.Mw * self.K * q)
+                - self.force[1] * r - self.Mw * self.K * q
+                + self.motor.motor_state(q, 0, 0)['coggingPotentialJ'])
+
+    def actuation(self, q, velocity):
+        command = self.motor.joint_command(self.c['hipTorqueNm'])
+        friction = self.motor.motor_state(q, velocity, command)['jointFrictionNm']
+        return command - self.c['dampingNms'] * velocity + friction
 
     def acceleration(self, q, velocity, t=0, side='right'):
+        self.motor.check_step(velocity, self.c['dt'])
         M, derivative, B, _ = self.coefficients(q)
-        return (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity
+        self.motor.check_friction_step(M, self.c['dt'])
+        if not self.motor.enabled:
+            return (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity
+                    - .5 * derivative * velocity * velocity - B * self.input(t, side)['acceleration']) / M
+        return (self.generalized(q) + self.actuation(q, velocity)
                 - .5 * derivative * velocity * velocity - B * self.input(t, side)['acceleration']) / M
 
     def heave_acceleration(self, t, height, speed, side='right'):
@@ -369,11 +386,15 @@ class Model:
         a, da = -C[1][1], -C[2][1]
         base = self.input(t, side)
         velocity = (speed - base['velocity']) / a
+        self.motor.check_step(velocity, self.c['dt'])
         M, dM, B, _ = self.coefficients(q)
+        self.motor.check_friction_step(M, self.c['dt'])
         H = M / (a * a)
         dH = dM / (a * a) - 2 * M * da / (a * a * a)
         cross = B / a - H
-        force = (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity) / a
+        force = (self.generalized(q) + self.actuation(q, velocity)) / a
+        if not self.motor.enabled:
+            force = (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity) / a
         acceleration = (force - cross * base['acceleration'] - .5 * dH / a * (speed - base['velocity']) ** 2) / H
         return q, velocity, acceleration
 
@@ -383,7 +404,8 @@ class Model:
                 + B * acceleration + dB * velocity * velocity - self.force[1])
 
     def hash(self):
-        return hashlib.sha256(json.dumps(self.p, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
+        identity = dict(params=self.p, motorConfig=self.motor.config) if self.motor_config_supplied else self.p
+        return hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
     def observe(self, t, q, velocity, acceleration, actual=None, side='right'):
         sites = self.sites(q)
@@ -404,7 +426,7 @@ class Model:
         if actual:
             frame.update(actual)
         row = dict(t=t, theta2=q / R, velocityDegS=velocity / R, accelerationDegS2=acceleration / R,
-                   Fs=spring['force'], tauStatic=-self.generalized(q), tauApplied=self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity,
+                   Fs=spring['force'], tauStatic=-self.generalized(q), tauApplied=self.actuation(q, velocity),
                    kineticJ=kinetic, potentialJ=potential, energyJ=kinetic + potential,
                    CxMm=-C[0] * 1000, CzMm=(C[1] + height) * 1000,
                    chassisZMm=height * 1000, chassisVelocityMmS=heave_v * 1000,
@@ -412,4 +434,7 @@ class Model:
                    requestedInputMm=base['requested'] * 1000, appliedInputMm=base['applied'] * 1000,
                    inputVelocityMmS=base['velocity'] * 1000, inputAccelerationMmS2=base['acceleration'] * 1000,
                    inputReactionN=self.reaction(t, q, velocity, acceleration, side))
+        if self.motor_config_supplied or self.c['hipRotorInertiaKgM2']>0:
+            row.update(self.motor.motor_state(q, velocity, self.motor.joint_command(self.c['hipTorqueNm'])))
+            row['legacyJointRotorKineticJ'] = .5 * self.c['hipRotorInertiaKgM2'] * velocity ** 2
         return row, frame

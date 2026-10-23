@@ -9,7 +9,8 @@ for(const f of ['reference-v4.js','model.js','variables.js','project-store.js','
 const A=ctx.KinefoldDynamicAnalysis,D=ctx.KinefoldDynamicResults,P=ctx.KinefoldProjects;
 let count=0;
 function ok(v,m){assert.ok(v,m);count++;}
-const rows=[{t:0},{t:.5,eventSide:'before'},{t:.5,eventSide:'after'},{t:1},{t:1.5}].map((row,i)=>({...row,chassisZMm:600+i,chassisVelocityMmS:1,theta2:130+i,velocityDegS:2,accelerationDegS2:3,CxMm:i,wheelZMm:100,Fs:500+i,inputReactionN:i===3?null:85,kineticJ:1,potentialJ:9,energyJ:10+i,actuatorDampingWorkJ:0,inputWorkJ:i}));
+const motorFields=Object.fromEntries(A.motorManifest.flatMap(item=>item.series.map(([key])=>[key,.01])));
+const rows=[{t:0},{t:.5,eventSide:'before'},{t:.5,eventSide:'after'},{t:1},{t:1.5}].map((row,i)=>({...row,...motorFields,chassisZMm:600+i,chassisVelocityMmS:1,theta2:130+i,velocityDegS:2,accelerationDegS2:3,CxMm:i,wheelZMm:100,Fs:500+i,inputReactionN:i===3?null:85,kineticJ:1,potentialJ:9,energyJ:10+i,actuatorDampingWorkJ:0,inputWorkJ:i}));
 function result(engine,contact=false){return {engine,designHash:'same',params:{...ctx.Kinefold.defaults},runConfig:{...P.baseline().solverConfig},rows:rows.map(r=>({...r,...(contact?{slipMmS:r.t===1?null:4,wheelAngularVelocityDegS:28.6,theta4:30,theta5:20,theta6:10}: {})})),frames:rows.map(()=>({})),diagnostics:{termination:'duration'},...(contact?{scope:{mode:'terrain-contact'},contactConfig:{...P.contactDefaults},caseConfig:{...P.caseDefaults}}:{})};}
 function verify(config){
  const traces=D.traces(config);
@@ -32,7 +33,7 @@ function verify(config){
 }
 for(const contact of [false,true]){
  const a=result('analytical',contact),b=result('pymunk',contact),enriched=A.enrich(a);
- for(const item of contact?A.contactManifest:A.manifest)verify({...item,rows:enriched,breakJumps:['rates','angular-acceleration','reaction'].includes(item.id)});
+ for(const item of [...(contact?A.contactManifest:A.manifest),...A.motorManifest])verify({...item,rows:enriched,breakJumps:['rates','angular-acceleration','reaction'].includes(item.id)});
  const comparison=A.comparison(a,b);ok(comparison.valid&&comparison.matched===rows.length,'exact comparison catalog');
  for(const [field,label,unit] of comparison.fields){
   verify({rows:comparison.rows,unit,breakJumps:field==='inputReactionN',series:[[field+'A',label+' A','sage'],[field+'P',label+' P','blue']]});

@@ -4330,3 +4330,73 @@ All data plots use locally pinned Plotly with offline loading, linked pose/time 
 Use project-local Start Kinefold.cmd at4191; preserve four-tab URL aliases, exact saved profiles, event/null gaps and current-pose labeling when extending the presentation.
 
 ---
+
+## Entry: 2026-10-23 — Andy Zhang — Shared physical hip motor, gearing and losses
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental single-leg dynamic actuator and analysis.
+- **Associated Issue/Task:** Add physical geared motor rotor inertia, conservative cogging, friction/damping and explicit motor/joint conversion to both independent dynamic engines, all shared cases and saved profiles.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/motor-model.md`
+- `users/andy-zhang/experimental-apps/kinefold/motor-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/motor_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/motor_rotor_constraint.py`
+- `users/andy-zhang/experimental-apps/kinefold/plotly-runtime.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-contact.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-dynamic-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-dynamic-plotly.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-motor-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-plotly-runtime.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_motor_bench.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_motor_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_motor_rotor_constraint.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/viewer_service.py`
+
+- **API/Interface Changes:** Optional compatible project-v3 motorConfig with ideal/disabled defaults, explicit gear ratio, motor-side inertia/cogging/friction/smoothing and joint-or-motor command basis; no existing profile rewritten. Existing torque controls remain joint-side by default and all case/search ceilings convert explicitly when motor basis selected. Legacy additional joint inertia/damping remain additive. Shared pure Motor laws feed both prescribed bench engines and contact engines; analytical contact uses variable inertia/Christoffel terms and native Pymunk uses an actual scalar rotor in the same impulse iterations without fake mass or wheel inertia. Native private ABI pins WindowsAMD64/Pymunk7.3.0/Munk2D2.0.1-ade7ed72849e60289eefb7a41e79ae6322fefaf3 and rejects unsupported nonzero-inertia builds. Captured hashes/exports/native requests include motorConfig; rotor KE/cogging potential/physical loss and numerical constraint work remain distinct. Eight Plotly motor charts and searchable conventions describe new variables. Per-host Plotly operation queues/generations defer purge until in-flight rendering settles and preserve responsive/cursor interactions. No canonical/source-app/reference-equation/rule/dependency changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Combined50 engine/native/regression tests PASS:6 motor bench,9 motor contact,7 actual native constraint,8 prior contact,9 cases and11 independent analytical contact. Independent gearing torqueN/inertiaN², cogging potential/full cycle, reverse-speed nonnegative loss, explicit cogging/drag timestep guards, held impact, coupled contact/stops, legacy additive inertia and actual shaft-torque work identity pass. NonzeroJ impact heave discrepancy refines0.546505/0.283404/0.144773mm atdt.0005/.00025/.000125. Motor bench finite-rise maxdifference0.015915mm; ledgers3.61e-14/5.34e-6J; absent motor exact old-output parity verified by worker. Native helper lifecycle, simultaneous floor contact, callback failure and wrong engine/version rejection pass. PositiveJ6.5s terrain completes651rows/26000steps in13.04s on this PC, with0.003893mm maximum penetration. Frontend33 profile groups,14 temporary-disk tests,6 balance conversion,48 comparison,3404 exact Plotly trace,19 delayed lifecycle and14 static Plotly assertions PASS; syntax/compilation/whitespace PASS. Initial native motor-work zero bug was fixed by capturing actual rotor angle before prepare(), then verified by τshaftΔθshaft regression; initial harness duration/insufficient-torque fixtures were corrected. Late browser Plotly async-purge failures were fixed with serialized react/resize/relayout, retired generations and deferred purge; current errors remain reported. Parent final browser/architecture review passes shared motor controls, reload persistence, invalidN rejection and disabled zero effects; eight motor Plotly plots and comparison selectors; actual native desktop open/status/2s/close (manual native visual inspection not claimed). Corrected201-sample100mm Landing pair, N10/Jm.002/motor-basis2Nm, both arrested: max heave difference2.31726mm, motor-work difference0.0363737J, loss difference0.00045759J; final work−6.90556195/−6.94193569J. Numerical ledger maxima2.364J Pymunk versus0.08362J analytical remain explicit, not tight conservation. Captured motor profiles match in4,456,913byte comparisonJSON; CSV201rows/246155bytes parse in app exports/. Final delayed-chart repro passes two paired runs, rapid work/loss/rotor selectors, themes, result replacement and original-profile import/stale purge, with no new console warning/error. Current working and4 named designs deeply equal pre-motor-library backup after exact UI restore (revision85). Proof .preview/motor-comparison-final.png remains ignored. Actual app-local Stop/Start/reuse from unrelated cwd passes4191 and motor-ui HTTP200; no restart during final QA. Generated profiles/exports/screenshots and unrelated ignored launchers remain excluded. Required exact-snapshot gates/hooks precede publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member experiment; no hardware, tire-compliance, electrical-efficiency, whole-vehicle or peak motor-rating certification is claimed.
+
+## 4. Compute Saving Handoff State
+
+Both dynamic modes and shared cases now include optional actual geared motor inertia, fixed-phase conservative cogging and explicit physical friction losses, while old profiles retain ideal joint-side behavior until edited.
+Read motor-model.md for SI units, independent variable-mass/native-impulse formulations, pinned private ABI, numerical resolution guards and separate physical/numerical energy accounting; app-local Start Kinefold.cmd retains4191 and all exports remain in Capstone.
+Preserve exact motor snapshots and additive legacy settings, use timestep refinement for contact/energy conclusions, and retain per-host Plotly queues so repeated results or stale-profile imports cannot purge an active render.
+
+---

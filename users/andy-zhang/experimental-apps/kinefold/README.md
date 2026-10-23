@@ -188,7 +188,7 @@ gaps can be bridged. The original height-driven/K=0 bench remains available.
 
 The exact two-body model supports massless equal links/2:1 guide on a nonsingular
 straight path, with positive chassis/wheel masses and uniform wheel-disc inertia.
-Unsupported curved paths, extra link/rotor/custom inertia and prescribed contact
+Unsupported curved paths, extra link/custom wheel inertia and prescribed contact
 loads fail explicitly. No substitute masses are added. Contact mode runs in both independent engines with exact saved-profile comparison;
 the original prescribed-height benchmark remains a separate interaction model. Browser/native playback uses actual
 world mesh/body transforms, backdriven pulley indices and moving belt markers.
@@ -205,3 +205,15 @@ The energy option separates chassis½mv², wheel/spring/gravity energy and actua
 motor∫τdθ; bounded landing torque assessment reports tested feasibility/brackets.
 Read [contact-scenarios.md](contact-scenarios.md) for independent-engine equations,
 case/controller definitions and limits. Legacy named profiles remain unchanged.
+
+
+## Optional geared hip motor — 2026-10-23
+
+Both dynamic tabs share a saved **Hip motor, gearing & losses** section and
+Plotly result category. Enable explicit motor-side rotor inertia, conservative
+sinusoidal cogging, smooth Coulomb friction and viscous losses; choose joint-side
+or motor-shaft torque inputs. Reduction converts speed by N, torque by N and
+inertia by N². Existing profiles retain their ideal actuator until edited.
+Legacy joint inertia/damping stay additive, and the wheel drive remains free.
+Read [motor-model.md](motor-model.md) for phase/units, coupled contact inertia,
+numerical guards, energy accounting and native ABI limitations.

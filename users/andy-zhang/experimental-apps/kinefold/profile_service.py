@@ -73,7 +73,7 @@ def _finite(value, depth=0):
 
 
 def _project(value):
-    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig", "caseConfig"), "project")
+    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig", "caseConfig", "motorConfig"), "project")
     if value.get("schema") != "kinefold/project-v3":
         raise StorageError("Only validated project-v3 profiles can be saved.")
     if not isinstance(value.get("id"), str) or not re.fullmatch(r"design-[a-zA-Z0-9-]{1,100}", value["id"]):
@@ -116,6 +116,14 @@ def _project(value):
             raise StorageError("Contact mode requires friction 0–2, zero bounce and a free backdrivable drive.")
     if "caseConfig" in value:
         _case_config(value["caseConfig"])
+    if "motorConfig" in value:
+        if value["motorConfig"] is None:
+            raise StorageError("Explicit motorConfig must be an object; omit it for legacy ideal behavior.")
+        from motor_model import Motor
+        try:
+            Motor.resolve(value["motorConfig"])
+        except (ValueError, TypeError) as error:
+            raise StorageError(str(error)) from error
     _finite(value)
     if len(_encoded(value)) > MAX_PROJECT_BYTES:
         raise StorageError("Design exceeds 200 kB.")

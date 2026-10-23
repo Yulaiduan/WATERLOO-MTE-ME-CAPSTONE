@@ -31,7 +31,7 @@ path. Equal L₂/L₃ and r_a/r_b = 2 are required; α/φ₀ may rotate that lin
 the complete working interval has a nonzero, monotonic path Jacobian. No small
 substitute link masses, fake wheel inertia or hidden drive lock are inserted.
 
-Curved paths, nonzero m₂/m₃/m₅, custom/additional/rotor inertias, an empty/singular
+Curved paths, nonzero m₂/m₃/m₅, custom link/wheel inertias, an empty/singular
 working interval, prescribed contact-component loads and nonzero input-rise
 distance are rejected explicitly. Global additional wheel loads remain separate
 from real gravity/contact. Weight-reference loading is not applied as extra mg.
@@ -100,3 +100,11 @@ contact roundtrip and unchanged old records. The actual contact Tk automated
 self-test exercises opening, pause/scrub/replay and auto-close; initial/no-contact
 slip remains unavailable. Manual native visual inspection for this change was
 occluded by another foreground app and is not claimed.
+
+
+Optional hip rotor inertia is now supported by both independent engines, including
+contact and travel-stop impulses. The analytical variable mass and native Pymunk
+scalar rotor constraint are described in [motor-model.md](motor-model.md).
+The native nonzero-inertia path is guarded to its verified ABI; it never changes
+wheel mass or spin inertia to imitate hip inertia. Motor/gear/loss settings are
+shared saved profile fields, distinct from freely backdriven wheel drive.

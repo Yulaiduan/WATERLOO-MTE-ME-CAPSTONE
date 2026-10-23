@@ -28,7 +28,7 @@ def jump(model, t, q, v):
     new_q = model.q_from_chassis(t, h, 'right')
     new_v = -hd / model.sites(new_q)['6'][1][1]
     after, _ = state_observation(model, t, new_q, new_v, 'right')
-    actuator = model.c['hipTorqueNm'] * (new_q - q)
+    actuator = model.motor.joint_command(model.c['hipTorqueNm']) * (new_q - q)
     energy = after['energyJ'] - before['energyJ']
     event = dict(t=t, type='exact-square-jump', before=before, after=after,
                  inputJumpMm=after['appliedInputMm'] - before['appliedInputMm'],
@@ -43,13 +43,13 @@ def jump(model, t, q, v):
 
 def powers(model, t, q, v, side='right'):
     a = model.acceleration(q, v, t, side)
-    actuator = model.c['hipTorqueNm'] * v - model.c['dampingNms'] * v * v
+    actuator = model.motor.joint_command(model.c['hipTorqueNm']) * v - model.c['dampingNms'] * v * v
     return actuator, model.reaction(t, q, v, a, side) * model.input(t, side)['velocity']
 
 
 def finish_diagnostics(model, rows, diagnostics):
     initial = rows[0]['energyJ']
-    diagnostics['maxWorkEnergyResidualJ'] = max(abs(r['energyJ'] - initial - r['actuatorDampingWorkJ'] - r['terrainWorkJ']) for r in rows)
+    diagnostics['maxWorkEnergyResidualJ'] = max(abs(r['energyJ'] - initial - r['actuatorDampingWorkJ'] - r['terrainWorkJ'] + r.get('motorFrictionLossJ', 0)) for r in rows)
     diagnostics['minimumInputReactionN'] = min(r['inputReactionN'] for r in rows)
     diagnostics['maximumInputReactionN'] = max(r['inputReactionN'] for r in rows)
     return diagnostics
@@ -61,17 +61,21 @@ def analytical(model):
     c = model.c
     rows, frames, events = [], [], []
     state = [model.q0, c['initialVelocityDegS'] * R, 0., 0.]
+    if model.motor_config_supplied:
+        state.append(0.)
     start, evaluations, termination = 0., 0, 'duration'
     breaks = model.input_breaks()
     boundaries = sorted(set(breaks + [c['duration']]))
 
     def append(t, y, side='right'):
-        q, v, wa, wi = (float(x) for x in y)
+        q, v, wa, wi = (float(x) for x in y[:4])
         if q < model.lo - 1e-10 or q > model.hi + 1e-10:
             raise ValueError('Analytical output exceeded the working angle limits.')
         q = min(model.hi, max(model.lo, q))  # Roundoff at an event endpoint only.
         row, frame = state_observation(model, float(t), q, v, side)
         row.update(actuatorDampingWorkJ=wa, terrainWorkJ=wi, inputWorkJ=wi)
+        if model.motor_config_supplied:
+            row['motorFrictionLossJ'] = row['motorDissipatedJ'] = float(y[4])
         if rows and abs(rows[-1]['t'] - t) < 1e-11 and side != 'left' and rows[-1].get('eventSide') != 'before':
             rows[-1], frames[-1] = row, frame
         else:
@@ -86,6 +90,8 @@ def analytical(model):
             nq, nv, wa, wi, event = jump(model, 0, *state[:2])
             rows[-1]['eventSide'] = 'before'
             state = [nq, nv, wa, wi]
+            if model.motor_config_supplied:
+                state.append(0.)
             append(0, state)['eventSide'] = 'after'
             events.append(event)
         except ValueError:
@@ -101,7 +107,10 @@ def analytical(model):
             side = 'left' if exact_end and t >= end - 1e-12 else 'right'
             a = model.acceleration(q, v, t, side)
             wa, wi = powers(model, t, q, v, side)
-            return (v, a, wa, wi)
+            derivatives = (v, a, wa, wi)
+            if model.motor_config_supplied:
+                derivatives += (model.motor.motor_state(q, v, 0)['motorLossPowerW'],)
+            return derivatives
         def lower(t, y):
             return y[0] - model.lo
         def upper(t, y):
@@ -133,7 +142,7 @@ def analytical(model):
                 events.append(dict(t=end, type='input-jump-rejected', reason='New prescribed wheel height exceeds working travel; stopped at pre-jump state.'))
                 break
             rows[-1]['eventSide'] = 'before'
-            state = [nq, nv, state[2] + wa, state[3] + wi]
+            state = [nq, nv, state[2] + wa, state[3] + wi] + state[4:]
             append(end, state)['eventSide'] = 'after'
             events.append(event)
     diagnostics = dict(termination=termination, elapsedSeconds=rows[-1]['t'],
@@ -161,6 +170,7 @@ def pymunk_run(model):
     space.add(groove)
     rows, frames, events = [], [], []
     t, wa, wi, next_sample = 0., 0., 0., 1 / c['outputHz']
+    motor_loss = 0.
     termination, max_x = 'duration', 0.
     boundaries = sorted(set(model.input_breaks() + [c['duration']]))
     def read(side='right'):
@@ -177,6 +187,8 @@ def pymunk_run(model):
                                            constraintAngleErrorDeg=abs(body.angle) / R))
         row.update(chassisZMm=body.position.y * 1000, chassisVelocityMmS=body.velocity.y * 1000,
                    actuatorDampingWorkJ=wa, terrainWorkJ=wi, inputWorkJ=wi)
+        if model.motor_config_supplied:
+            row['motorFrictionLossJ'] = row['motorDissipatedJ'] = motor_loss
         max_x = max(max_x, abs(body.position.x))
         if rows and abs(rows[-1]['t'] - t) < 1e-11 and side != 'left' and rows[-1].get('eventSide') != 'before':
             rows[-1], frames[-1] = row, frame
@@ -229,6 +241,9 @@ def pymunk_run(model):
             after_power = powers(model, new_t, nq, nv, side)
             wa += .5 * (before_power[0] + after_power[0]) * step
             wi += .5 * (before_power[1] + after_power[1]) * step
+            if model.motor_config_supplied:
+                motor_loss += .5 * (model.motor.motor_state(q, v, 0)['motorLossPowerW']
+                                    + model.motor.motor_state(nq, nv, 0)['motorLossPowerW']) * step
             t = new_t
             if t >= next_sample - 1e-10 or t >= end - 1e-10:
                 append(side)
@@ -253,11 +268,14 @@ def pymunk_run(model):
 
 
 def simulate(payload):
-    if not isinstance(payload, dict) or set(payload) != {'engine', 'params', 'runConfig'}:
-        raise ValueError('Request requires exactly engine, params and runConfig.')
+    if (not isinstance(payload, dict) or set(payload) - {'engine', 'params', 'runConfig', 'motorConfig'}
+            or not {'engine', 'params', 'runConfig'} <= set(payload)):
+        raise ValueError('Request requires engine, params, runConfig and optional motorConfig.')
     if payload['engine'] not in ('analytical', 'pymunk'):
         raise ValueError('Unknown dynamics engine.')
-    model = Model(payload['params'], payload['runConfig'])
+    if 'motorConfig' in payload and not isinstance(payload['motorConfig'], dict):
+        raise ValueError('motorConfig must be an object when supplied.')
+    model = Model(payload['params'], payload['runConfig'], payload.get('motorConfig'))
     rows, frames, events, diagnostics = analytical(model) if payload['engine'] == 'analytical' else pymunk_run(model)
     warnings = ['¼ model: chassis A heaves freely; xA and pitch are fixed as by ideal vertical slide rods.',
                 'Wheel height is a prescribed actuator input. Signed inputReactionN can be negative; no unilateral tire/terrain contact or rod vertical support is modeled.',
@@ -283,6 +301,13 @@ def simulate(payload):
                              coordinates='+x front / left in preview; +z up; +y toward viewer',
                              chassis='vertical translation only; fixed horizontal position and pitch',
                              input='prescribed wheel height, no unilateral terrain contact'))
+    if model.motor_config_supplied:
+        result['motorConfig'] = model.motor.config
+        result['snapshot']['motorConfig'] = model.motor.config
+        result['diagnostics'].update(reflectedMotorInertiaKgM2=model.motor.reflected_inertia,
+                                     legacyJointRotorInertiaKgM2=model.c['hipRotorInertiaKgM2'],
+                                     jointCommandNm=model.motor.joint_command(model.c['hipTorqueNm']))
+        warnings.append('Optional ideal geared motor: fixed theta_motor=N*q; conservative sinusoidal cogging and regularized Coulomb/viscous drag. Zero defaults are compatibility settings, not hardware measurements.')
     json.dumps(result, allow_nan=False)
     return result
 

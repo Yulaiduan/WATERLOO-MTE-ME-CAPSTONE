@@ -16,8 +16,8 @@ globalThis.KinefoldContactUI = (() => {
     if (Math.abs(p.L2 - p.L3) > 1e-10 || Math.abs(p.ra / p.rb - 2) > 1e-12)
       errors.push('This exact massless-link contact model requires L₂ = L₃ and r_a/r_b = 2 (a straight wheel path).');
     if (['m2','m3','m5'].some(key => p[key] !== 0)) errors.push('Moving link/compound masses m₂, m₃ and m₅ must be zero in this two-body contact model.');
-    if (c.inertiaModel !== 'uniform-rods-discs' || ['I2','I3','I5','I6','hipRotorInertiaKgM2'].some(key => c[key] !== 0))
-      errors.push('Additional joint/rotor inertias are unsupported; they are never replaced by hidden masses.');
+    if (c.inertiaModel !== 'uniform-rods-discs' || ['I2','I3','I5','I6'].some(key => c[key] !== 0))
+      errors.push('Custom link/wheel inertias are unsupported; the separate motor rotor model and legacy additional joint inertia are handled explicitly.');
     if (c.inputRiseMm !== 0) errors.push('Actual square terrain requires zero transition distance; a smoothed height-driver profile is a different test.');
     if(p.loadMode==='contact')errors.push('Prescribed contact loads are unsupported with actual terrain contact; use weight reference or explicit global additional loads.');
     if(p.te===p.tc)errors.push('Contact mode requires a nonempty working range.');
@@ -32,6 +32,7 @@ globalThis.KinefoldContactUI = (() => {
     const value = {engine, params: project.params, runConfig: project.solverConfig};
     if (project.contactConfig) value.contactConfig = project.contactConfig;
     if (project.caseConfig) value.caseConfig = project.caseConfig;
+    if (project.motorConfig) value.motorConfig = project.motorConfig;
     return value;
   }
   async function demo() {
