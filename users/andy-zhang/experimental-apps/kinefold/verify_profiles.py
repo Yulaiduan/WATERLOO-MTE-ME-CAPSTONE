@@ -162,6 +162,16 @@ class ProfileTests(unittest.TestCase):
         state = self.call("working", expectedRevision=0, project=p)
         self.assertEqual(state["working"]["params"]["g"], 0)
 
+    def test_optional_torque_targets_roundtrip_and_preserve_named_profiles(self):
+        original,_=self.migrate()
+        p=project("Target working")
+        p['torqueTargetConfig']={'jumpHeightMm':120,'landingClearanceMm':500,'jumpTorqueLimitNm':200}
+        saved=self.call('working',expectedRevision=original['revision'],project=p)
+        self.assertEqual(saved['working']['torqueTargetConfig'],p['torqueTargetConfig'])
+        self.assertEqual(saved['designs'],original['designs'])
+        p['torqueTargetConfig']=None
+        self.call('working',status=400,expectedRevision=saved['revision'],project=p)
+
     def test_exports_use_app_folder_unique_names_exact_content(self):
         content = json.dumps({"comparison": "x" * (6 * 1024 * 1024)})
         first = self.call("export", name="Comparison results.json", content=content, mime="application/json")["path"]

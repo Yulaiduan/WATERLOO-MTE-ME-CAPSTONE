@@ -584,3 +584,55 @@ Independent baseline matches11.6103416383Nm at100mm, qend164°, endclearance
 48 comparison,19 Plotly lifecycle and2000 unchanged model assertions pass.
 Launcher Stop/Start/reuse from unrelated cwd and both new assetHTTP200 pass4191.
 Parent final architecture/browser QA passes baselineH100→11.610341638281414Nm joint/capacity172.214939mm/clearance315.382413mm; H300→34.846Nm; H200 with target500mm→43.452Nm and capacity92.003mm; negative height rejection; zero-reserve stop-boundary warning; shared tabs, N10 shaft1.1610341638281414Nm, reload persistence, Plotly light/dark and app-folder export. Export JSON is11542bytes with81 curve points and captures the exact project/calculation. No console warnings/errors. Current working and all4 named designs deeply equal revision87 pre-energy backup after exact UI restore (current library revision100), with optional motor/energy blocks absent again. Proof .preview/energy-calculator-reviewed.png is ignored. Parent independently verified spring work, endpoint geometry and positive interior kinetic energy. Publication review approved.
+
+## 2026-10-23 — visible jump/drop parameters and target torque searches
+
+Based on main0e73508. The user reported missing jump/drop parameters and asked
+whether Pymunk could solve torque for jump height or drop/minimum chassis height.
+Case inputs are now visible on both dynamic tabs. Jump height is first chassis
+apex above actual takeoff; landing drop is wheel-bottom gap, minimum height is
+underbody-to-ground clearance (default50mm, distinct underside offset50mm).
+Read [target-torque.md](../target-torque.md) for all definitions and decisions.
+
+Both engines run the same bounded five-coarse/five-local command search using
+their own integrator. Observers measure every step through genuine first flight
+or first arrest, freezing terminal measurements. Short horizons and numerical
+failures stay indeterminate, never lower failing bounds. The search can probe
+below the first passing command even if zero never takes off. Use tested torque
+is explicit and blocked for changed mechanism/targets; target-only saved metadata
+does not stale physical simulation results. Full outcome readouts now use the
+same above-takeoff datum and show first-arrest clearance separately from full-run
+minimum. Controllers and force laws remain unchanged. Energy estimates and
+explicit copy-to-energy action retain distinct assumptions and saved values.
+
+Validation:57 independent energy assertions,33 project-state groups,16 temporary
+disk tests,48 comparison assertions,3404 dynamic Plotly assertions and19 lifecycle
+assertions pass. Six target groups passed together (69.1s), including actual
+engines, chatter/recontact guards, full/early agreement, known/unknown trial
+boundaries and N10 motor/joint search equivalence; an added actual0.05s horizon
+group passes separately. Nine existing contact-case groups pass. At7Hz versus
+100Hz, measured jump-rise differences are0.633137mm analytical/0.000458mm Pymunk;
+landing clearance differences0.000121mm/0.511062mm, with the same tested fixture
+classifications. Output schedules change numerical substeps, so exact trajectory
+invariance was an incorrect initial test assumption. A VM fixture realm error and
+an initial0.02s horizon outside the existing0.05s minimum were corrected in tests;
+no production tolerance/schema guard was weakened. The GPT6.1Sol implementation
+agent hit its usage limit after integration; parent completed final fixes and QA.
+
+Actual browser H100 jump finds10.9375Nm in each engine (9.375Nm known failure),
+with105.380mm analytical/105.118mm Pymunk above takeoff; ideal work estimate
+8.859123Nm. H100 landing target50 gives12.5Nm Pymunk; target500 gives21.875Nm
+in both, minimum clearances501.453mm/500.355mm. Invalid negative target, shared
+tabs, stale apply guard, apply command, reload, explicit energy-copy and JSON
+exports pass, no browser warning/error. Full applied10.9375Nm jump pair completes
+651 exact samples each through6.5s; sampled max heave difference7.23474mm and
+Pymunk max energy-ledger residual5.772J remain visible. Paired export13872714bytes,
+jump assessment13223bytes and landing assessment11656bytes parse in app exports.
+Normal Pymunk run confirms the new first-flight-height outcome readout.
+
+Actual app-local Stop/Start/reuse from unrelated cwd passes4191. Original working
+and all4 named designs deeply equal pre-target-torque-library backup after UI
+import restore, library revision110. Proof .preview/target-torque-jump-reviewed.png
+is ignored. New target metadata is absent again in the restored original design.
+No canonical robot/hardware, global optimum, impact peak or post-arrest safety
+validation is claimed. Required workspace publication gates/hooks follow final QA.

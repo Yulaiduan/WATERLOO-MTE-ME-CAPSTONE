@@ -73,7 +73,7 @@ def _finite(value, depth=0):
 
 
 def _project(value):
-    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig", "caseConfig", "motorConfig", "energyConfig"), "project")
+    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig", "caseConfig", "motorConfig", "energyConfig", "torqueTargetConfig"), "project")
     if value.get("schema") != "kinefold/project-v3":
         raise StorageError("Only validated project-v3 profiles can be saved.")
     if not isinstance(value.get("id"), str) or not re.fullmatch(r"design-[a-zA-Z0-9-]{1,100}", value["id"]):
@@ -116,6 +116,13 @@ def _project(value):
             raise StorageError("Contact mode requires friction 0–2, zero bounce and a free backdrivable drive.")
     if "caseConfig" in value:
         _case_config(value["caseConfig"])
+    if "torqueTargetConfig" in value:
+        from torque_targets import resolve_targets
+        try:
+            if value["torqueTargetConfig"] is None: raise ValueError("Torque targets must be an object; omit for defaults.")
+            resolve_targets(value["torqueTargetConfig"])
+        except (ValueError, TypeError) as error:
+            raise StorageError(str(error)) from error
     if "energyConfig" in value:
         energy=value["energyConfig"]
         limits={"dropHeightMm":(0,5000),"targetClearanceMm":(0,5000),"torqueLimitNm":(0,10000),"compressionReserveDeg":(0,180)}

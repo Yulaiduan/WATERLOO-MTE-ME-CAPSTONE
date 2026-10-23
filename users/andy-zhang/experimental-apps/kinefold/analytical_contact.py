@@ -12,6 +12,7 @@ import sys
 from contact_cases import (validate_contact_request, resolve_case, initial_conditions,
     terrain_spec, CaseController, energy_fields, case_metrics, model_identity,
     stopping_demand, world, energy_estimate)
+from torque_targets import TargetObservation
 from contact_cases import check_motor_step
 from dynamic_model import R, mul
 
@@ -21,6 +22,7 @@ from dynamic_model import R, mul
 
 def simulate_contact(payload, *, stop_at_assessment=False):
     m=validate_contact_request(payload);p,c=m.p,m.c;cc=payload['contactConfig'];case=resolve_case(payload)
+    observation=TargetObservation(case,c['dt'])
     ctl=CaseController(m,case);terrain=terrain_spec(m,case);boxes=terrain['boxes'];speed=terrain['speed']
     ax,az=m.axis;r=p['rw']/1000;mw=p['m6'];mt=p['m1']+mw;I=m.I['6']
     def product(a,b):return sum(x*y for x,y in zip(a,b))
@@ -177,8 +179,9 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         ground_under_hip=max([0.]+[box[2][1] for box in boxes if box[0][0]+speed*t<=0<=box[1][0]+speed*t])
         if case['undersideOffsetMm'] is not None and (u[0]-ground_under_hip)*1000<=case['undersideOffsetMm']:
             events.append(dict(t=t,type='underside-contact'));termination='underside-contact';append();break
+        observation.step(t,u[0],v[0],u[0]+az*u[1],v[0]+az*v[1],r,active,events)
         if not all(math.isfinite(a) for a in u+v):raise ValueError('Analytical contact diverged.')
-        if stop_at_assessment and case['kind']=='landing' and any(e['type'] in ('chassis-arrest','compression-stop') for e in events):
+        if stop_at_assessment and ((case['kind']=='landing' and any(e['type'] in ('chassis-arrest','compression-stop') for e in events)) or (case['kind']=='jump' and observation.jump_finished())):
             termination='assessment-outcome';append();break
         if t>=next_sample-1e-10 or t>=c['duration']-1e-10:append();next_sample+=1/c['outputHz']
     snapshot=dict(params=p,solverConfig=c,contactConfig=cc)
@@ -189,6 +192,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     if 'motorConfig' in payload:result['motorConfig']=m.motor.config
     result['energyEstimate']=energy_estimate(m,case) if case['energyMethod'] else None
     result['diagnostics'].update(reflectedHipInertiaKgM2=m.Jref,energyBalanceResidualJ=rows[-1]['energyBalanceResidualJ'],maxPreProjectionPenetrationMm=maxpre,maxPostProjectionPenetrationMm=maxpost,penetrationTerminationLimitMm=penetration_limit_mm,maxTravelStopDriftMm=max_stop_position_error)
+    result['targetObservations']=observation.result()
     return result
 
 

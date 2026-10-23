@@ -46,5 +46,24 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
       workJ:dropJ+fixedWorkJ,availableWorkJ:e.torqueLimitNm*travel,...terms,
       curve:Array.from({length:81},(_,i)=>{const drop=Math.min(5000,Math.max(500,e.dropHeightMm*1.5))*i/80;return {dropHeightMm:drop,jointTorqueNm:Math.max(0,(weight*drop/1000+fixedWorkJ)/travel)};})};
   }
-  return {calculate};
+  function jumpEstimate(project,targetHeightMm){
+    const p=project.params,motor={...KinefoldProjects.motorDefaults,...project.motorConfig};
+    if(!(p.m1>0&&p.m6>=0&&p.g>0)||!Number.isFinite(targetHeightMm)||targetHeightMm<0)throw Error('Jump work estimate needs positive chassis mass/gravity and a nonnegative height.');
+    if(['m2','m3','m5'].some(k=>p[k]!==0)||Math.abs(p.L2-p.L3)>1e-9||Math.abs(p.ra/p.rb-2)>1e-10||Math.abs(Math.cos(((180+p.phi0)/2-p.alpha)*R))>1e-9)throw Error('Ideal jump work estimate requires massless equal links and vertical straight travel.');
+    if(p.loadMode==='contact'||p.loadMode==='global'&&(Math.abs(p.Fx)>1e-12||Math.abs(p.Fz)>1e-12))throw Error('Extra wheel loads are outside this gravity-only jump work estimate.');
+    const mean=(180+p.phi0)/2;
+    for(let n=-2;n<4;n++)if(mean+n*180>=p.te-1e-9&&mean+n*180<=p.tc+1e-9)throw Error('Jump travel crosses a singular or reversing straight-path branch.');
+    const ref=Kinefold.reference(p),V=KinefoldV4,travel=(p.tc-p.te)*R;
+    if(p.springEnabled){const span=V.VSLSpring.interval(ref,p.te,p.tc),z=V.VSLSpring.geometry(ref,90);if(!span.valid||!z.valid)throw Error(span.reason||z.reason);if(ref.p0+ref.springK*(span.min-z.payout)<-1e-8)throw Error('The jump cable becomes slack within the full stroke; slack recovery is outside this energy screen.');}
+    const stanceRiseMm=V.VSL.state(ref,p.tc).Pg[1]-V.VSL.state(ref,p.te).Pg[1];
+    if(!(travel>0&&stanceRiseMm>0))throw Error('The extension endpoint must raise the chassis on the supported branch.');
+    const spring=q=>{if(!p.springEnabled)return 0;const z=V.VSLSpring.state(ref,q);if(!z.valid)throw Error(z.reason);return z.energy;};
+    const N=motor.enabled?motor.gearRatio:1,cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*N*q*R+motor.coggingPhaseDeg*R):0;
+    const stanceGravityJ=p.m1*p.g*stanceRiseMm/1000,flightEnergyJ=(p.m1+p.m6)*p.g*targetHeightMm/1000;
+    const springReleaseJ=spring(p.tc)-spring(p.te),coggingReleaseJ=cog(p.tc)-cog(p.te);
+    const jointNm=Math.max(0,(stanceGravityJ+flightEnergyJ-springReleaseJ-coggingReleaseJ)/travel);
+    return {jointNm,shaftNm:jointNm/N,stanceRiseMm,stanceGravityJ,flightEnergyJ,springReleaseJ,coggingReleaseJ,angularTravelRad:travel,
+      meaning:'Optimistic work screen: full extension at takeoff, locked relative pose during flight, all mass rises together; no stop/contact/friction loss or retained rotor kinetic energy. Not guaranteed takeoff or apex.'};
+  }
+  return {calculate,jumpEstimate};
 })();

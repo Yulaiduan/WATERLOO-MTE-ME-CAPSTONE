@@ -5,6 +5,11 @@
 (() => {
 const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const extras=[
+["torqueTargetConfig.jumpHeightMm","Target chassis rise above takeoff","mm","First airborne chassis apex minus actual takeoff height; excludes stance extension. Default100mm is an editable study target. A genuine separated flight and observed apex before recontact are required.","torqueTargetConfig.jumpHeightMm"],
+["torqueTargetConfig.landingClearanceMm","Minimum underbody ground clearance","mm","Minimum hip height minus underside offset during contact through first arrest. Default50mm target is distinct from the underside offset itself. Earlier mechanical bottom-out also fails the target.","torqueTargetConfig.landingClearanceMm"],
+["torqueTargetConfig.jumpTorqueLimitNm","Jump search command ceiling","N·m","Upper trial command in the selected hip-joint or motor-shaft basis. Search captures targets and mechanism and returns the lowest passing tested command; it does not apply it automatically.","torqueTargetConfig.jumpTorqueLimitNm"],
+["flightRiseMm","Observed first-flight chassis rise","mm","Step-resolved first apex height minus takeoff height, with positive separation and no earlier recontact. Unavailable if takeoff/apex is unobserved. Plot output schedules can slightly affect numerical substeps.","flightRiseMm"],
+["minimumClearanceThroughArrestMm","Observed first-arrest minimum clearance","mm","Minimum underbody clearance measured every integration step after contact through first chassis arrest; subsequent rebound/settling needs a full run.","minimumClearanceThroughArrestMm"],
 ["energyConfig.dropHeightMm","Energy-only drop height H","mm","Separate standalone calculator input; full chassis m1*g*H is retained, without impact-loss credit. Does not change dynamic landingDropMm or controllers.","energyConfig.dropHeightMm"],
 ["energyConfig.targetClearanceMm","Residual underbody-to-ground clearance","mm","Energy-only target, default50mm. Distinct from the underside offset BELOW HIP A; actual clearance equals hip height minus that offset.","energyConfig.targetClearanceMm"],
 ["energyConfig.compressionReserveDeg","Energy-only compression-stop reserve","°","Explicit pre-stop angular margin, default1degree illustrative. Zero allows a clearly labeled stop-boundary calculation, not stop avoidance.","energyConfig.compressionReserveDeg"],
@@ -53,7 +58,7 @@ const extras=[
 
 ["caseConfig.kind","Saved dynamic case","enum","terrain-stability, jump or landing. Omitted legacy case uses terrain-stability.","caseConfig.kind"],
 ["jumpTorqueNm","Jump extension torque","N·m","Positive magnitude; command is negative toward extension and cuts off at extension stop.","jumpTorqueNm"],
-["landingDropMm","Initial wheel-bottom gap","mm","Wheel bottom to stationary floor at rest, not chassis drop distance.","landingDropMm"],
+["landingDropMm","Drop height before first wheel contact","mm","Initial wheel-bottom gap to the stationary floor. With pose held during free fall, the chassis falls by this same distance before first contact; additional suspension compression is separate.","landingDropMm"],
 ["landingOpenFraction","Initial landing opening","1","q = tc + fraction*(te-tc), default 2/3.","landingOpenFraction"],
 ["landingBrakeTorqueNm","Entered braking torque","N·m","Compression-resisting command after first contact, limited by brake ceiling.","landingBrakeTorqueNm"],
 ["landingBrakeLimitNm","Brake/search torque ceiling","N·m","Upper braking command and bounded search limit; no feasible result may exist.","landingBrakeLimitNm"],

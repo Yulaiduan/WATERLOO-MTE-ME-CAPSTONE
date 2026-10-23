@@ -13,6 +13,7 @@ import json
 import math
 import sys
 
+from torque_targets import TargetObservation
 from contact_cases import check_motor_step
 from dynamic_model import Model, R, mul, validate, finite
 
@@ -36,7 +37,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     import pymunk
     m=validate_contact_request(payload)
     p,c,cc=m.p,m.c,dict(payload['contactConfig'])
-    case=resolve_case(payload);controller=CaseController(m,case)
+    case=resolve_case(payload);controller=CaseController(m,case);observation=TargetObservation(case,c['dt'])
     qinitial,hinitial,xinitial,zinitial=initial_conditions(m,case);m.q0=qinitial
     space=pymunk.Space();space.gravity=(0,-p['g']);space.iterations=int(c['iterations'])
     # SI tolerances are explicit, not epsilon masses or tire compliance.
@@ -267,7 +268,8 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         if not all(math.isfinite(v) for v in (*chassis.position,*chassis.velocity,*wheel.position,*wheel.velocity,wheel.angle,wheel.angular_velocity)):
             raise ValueError('Pymunk contact diverged; reduce dt and inspect inputs.')
         jam=max(0,-separation())>penetration_limit_mm
-        assessment_stop=stop_at_assessment and case['kind']=='landing' and (arrested or any(e['type']=='compression-stop' for e in events))
+        observation.step(t,chassis.position.y,chassis.velocity.y,wheel.position.y,wheel.velocity.y,radius,active,events)
+        assessment_stop=stop_at_assessment and ((case['kind']=='landing' and (arrested or any(e['type']=='compression-stop' for e in events))) or (case['kind']=='jump' and observation.jump_finished()))
         if t>=next_sample-1e-10 or t>=c['duration']-1e-10 or termination=='underside-contact' or jam or assessment_stop:
             append()
             if t>=next_sample-1e-10:next_sample+=1/c['outputHz']
@@ -321,6 +323,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     elif termination=='contact-penetration-limit':result['warnings'].append('Stopped at the declared 1mm penetration limit: terrain/guide constraints may be jammed, or the timestep too coarse. No position correction was applied.')
     json.dumps(result,allow_nan=False)
     if rotor is not None:rotor.close()
+    result['targetObservations']=observation.result()
     return result
 
 

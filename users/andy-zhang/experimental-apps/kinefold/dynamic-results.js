@@ -105,9 +105,9 @@ globalThis.KinefoldDynamicResults = (() => {
     draw();
   }
   function caseSummary(result) {
-    const metrics=result.caseMetrics||{}, estimate=result.energyEstimate||metrics.energyEstimate||{};
+    const metrics=result.caseMetrics||{}, estimate=result.energyEstimate||metrics.energyEstimate||{}, observation=result.targetObservations||{};
     const kind=result.caseConfig?.kind||'terrain-stability', energy=result.caseConfig?.energyMethod!==false, last=result.rows.at(-1);
-    let items=kind==='jump'?[['Takeoff',metrics.takeoffTimeS,'s'],['Apex rise from initial',metrics.apexChassisZMm-result.rows[0].chassisZMm,'mm'],['Final motor work',last.motorWorkJ,'J'],['Travel-stop loss',last.stopDissipationJ,'J']]:kind==='landing'?[['Landing impact',metrics.impactTimeS,'s'],['Impact chassis speed',metrics.impactChassisVelocityMmS,'mm/s'],['First chassis arrest',metrics.firstArrestTimeS,'s'],['Maximum compression angle',metrics.maxCompressionDeg,'°']]:[];
+    let items=kind==='jump'?[['Takeoff',observation.takeoff?.t??metrics.takeoffTimeS,'s'],['First flight rise above takeoff',observation.flightRiseMm,'mm'],['Final motor work',last.motorWorkJ,'J'],['Travel-stop loss',last.stopDissipationJ,'J']]:kind==='landing'?[['Landing impact',metrics.impactTimeS,'s'],['Impact chassis speed',metrics.impactChassisVelocityMmS,'mm/s'],['First chassis arrest',metrics.firstArrestTimeS,'s'],['Minimum clearance through first arrest',observation.minimumClearanceThroughArrestMm,'mm'],['Maximum compression angle',metrics.maxCompressionDeg,'°']]:[];
     items.push(['Minimum underside clearance',metrics.minimumUndersideClearanceMm,'mm']);
     if(energy&&kind==='landing')items.push(['Energy-average brake torque',estimate.averageTorqueNm,'N·m']);
     const residual=Math.max(...result.rows.map(r=>Math.abs(r.energyBalanceResidualJ||0)));

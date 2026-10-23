@@ -229,3 +229,15 @@ The explicit editable1° stop reserve is an illustrative margin. A Plotly curve,
 work breakdown and app-folder export accompany the result. This conservative
 initial-arrest work screen does not change dynamic controller torques or certify
 impact peaks/holding. See [energy-calculator.md](energy-calculator.md).
+
+## Visible jump/drop targets and torque sizing — 2026-10-23
+
+Jump and Landing now show their parameters directly below the case selector in
+both dynamic tabs. Set jump rise above takeoff, or drop height and minimum
+underbody clearance, then **Solve torque for target**. Each tab searches actual
+trials using its own engine and reports a passing tested command, achieved height
+or clearance, and a lower known-failing bracket when available. **Use tested
+torque** applies the captured command explicitly; run both engines normally to
+compare that same command. Saved targets, energy estimates, indeterminate trial
+handling and first-flight/first-arrest limits are documented in
+[target torque decisions and checks](target-torque.md).

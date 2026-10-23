@@ -4447,3 +4447,54 @@ Read energy-calculator.md for the conservative chassis-only work assumptions, en
 Preserve unchanged dynamic controllers and physical snapshot identity for calculator-only edits, and never reinterpret the50mm residual clearance as the chassis underside offset or a certified peak-torque requirement.
 
 ---
+
+## Entry: 2026-10-23 — Andy Zhang — Visible jump/drop parameters and engine-specific target torque sizing
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold jump/landing target controls, inverse torque study and profile compatibility.
+- **Associated Issue/Task:** Expose jump/drop parameters and solve torque for a target jump rise or fall distance/minimum chassis height using either analytical contact or Pymunk.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_study.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/target-torque.md`
+- `users/andy-zhang/experimental-apps/kinefold/torque_targets.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_torque_targets.py`
+
+- **API/Interface Changes:** Optional project-v3 torqueTargetConfig saves jumpHeightMm, landingClearanceMm and jumpTorqueLimitNm. Its content changes mark profiles dirty but leave physical modelRevision/snapshot identity unchanged; search identity additionally captures targets. POST /api/contact-study accepts target-case-torque alongside the compatible previous landing study. Each integrator supplies step-resolved frozen first-flight/first-arrest targetObservations; force laws/controllers remain unchanged. Visible inputs, optimistic jump/conservative landing work estimates, bounded actual-engine search, explicit stale-guarded Use tested torque, app-folder exports, same-datum run outcomes and five dictionary entries are provided. target-torque.md records height definitions, search decisions, assumptions and limitations.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 57 energy assertions,33 project-state groups,16 temporary-disk profile tests,48 comparison assertions,3404 dynamic Plotly assertions and19 lifecycle assertions PASS. Six target test groups pass together, including both actual engines, full/early observations, sparse output schedules, contact-chatter/recontact guards, adaptive exploration without false failing bounds, strict inputs and N10 command-basis equivalence; added actual0.05s short-horizon test passes separately for both cases/engines. Nine existing contact-case tests PASS. Output boundaries change integrator substeps:7Hz/100Hz jump-rise differences0.633137mm analytical/0.000458mm Pymunk, landing-clearance0.000121mm/0.511062mm with unchanged fixture classifications. Initial test-only exact schedule-invariance/VM realm/0.02s-minimum assumptions were corrected without weakening production guards. JS parsing, Python compilation and whitespace PASS. Browser100mm jump yields10.9375Nm tested in each engine and105.380/105.118mm flight rise;100mm landing with500mm minimum yields21.875Nm both and501.453/500.355mm achieved clearance. Shared tabs, invalid-negative rejection, stale application, explicit apply, reload, energy-target copy and app-folder exports PASS; no browser warning/error. Full applied jump comparison651exact samples each through6.5s completes, maximum sampled heave difference7.23474mm; unresolved Pymunk ledger5.772J stays explicit. Comparison JSON13872714bytes, jump assessment13223bytes and landing11656bytes parse. Actual project-local Stop/Start/reuse from unrelated cwd PASS4191. Exact original working and all4 named designs restored by UI import and deep-equal backup, library revision110; profiles/exports/screenshots remain ignored. Required fetched-base/staged/require-passed/workspace gates and normal hooks run before publication. No hardware/global optimum/impact-peak/post-arrest certification is claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app contribution.
+
+## 4. Compute Saving Handoff State
+
+Both dynamic tabs visibly expose jump rise above takeoff and landing drop/minimum underbody clearance and run their own bounded target-torque search.
+Read target-torque.md for the first-flight/first-arrest scope, saved target metadata and energy-versus-simulation assumptions; use the app-local Start Kinefold.cmd at4191.
+Preserve original profiles and physical identity for target-only edits, keep indeterminate trials out of proven failure bounds, and refine numerical settings near feasibility boundaries.
+
+---

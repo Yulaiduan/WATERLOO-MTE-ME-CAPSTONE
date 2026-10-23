@@ -13,7 +13,7 @@ import sys
 
 def study(payload):
     from contact_cases import minimum_required_torque
-    if not isinstance(payload, dict) or payload.get('study') != 'minimum-landing-torque':
+    if not isinstance(payload, dict) or payload.get('study') not in ('minimum-landing-torque','target-case-torque'):
         raise ValueError('Choose the bounded minimum-landing-torque study.')
     request = {key: value for key, value in payload.items() if key != 'study'}
     if request.get('engine') == 'analytical':
@@ -22,6 +22,9 @@ def study(payload):
         from contact_dynamics import simulate_contact
     else:
         raise ValueError('Choose analytical or Pymunk.')
+    if payload['study']=='target-case-torque':
+        from torque_targets import target_torque_search
+        return target_torque_search(request,lambda trial:simulate_contact(trial,stop_at_assessment=True),iterations=5)
     result=minimum_required_torque(request,lambda trial:simulate_contact(trial,stop_at_assessment=True),iterations=5)
     result['assessmentStopPolicy']='Each trial stops at first chassis arrest, compression bottom-out, underside threshold, jam or requested duration; ordinary full runs are unchanged.'
     return result

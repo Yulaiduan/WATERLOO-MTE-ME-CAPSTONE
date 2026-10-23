@@ -66,7 +66,7 @@ def reject_nonfinite(value):
 
 def run_dynamics(request):
     """Integrate one bounded request in this app's installed physics environment."""
-    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "motorConfig", "study"}):
+    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "motorConfig", "study", "torqueTargetConfig"}):
         return {"error": "Expected engine, params, runConfig and optional contactConfig/caseConfig only."}, 400
     if not isinstance(request["engine"], str) or request["engine"] not in {"analytical", "pymunk"}:
         return {"error": "Choose analytical or pymunk."}, 400
@@ -77,7 +77,7 @@ def run_dynamics(request):
         return {"error": "Choose a known interaction mode."}, 400
     contact_mode = bool(contact and contact.get("mode") == "terrain-contact")
     study = request.get("study")
-    if study is not None and (study != "minimum-landing-torque" or not contact_mode):
+    if study is not None and (study not in ("minimum-landing-torque", "target-case-torque") or not contact_mode):
         return {"error": "Landing assessment requires actual contact and the known minimum-torque study."}, 400
     payload = request if contact_mode else {key: request[key] for key in ("engine", "params", "runConfig", "motorConfig") if key in request}
     script = "contact_study.py" if study else ("analytical_contact.py" if contact_mode and request["engine"] == "analytical" else "contact_dynamics.py" if contact_mode else "dynamics.py")
