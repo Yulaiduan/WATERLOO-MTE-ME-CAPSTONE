@@ -636,3 +636,48 @@ import restore, library revision110. Proof .preview/target-torque-jump-reviewed.
 is ignored. New target metadata is absent again in the restored original design.
 No canonical robot/hardware, global optimum, impact peak or post-arrest safety
 validation is claimed. Required workspace publication gates/hooks follow final QA.
+
+## 2026-10-23 — visible energy equation and Flipsky/gearbox screening
+
+Based on main425406a. The user requested the2m landing equation as a calculator
+table and asked to add Flipsky peak torque and gearbox ratios from their motor
+workbook. Both dynamic tabs now show the live quantity/equation/value/unit table
+inside the energy calculator, with a2m height-only example button. Nine motor
+variants and four distinct EG23 reductions (5/10/20/50) are transcribed; sale20
+and used50 listings are deduplicated. Public product references and all ratings
+are recorded in [energy-calculator.md](../energy-calculator.md); private workbook
+IDs, unrelated data and account material are not included in the public repo.
+
+Optional energyConfig.screening saves motorId, gearboxId, editable peakShaftNm,
+customRatio and nullable customMomentaryNm. Legacy/manual profiles remain absent.
+CandidateN is analysis-only, including conservative cogging recalculated from
+explicitly retained enabled saved passive motor values; disabled passives stay
+zero. No actual motorConfig/controller input or physical result identity changes.
+Ideal motor peakN*shaft and separate gearbox momentary output cap determine the
+available screen torque. Unknown custom gearbox limits cannot pass. Catalog
+maxima are not continuous or verified regenerative-braking ratings, and listed
+forward efficiency supplies no backdrive credit. Inertia/losses are not guessed.
+
+The2m V4 baseline reproduces232.345151886620Nm over0.738856050011rad from
+171.669621162138J motor work. All four listed gearbox momentary limits20–60Nm
+fail this demand; an80100/20:1 has340Nm ideal motor peak but only60Nm gearbox
+capacity. These are initial-arrest endpoint screens, not impact/hardware ratings.
+
+The separate dynamic-case energy guidance uses landingEstimate with the actual
+saved physical motor, excluding catalog selection while retaining requested
+case height/clearance. Parent integration review caught and corrected candidate
+gearing leaking into that guidance before publication.
+
+Validation:115 energy assertions,33 project-state groups,19 Plotly lifecycle
+assertions and17 temporary-disk tests pass, plus JS parsing/Python compilation,
+whitespace and app-doc relative links. An ignored two-panel VM UI integration
+check passes initial absence,2m button, candidate/gear cap, peak override,
+shared-tab synchronization, manual restore and unchanged physical identity.
+Its first attempts exposed missing fake-DOM methods/selectors, corrected only
+in the harness; no production guard was weakened. Real browser automation had
+no enabled surfaces, so new visual layout/pointer/console QA is unverified.
+Actual project-local Stop/Start/reuse from C:/Windows/Temp passes4191, both tab
+URLs and changed assets returnHTTP200, and the server remains running. The
+working copy and all4 named designs deeply equal the pre-task library backup
+at revision111. Canonical physics and new dynamic integrations are not applicable
+to this isolated analysis-only change; hardware remains unvalidated.

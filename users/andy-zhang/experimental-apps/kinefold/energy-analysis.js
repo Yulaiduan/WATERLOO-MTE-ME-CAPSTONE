@@ -7,10 +7,34 @@
 globalThis.KinefoldEnergyAnalysis=(()=>{
   'use strict';
   const R=Math.PI/180;
+  // Catalog snapshot transcribed 2026-10-23. Marketing maximum/peak, not continuous.
+  const motors=[
+    ['flipsky-6374-190','Flipsky 6374 · 190 KV',8],['flipsky-6384-170','Flipsky 6384 · 170 KV · Battle Hardened',9],
+    ['flipsky-6354-140','Flipsky 6354 · 140 KV · Battle Hardened',7],['flipsky-6384-140','Flipsky 6384 · 140 KV',9],
+    ['flipsky-6374-140','Flipsky 6374 · 140 KV · Battle Hardened',8],['flipsky-7070-110','Flipsky 7070 · 110 KV · Battle Hardened',9.5],
+    ['flipsky-6368-140','Flipsky 6368 · 140 KV · Battle Hardened',5],['flipsky-63100-140','Flipsky 63100 · 140 KV · Battle Hardened',10],
+    ['flipsky-80100-130','Flipsky 80100 · 130 KV',17]
+  ].map(([id,name,peakShaftNm])=>Object.freeze({id,name,peakShaftNm,duration:id==='flipsky-63100-140'?'Maximum torque ≤30 s; transient capability still unverified':'Peak duration unspecified'}));
+  const gearboxes=[
+    ['eg5','EG23-G5-D10',5,28,56,.96],['eg10','EG23-G10-D10',10,10,20,.96],
+    ['eg20','EG23-G20-D10',20,30,60,.94],['eg50','EG23-G50-D10',50,25,50,.94]
+  ].map(([id,name,ratio,nominalNm,momentaryNm,forwardEfficiency])=>Object.freeze({id,name,ratio,nominalNm,momentaryNm,forwardEfficiency}));
+  function resolveScreen(v){
+    if(!v)return null;
+    const motor=motors.find(m=>m.id===v.motorId),gearbox=gearboxes.find(g=>g.id===v.gearboxId);
+    if(v.motorId!=='custom'&&!motor||!['direct','custom'].includes(v.gearboxId)&&!gearbox)throw Error('Unknown energy motor/gearbox selection.');
+    const ratio=gearbox?.ratio??(v.gearboxId==='direct'?1:v.customRatio),momentaryNm=gearbox?.momentaryNm??(v.gearboxId==='custom'?v.customMomentaryNm:null);
+    const idealJointPeakNm=v.peakShaftNm*ratio,effectiveJointNm=momentaryNm===null?idealJointPeakNm:Math.min(idealJointPeakNm,momentaryNm);
+    return {...v,motorName:motor?.name??'Custom motor',catalogPeakShaftNm:motor?.peakShaftNm??null,peakOverridden:!!motor&&motor.peakShaftNm!==v.peakShaftNm,duration:motor?.duration??'Custom peak duration unassessed',gearboxName:gearbox?.name??(v.gearboxId==='direct'?'Direct drive':'Custom reduction'),ratio,nominalNm:gearbox?.nominalNm??null,momentaryNm,idealJointPeakNm,effectiveJointNm,gearboxAssessed:v.gearboxId!=='custom'||momentaryNm!==null,forwardEfficiency:gearbox?.forwardEfficiency??null};
+  }
   function calculate(project){
     const p=project.params,P=KinefoldProjects,V=KinefoldV4;
     const e=P.validateEnergy({...P.energyDefaults,dropHeightMm:project.caseConfig?.landingDropMm??P.caseDefaults.landingDropMm,...project.energyConfig});
-    const c={...P.caseDefaults,...project.caseConfig},motor={...P.motorDefaults,...project.motorConfig};
+    const c={...P.caseDefaults,...project.caseConfig},savedMotor={...P.motorDefaults,...project.motorConfig},screening=resolveScreen(e.screening);
+    // Candidate reduction changes conservative cogging phase; never mutate dynamics.
+    // Disabled saved passives stay zero. No catalog inertia/loss guesses are made.
+    const motor=screening?{...savedMotor,enabled:true,gearRatio:screening.ratio,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
+    const availableJointNm=screening?screening.effectiveJointNm:e.torqueLimitNm;
     const errors=Kinefold.validate(p);if(errors.length)throw Error(errors.join(' '));
     if(!(p.m1>0&&p.g>0))throw Error('This drop-height energy screen requires positive chassis mass m₁ and gravity g.');
     if(['m2','m3','m5'].some(k=>p[k]!==0))throw Error('Chassis-only energy assumes massless moving links/compound pulley (m₂=m₃=m₅=0).');
@@ -36,15 +60,22 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const gravityCompressionJ=p.m1*p.g*(height(q0)-height(end))/1000;
     const springReleasedJ=spring(q0)-spring(end),coggingReleasedJ=cog(q0)-cog(end);
     const fixedWorkJ=gravityCompressionJ+springReleasedJ+coggingReleasedJ,weight=p.m1*p.g,dropJ=weight*e.dropHeightMm/1000;
-    const requiredJointNm=Math.max(0,(dropJ+fixedWorkJ)/travel),capacityRawMm=(e.torqueLimitNm*travel-fixedWorkJ)/weight*1000;
+    const requiredJointNm=Math.max(0,(dropJ+fixedWorkJ)/travel),capacityRawMm=(availableJointNm*travel-fixedWorkJ)/weight*1000;
     const terms={dropJ,gravityCompressionJ,springReleasedJ,coggingReleasedJ};
+    if(screening){screening.motorPass=requiredJointNm/N<=screening.peakShaftNm+1e-10;screening.gearboxPass=!screening.gearboxAssessed?null:screening.momentaryNm===null||requiredJointNm<=screening.momentaryNm+1e-10;screening.savedPassiveMotorEnabled=savedMotor.enabled;}
     return {config:e,openingFraction:c.landingOpenFraction,undersideOffsetMm:c.undersideOffsetMm,qStartDeg:q0,qEndDeg:end,angularTravelRad:travel,angularTravelDeg:end-q0,
       startHipHeightMm:height(q0),endHipHeightMm:height(end),initialClearanceMm:initialClearance,endClearanceMm:clearance(end),chassisCompressionMm:height(q0)-height(end),limiter,
       boundaryOnly:e.compressionReserveDeg===0&&limiter==='Mechanical stop boundary',massKg:p.m1,gravityMS2:p.g,impactSpeedMS:Math.sqrt(2*p.g*e.dropHeightMm/1000),gearRatio:N,
-      requiredJointNm,requiredShaftNm:requiredJointNm/N,availableJointNm:e.torqueLimitNm,availableShaftNm:e.torqueLimitNm/N,
-      capacityRawMm,capacityMm:capacityRawMm>=0?capacityRawMm:null,passes:requiredJointNm<=e.torqueLimitNm+1e-10,
-      workJ:dropJ+fixedWorkJ,availableWorkJ:e.torqueLimitNm*travel,...terms,
+      requiredJointNm,requiredShaftNm:requiredJointNm/N,availableJointNm,availableShaftNm:availableJointNm/N,screening,
+      capacityRawMm,capacityMm:capacityRawMm>=0?capacityRawMm:null,passes:requiredJointNm<=availableJointNm+1e-10&&(!screening||screening.gearboxAssessed),
+      workJ:dropJ+fixedWorkJ,availableWorkJ:availableJointNm*travel,...terms,
       curve:Array.from({length:81},(_,i)=>{const drop=Math.min(5000,Math.max(500,e.dropHeightMm*1.5))*i/80;return {dropHeightMm:drop,jointTorqueNm:Math.max(0,(weight*drop/1000+fixedWorkJ)/travel)};})};
+  }
+  function landingEstimate(project,dropHeightMm,targetClearanceMm){
+    // Dynamic-case guidance must use its physical motor, never a catalog candidate.
+    const energyConfig={...KinefoldProjects.energyDefaults,...project.energyConfig,dropHeightMm,targetClearanceMm};
+    delete energyConfig.screening;
+    return calculate({...project,energyConfig});
   }
   function jumpEstimate(project,targetHeightMm){
     const p=project.params,motor={...KinefoldProjects.motorDefaults,...project.motorConfig};
@@ -65,5 +96,5 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     return {jointNm,shaftNm:jointNm/N,stanceRiseMm,stanceGravityJ,flightEnergyJ,springReleaseJ,coggingReleaseJ,angularTravelRad:travel,
       meaning:'Optimistic work screen: full extension at takeoff, locked relative pose during flight, all mass rises together; no stop/contact/friction loss or retained rotor kinetic energy. Not guaranteed takeoff or apex.'};
   }
-  return {calculate,jumpEstimate};
+  return {calculate,landingEstimate,jumpEstimate,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
 })();

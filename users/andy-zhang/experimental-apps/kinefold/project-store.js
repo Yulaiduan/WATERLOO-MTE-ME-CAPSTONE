@@ -13,7 +13,18 @@ const solverDefaults={...legacyDefaults,fixture:'floating-chassis',duration:6.5,
 const torqueTargetDefaults={jumpHeightMm:100,landingClearanceMm:50,jumpTorqueLimitNm:200};
 function validateTorqueTargets(value){keys(value,Object.keys(torqueTargetDefaults),'torque target configuration');for(const key of Object.keys(torqueTargetDefaults)){if(!Number.isFinite(value[key])||value[key]<0||value[key]>(key==='jumpTorqueLimitNm'?10000:5000))throw Error(key+' is outside its finite target range.');}return {...value};}
 const energyDefaults={dropHeightMm:100,targetClearanceMm:50,torqueLimitNm:20,compressionReserveDeg:1};
-function validateEnergy(value){keys(value,Object.keys(energyDefaults),'energy configuration');for(const [key,[lo,hi]]of Object.entries({dropHeightMm:[0,5000],targetClearanceMm:[0,5000],torqueLimitNm:[0,10000],compressionReserveDeg:[0,180]}))if(!Number.isFinite(value[key])||value[key]<lo||value[key]>hi)throw Error(key+' must be finite between '+lo+' and '+hi+'.');return {...value};}
+const energyMotorIds=['custom','flipsky-6374-190','flipsky-6384-170','flipsky-6354-140','flipsky-6384-140','flipsky-6374-140','flipsky-7070-110','flipsky-6368-140','flipsky-63100-140','flipsky-80100-130'];
+function validateEnergy(value){
+ keys(value,[...Object.keys(energyDefaults),'screening'],'energy configuration');
+ for(const [key,[lo,hi]]of Object.entries({dropHeightMm:[0,5000],targetClearanceMm:[0,5000],torqueLimitNm:[0,10000],compressionReserveDeg:[0,180]}))if(!Number.isFinite(value[key])||value[key]<lo||value[key]>hi)throw Error(key+' must be finite between '+lo+' and '+hi+'.');
+ const out={...value};
+ if('screening' in value){const v=value.screening;keys(v,['motorId','gearboxId','peakShaftNm','customRatio','customMomentaryNm'],'energy motor screen');
+  if(Object.keys(v).length!==5||!energyMotorIds.includes(v.motorId)||!['direct','custom','eg5','eg10','eg20','eg50'].includes(v.gearboxId))throw Error('Choose a known energy-screen motor and gearbox.');
+  for(const [key,[lo,hi]]of Object.entries({peakShaftNm:[0,10000],customRatio:[1e-6,10000]}))if(!Number.isFinite(v[key])||v[key]<lo||v[key]>hi)throw Error('Invalid screening '+key+'.');
+  if(v.customMomentaryNm!==null&&(!Number.isFinite(v.customMomentaryNm)||v.customMomentaryNm<0||v.customMomentaryNm>10000))throw Error('Custom gearbox momentary limit must be blank or 0–10000 joint N·m.');
+  out.screening={...v};
+ }return out;
+}
 const motorDefaults={enabled:false,gearRatio:1,rotorInertiaKgM2:0,coggingAmplitudeNm:0,coggingPeriodsPerRev:1,coggingPhaseDeg:0,coulombFrictionNm:0,viscousFrictionNms:0,frictionVelocityScaleRadS:.01,commandBasis:'joint'};
 function validateMotor(value){
  keys(value,Object.keys(motorDefaults),'motor configuration');

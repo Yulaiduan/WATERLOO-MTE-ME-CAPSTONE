@@ -226,9 +226,19 @@ calculator without a simulation run. It uses saved chassis/spring/motor geometry
 separates the50mm ground-clearance target from the underside offset, and reports
 joint/shaft resisting magnitudes, available stroke and endpoint drop capacity.
 The explicit editable1° stop reserve is an illustrative margin. A Plotly curve,
-work breakdown and app-folder export accompany the result. This conservative
+visible equation table and app-folder export accompany the result. The table
+shows quantities, formulas, values and units; **2 m drop example** updates only
+the calculator height. This conservative
 initial-arrest work screen does not change dynamic controller torques or certify
 impact peaks/holding. See [energy-calculator.md](energy-calculator.md).
+
+The same calculator also offers nine Flipsky peak-torque choices and EG23
+5:1/10:1/20:1/50:1 reductions, with direct/custom alternatives and editable peak
+values. The motor's ideal geared peak and gearbox nominal/momentary output
+limits are shown separately; gearbox limits cap the available energy-screen
+torque. Selections stay in optional analysis-only profile settings, preserving
+the physical motor model and simulation commands. Catalog peaks are not
+continuous or verified regenerative-braking ratings.
 
 ## Visible jump/drop targets and torque sizing — 2026-10-23
 

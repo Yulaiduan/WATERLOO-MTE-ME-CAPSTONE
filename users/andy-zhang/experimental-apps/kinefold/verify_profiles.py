@@ -51,6 +51,23 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(result['designs'],state['designs'])
         self.call('working',status=400,expectedRevision=result['revision'],project=dict(value,energyConfig=None))
 
+    def test_energy_catalog_selection_roundtrip_and_bad_fields(self):
+        state,_=self.migrate()
+        value=project('Catalog landing screen')
+        value['energyConfig']=dict(dropHeightMm=2000,targetClearanceMm=50,torqueLimitNm=20,compressionReserveDeg=1,screening=dict(motorId='flipsky-80100-130',gearboxId='eg20',peakShaftNm=17,customRatio=1,customMomentaryNm=None))
+        result=self.call('working',expectedRevision=state['revision'],project=value)
+        self.assertEqual(result['working'],value)
+        self.assertEqual(result['designs'],state['designs'])
+        self.assertNotIn('motorConfig',result['working'])
+        self.assertEqual(ProfileService(self.root).handle({'action':'list'})[0]['working'],value)
+        for key,invalid in [('motorId','missing'),('motorId',[]),('gearboxId','missing'),('gearboxId',{}),('peakShaftNm',-1),('customRatio',0),('customMomentaryNm',-1),('extra',True)]:
+            bad=copy.deepcopy(value)
+            bad['energyConfig']['screening'][key]=invalid
+            self.call('working',status=400,expectedRevision=result['revision'],project=bad)
+        bad=copy.deepcopy(value)
+        bad['energyConfig']['screening']=None
+        self.call('working',status=400,expectedRevision=result['revision'],project=bad)
+
     def test_optional_motor_profile_roundtrip_and_null_rejection(self):
         from motor_model import DEFAULTS
         state, _ = self.migrate()

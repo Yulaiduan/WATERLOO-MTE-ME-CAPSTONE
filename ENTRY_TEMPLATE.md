@@ -4498,3 +4498,47 @@ Read target-torque.md for the first-flight/first-arrest scope, saved target meta
 Preserve original profiles and physical identity for target-only edits, keep indeterminate trials out of proven failure bounds, and refine numerical settings near feasibility boundaries.
 
 ---
+
+## Entry: 2026-10-23 — Andy Zhang — Live landing equation and peak motor/gearbox screening
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold standalone landing-energy calculator and compatible saved analysis settings.
+- **Associated Issue/Task:** Expose the2m landing work equation as a live table and add Flipsky peak-torque choices and the motor workbook's gearbox reductions.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+
+- **API/Interface Changes:** Optional energyConfig.screening stores motorId, gearboxId, peakShaftNm, customRatio and nullable customMomentaryNm; both JS and disk validators preserve old/manual absence and reject malformed selections. Energy analysis exposes frozen nine-motor/four-gearbox catalogs and calculates candidate shaft demand/cogging and capped ideal joint capacity without mutating physical motorConfig, commands or simulation identity. All equation rows, readouts, Plotly curve and existing app-folder export use the same candidate. Separate landingEstimate guidance deliberately strips the candidate and uses the saved physical motor for the dynamic-case energy estimate; parent review found and fixed this consumer interaction, with an independent regression. Visible equation table,2m height-only button, separate motor/gear outcomes, editable overrides, direct/custom modes, rating tables and variable definitions are included. Public catalog specifications are transcribed from the read-only connected workbook; no private workbook URL/ID, unrelated sheet data, new dependency or dynamic-engine change is retained.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 115 energy assertions,33 project/library groups,19 Plotly lifecycle assertions and17 temporary-disk tests PASS. Added independent2m fixture232.345151886620Nm, all four gearbox caps, motor-pass/gear-fail, direct/custom/unassessed limits, overrides, candidate cogging, input rejection, roundtrip/dirty state and unchanged physical snapshot identity. Ignored two-panel VM UI integration PASS for initial absence,2m preset, selectors, cap, override, shared updates and manual restore; initial harness-only missing DOM methods/selectors were corrected before clean rerun. JS parsing/Python compilation, whitespace and app-document relative links PASS. Actual project-local Stop/Start/reuse from unrelated C:/Windows/Temp PASS4191; both tab URLs and changed assets HTTP200. Working copy and all4 named designs deeply equal original revision111 backup. Browser tool inventory has no enabled surfaces, so actual new visual/pointer/console QA is UNVERIFIED. No physics/integrator/controller changes or new dynamic run is claimed. Generated profiles, exports and temporary UI harness remain ignored. Initial tools/check_entry.py --base origin/main --require-passed rejected a missing space after the evidence label; formatting corrected before rerunning the normal publication gates/hooks.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app calculator; catalog peak torque is an ideal screening assumption, not certified braking, thermal duration, adapter compatibility or hardware survival.
+
+## 4. Compute Saving Handoff State
+
+Both dynamic tabs expose the landing work equation as a live table with a2m example and saved Flipsky peak/EG23 ratio screening.
+Read energy-calculator.md for all nine motor/four gearbox ratings, candidate cogging assumptions, capped capacity and the2m result; use app-local Start Kinefold.cmd at4191.
+Keep physical motor/controller settings and original designs unchanged for analysis-only selection, treat unknown custom gearbox ratings as unassessed, and complete real visual QA when browser access returns.
+
+---

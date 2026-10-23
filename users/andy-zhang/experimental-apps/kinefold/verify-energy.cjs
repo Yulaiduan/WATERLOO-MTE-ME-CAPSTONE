@@ -30,4 +30,32 @@ jump.params.springEnabled=false;near(A.jumpEstimate(jump,100).jointNm,41.8219378
 for(const edit of [q=>q.params.alpha=5,q=>q.params.g=0,q=>{q.params.te=70;q.params.tc=110;},q=>q.params.p0=-10000]){const value=clone(p);edit(value);assert.throws(()=>A.jumpEstimate(value,100));checks++;}
 const target=clone(p);target.torqueTargetConfig={...P.torqueTargetDefaults,jumpHeightMm:250};const targetSaved=P.validate(realm(target));near(P.decode(clone(targetSaved)).project.torqueTargetConfig.jumpHeightMm,250);ok(D.snapshotKey(targetSaved)===D.snapshotKey(p),'target-only edit keeps physical result identity');ok(P.content(targetSaved)!==P.content(p),'targets mark named profile dirty');ok(!('torqueTargetConfig' in P.validate(p)),'legacy targets remain absent');
 for(const value of [null,{}, {...P.torqueTargetDefaults,jumpHeightMm:-1},{...P.torqueTargetDefaults,jumpTorqueLimitNm:Infinity}]){assert.throws(()=>P.validateTorqueTargets(realm(value)));checks++;}
+// Catalog selections are saved analysis metadata, never physical motor changes.
+const twoMetre=clone(p);twoMetre.energyConfig={...P.energyDefaults,dropHeightMm:2000};
+near(A.calculate(twoMetre).requiredJointNm,232.3451518866197);
+near(A.calculate(twoMetre).workJ,171.66962116213807);
+const selection={motorId:'flipsky-80100-130',gearboxId:'eg20',peakShaftNm:17,customRatio:1,customMomentaryNm:null};
+const selected=clone(twoMetre);selected.energyConfig.screening=clone(selection);const unmodified=JSON.stringify(selected),screen=A.calculate(selected);
+near(screen.gearRatio,20);near(screen.requiredShaftNm,232.3451518866197/20);near(screen.availableJointNm,60);near(screen.screening.idealJointPeakNm,340);
+ok(screen.screening.motorPass&&!screen.screening.gearboxPass&&!screen.passes,'motor meeting peak cannot bypass gearbox output cap');
+ok(JSON.stringify(selected)===unmodified&&!('motorConfig' in selected),'candidate does not create or mutate the physical motor');
+ok(D.snapshotKey(selected)===D.snapshotKey(twoMetre),'catalog edits do not stale physical trajectories');
+const roundtrip=P.decode(clone(P.validate(selected))).project;ok(JSON.stringify(roundtrip.energyConfig.screening)===JSON.stringify(selection),'selection roundtrips with saved design');
+ok(P.content(roundtrip)!==P.content(twoMetre),'candidate selection marks named design dirty');
+for(const [id,N,nominal,limit] of [['eg5',5,28,56],['eg10',10,10,20],['eg20',20,30,60],['eg50',50,25,50]]){const q=clone(selected);q.energyConfig.screening.gearboxId=id;const r=A.calculate(q);near(r.gearRatio,N);near(r.screening.nominalNm,nominal);near(r.screening.momentaryNm,limit);near(r.availableJointNm,Math.min(17*N,limit));ok(!r.passes,'2 m baseline exceeds every listed gearbox momentary limit');}
+ok(A.motors.length===9&&A.gearboxes.length===4,'nine motor variants and four deduplicated gearbox models');
+ok(JSON.stringify(A.motors.map(m=>m.peakShaftNm))===JSON.stringify([8,9,7,9,8,9.5,5,10,17]),'all nine source peak ratings retained');
+near(A.motors.find(m=>m.id==='flipsky-7070-110').peakShaftNm,9.5);ok(A.motors.find(m=>m.id==='flipsky-63100-140').duration.includes('30 s'),'limited peak duration retained');
+const direct=clone(selected);direct.energyConfig.screening.gearboxId='direct';const dr=A.calculate(direct);near(dr.gearRatio,1);near(dr.availableJointNm,17);ok(dr.screening.gearboxPass&&!dr.screening.motorPass,'direct drive has no gearbox cap but motor still limits');
+const custom=clone(selected);custom.energyConfig.screening=clone({motorId:'custom',gearboxId:'custom',peakShaftNm:20,customRatio:20,customMomentaryNm:null});let customResult=A.calculate(custom);ok(!customResult.passes&&customResult.screening.gearboxPass===null,'unknown gearbox rating cannot pass');
+custom.energyConfig.screening.customMomentaryNm=300;customResult=A.calculate(custom);near(customResult.availableJointNm,300);ok(customResult.passes,'explicit adequate custom capacity passes endpoint screen');
+custom.energyConfig.screening.peakShaftNm=1;customResult=A.calculate(custom);near(customResult.availableJointNm,20);ok(!customResult.screening.motorPass&&!customResult.passes,'editable peak override controls capacity');
+const candidateCog=clone(geared);candidateCog.energyConfig={...P.energyDefaults,screening:clone(selection)};const candidateCogOriginal=JSON.stringify(candidateCog),candidateCogResult=A.calculate(candidateCog),candidateU=q=>.1/3*Math.cos((3*20*q+25)*Math.PI/180);
+near(candidateCogResult.coggingReleasedJ,candidateU(z.qStartDeg)-candidateU(z.qEndDeg));near(candidateCog.motorConfig.gearRatio,10);ok(JSON.stringify(candidateCog)===candidateCogOriginal,'candidate cogging recomputation does not mutate physical reduction');
+const disabledCog=clone(candidateCog);disabledCog.motorConfig.enabled=false;near(A.calculate(disabledCog).coggingReleasedJ,0);
+const physicalGuidance=A.landingEstimate(candidateCog,2000,50),physicalU=q=>.1/3*Math.cos((3*10*q+25)*Math.PI/180);
+near(physicalGuidance.gearRatio,10);near(physicalGuidance.requiredJointNm,(171.675+z.gravityCompressionJ+z.springReleasedJ+physicalU(z.qStartDeg)-physicalU(z.qEndDeg))/z.angularTravelRad);near(physicalGuidance.requiredShaftNm,physicalGuidance.requiredJointNm/10);
+ok(physicalGuidance.screening===null&&physicalGuidance.config.dropHeightMm===2000,'dynamic-case estimate uses actual motor and requested case height, not candidate');
+ok(JSON.stringify(candidateCog)===candidateCogOriginal,'dynamic guidance keeps saved candidate and physical motor intact');
+for(const patch of [{motorId:'unknown'},{gearboxId:'unknown'},{peakShaftNm:-1},{customRatio:0},{customMomentaryNm:-1},{extra:true}]){const bad=clone(selected);Object.assign(bad.energyConfig.screening,clone(patch));assert.throws(()=>P.validate(bad));checks++;}
 console.log('PASS '+checks+' standalone energy assertions');

@@ -126,9 +126,21 @@ def _project(value):
     if "energyConfig" in value:
         energy=value["energyConfig"]
         limits={"dropHeightMm":(0,5000),"targetClearanceMm":(0,5000),"torqueLimitNm":(0,10000),"compressionReserveDeg":(0,180)}
-        _shape(energy,limits,"energy configuration")
-        if set(energy)!=set(limits) or any(type(energy.get(k)) not in (int,float) or not lo<=energy[k]<=hi for k,(lo,hi) in limits.items()):
+        _shape(energy,(*limits,"screening"),"energy configuration")
+        if set(energy)-{"screening"}!=set(limits) or any(type(energy.get(k)) not in (int,float) or not lo<=energy[k]<=hi for k,(lo,hi) in limits.items()):
             raise StorageError("Unknown, missing or out-of-range energy settings.")
+        if "screening" in energy:
+            screen=energy["screening"]
+            fields={"motorId","gearboxId","peakShaftNm","customRatio","customMomentaryNm"}
+            _shape(screen,fields,"energy motor screen")
+            motors={"custom","flipsky-6374-190","flipsky-6384-170","flipsky-6354-140","flipsky-6384-140","flipsky-6374-140","flipsky-7070-110","flipsky-6368-140","flipsky-63100-140","flipsky-80100-130"}
+            if set(screen)!=fields or not isinstance(screen.get("motorId"),str) or not isinstance(screen.get("gearboxId"),str) or screen["motorId"] not in motors or screen["gearboxId"] not in {"direct","custom","eg5","eg10","eg20","eg50"}:
+                raise StorageError("Unknown or missing energy motor/gearbox selection.")
+            if type(screen["peakShaftNm"]) not in (int,float) or not 0<=screen["peakShaftNm"]<=10000 or type(screen["customRatio"]) not in (int,float) or not 1e-6<=screen["customRatio"]<=10000:
+                raise StorageError("Invalid energy peak torque or custom reduction.")
+            limit=screen["customMomentaryNm"]
+            if limit is not None and (type(limit) not in (int,float) or not 0<=limit<=10000):
+                raise StorageError("Custom gearbox momentary limit must be blank or 0–10000 joint Nm.")
     if "motorConfig" in value:
         if value["motorConfig"] is None:
             raise StorageError("Explicit motorConfig must be an object; omit it for legacy ideal behavior.")
