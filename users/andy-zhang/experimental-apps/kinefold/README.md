@@ -251,3 +251,36 @@ torque** applies the captured command explicitly; run both engines normally to
 compare that same command. Saved targets, energy estimates, indeterminate trial
 handling and first-flight/first-arrest limits are documented in
 [target torque decisions and checks](target-torque.md).
+
+## Findings PDF and visible dynamic spring — 2026-10-23
+
+Both dynamic browser previews and the desktop Pymunk viewer now reconstruct the
+spring from each captured frame: horn, incoming tangent, finite idler wrap and
+outgoing cable to a schematic housing. The housing dial follows actual cable
+payout; the readout names the active spring law and shows tension, hip torque
+and payout relative to the 90-degree reference. It has no invented drum inertia.
+Playback must change the leg pose to change the payout. The saved V4 baseline
+still uses its coil law; select **Ideal constant cable force** under Suspension
+for constant tension. No force law or saved profile was changed by this fix.
+
+Run `.venv/Scripts/python.exe verify_spring_playback.py` to reproduce eight
+actual analytical/Pymunk spring-on/off runs, virtual-work checks and 222 SVG
+assertions. It supplies captured fixtures to `verify-spring-playback.cjs`;
+the Node helper is not a standalone test. Run
+`.venv/Scripts/python.exe verify_viewer.py --gui` for the native viewer checks.
+See [context](context/README.md) for actual results and review limitations.
+
+The 12-page findings report covers geometry, conventions, both spring laws,
+static consistency, contact and engine comparison, jump/landing, the 2 m energy
+calculation, motor/gearing choices and unresolved assumptions. Rebuild it with
+Python after installing the optional [report dependency](requirements-report.txt):
+
+```powershell
+python -m pip install -r requirements-report.txt
+python build_findings_report.py --spring-evidence spring-report-evidence.json --output exports/kinefold-findings.pdf
+```
+
+The builder uses the dated reviewed [evidence summary](spring-report-evidence.json)
+and local source records; it does not rerun physics or refresh catalog ratings.
+The generated PDF stays in the app's ignored `exports/` directory. Its source,
+assumptions and reproduction steps are versioned; no Downloads export is used.

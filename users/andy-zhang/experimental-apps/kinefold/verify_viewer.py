@@ -28,6 +28,7 @@ from desktop_viewer import (PlaybackWindow, contact_mesh, floor_height, floor_po
                             index_endpoint, is_contact, parent_alive, simulate_snapshot)
 from dynamic_model import Model, defaults
 from dynamics import simulate
+from contact_dynamics import validate_contact_request
 from viewer_service import ViewerService
 
 ROOT = Path(__file__).resolve().parent
@@ -146,7 +147,7 @@ class ViewerChecks(unittest.TestCase):
         # Exercise the full native drawing path without taking over the desktop.
         window = PlaybackWindow.__new__(PlaybackWindow)
         window.result, window.contact = result, True
-        window.model = SimpleNamespace(p=result['params'])
+        window.model = validate_contact_request({key: result[key] for key in ('engine', 'params', 'runConfig', 'contactConfig', 'caseConfig') if key in result})
         window.rows, window.frames = result['rows'], result['frames']
         window.times = [row['t'] for row in window.rows]
         window.index = len(window.frames) - 1
@@ -237,6 +238,29 @@ class ViewerChecks(unittest.TestCase):
         self.assertEqual(state['state'], 'closed')
         self.assertTrue(state['selfTestPassed'], state)
 
+    def test_gui_constant_force_payout_witness(self):
+        if not GUI:
+            self.skipTest('Use --gui for actual constant-force Tk canvas drawing.')
+        request = self.request(params={**self.params, 'm6': 1.5, 'springLaw': 'constant'},
+                               contactConfig={'mode': 'terrain-contact', 'friction': .8, 'restitution': 0, 'drive': 'free'},
+                               runConfig={**self.config, 'duration': .3, 'dt': .00025, 'inputHeightMm': 0})
+        result = simulate_snapshot(ViewerService._validate(request))
+        window = PlaybackWindow(result, 'Constant cable force verification', mock.Mock(), os.getpid())
+        try:
+            window.root.update_idletasks()
+            vectors = []
+            for index in (0, len(window.frames) - 1):
+                window.index = index
+                window.draw()
+                items = window.canvas.find_withtag('spring-payout-witness')
+                self.assertEqual(len(items), 1)
+                x1, y1, x2, y2 = window.canvas.coords(items[0])
+                vectors.append((x2 - x1, y2 - y1))
+            self.assertGreater(sum(abs(a - b) for a, b in zip(*vectors)), 5)
+            self.assertTrue(all(row['Fs'] == self.params['p0'] for row in result['rows']))
+        finally:
+            window.close()
+
     def test_case_capture_and_native_jump_draw(self):
         from contact_cases import CASE_DEFAULTS
         request=self.request(params={**self.params,'rw':200,'m6':1.5},contactConfig={'mode':'terrain-contact','friction':.8,'restitution':0,'drive':'free'},caseConfig={**CASE_DEFAULTS,'kind':'jump'},runConfig={**self.config,'dt':.00025})
@@ -247,7 +271,7 @@ class ViewerChecks(unittest.TestCase):
         self.assertEqual(captured['caseConfig']['undersideOffsetMm'],50)
         window=PlaybackWindow.__new__(PlaybackWindow)
         window.result,window.contact=result,True
-        window.model=SimpleNamespace(p=result['params'])
+        window.model=validate_contact_request({key:result[key] for key in ('engine','params','runConfig','contactConfig','caseConfig') if key in result})
         window.rows,window.frames=result['rows'],result['frames']
         window.times=[row['t'] for row in window.rows]
         window.index=0

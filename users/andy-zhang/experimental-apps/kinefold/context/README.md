@@ -681,3 +681,55 @@ URLs and changed assets returnHTTP200, and the server remains running. The
 working copy and all4 named designs deeply equal the pre-task library backup
 at revision111. Canonical physics and new dynamic integrations are not applicable
 to this isolated analysis-only change; hardware remains unvalidated.
+
+## 2026-10-23 — consolidated findings PDF and Pymunk spring visibility
+
+Based on main `3d959e4`. The user requested one PDF of this app's learnings and
+findings and a check that the constant-force spring actually works in Pymunk.
+Audit found the exact constant-tension law already enters both prescribed and
+contact dynamics through the finite-idler generalized torque. The contact/native
+illustrations omitted the wrap, outgoing cable and remote assembly. Browser
+playback now shares frame-driven spring geometry; the native Tk viewer mirrors
+it. The complete cable, schematic housing/payout dial and active-law/Fs/torque/
+delta-L90 readouts follow captured physical frames, not decorative time rotation.
+Camera bounds include the route, and hip labels avoid the chassis mass label.
+No backend law, force/controller interface or saved profile was changed.
+
+New `verify_spring_playback.py` passes three groups: eight actual engine runs,
+five-pose virtual-work controls for each spring law and222 SVG geometry checks.
+At q0=132.5deg, dt0.00025s, flat input, zero actuation/damping and constant
+p0=330.869282809N, actual Pymunk tension stays constant while q reaches
+156.111563deg prescribed /156.111368deg contact in0.3s. Cable payout changes
+25.462562/25.462355mm. At common t0.2s, prescribed chassis height is556.974252mm
+ON versus446.411652mm OFF; contact is556.974675mm ON versus446.411652mm OFF.
+The OFF prescribed run stops at0.242s, so final unequal-time endpoints are not
+used for that claim. Maximum ON analytical/Pymunk heave discrepancy is0.221102mm
+prescribed /0.199504mm contact. Contact explicitly uses the1.5kg wheel, mu0.8,
+zero bounce and free drive; the original saved coil profile remains unchanged.
+
+Parent integration checks pass14 `verify_viewer.py --gui` groups including actual
+Tk playback, witness motion and service start/close/restart;2000 core,1123 drawing
+and666 contact-drawing assertions; JS parse/Python compilation and whitespace.
+The development worker initially corrected old fake viewer-model fixtures to use
+validated real models. One first native contact GUI self-test failure did not
+reproduce alone, in two worker suite reruns, or in the parent14-group rerun; no
+production tolerance/guard was weakened. Browser automation has no enabled
+surfaces, so manual live browser/native visual and pointer review is unverified.
+Two actual-frame contact SVG illustrations were rasterized and inspected; they
+show different payout/dial positions and no overlapping hip/mass text.
+
+`build_findings_report.py`, optional `requirements-report.txt` and the curated
+`spring-report-evidence.json` reproduce the12-page `exports/kinefold-findings.pdf`.
+It distinguishes historical checks from this new audit, coil support from
+constant cable tension, impact energy from survival claims, shaft/joint torque
+and gearbox caps. The2m result is232.345152Nm with the V4 coil or252.378648Nm
+with ideal constant p0; current EG23 caps all fail. ReportLab4.4.9 generated the
+PDF; all12 rendered pages and the updated page4 were visually checked, with
+page count, footers, text bounds and missing-glyph checks. PDF/raw results and
+images stay ignored under app exports/.preview; reproducible source is tracked.
+Final app-local Stop/Start/restart/reuse checks from C:/Windows/Temp pass at4191;
+both dynamic routes and the three changed browser assets returnHTTP200. The full
+current profile library deeply equals the revision111 pre-task backup, including
+all four named designs. Report text/footers/bounds/glyph checks and30 app-document
+links pass. Actual run environment: Python3.13.12, NumPy2.5.3, SciPy1.18.1,
+Pymunk7.3.0; numerical agreement is scoped to this environment and these fixtures.

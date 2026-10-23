@@ -1,0 +1,20 @@
+{
+  "schema": "kinefold/spring-report-evidence-v1",
+  "date": "2026-10-23",
+  "baseline": "3d959e4 plus reviewed spring visibility changes",
+  "validated": true,
+  "finding": "The constant-force law was already connected to Pymunk's exact spring torque. The missing visual was the full idler wrap, outgoing cable and remote spring assembly. Browser and native playback now reconstruct them from the captured moving frame; the schematic reel witness follows actual cable payout. The original saved profile remains on its V4 coil law until explicitly edited.",
+  "headers": ["Actual Pymunk case", "Constant tension", "Hip motion in 0.3 s", "Cable payout change"],
+  "widths": [0.30, 0.22, 0.26, 0.22],
+  "rows": [
+    ["Prescribed flat wheel height", "330.869283 N throughout", "132.5 to 156.111563 deg", "+25.462562 mm"],
+    ["Actual flat-floor contact", "330.869283 N throughout", "132.5 to 156.111368 deg", "+25.462355 mm"]
+  ],
+  "notes": [
+    "Fixture: q0=132.5 deg, zero actuator torque and damping, dt=0.00025 s, requested duration 0.3 s. Contact uses the explicit 1.5 kg wheel, friction 0.8, zero bounce and free drive. The comparisons use the same declared mechanism and input.",
+    "At common t=0.2 s, prescribed-mode chassis height is 556.974252 mm with the spring and 446.411652 mm without it. Contact mode gives 556.974675 mm ON versus 446.411652 mm OFF. The roughly 110.56 mm difference establishes a physical response rather than only a visual change. The OFF prescribed case reaches its travel limit at 0.242 s; unlike terminal values are not compared.",
+    "For the spring-ON 0.3 s trajectories, maximum analytical/Pymunk heave disagreement is 0.221102 mm prescribed and 0.199504 mm contact. A five-pose sweep from 105 to 160 deg keeps constant tension but varies spring torque from -20.580174 to -11.922710 Nm; maximum centered work-energy derivative error is 3.87e-9 Nm. These numerical approximations do not establish hardware accuracy.",
+    "Three new regression groups include eight actual engine runs and 222 SVG geometry assertions. The native viewer suite passes 14 groups, including actual Tk playback and a changing payout witness. Generated artwork is inspected separately from a manual live-window review. No spring force-law correction or new Pymunk DampedSpring was needed."
+  ],
+  "visual_scope": "Browser automation currently exposes no enabled browser or native app surfaces. Actual live pointer/playback review remains unverified; numerical rollout, frame-dependent geometry, generated-artwork and native drawing checks are reported at their actual scope."
+}

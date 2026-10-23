@@ -127,7 +127,8 @@ function camera(state,p) {
   if(state.camera)return state.camera;
   const bounds={loX:Infinity,hiX:-Infinity,loY:Infinity,hiY:-Infinity};
   for(const frame of state.result.frames) {
-    const points=[frame.A,[frame.A[0],0,frame.A[2]+100],frame.B,
+    const spring=KinefoldDrawing.spring(p,frame);
+    const points=[frame.A,[frame.A[0],0,frame.A[2]+100],frame.B,...(spring.valid?[spring.D,spring.S,spring.remote,[spring.remote[0],0,spring.remote[2]+200]]:[]),
       [frame.C[0]-p.rw,0,frame.C[2]-p.rw],[frame.C[0]+p.rw,0,frame.C[2]+p.rw]];
     for(const point of points){bounds.loX=Math.min(bounds.loX,-point[0]);bounds.hiX=Math.max(bounds.hiX,-point[0]);bounds.loY=Math.min(bounds.loY,-point[2]);bounds.hiY=Math.max(bounds.hiY,-point[2]);}
   }
@@ -139,7 +140,7 @@ let out='<rect width="740" height="450" fill="var(--paper)"/>';const target=45/s
 out+=line([frame.A,frame.B],'var(--sage)',12)+line([frame.B,frame.C],'var(--blue)',10)+circle(frame.C,p.rw,'var(--ink)',2);
 for(const belt of KinefoldDrawing.belts(z.reference,p.theta2))if(belt.valid){out+=line(belt.outline.map(translate),'var(--muted)',1);for(const point of belt.markers){const [x,y]=P(translate(point));out+=`<circle cx="${x}" cy="${y}" r="1.7" fill="var(--sage)"/>`;}}
 for(const axis of KinefoldDrawing.indices(z.reference,p.theta2))out+=circle(translate(axis.center),axis.radius,'var(--amber)',1.2)+line([translate(axis.center),translate(axis.primary)],'var(--red)',1.3)+line([translate(axis.center),translate(axis.secondary)],'var(--red)',.8,'stroke-dasharray="3 3"');
-if(p.springEnabled&&z.spring.valid){out+=line([frame.A,translate(z.D)],'var(--amber)',3)+circle(translate(z.S),p.rs,'var(--amber)',1.5)+line([translate(z.D),translate(z.Q)],'var(--amber)',1.6);const world=v=>translate(Kinefold.point(KinefoldV4.VSL.global(z.reference,v)));out+=line([translate(z.Qout),world(z.spring.remote(90))],'var(--amber)',1.6);if(p.rs>0){const a=Math.atan2(z.spring.Q[1]-p.Sv,z.spring.Q[0]-p.Su);out+=line(Array.from({length:49},(_,i)=>world([p.Su+p.rs*Math.cos(a-z.spring.wrap*i/48),p.Sv+p.rs*Math.sin(a-z.spring.wrap*i/48)])),'var(--amber)',2);}}
+out+=KinefoldDrawing.springSvg(KinefoldDrawing.spring(p,frame),P,scale);
 const [ax,az]=P(A),baseZ=row.wheelZMm-p.rw-row.appliedInputMm;
 const terrain=Analysis.floor(state.snapshot.solverConfig,row,frame.C[0],-(W/2/scale)+(loX+hiX)/-2,(W/2/scale)+(loX+hiX)/-2);
 const floorPoints=points=>points.map(([x,height])=>[x,0,baseZ+height]);
@@ -147,7 +148,7 @@ out+=line(floorPoints(terrain.requested),'var(--muted)',1.5,'stroke-dasharray="5
 out+=`<rect x="${ax-48}" y="${az-32}" width="96" height="32" rx="4" fill="var(--soft)" stroke="var(--sage)" stroke-width="2"/><text x="${ax}" y="${az-12}" text-anchor="middle" fill="var(--ink)" font-size="11">m₁ ${fmt(p.m1,2)} kg</text>`;
 if(terrain.dense)out+=`<text x="22" y="350" fill="var(--amber)" font-size="11">Dense floor display sampled · wheel input remains exact</text>`;
 out+=`<path d="M530 425H610m-8-5 8 5-8 5" stroke="var(--amber)" fill="none"/><text x="528" y="411" fill="var(--amber)" font-size="11">Prescribed spatial floor · −x →</text>`;
-for(const [point,label]of [[frame.A,'A'],[frame.B,'B'],[frame.C,'C']]){const[x,y]=P(point);out+=`<circle cx="${x}" cy="${y}" r="3" fill="var(--paper)" stroke="var(--ink)"/><text x="${x+10}" y="${y-7}" fill="var(--ink)" font-size="11">${label}</text>`;}
+for(const [point,label]of [[frame.A,'A'],[frame.B,'B'],[frame.C,'C']]){const[x,y]=P(point);out+=`<circle cx="${x}" cy="${y}" r="3" fill="var(--paper)" stroke="var(--ink)"/><text x="${x+(label==='A'?-18:10)}" y="${y+(label==='A'?14:-7)}" fill="var(--ink)" font-size="11">${label}</text>`;}
 out+=`<rect x="12" y="12" width="300" height="26" fill="var(--paper)" opacity=".9"/><text x="22" y="29" fill="var(--muted)" font-size="10">WORLD FRAME · GRID ${fmt(step,0)} mm · IDEAL TRANSMISSION</text><rect x="12" y="368" width="184" height="69" fill="var(--paper)" opacity=".94"/><path d="M95 415H35m8-4-8 4 8 4M95 415V382m-4 8 4-8 4 8" fill="none" stroke="var(--ink)" stroke-width="1.4"/><text x="14" y="418" fill="var(--red)" font-size="11">+x</text><text x="105" y="387" fill="var(--blue)" font-size="11">+z</text><text x="108" y="418" fill="var(--sage)" font-size="9">⊙ +y toward you</text>`;
 svg.setAttribute('viewBox','0 0 740 450');svg.dataset.theta2=String(row.theta2);svg.dataset.chassisZMm=String(row.chassisZMm);svg.dataset.time=String(row.t);svg.dataset.floorAppliedAtWheel=String(terrain.atWheel.applied);svg.dataset.floorRequestedAtWheel=String(terrain.atWheel.requested);svg.dataset.inputDistanceMm=String(terrain.distance);svg.innerHTML=out;Results.cursor($(id+'-results'),row.t);$(id+'-scrub').value=state.index;$(id+'-time').textContent=`${fmt(row.t,3)} s · chassis ${fmt(row.chassisZMm,2)} mm · θ₂ ${fmt(row.theta2,2)}°`;}
 function stop(id){const state=runs[id];state.playing=false;const button=$(id+'-play');if(button){button.textContent='▶';button.setAttribute('aria-pressed','false');}}

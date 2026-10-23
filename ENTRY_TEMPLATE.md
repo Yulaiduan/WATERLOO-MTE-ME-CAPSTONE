@@ -4542,3 +4542,47 @@ Read energy-calculator.md for all nine motor/four gearbox ratings, candidate cog
 Keep physical motor/controller settings and original designs unchanged for analysis-only selection, treat unknown custom gearbox ratings as unassessed, and complete real visual QA when browser access returns.
 
 ---
+
+## Entry: 2026-10-23 — Andy Zhang — Findings PDF and frame-driven Pymunk spring
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental app spring playback and consolidated engineering findings report.
+- **Associated Issue/Task:** Summarize the mechanism/static/dynamic/energy/motor findings in one PDF and verify that the constant-force spring actually works in Pymunk despite its incomplete illustration.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/preview-geometry.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_spring_playback.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify-spring-playback.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/build_findings_report.py`
+- `users/andy-zhang/experimental-apps/kinefold/requirements-report.txt`
+- `users/andy-zhang/experimental-apps/kinefold/spring-report-evidence.json`
+
+- **API/Interface Changes:** Shared captured-frame spring drawing returns the exact horn/tangent/idler-wrap/exit route, active law, tension, torque and payout. Both dynamic browser previews and the native Tk viewer show the full route and a schematic payout-driven dial, with expanded camera bounds and hip-label spacing. Audit confirms existing backend spring laws already act on the generalized dynamics; no physics law, controller, schema, source reference or saved profile is changed. A dated ReportLab builder and curated reviewed evidence reproduce a12-page findings PDF in ignored app exports; optional report dependencies remain separate from the physics runtime. No private workbook/account data, raw run logs or generated PDF/images are published.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Three new spring regression groups PASS with eight actual analytical/Pymunk on/off integrations and222 SVG assertions. Constant tension remains330.869282809N while Pymunk q moves132.5 to156.111563deg prescribed /156.111368deg contact over0.3s; payout increases25.462562/25.462355mm. At common0.2s spring ON chassis is556.974252/556.974675mm versus446.411652mm OFF; prescribed OFF reaches a travel limit at0.242s, so unlike endpoints are not compared. Maximum ON cross-engine heave difference0.221102/0.199504mm; five-pose constant-law work derivative error3.87e-9Nm. Parent main-checkout rerun passes all14 native viewer groups including real Tk playback/witness/service lifecycle,2000 core assertions,1123 drawing assertions and666 contact-drawing assertions. Initial worker fake-model fixtures were corrected to use validated real models; one first native contact GUI self-test failure did not reproduce standalone, in two full worker reruns or the parent's full14-group rerun. No production tolerance/guard was weakened. JS parsing/Python compilation/whitespace and30 app-doc links PASS. All12 PDF pages rendered/inspected, updated page4 re-inspected;12pages, footers, bounds and glyph checks PASS (73742bytes). Two captured-frame SVG rasters inspected with changed payout/witness and separated hip/mass labels. Real manual browser/native visual/pointer review is UNVERIFIED because browser tool inventory has no enabled surfaces; programmatic native tests are not described as manual visual review. Actual app-local Stop/Start/restart/reuse from unrelated C:/Windows/Temp PASS4191; dynamic routes and changed assets HTTP200. Entire current library deeply equals the revision111 pre-task backup, all four named designs unchanged. Run environment Python3.13.12/NumPy2.5.3/SciPy1.18.1/Pymunk7.3.0; no hardware accuracy or survival claim. Fetched-base/staged/require-passed/workspace publication checks and normal hooks run before commit/push.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app illustration/report contribution; actual app-specific numerical verification is recorded above.
+
+## 4. Compute Saving Handoff State
+
+Constant cable force already worked physically in Pymunk; playback now reveals its full frame-driven cable route and payout with force/torque readouts, while the original V4 coil profile remains unchanged.
+Reproduce the spring checks with verify_spring_playback.py and the12-page report with build_findings_report.py --spring-evidence spring-report-evidence.json, using the app-local Start Kinefold.cmd at4191.
+Keep generated exports/raw runs local, finish manual browser QA when surfaces return, and distinguish constant cable tension from approximately constant coil support and energy screens from hardware survival.
+
+---
