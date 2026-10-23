@@ -4274,3 +4274,59 @@ Use app-local Start Kinefold.cmd at4191 and contact-scenarios.md for exact contr
 Preserve optional-case compatibility, independent integration, real spin/contact and explicit ledger residuals; energy-average sizing and first-arrest search do not certify peak torque, settled safety or near-boundary engine agreement.
 
 ---
+
+## Entry: 2026-10-23 — Andy Zhang — Unified mechanism studio and offline Plotly charts
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental member-app presentation and navigation.
+- **Associated Issue/Task:** Merge saved designs, mechanism builder and equilibrium into one workspace, with static plots below the RHS mechanism preview; use Plotly for all data charts while preserving numerical engines and saved profiles.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium.css`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium.js`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium-plots.md`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/plotly-runtime.js`
+- `users/andy-zhang/experimental-apps/kinefold/plotly.css`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/studio.css`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-contact.md`
+- `users/andy-zhang/experimental-apps/kinefold/vendor/PLOTLY-LICENSE.txt`
+- `users/andy-zhang/experimental-apps/kinefold/vendor/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/vendor/plotly-basic-4.1.2.min.js.gz`
+- `users/andy-zhang/experimental-apps/kinefold/vendor/plotly-manifest.json`
+- `users/andy-zhang/experimental-apps/kinefold/verify-dynamic-plotly.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-equilibrium-plotly.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-plotly-runtime.cjs`
+
+- **API/Interface Changes:** Four top tabs (studio, analytical, Pymunk, conventions); legacy designs/static URL aliases select studio inner sections. Shared KinefoldPlotly lifecycle renders all data charts, resolves theme colors, preserves zoom/cursors and purges removed hosts. Fixed read-only vendor route verifies/decompresses pinned official Plotly basic4.1.2 from a398299byte gzip asset; no CDN, package install, gate changes or oversized raw blob. Existing contextual JSON/CSV exports remain app-local; default camera downloads removed. Geometry/FBD/convention illustrations stay SVG. No engine, reference equation, project schema, profile contents or source-app changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** New static trace14, dynamic Plotly2535 and shared Plotly lifecycle11 assertions PASS, including sign/strand dash semantics, null/wrap/event-side gaps, zero-mass display ranges, theme cursor retention, hidden-chart cursor caching and reinserted-host lifecycle. Existing static/source9404 assertions/266 cases/17 charts/8 multibranch queries, dynamic comparison46, project-state31 groups, model2000 and drawing1123 assertions PASS. JS parsing, Python compilation, HTML four-tab/nested-library/static structure and whitespace PASS. Actual project-local Stop/Start/reuse from unrelated C:/Users/zhang passes4191. All new assets HTTP200; vendor GET and HEAD match exact raw length1198523 and SHA256; gzip/source/license provenance tracked. Parent initial browser review passes merged layout, readable single-column plots, point-click pose changes, zoom and Play/pause with deferred static refresh. Parent final browser/architecture approval: merged four-tab layout and readable RHS single-column plots; static point-click, drag zoom and series toggles; legacy static/designs aliases; builder Play/pause with settled refresh; dynamic comparison selectors and0.37s cursor retained through light/dark/light theme, engine switch and collapsed comparison reopening. Actual6.5s100mm/20Nm Landing pair651 exact common rows, both arrested, sampled maximum heave difference1.84191mm;13,148,659byte comparison JSON parses in app exports/. No console warnings/errors. Current working and all4 named designs deeply equal .preview/pre-plotly-studio-library.json revision57 after temporary pose changes were restored, without import. Final screenshots .preview/merged-studio-final.png and .preview/merged-static-plotly-final.png remain ignored. No numerical engine changes or broad physics reruns are needed for this presentation-only workspace contribution. Generated profile/export/screenshot data and unrelated ignored launchers remain excluded.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated presentation-only member workspace; no new physical validation is claimed.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now has one Mechanism studio with a compact expandable saved-profile library, builder controls, mechanism preview and categorized equilibrium directly beneath that preview.
+All data plots use locally pinned Plotly with offline loading, linked pose/time interactions and existing app-folder data exports, while numerical engines and SVG engineering illustrations are retained.
+Use project-local Start Kinefold.cmd at4191; preserve four-tab URL aliases, exact saved profiles, event/null gaps and current-pose labeling when extending the presentation.
+
+---

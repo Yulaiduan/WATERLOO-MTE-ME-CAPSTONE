@@ -15,27 +15,28 @@ No login/boot automation is installed. Node.js is needed only for developer chec
 
 ## Workspace
 
-- **00 Designs:** named saved mechanisms and shared run profiles, a working
-  draft, explicit example templates and portable project JSON. Storage
-  is saved in this app’s profiles/library.json. Working copies and named designs
-  include the complete geometry and solver profile; exports stay in exports/.
-- **01 Mechanism builder:** Geometry, Suspension, Loadings & preloads at left;
-  live side/isometric mechanism preview at right, with layers, dimension labels,
-  full-range travel path, pose scrub and prescribed kinematic playback. Mechanism,
-  Full travel and Spring detail framing, zoom and drag-to-pan support inspection.
-  Parameter shortcuts and ? buttons open the appropriate variable definition.
-- **02 Equilibrium · static:** all 17 reference plots in native expandable
-  Suspension/support, Kinematics, Loading sweeps and Free-body categories.
-  Four diagnostic sweep axes share the current builder design; ranges never
-  edit physical parameters. See [plot coverage and controls](equilibrium-plots.md).
-- **03 Dynamic analytical / 04 Pymunk:** the shared floating quarter-model
-  workspaces described below.
-- **05 Conventions & variables (last tab):** independently expandable illustrated frame,
-  topology, right-hand-rule signs, spring/loading laws, dynamics assumptions and a searchable
-  dictionary. Search is available at the top; section shortcuts open the selected
-  reference, including a geometrically scaled baseline topology illustration.
-  The front-left frame is +x forward, +y left, +z up; positive +y rotation is
-  counterclockwise in the left-side x–z view (+x left, +z up, +y toward you).
+- **00 Mechanism studio:** compact save/profile actions and an expandable full
+  named-design library above one mechanism workspace. Geometry, Suspension,
+  Loadings & preloads stay at left. The calibrated mechanism preview is at right,
+  followed directly by all 17 equilibrium charts in categorized expandable groups.
+  Diagnostic ranges inspect the same builder design without editing its physical
+  stops. See [plot coverage and controls](equilibrium-plots.md).
+- **01 Analytical / 02 Pymunk:** shared quarter-model case controls, playback,
+  categorized result charts and exact-snapshot engine comparison described below.
+- **03 Conventions & variables (last):** expandable frame, topology, signs,
+  spring/loading laws, dynamics assumptions and searchable variable definitions.
+  The front-left frame is +x forward, +y left, +z up; +x faces left and +z up
+  in side view, with positive +y moments counterclockwise.
+
+All data plots use the pinned offline **Plotly basic 4.1.2** runtime; no CDN or
+npm install is needed. Plotly supports hover, zoom, pan, legends and reset axes.
+Existing contextual JSON/CSV exports write to this app's `exports/` folder;
+Plotly's browser-download camera is removed. Mechanism, spring, free-body and
+conventions drawings remain geometrically scaled SVG illustrations.
+Old `?tab=designs` and `?tab=static` links open the relevant studio section.
+Builder playback defers equilibrium rebuilding until the pose settles and labels
+those charts as showing the last settled pose while it plays.
+
 - **Export design** / **Import** retain the complete mechanism, view and shared
   solver settings in a versioned `kinefold/project-v3` document. Legacy
   `kinefold/mechanism-v1` and fixed-hip `project-v2` files migrate explicitly, preserving geometry and an archived prior profile. Invalid imports leave the
@@ -59,13 +60,18 @@ the isometric view is an orthographic projection. No wheel width is invented.
 
 V4 uses a **linear coil with approximately constant support**, not constant cable
 tension. Both that reference and an **ideal constant cable-force** option are
-explicitly available in the builder. The separate static tab now shows signed
+explicitly available in the builder. The equilibrium section beneath the preview shows signed
 torque sweeps, belt tensions and equilibrium residuals from these same inputs. Wheel loads are prescribed; gravity acts on the individual masses.
 The default 8.75 kg is a single-leg supported mass, not a whole-vehicle mass.
 Remote spring housing is schematic. Cable stretch, friction, strength, contact,
 manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses.
 
 ## Developer checks
+
+`node verify-plotly-runtime.cjs`, `node verify-equilibrium-plotly.cjs` and
+`node verify-dynamic-plotly.cjs` check lifecycle and trace semantics. The offline
+vendor checksums/provenance and license are in [vendor/README.md](vendor/README.md).
+Real pointer, sizing and zoom behavior also require browser review.
 
 From this directory: `node verify.cjs` checks source parity, geometry, world
 forces/moments, finite-pulley energy derivatives, both spring laws and JSON state.
@@ -172,7 +178,7 @@ runs actual native Pymunk/Tk lifecycle and controls. Hardware remains unvalidate
 
 ## Actual wheel / terrain contact
 
-Use **Save & open contact demo** in Pymunk or00 Designs to create a separate
+Use **Save & open contact demo** in Pymunk or the studio library to create a separate
 saved V4 profile with the explicitly selected1.5 kg wheel, μ0.8, zero bounce and
 freely backdrivable drive. The original200 mm radius, link geometry, masses and
 spring remain unchanged; prior named designs and the working snapshot are retained.

@@ -9,6 +9,8 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import gzip
+from functools import lru_cache
 import json
 import os
 from pathlib import Path
@@ -33,7 +35,23 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js",
           "solvers.js", "solver-style.css", "project-store.js", "designs.js",
           "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",
-          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js", "case-ui.js"}
+          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js", "case-ui.js", "plotly-runtime.js", "plotly.css", "studio.css"}
+
+
+VENDOR_ROUTE = "/vendor/plotly-basic-4.1.2.min.js"
+
+
+@lru_cache(maxsize=1)
+def plotly_asset():
+    """Read the pinned offline JavaScript; verify compressed and raw provenance."""
+    manifest = json.loads((ROOT / "vendor/plotly-manifest.json").read_text())
+    compressed = (ROOT / "vendor/plotly-basic-4.1.2.min.js.gz").read_bytes()
+    if hashlib.sha256(compressed).hexdigest() != manifest["gzipSha256"]:
+        raise ValueError("Offline Plotly compressed asset checksum mismatch")
+    raw = gzip.decompress(compressed)
+    if hashlib.sha256(raw).hexdigest() != manifest["sha256"]:
+        raise ValueError("Offline Plotly JavaScript checksum mismatch")
+    return raw
 
 
 DYNAMICS_LOCK = threading.Lock()
@@ -115,9 +133,25 @@ def serve():
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(ROOT), **kwargs)
 
+        def vendor(self, head=False):
+            try:
+                data = plotly_asset()
+            except (OSError, ValueError, KeyError) as error:
+                self.send_error(500, str(error))
+                return
+            self.send_response(200)
+            self.send_header("Content-Type", "application/javascript; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            if not head:
+                self.wfile.write(data)
+
         def do_GET(self):
             route = self.path.split("?", 1)[0]
-            if route == "/__kinefold_health":
+            if route == VENDOR_ROUTE:
+                self.vendor()
+            elif route == "/__kinefold_health":
                 data = json.dumps({"app": "kinefold-v1", "root": IDENTITY}).encode()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
@@ -134,7 +168,9 @@ def serve():
 
         def do_HEAD(self):
             route = self.path.split("?", 1)[0]
-            if route == "/" or route.removeprefix("/") in ASSETS:
+            if route == VENDOR_ROUTE:
+                self.vendor(head=True)
+            elif route == "/" or route.removeprefix("/") in ASSETS:
                 super().do_HEAD()
             else:
                 self.send_error(404)

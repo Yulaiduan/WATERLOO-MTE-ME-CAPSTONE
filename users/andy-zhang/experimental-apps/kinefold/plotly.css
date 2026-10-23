@@ -1,0 +1,6 @@
+/* Actual Plotly data plots; illustration SVGs retain their existing geometry. */
+.kinefold-plot{width:100%;min-width:0;min-height:350px;position:relative}
+.kinefold-plot .modebar{background:var(--paper)!important;border-radius:4px}
+.kinefold-plot .modebar-btn path{fill:var(--muted)!important}
+.eq-chart-wrap .kinefold-plot,.dyn-chart-stage .kinefold-plot{height:380px}
+.plotly-failure{padding:20px;color:var(--red);font-size:12px}

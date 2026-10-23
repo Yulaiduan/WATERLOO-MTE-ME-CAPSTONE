@@ -19,7 +19,7 @@
 .dyn-series{display:flex;gap:10px 16px;flex-wrap:wrap;margin-bottom:10px;font-size:12px}
 .dyn-series label{display:flex;align-items:center;gap:6px;cursor:pointer}
 .dyn-chart-stage{position:relative}
-.dyn-chart-stage svg{display:block;width:100%;height:auto;max-height:390px}
+
 .dyn-comparison-summary{display:flex;flex-wrap:wrap;gap:7px 20px;margin-bottom:12px;padding:13px;background:var(--soft);font-size:12px}
 .dyn-comparison-summary strong{flex-basis:100%;font-size:14px}
 .dyn-compare-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:18px 0}

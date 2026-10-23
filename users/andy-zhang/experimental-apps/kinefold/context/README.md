@@ -498,3 +498,24 @@ certified by this first-arrest assessment. Focused full-versus-early first-arres
 checks for the passing/failing bracket pass in both engines. The default10-trial
 search takes8.63s analytically and1.29s in Pymunk on this PC, both returning the
 10.9375failing/12.5passingNm bracket; these timings are not hardware benchmarks.
+
+
+## 2026-10-23 — merged studio and offline Plotly
+
+Current top tabs are 00 Mechanism studio, 01 Analytical, 02 Pymunk and
+03 Conventions. The saved-design library is expandable above the builder;
+all equilibrium categories sit directly below its RHS mechanism preview.
+Legacy designs/static URL aliases scroll to their corresponding inner section.
+All static, dynamic and comparison data charts now use local Plotly basic4.1.2;
+mechanism/FBD/convention SVGs remain illustrations. The pinned compressed vendor
+asset is398299bytes, verified/decompressed by a fixed server route, with license
+and hashes tracked. Plotly camera downloads are removed; existing app-folder
+JSON/CSV exports remain. No numerical engine or profile schema changes occur.
+
+Source/static9404, model2000, drawing1123, dynamic presentation46, profile-state31,
+new static trace14, dynamic trace2535 and shared Plotly lifecycle11 assertions
+pass. Launcher Stop/Start/reuse from unrelated cwd and new asset GET/HEAD/hash
+checks pass at4191. Parent final browser/architecture approval: merged four-tab layout and readable RHS single-column plots; static point-click, drag zoom and series toggles; legacy static/designs aliases; builder Play/pause with settled refresh; dynamic comparison selectors and0.37s cursor retained through light/dark/light theme, engine switch and collapsed comparison reopening. Actual6.5s100mm/20Nm Landing pair651 exact common rows, both arrested, sampled maximum heave difference1.84191mm;13,148,659byte comparison JSON parses in app exports/. No console warnings/errors. Current working and all4 named designs deeply equal .preview/pre-plotly-studio-library.json revision57 after temporary pose changes were restored, without import. Final screenshots .preview/merged-studio-final.png and .preview/merged-static-plotly-final.png remain ignored.
+Assumptions: four top-level workspaces, stable old URL aliases, library collapsed
+by default, and engineering illustrations remain SVG. Builder Play labels
+last-settled static results and refreshes after the pose settles.

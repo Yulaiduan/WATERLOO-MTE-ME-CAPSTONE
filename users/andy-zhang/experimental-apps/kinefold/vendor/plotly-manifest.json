@@ -1,0 +1,17 @@
+{
+  "name": "plotly.js basic",
+  "version": "4.1.2",
+  "source": "https://cdn.plot.ly/plotly-basic-4.1.2.min.js",
+  "license": "MIT",
+  "licenseSource": "https://raw.githubusercontent.com/plotly/plotly.js/v4.1.2/LICENSE",
+  "downloaded": "2026-10-23",
+  "rawBytes": 1198523,
+  "gzipBytes": 398299,
+  "sha256": "fa18ed1c94c06576c0a867bb2477534716c39e5b22affe673f2a184317974926",
+  "gzipSha256": "8777bcd98e05f9197ae2b9ee6ff8cb80c54eae30a5e2c6aa628a773bab6a1865",
+  "modules": [
+    "bar",
+    "pie",
+    "scatter"
+  ]
+}

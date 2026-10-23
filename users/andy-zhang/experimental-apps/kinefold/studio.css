@@ -1,0 +1,23 @@
+/* One saved-design/mechanism/equilibrium workspace, with plots below preview. */
+#studio-profile-bar{display:flex;justify-content:space-between;align-items:center;gap:18px;padding:12px 16px;border:1px solid var(--line);border-radius:8px;background:var(--paper);margin:0 0 12px}
+.studio-profile-identity{display:flex;align-items:center;gap:12px;flex-wrap:wrap;min-width:0}
+.studio-profile-identity strong{font-size:13px;overflow-wrap:anywhere}.studio-profile-identity span{font-size:10px}.studio-profile-identity small{font-size:10px;color:var(--muted)}
+.studio-library{border:1px solid var(--line);border-radius:8px;background:var(--paper);margin-bottom:12px;scroll-margin-top:16px}
+.studio-library>summary{padding:12px 16px;font-size:12px;font-weight:600;cursor:pointer}.studio-library>summary span{margin-left:12px;font-size:10px;font-weight:400;color:var(--muted)}
+.studio-library #designs{padding:0 16px 12px}.studio-library .designs-heading,.studio-library .working-project{display:none}
+.studio-library-note{font-size:11px;line-height:1.5;color:var(--muted);margin:0 0 12px}
+.studio-sections{display:flex;gap:7px;flex-wrap:wrap;margin:0 0 16px}.studio-sections button{font-size:11px;padding:6px 10px;background:transparent}
+#builder .workspace{grid-template-columns:280px minmax(0,1fr);align-items:start;gap:20px}
+#builder .preview-column{position:static;min-width:0;container-type:inline-size}
+#builder .parameters{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}
+#static{margin-top:32px;padding-top:24px;border-top:2px solid var(--line);scroll-margin-top:20px}
+#static .eq-chart-grid,#static .eq-chart-grid.eq-three,#static .eqd-body-grid,#static .eq-reference-grid,#static .eqd-spring-layout{grid-template-columns:minmax(0,1fr)}
+#static .eq-chart-grid.eq-three .eq-chart-card:last-child{grid-column:auto}
+#static .eq-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
+#static .eq-metrics strong{font-size:22px}#static .eq-window-grid{grid-template-columns:1fr}
+#static .solver-heading h2{font-size:23px}#static .solver-heading{flex-wrap:wrap}
+#static .eq-category>summary{padding:17px}#static .eq-category-body{padding:0 14px 18px}
+#mechanism-preview{scroll-margin-top:16px}
+@container(min-width:1100px){#static .eq-chart-grid,#static .eq-chart-grid.eq-three,#static .eqd-body-grid,#static .eq-reference-grid{grid-template-columns:repeat(2,minmax(0,1fr))}#static .eq-metrics{grid-template-columns:repeat(4,minmax(0,1fr))}#static .eqd-spring-layout{grid-template-columns:minmax(0,2fr) minmax(220px,1fr)}}
+@media(max-width:900px){#builder .workspace{grid-template-columns:minmax(0,1fr)}#builder .parameters{position:static;max-height:480px;order:1}#builder .preview-column{order:2}#studio-profile-bar{align-items:flex-start;flex-direction:column;gap:10px}}
+@media(max-width:560px){.studio-profile-identity{gap:6px 10px}#static .eq-metrics{grid-template-columns:1fr}.studio-library #designs{padding:0 8px 8px}#static .solver-design{flex-wrap:wrap}.kinefold-plot{min-height:330px}}

@@ -75,7 +75,7 @@ tires, 3D clearance and four-leg/hardware behavior remain outside this model.
 
 ## UI, storage and validation
 
-The Pymunk tab and00 Designs create the separate contact demo deliberately,
+The Pymunk tab and studio library create the separate contact demo deliberately,
 preserving original named designs and backing up an unsaved working snapshot.
 An optional project-v3 `contactConfig` stores mode/friction/restitution/drive;
 old projects without it remain byte-equivalent in their physical fields.

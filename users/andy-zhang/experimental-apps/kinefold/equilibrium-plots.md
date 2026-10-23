@@ -4,6 +4,7 @@ Kinefold presents the current builder design in its own interface. The unchanged
 V4 analytical core is the reference; the original UI is neither copied nor
 embedded. Source anchors below refer to
 [v4-pulley.html](../../../jonathan-xie/experimental-apps/vsl-solver/v4/v4-pulley.html).
+Charts use the offline Plotly runtime beneath the studio mechanism preview.
 The executable 17-entry manifest is `KinefoldEquilibriumData.coverage`.
 
 | Native category | Source chart / series | Original lines |
@@ -53,7 +54,7 @@ over the physical θ₂ range at current α/β; it is not a certified global θ�
 Categories and loading axes render lazily. Rows are cached per physical parameter
 snapshot and diagnostic windows, so series changes do not rerun equilibrium.
 Shared-design updates invalidate all relevant data, including imports while the
-equilibrium tab is selected. Plot preferences are local UI state, separate from
+Mechanism studio is visible. Plot preferences are local UI state, separate from
 portable project-v3 physical parameters and run profiles.
 
 Exports are saved in the app’s exports/ folder, with a relative path shown in
