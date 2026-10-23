@@ -49,6 +49,21 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(json.loads((self.root / "profiles/browser-backup.json").read_text())["keys"], raw)
         self.assertEqual(ProfileService(self.root).handle({"action": "list"})[0], state)
 
+    def test_optional_contact_roundtrip_preserves_legacy_profiles(self):
+        state, _ = self.migrate()
+        originals = copy.deepcopy(state["designs"])
+        contact = project("Explicit contact demo")
+        contact["id"] = "design-contact-3333"
+        contact["params"]["m6"] = 1.5
+        contact["contactConfig"] = dict(mode="terrain-contact", friction=.8, restitution=0, drive="free")
+        saved = self.call("save", project=contact, expectedRevision=state["revision"])
+        self.assertEqual(saved["designs"][:2], originals)
+        self.assertEqual(self.call("read", id=contact["id"])["project"], contact)
+        self.assertNotIn("contactConfig", originals[0])
+        invalid = copy.deepcopy(contact)
+        invalid["contactConfig"]["drive"] = "locked"
+        self.call("save", status=400, project=invalid, expectedRevision=saved["revision"])
+
     def test_save_read_delete_restore_and_revision_conflict(self):
         state, _ = self.migrate()
         p = state["designs"][0]

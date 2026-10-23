@@ -4153,3 +4153,60 @@ Use app-local Start Kinefold.cmd at4191; profiles/library.json stores exactnamed
 Retain exacteventside alignment, condensed-linkage scope, atomicrevision checks and fixed-root process/file APIs; read dynamic-analysis.md and appcontext for actualevidence and limitations.
 
 ---
+
+## Entry: 2026-10-22 — Andy Zhang — Actual terrain contact and free-wheel motion
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental terrain-contact dynamics and presentation.
+- **Associated Issue/Task:** User requested actual wheel spin/terrain collision after referring to Motion Lab, then explicitly selected an editable1.5kg wheel, effective friction0.8, zero bounce and freely backdrivable drive.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.md`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-contact.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-contact-drawing.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-dynamic-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/viewer_service.py`
+- **API/Interface Changes:** Optional project-v3 contactConfig selects prescribed-height or terrain-contact without changing legacy snapshots that omit it. Same-origin dynamics/viewer endpoints dispatch by mode to a fixed contact script, rejecting analytical contact. The contact model has actual chassis/wheel bodies, circular shape/friction, moving world terrain, exact massless straight-linkage constraint, free-drive indices, interval contact impulses and explicit unsupported-geometry/inertia guards. Native plots/browser/desktop share actual result transforms and mesh; unavailable benchmark acceleration/work diagnostics remain null. A deliberate demo action preserves working design as a named backup before creating the separate complete contact profile. Designs/conventions document scope and new variables. Original source apps, reference equations, canonical components, shared rules and dependencies are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** App verify_contact.py passes8 groups: full6.5s R200 demo; flat normal100.552499227N vs10.25*9.81N; spin28.6478897565deg/s vs100/200rad/s and frictionless0; unchanged baseline spring570.491044815N/holding hip torque-0.027168833380Nm; maximum penetration0.004186895mm; dt convergence; R100/H150 jam stops at0.51275s rather than tunnelling; tilted/nonunit-drive initial indices and spring virtual-work mapping. verify-contact-drawing.cjs passes666 assertions including independent belt material velocities; verify-dynamic-analysis.cjs39 assertions; verify-projects.cjs29 groups; verify_profiles.py12 tests; existing verify.cjs2000 and verify-drawing.cjs1123 assertions pass. Viewer suite passes8/skips3 GUI cases, supplemented by actual Tk/Pymunk contact controls/auto-close test PASS1; null slip and explicit prescribed-mode dispatch regressions pass. Initial viewer validation failure for contactConfig=None was fixed and rerun clean. JS parsing/Python compilation/whitespace pass. Parent browser QA verifies651 actual-contact samples/6.5s, flat spin, moving world mesh, physical gap bridging, mode guards, blank friction rejection, correct Designs/conventions copy and no console warnings/errors. Original2 named designs remain deeply equal; separate exact-working backup and contact demo make4 named designs, current working equals demo after reload. Legacy baseline paired benchmark656 exact rows/max heave error0.00419668mm remains unchanged. Actual7.44MB JSON/396k CSV parse inside app exports/, none Downloads. Manual native visual inspection was occluded and is not claimed; actual automated Tk GUI test passed. Project-local Stop/start/restart/reuse from unrelated cwd passes4191; final server/result retained without restart. Parent architecture/browser review approved; ignored .preview/contact-gap-bridging-final.png records4.3s bridge. Required exact-snapshot repository checks/hooks precede publication; unrelated ignored Laptop Access launchers and all profile/export data are excluded.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated experimental member app; no hardware or full-vehicle validation is claimed.
+
+## 4. Compute Saving Handoff State
+
+Pymunk terrain-contact mode now physically spins the free wheel against translating square terrain, preserves massless straight-linkage geometry, permits gap bridging/separation and stops excessive penetration explicitly.
+Use app-local Start Kinefold.cmd at4191 and read terrain-contact.md for supported geometry, force/index conventions, interval contact diagnostics and native playback limitations; original prescribed-height paired analysis remains separate and unchanged.
+Preserve optional contactConfig compatibility, exact saved baseline/backup profiles and null unavailable diagnostics when extending this experimental two-body model; manual native visual QA was occluded while automated actual Tk GUI and browser QA passed.
+
+---

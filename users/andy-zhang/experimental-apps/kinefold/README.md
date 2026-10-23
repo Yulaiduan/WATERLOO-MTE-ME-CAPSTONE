@@ -85,14 +85,15 @@ browser. See [context](context/README.md) for actual verification and handoff.
 
 ## Native equilibrium and vertical-chassis workspaces — 2026-10-22
 
-All tabs use Kinefold's own interface. The retained finite-idler equations are
+All tabs use Kinefold's own interface. Actual terrain contact is a separate saved
+Pymunk mode; see [contact model and checks](terrain-contact.md). The retained finite-idler equations are
 reference evidence, attributed above; no source app or copied tab is embedded.
 Equilibrium evaluates the current builder with cached finite samples: 480 intervals
 for working peaks/loading curves, 720 or more for kinematics, and 180 for α/β.
 Five body diagrams and exact spring-route detail accompany all17 reference plots.
 The sampled peak is not a certified global maximum.
 
-Both dynamic engines use one saved mechanism and profile. The chassis mass m1
+The original prescribed-height bench uses both dynamic engines with one saved mechanism and profile. The chassis mass m1
 moves vertically with fixed horizontal position and pitch, while wheel height
 is prescribed. No guide rods are drawn. Analytical dynamics use reduced equations;
 Pymunk integrates a real vertically constrained chassis body, with the ideal
@@ -167,3 +168,23 @@ baseline trajectories and frontend/Python input-law parity; node verify-projects
 checks browser-to-disk migration and failure safety. App .venv Python
 verify_profiles.py tests atomic files/revisions/exports, and verify_viewer.py --gui
 runs actual native Pymunk/Tk lifecycle and controls. Hardware remains unvalidated.
+
+
+## Actual wheel / terrain contact
+
+Use **Save & open contact demo** in Pymunk or00 Designs to create a separate
+saved V4 profile with the explicitly selected1.5 kg wheel, μ0.8, zero bounce and
+freely backdrivable drive. The original200 mm radius, link geometry, masses and
+spring remain unchanged; prior named designs and the working snapshot are retained.
+This mode has an actual circular wheel, frictional collisions and a translating
+world square mesh. Wheel spin and height come from the engine; corners and150 mm
+gaps can be bridged. The original height-driven/K=0 bench remains available.
+
+The exact two-body model supports massless equal links/2:1 guide on a nonsingular
+straight path, with positive chassis/wheel masses and uniform wheel-disc inertia.
+Unsupported curved paths, extra link/rotor/custom inertia and prescribed contact
+loads fail explicitly. No substitute masses are added. Contact mode is Pymunk-only;
+analytical bench comparison is unavailable. Browser/native playback uses actual
+world mesh/body transforms, backdriven pulley indices and moving belt markers.
+Read [terrain-contact.md](terrain-contact.md) for equations, limits and actual
+friction/corner/refinement evidence. Profiles/exports stay in the app folders.

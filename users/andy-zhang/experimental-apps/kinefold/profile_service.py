@@ -73,7 +73,7 @@ def _finite(value, depth=0):
 
 
 def _project(value):
-    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig"), "project")
+    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig"), "project")
     if value.get("schema") != "kinefold/project-v3":
         raise StorageError("Only validated project-v3 profiles can be saved.")
     if not isinstance(value.get("id"), str) or not re.fullmatch(r"design-[a-zA-Z0-9-]{1,100}", value["id"]):
@@ -109,6 +109,11 @@ def _project(value):
             datetime.fromisoformat(value[key].replace("Z", "+00:00"))
         except ValueError as error:
             raise StorageError(f"Invalid {key}.") from error
+    if "contactConfig" in value:
+        contact = value["contactConfig"]
+        _shape(contact, ("mode", "friction", "restitution", "drive"), "contact configuration")
+        if set(contact) != {"mode", "friction", "restitution", "drive"} or contact.get("mode") not in ("prescribed-height", "terrain-contact") or contact.get("drive") != "free" or type(contact.get("friction")) not in (int, float) or not 0 <= contact["friction"] <= 2 or type(contact.get("restitution")) not in (int, float) or contact["restitution"] != 0:
+            raise StorageError("Contact mode requires friction 0–2, zero bounce and a free backdrivable drive.")
     _finite(value)
     if len(_encoded(value)) > MAX_PROJECT_BYTES:
         raise StorageError("Design exceeds 200 kB.")

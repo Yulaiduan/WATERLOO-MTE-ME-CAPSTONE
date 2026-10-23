@@ -1,8 +1,8 @@
 """Own one bounded native Kinefold results-playback child for preview.py.
 
 Use ViewerService(app_root).handle(JSON_object) and .close() on server shutdown.
-Public input: open with builder mm/deg/kg/N params, seconds/SI runConfig and an
-optional display name; status/close have no arguments. Output: JSON and HTTP
+Public input: open with builder mm/deg/kg/N params, seconds/SI runConfig, optional
+terrain-contact contactConfig and display name; status/close have no arguments. Output: JSON and HTTP
 status, plus ignored .preview/viewer.log and token-scoped readiness state.
 Only the adjacent desktop_viewer.py and app .venv Python may execute. This is a
 local single-user experimental playback service, not a remote desktop or engine.
@@ -50,16 +50,25 @@ class ViewerService:
             if set(request) != {'action'}:
                 raise ValueError('status and close accept only action.')
             return None
-        if not {'action', 'params', 'runConfig'} <= set(request) or set(request) - {'action', 'params', 'runConfig', 'name'}:
-            raise ValueError('open requires action, params and runConfig; optional name only.')
+        if not {'action', 'params', 'runConfig'} <= set(request) or set(request) - {'action', 'params', 'runConfig', 'name', 'contactConfig'}:
+            raise ValueError('open requires action, params and runConfig; optional name and contactConfig only.')
         encoded = json.dumps(request, allow_nan=False)
         if len(encoded.encode('utf-8')) > ViewerService.MAX_REQUEST_BYTES:
             raise ValueError('Viewer request exceeds 131072 bytes.')
         name = request.get('name', 'Captured design')
         if not isinstance(name, str) or len(name) > 100 or any(not c.isprintable() for c in name):
             raise ValueError('Viewer name must be at most 100 printable characters.')
-        # Reuse the engine's complete physical validation; no silent defaults.
-        Model(request['params'], request['runConfig'])
+        # The mode selects a fixed local engine. Never apply prescribed-input
+        # validation to a real finite-mass contact case or accept arbitrary code.
+        contact = request.get('contactConfig')
+        if 'contactConfig' in request and (not isinstance(contact, dict) or contact.get('mode') not in ('terrain-contact','prescribed-height')):
+            raise ValueError('Choose a known interaction mode.')
+        if isinstance(contact,dict) and contact.get('mode') == 'terrain-contact':
+            from contact_dynamics import validate_contact_request
+            validate_contact_request({'engine': 'pymunk', 'params': request['params'],
+                                      'runConfig': request['runConfig'], 'contactConfig': contact})
+        else:
+            Model(request['params'], request['runConfig'])
         snapshot = json.loads(encoded)
         snapshot['name'] = name.strip() or 'Captured design'
         return snapshot
@@ -70,6 +79,8 @@ class ViewerService:
             snapshot = self._validate(request)
         except (ValueError, TypeError, ArithmeticError, KeyError) as error:
             return {'error': str(error)}, 400
+        except ImportError as error:
+            return {'error': 'Terrain-contact backend is unavailable: ' + str(error)}, 503
         with self._lock:
             if request['action'] == 'status':
                 return self._status(), 200
@@ -88,7 +99,9 @@ class ViewerService:
             self._token = secrets.token_urlsafe(24)
             self._started = time.monotonic()
             self._name = snapshot['name']
-            self._state = {'state': 'starting', 'name': self._name, 'message': 'Integrating captured Pymunk design and opening native playback.'}
+            mode = 'terrain-contact' if (snapshot.get('contactConfig') or {}).get('mode')=='terrain-contact' else 'prescribed-input'
+            self._state = {'state': 'starting', 'name': self._name, 'mode': mode,
+                           'message': f'Integrating captured Pymunk {mode} design and opening native playback.'}
             envelope = {'request': snapshot, 'token': self._token, 'parentPid': os.getpid()}
             try:
                 with (self.state_dir / 'viewer.log').open('a', encoding='utf-8') as log:

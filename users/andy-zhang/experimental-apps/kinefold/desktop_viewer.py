@@ -2,12 +2,14 @@
 
 Invocation: app .venv Python desktop_viewer.py --request-stdin (service-owned
 JSON envelope); --self-test adds a short genuine Tk playback/control smoke test.
-Inputs are validated builder mm/deg/kg/N parameters and seconds/SI run controls.
+Inputs are validated builder mm/deg/kg/N parameters, seconds/SI run controls and
+optional terrain-contact contactConfig.
 Outputs a visible Canvas, pause/scrub/replay controls, ignored readiness JSON and
 logs. Pymunk integrates first; this is prerecorded results playback, not live
 integration. Actual chassis frames drive an explicitly ideal condensed linkage.
-The moving square profile illustrates prescribed input, not collision terrain;
-there are no drawn guide rods, tire contact or all-body/hardware claims.
+Prescribed mode illustrates a wheel-height input. Terrain-contact mode renders
+the actual collision mesh and integrated chassis/wheel bodies, with an ideal
+condensed massless linkage. Neither mode establishes all-body/hardware fidelity.
 """
 from __future__ import annotations
 
@@ -29,6 +31,43 @@ INK = '#263c34'
 SAGE = '#557b64'
 GOLD = '#bb8b3c'
 BLUE = '#527e98'
+
+
+def is_contact(result):
+    """Identify only the explicit contact result contract, without heuristics."""
+    return result.get('schema') == 'kinefold/contact-v1' and result.get('scope', {}).get('mode') == 'terrain-contact'
+
+
+def simulate_snapshot(snapshot):
+    """Dispatch the captured payload to its fixed genuine Pymunk backend."""
+    request = {'engine': 'pymunk', 'params': snapshot['params'], 'runConfig': snapshot['runConfig']}
+    if (snapshot.get('contactConfig') or {}).get('mode') == 'terrain-contact':
+        from contact_dynamics import simulate_contact
+        return simulate_contact({**request, 'contactConfig': snapshot['contactConfig']})
+    return simulate(request)
+
+
+def contact_mesh(result, frame):
+    """Return actual translated collision polygons/base in world x/z mm.
+
+    The frame's supplied collision vertices are authoritative. The infinite
+    base's retained segment uses its returned offset; wheel Cx, wheel height
+    and the prescribed-input function never enter this reconstruction.
+    """
+    if not is_contact(result):
+        raise ValueError('Actual contact mesh requires a terrain-contact result.')
+    offset = frame['terrainOffsetMm']
+    polygons = [[(point[0], point[2]) for point in polygon]
+                for polygon in frame['terrainPolygonsMm']]
+    base = [(point[0] + offset[0], point[2] + offset[2])
+            for point in result['terrain']['baseSegmentMm']]
+    return polygons, base
+
+
+def index_endpoint(point, radius, angle_degrees):
+    """World x/z rim endpoint; returned angles start at −x, positive toward +z."""
+    angle = math.radians(angle_degrees)
+    return (point[0] - radius * math.cos(angle), point[2] + radius * math.sin(angle))
 
 
 def floor_height(model, row, x, applied=True):
@@ -131,7 +170,12 @@ class PlaybackWindow:
         self.tk, self.ttk = tk, ttk
         self.result, self.name, self.writer = result, name, writer
         self.parent_pid = parent_pid
-        self.model = Model(result['params'], result['runConfig'])
+        self.contact = is_contact(result)
+        if self.contact:
+            from contact_dynamics import validate_contact_request
+            self.model = validate_contact_request({key: result[key] for key in ('engine', 'params', 'runConfig', 'contactConfig')})
+        else:
+            self.model = Model(result['params'], result['runConfig'])
         self.rows, self.frames = result['rows'], result['frames']
         self.times = [row['t'] for row in self.rows]
         self.index, self.playing = 0, True
@@ -140,7 +184,7 @@ class PlaybackWindow:
         self.last_report = 0
         self.self_test = self_test
         self.root = tk.Tk()
-        self.root.title('Kinefold · Pymunk results playback')
+        self.root.title('Kinefold · Pymunk ' + ('terrain contact' if self.contact else 'prescribed input') + ' playback')
         self.root.geometry('1120x820')
         self.root.minsize(850, 640)
         self.root.configure(bg=BACKGROUND)
@@ -154,11 +198,13 @@ class PlaybackWindow:
         header.pack(fill='x')
         ttk.Label(header, text='KINEFOLD  /  NATIVE PYMUNK', foreground=SAGE,
                   font=('Segoe UI', 10, 'bold')).pack(anchor='w')
-        ttk.Label(header, text='Results playback', font=('Segoe UI', 23, 'bold')).pack(anchor='w')
+        ttk.Label(header, text='Terrain contact · results playback' if self.contact else 'Prescribed input · results playback', font=('Segoe UI', 23, 'bold')).pack(anchor='w')
         ttk.Label(header, text=name, font=('Segoe UI', 11)).pack(anchor='w', pady=(3, 6))
-        ttk.Label(header, text='Actual Pymunk chassis frames · ideal condensed linkage reconstruction · prescribed wheel input',
+        ttk.Label(header, text=('Actual Pymunk chassis and free wheel · unilateral terrain collision · ideal massless linkage' if self.contact else
+                               'Actual Pymunk chassis frames · ideal condensed linkage reconstruction · prescribed wheel input'),
                   wraplength=1040).pack(anchor='w')
-        ttk.Label(header, text='Integrated before playback. No tire collision/contact or separate rigid link bodies.',
+        ttk.Label(header, text=('Integrated before playback. Returned world collision mesh and actual free-wheel spin; links are not separate rigid bodies.' if self.contact else
+                               'Integrated before playback. No tire collision/contact or separate rigid link bodies.'),
                   foreground='#68736b').pack(anchor='w', pady=(3, 0))
         self.canvas = tk.Canvas(self.root, bg='#fdfcf7', highlightthickness=1,
                                 highlightbackground='#dce0d5', height=430)
@@ -178,9 +224,13 @@ class PlaybackWindow:
         self.scrub.pack(fill='x', padx=24, pady=(8, 4))
         self.readout = ttk.Label(self.root, font=('Segoe UI', 10), wraplength=1050)
         self.readout.pack(fill='x', padx=24, pady=(0, 6))
-        ttk.Label(self.root, text='Solid sage: applied profile   ·   dashed amber: requested sharp square   ·   floor moves → (−x) at the study speed',
+        ttk.Label(self.root, text=('Solid sage: actual collision terrain   ·   gold points: reported contacts   ·   terrain translates → (−x)' if self.contact else
+                                 'Solid sage: applied profile   ·   dashed amber: requested sharp square   ·   floor moves → (−x) at the study speed'),
                   wraplength=1040).pack(fill='x', padx=24, pady=(0, 5))
-        ttk.Label(self.root, text='Quarter model · chassis horizontal position and pitch locked · schematic chassis marker · no guide rods drawn',
+        contact_config = result.get('contactConfig', {})
+        scope_text = (f'Quarter model · chassis x/pitch locked · wheel m₆ {self.model.p["m6"]:g} kg · μ {contact_config["friction"]:g} · restitution {contact_config["restitution"]:g} · drive {contact_config["drive"]}'
+                      if self.contact else 'Quarter model · chassis horizontal position and pitch locked · schematic chassis marker · no guide rods drawn')
+        ttk.Label(self.root, text=scope_text,
                   foreground='#68736b', wraplength=1040).pack(fill='x', padx=24, pady=(0, 15))
         self._bounds()
         self.draw()
@@ -190,7 +240,8 @@ class PlaybackWindow:
             self.root.after(400, self.exercise)
 
     def _bounds(self):
-        points = [frame[key] for frame in self.frames for key in ('A', 'B', 'C')]
+        keys = ('actualA', 'B', 'actualC') if self.contact else ('A', 'B', 'C')
+        points = [frame[key] for frame in self.frames for key in keys]
         radius = self.model.p['rw']
         xs = [point[0] for point in points]
         zs = [point[2] for point in points]
@@ -200,7 +251,15 @@ class PlaybackWindow:
                        min(-90, min(zs) - radius - 50), max(zs) + 125)
         # Check the draw budget before entering Tk callbacks. Never replace a
         # dense sharp square with a misleading interpolated/aliased waveform.
-        floor_points(self.model, self.rows[0], self.bounds[0], self.bounds[1])
+        if self.contact:
+            # Inspect returned terrain only. Contact runs have no wheel-height law.
+            terrain_z = [point[2] for polygon in self.result['terrain']['polygonsMm'] for point in polygon]
+            terrain_z += [point[2] for point in self.result['terrain']['baseSegmentMm']]
+            self.bounds = (self.bounds[0], self.bounds[1], min(self.bounds[2], min(terrain_z) - 50),
+                           max(self.bounds[3], max(terrain_z) + 50))
+            contact_mesh(self.result, self.frames[0])
+        else:
+            floor_points(self.model, self.rows[0], self.bounds[0], self.bounds[1])
 
     def project(self, x, z):
         x0, x1, z0, z1 = self.bounds
@@ -231,26 +290,40 @@ class PlaybackWindow:
             self.line([(x, z0), (x, z1)], fill='#eef0e8')
         for z in range(math.ceil(z0 / 100) * 100, math.floor(z1 / 100) * 100 + 1, 100):
             self.line([(x0, z), (x1, z)], fill='#eef0e8')
-        applied = floor_points(self.model, row, x0, x1)
-        polygon = applied + [(x1, z0), (x0, z0)]
-        coords = [value for x, z in polygon for value in self.project(x, z)]
-        canvas.create_polygon(*coords, fill='#e4eadd', outline='')
-        self.line(floor_points(self.model, row, x0, x1, False), fill=GOLD, width=2, dash=(5, 4))
-        self.line(applied, fill=SAGE, width=3)
-        A, B, C = frame['A'], frame['B'], frame['C']
+        if self.contact:
+            polygons, base = contact_mesh(self.result, frame)
+            for polygon in polygons:
+                coords = [value for x, z in polygon for value in self.project(x, z)]
+                canvas.create_polygon(*coords, fill='#e4eadd', outline=SAGE, width=2)
+            self.line(base, fill=SAGE, width=3)
+        else:
+            applied = floor_points(self.model, row, x0, x1)
+            polygon = applied + [(x1, z0), (x0, z0)]
+            coords = [value for x, z in polygon for value in self.project(x, z)]
+            canvas.create_polygon(*coords, fill='#e4eadd', outline='')
+            self.line(floor_points(self.model, row, x0, x1, False), fill=GOLD, width=2, dash=(5, 4))
+            self.line(applied, fill=SAGE, width=3)
+        A, B, C = (frame['actualA'], frame['B'], frame['actualC']) if self.contact else (frame['A'], frame['B'], frame['C'])
         self.line([(A[0], A[2]), (B[0], B[2])], fill=INK, width=9, capstyle='round')
         self.line([(B[0], B[2]), (C[0], C[2])], fill=BLUE, width=8, capstyle='round')
         self.circle(C, p['rw'], outline=INK, width=3, fill='#faf9f0')
         # Match the builder's index gauge after mounting-pitch rotation.
-        angle = math.radians(frame['wheelAngle'] - p['alpha'])
-        self.line([(C[0], C[2]), (C[0] - p['rw'] * math.cos(angle), C[2] + p['rw'] * math.sin(angle))], fill='#8b9b8d', width=2)
-        for point, radii in ((A, (p['ra'], p['rc'])), (B, (p['rb'], p['rd'], p['re'])), (C, (p['rf'],))):
-            for radius in sorted(set(radii), reverse=True):
+        angle = frame['wheelAngle'] if self.contact else frame['wheelAngle'] - p['alpha']
+        self.line([(C[0], C[2]), index_endpoint(C, p['rw'], angle)], fill='#8b9b8d', width=2)
+        for point, pulleys in ((A, ('a', 'c')), (B, ('b', 'd', 'e')), (C, ('f',))):
+            for radius in sorted({p['r' + key] for key in pulleys}, reverse=True):
                 self.circle(point, radius, outline=SAGE, width=2, fill='#e9eee2')
+            if self.contact:
+                for key in pulleys:
+                    self.line([(point[0], point[2]), index_endpoint(point, p['r' + key], frame['indexAnglesDeg'][key] - p['alpha'])],
+                              fill=GOLD if key in ('c', 'd', 'e') else BLUE, width=2)
             self.circle(point, 5, fill=INK, outline='')
         if 'D' in frame and 'Q' in frame:
             D, Q = frame['D'], frame['Q']
             self.line([(A[0], A[2]), (D[0], D[2]), (Q[0], Q[2])], fill=GOLD, width=3)
+        if self.contact:
+            for point in frame['contactPointsMm']:
+                self.circle(point, 4, fill=GOLD, outline=INK)
         ax, az = self.project(A[0], A[2])
         canvas.create_rectangle(ax - 54, az - 23, ax + 54, az - 7, fill=SAGE, outline=INK)
         canvas.create_text(ax, az - 35, text=f'Chassis m₁ · {p["m1"]:g} kg', fill=INK, font=('Segoe UI', 10, 'bold'))
@@ -258,11 +331,15 @@ class PlaybackWindow:
             px, py = self.project(point[0], point[2])
             canvas.create_text(px + offset[0], py + offset[1], text=key, fill=INK, font=('Segoe UI', 10, 'bold'))
         canvas.create_text(17, 17, anchor='nw', text='WORLD x–z  /  100 mm grid', fill='#68736b', font=('Segoe UI', 9))
-        canvas.create_text(17, 37, anchor='nw', text='Actual chassis body + ideal linkage', fill=INK, font=('Segoe UI', 10))
+        canvas.create_text(17, 37, anchor='nw', text='Actual chassis / wheel bodies + ideal linkage' if self.contact else 'Actual chassis body + ideal linkage', fill=INK, font=('Segoe UI', 10))
         canvas.create_text(17, canvas.winfo_height() - 17, anchor='sw', text='← +x     +z ↑     +y toward you', fill=SAGE, font=('Segoe UI', 10, 'bold'))
         event = ' · ' + row['eventSide'] + ' exact jump' if row.get('eventSide') else ''
         self.clock.configure(text=f'{row["t"]:.3f} / {self.times[-1]:.3f} s  ·  frame {self.index + 1}/{len(self.frames)}{event}')
-        self.readout.configure(text=f'Chassis z {row["chassisZMm"]:.3f} mm   ·   Δz {row["chassisZMm"] - self.rows[0]["chassisZMm"]:+.3f} mm   ·   θ₂ {row["theta2"]:.3f}°   ·   requested / applied {row["requestedInputMm"]:.1f} / {row["appliedInputMm"]:.1f} mm   ·   input reaction {row["inputReactionN"]:.2f} N')
+        if self.contact:
+            slip = f'{frame["slipMmS"]:.2f} mm/s' if frame.get('slipMmS') is not None else '— / no sampled contact'
+            self.readout.configure(text=f'Chassis z {A[2]:.3f} mm   ·   wheel z {C[2]:.3f} mm   ·   θ₂ {frame["theta2"]:.3f}°   ·   actual spin {frame["wheelAngle"]:.2f}°   ·   normal / tangent {frame["contactNormalForceN"]:.2f} / {frame["contactTangentialForceN"]:.2f} N   ·   slip {slip}   ·   gap / penetration {frame["gapMm"]:.3f} / {frame["penetrationMm"]:.3f} mm')
+        else:
+            self.readout.configure(text=f'Chassis z {row["chassisZMm"]:.3f} mm   ·   Δz {row["chassisZMm"] - self.rows[0]["chassisZMm"]:+.3f} mm   ·   θ₂ {row["theta2"]:.3f}°   ·   requested / applied {row["requestedInputMm"]:.1f} / {row["appliedInputMm"]:.1f} mm   ·   input reaction {row["inputReactionN"]:.2f} N')
 
     def report(self):
         row = self.rows[self.index]
@@ -270,6 +347,7 @@ class PlaybackWindow:
                           frameCount=len(self.frames), playing=self.playing, t=row['t'],
                           eventSide=row.get('eventSide'), designHash=self.result['designHash'],
                           engine='pymunk', playback='prerecorded-results',
+                          mode='terrain-contact' if self.contact else 'prescribed-input',
                           termination=self.result['diagnostics']['termination'],
                           selfTestPassed=getattr(self, 'self_test_passed', False))
 
@@ -364,7 +442,7 @@ def main():
             raise ValueError('Native child requires an open snapshot.')
         writer = StateWriter(envelope['token'])
         writer.write(state='starting', name=snapshot['name'])
-        result = simulate({'engine': 'pymunk', 'params': snapshot['params'], 'runConfig': snapshot['runConfig']})
+        result = simulate_snapshot(snapshot)
         window = PlaybackWindow(result, snapshot['name'], writer, envelope['parentPid'], args.self_test)
         window.run()
         return 0

@@ -33,7 +33,7 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js",
           "solvers.js", "solver-style.css", "project-store.js", "designs.js",
           "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",
-          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css"}
+          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js"}
 
 
 DYNAMICS_LOCK = threading.Lock()
@@ -48,12 +48,20 @@ def reject_nonfinite(value):
 
 def run_dynamics(request):
     """Integrate one bounded request in this app's installed physics environment."""
-    if not isinstance(request, dict) or set(request) != {"engine", "params", "runConfig"}:
-        return {"error": "Expected engine, params and runConfig only."}, 400
+    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig"}):
+        return {"error": "Expected engine, params, runConfig and optional contactConfig only."}, 400
     if not isinstance(request["engine"], str) or request["engine"] not in {"analytical", "pymunk"}:
         return {"error": "Choose analytical or pymunk."}, 400
     if not isinstance(request["params"], dict) or not isinstance(request["runConfig"], dict):
         return {"error": "params and runConfig must be objects."}, 400
+    contact = request.get("contactConfig")
+    if contact is not None and (not isinstance(contact, dict) or contact.get("mode") not in {"prescribed-height", "terrain-contact"}):
+        return {"error": "Choose a known interaction mode."}, 400
+    contact_mode = bool(contact and contact.get("mode") == "terrain-contact")
+    if contact_mode and request["engine"] != "pymunk":
+        return {"error": "Actual terrain contact is available in Pymunk only. The analytical prescribed-height bench is a different model and cannot be compared to it."}, 422
+    payload = request if contact_mode else {key: request[key] for key in ("engine", "params", "runConfig")}
+    script = "contact_dynamics.py" if contact_mode else "dynamics.py"
     python = ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     if not python.is_file():
         return {"error": "Dynamics dependencies are not installed. Run Setup Kinefold.cmd in this app folder, then retry. The builder and static solver remain available."}, 503
@@ -61,8 +69,8 @@ def run_dynamics(request):
         return {"error": "A dynamics run is already in progress. Wait for it to finish, then retry."}, 409
     try:
         result = subprocess.run(
-            [str(python), str(ROOT / "dynamics.py"), "--request-stdin"],
-            input=json.dumps(request, allow_nan=False), capture_output=True, text=True,
+            [str(python), str(ROOT / script), "--request-stdin"],
+            input=json.dumps(payload, allow_nan=False), capture_output=True, text=True,
             encoding="utf-8", errors="replace", timeout=90, cwd=ROOT,
             creationflags=subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0,
         )

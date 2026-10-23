@@ -32,6 +32,8 @@ for(const side of ['before','after']){const row={t:.5,eventSide:side};const floo
 const finite={...config,inputRiseMm:10};near(A.inputAtDistance(finite,5).applied,75);near(A.inputAtDistance(finite,145).applied,75);near(A.inputAtDistance(finite,10).applied,150);
 const floor0=A.floor(finite,{t:.55},37,-500,500),floor1=A.floor(finite,{t:.65},37,-500,500);
 near(A.inputAtDistance(finite,(.55-config.inputDelayS)*100+40).applied,A.inputAtDistance(finite,(.65-config.inputDelayS)*100+30).applied);
+const contact={...b,scope:{mode:'terrain-contact'},rows:b.rows.map(row=>({...row,theta4:30,theta5:20,theta6:10,wheelAngularVelocityDegS:28.6,accelerationDegS2:null,inputWorkJ:null}))};
+const ce=A.enrich(contact)[0];near(ce.theta6,10);near(ce.rate6,28.6);ok(ce.accel3===null&&ce.accel5===null&&ce.accel6===null);ok(ce.workEnergyResidualJ===null);ok(!A.comparison(a,contact).valid);ok(A.snapshotKey({params:a.params,solverConfig:config})!==A.snapshotKey({params:a.params,solverConfig:config,contactConfig:{mode:'terrain-contact'}}));
 if(process.argv.includes('--real')){
  const python=path.join(root,'.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');
  const probes=[];

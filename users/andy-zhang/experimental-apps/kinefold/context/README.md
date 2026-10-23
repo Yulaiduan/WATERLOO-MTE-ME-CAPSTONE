@@ -371,3 +371,51 @@ play pass, no consoleerrors. Individualexportbuttons arevisiblebesideRunboth.
 LauncherStop/start/reuse from unrelatedcwd passes4191 afterbackendintegration;
 server remainsrunning. Parentarchitecture/browser/native/diskreview approved
 beforepublication; no hardware/collision/fullvehicle validation is claimed.
+
+## Actual terrain contact and freely backdriven wheel — 2026-10-22
+
+The previous section describes the retained prescribed-height benchmark. A new
+separate terrain-contact profile uses two actual Pymunk bodies (heaving chassis
+and freely rotating circular wheel), a non-sensor wheel shape and moving terrain
+polygons. The exact straight massless linkage is represented by a chassis-relative
+groove; unsupported curved paths, moving link masses and additional inertias are
+explicitly rejected. The analytical benchmark is not a contact solver, so paired
+comparison is unavailable for contact mode. See [terrain-contact.md](../terrain-contact.md)
+for equations, source anchors, tolerances, fields and limitations.
+
+The user approved an editable 1.5 kg wheel, effective friction0.8, zero bounce
+and free drive. The deliberate demo action preserves the original working design
+as a named backup and creates a separate complete profile with final V4 geometry:
+wheel radius200mm, chassis8.75kg, massless links,150mm step/plateau/gap,
+100mm/s and dt0.00025s. Optional contactConfig leaves old project-v3 snapshots
+unchanged when omitted. Initial terrain spacing includes circular-rim clearance;
+the actual world mesh is shared by browser and desktop playback. No wheel-height
+teleport or terrain anchoring to wheelCx occurs. Gap bridging and separation are
+physical contact outcomes. Excessive penetration stops a partial result explicitly.
+
+Main validation:8 contact test groups pass; flat normal100.552499227N matches
+10.25kg gravity, flat spin28.6478897565deg/s matches100mm/s divided by200mm,
+and frictionless spin remains0. Baseline spring570.491044815N and holding hip
+torque−0.027168833380Nm remain unchanged. Default6.5s contact finishes with
+maximum penetration0.004186895mm; dt refinement reduces heave error and penetration.
+An R100/H150 negative control stops at0.51275s rather than tunnelling. Tilted
+nonunit-drive/index and spring virtual-work checks pass.666 drawing assertions,
+39 dynamic-analysis assertions,29 project groups,12 profile tests,2000 model and
+1123 drawing assertions pass. Viewer tests pass8 with3 GUI cases skipped in the
+headless suite; a separate actual Tk/Pymunk contact controls/auto-close test passes.
+The first/airborne frame uses unavailable-slip text instead of formatting null.
+Manual desktop visual inspection was occluded this turn and is not claimed.
+
+Parent browser QA verifies651 contact samples over6.5s, actual spin and moving
+mesh, a4.3s gap bridge, disabled analytical/contact comparison, blank-friction
+rejection, accurate Designs/conventions copy and no console warnings/errors.
+The original two named designs remain deeply equal to the pre-contact snapshot;
+four designs now include the exact working backup and separate contact demo.
+Current working design equals that demo after reload. Legacy baseline paired
+benchmark still returns656 exact pairs with maximum heave error0.00419668mm.
+Contact JSON7.44MB and CSV396k parse inside app exports/. Start/Stop/restart/reuse
+via project-local launchers from an unrelated cwd passes at4191. Parent final
+architecture/browser review approved; final view is paused at4.3s and screenshot
+is ignored .preview/contact-gap-bridging-final.png. Source apps, immutable V4
+reference and canonical components remain unchanged; no hardware/full-vehicle
+validation or all-body linkage contact model is claimed.

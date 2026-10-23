@@ -1,5 +1,10 @@
 # Native dynamic analysis and comparison
 
+The matched comparison below describes the original prescribed-height bench.
+The separate [actual terrain-contact mode](terrain-contact.md) uses two real
+Pymunk bodies, frictional collision, a backdrivable wheel and actual world mesh;
+its analytical comparison is unavailable. No existing bench is relabelled as contact.
+
 Both dynamic tabs use the same categorized Kinefold presentation and saved
 builder mechanism/input profile. They retain the existing floating quarter-model
 equations: A translates vertically, horizontal position and pitch are constrained,
