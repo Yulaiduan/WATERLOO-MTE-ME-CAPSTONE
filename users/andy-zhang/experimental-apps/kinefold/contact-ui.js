@@ -21,13 +21,17 @@ globalThis.KinefoldContactUI = (() => {
     if (c.inputRiseMm !== 0) errors.push('Actual square terrain requires zero transition distance; a smoothed height-driver profile is a different test.');
     if(p.loadMode==='contact')errors.push('Prescribed contact loads are unsupported with actual terrain contact; use weight reference or explicit global additional loads.');
     if(p.te===p.tc)errors.push('Contact mode requires a nonempty working range.');
-    const lo = p.te - p.phi0 / 2, hi = p.tc - p.phi0 / 2;
-    if (lo <= 90 + 1e-5 || hi >= 270 - 1e-5) errors.push('Working travel must stay on a nonsingular monotonic branch of the straight path.');
+    const mean=(180+p.phi0)/2,R=Math.PI/180;
+    if(Array.from({length:6},(_,i)=>mean+(i-2)*180).some(q=>q>=p.te-1e-8&&q<=p.tc+1e-8))errors.push('Working travel must stay on a nonsingular monotonic branch of the straight path.');
+    const kind=project.caseConfig?.kind||'terrain-stability',axisZ=Math.sin((p.alpha-mean)*R),J=-2*p.L2/1000*Math.sin(((p.te+p.tc)/2-mean)*R);
+    if(kind!=='terrain-stability'&&axisZ*J<=0)errors.push('Jump/landing require θ_c to be the geometrically compressed endpoint; this branch reverses that convention.');
+    if(kind==='landing'&&project.caseConfig?.brakeStrategy==='energy-sized'&&Math.abs(Math.cos((mean-p.alpha)*R))>1e-10)errors.push('Energy-sized braking requires a vertical guide on flat ground. Entered torque and dynamic search remain available for tilted geometry.');
     return errors;
   }
   function payload(project, engine) {
     const value = {engine, params: project.params, runConfig: project.solverConfig};
     if (project.contactConfig) value.contactConfig = project.contactConfig;
+    if (project.caseConfig) value.caseConfig = project.caseConfig;
     return value;
   }
   async function demo() {
@@ -53,9 +57,9 @@ globalThis.KinefoldContactUI = (() => {
   function mount(id, root) {
     const panel = document.createElement('section');
     panel.className = 'contact-mode-panel'; panel.dataset.contactPanel = id;
-    panel.innerHTML = id === 'pymunk' ? `<div class="contact-mode-heading"><div><span class="eyebrow">INTERACTION MODEL</span><h3>Terrain contact or prescribed-height bench</h3></div><button data-contact-demo>Save & open contact demo</button></div><div class="contact-controls"><label>Mode<select data-contact-mode><option value="prescribed-height">Prescribed wheel-height bench</option><option value="terrain-contact">Actual wheel / square-terrain contact</option></select></label><label>Effective friction μ<input data-contact-friction type="number" min="0" max="2" step=".05"></label><span>Restitution 0 · freely backdrivable drive</span></div><div data-contact-description></div>` : '<div data-contact-description></div>';
+    panel.innerHTML = `<div class="contact-mode-heading"><div><span class="eyebrow">INTERACTION MODEL</span><h3>Terrain contact or prescribed-height bench</h3></div><button data-contact-demo>Save & open contact demo</button></div><div class="contact-controls"><label>Mode<select data-contact-mode><option value="prescribed-height">Prescribed wheel-height bench</option><option value="terrain-contact">Actual wheel / square-terrain contact</option></select></label><label>Effective friction μ<input data-contact-friction type="number" min="0" max="2" step=".05"></label><span>Restitution 0 · freely backdrivable drive</span></div><div data-contact-description></div>`;
     root.querySelector('.quarter-scope').before(panel);
-    if (id === 'pymunk') {
+    {
       panel.querySelector('[data-contact-demo]').onclick = demo;
       panel.querySelector('[data-contact-mode]').onchange = event => {
         const current = S.getSnapshot();
@@ -73,13 +77,13 @@ globalThis.KinefoldContactUI = (() => {
       const panel = document.querySelector(`[data-contact-panel="${id}"]`); if (!panel) continue;
       const description = panel.querySelector('[data-contact-description]');
       const errors = contact ? guards(project) : [];
-      description.innerHTML = contact ? `<p><strong>Actual unilateral wheel / terrain collision · ¼ model</strong>. The wheel can spin, slip, separate and bridge gaps. The saved world mesh moves toward −x; wheel height is solved by contact. θ₄ is freely backdriven through the ideal belts. This bounded model uses a real chassis and wheel with exact massless straight-path links.</p>${id === 'analytical' ? '<p class="notice">The analytical height-driven bench is a different model. Its Run and paired comparison are disabled for this saved contact profile; use the Pymunk tab.</p>' : ''}${errors.length ? '<div class="notice error"><strong>Unsupported contact setup</strong><ul>' + errors.map(error => '<li>' + esc(error) + '</li>').join('') + '</ul></div>' : '<p>Geometry guards pass. Solver validation also checks the complete route, stops, initial separation and numerical limits.</p>'}<p>Plateau and gap settings are actual terrain dimensions, not commanded wheel travel. First-contact delay includes circular-rim clearance; the wheel is never forced down into every gap.</p>` : '<p><strong>Prescribed wheel-height bench</strong> · no wheel/terrain collision. The original analytical/Pymunk comparison remains available. The belt drive is locked and the baseline wheel index can remain stationary (K = 0). Use the separate saved contact demo for frictional wheel spin and collision.</p>';
+      description.innerHTML = contact ? `<p><strong>Actual unilateral wheel / terrain collision · ¼ model</strong>. The wheel can spin, slip, separate and bridge gaps. Terrain stability moves the saved world mesh toward −x; jump and landing use a stationary flat floor. Wheel height is solved by contact. θ₄ is freely backdriven through the ideal belts. This bounded model uses a real chassis and wheel with exact massless straight-path links.</p><p>Both engines now solve this same actual-contact model: independent reduced impulse dynamics and Pymunk rigid bodies. Run both captures one exact saved mechanism, material and case.</p>${errors.length ? '<div class="notice error"><strong>Unsupported contact setup</strong><ul>' + errors.map(error => '<li>' + esc(error) + '</li>').join('') + '</ul></div>' : '<p>Geometry guards pass. Solver validation also checks the complete route, stops, initial separation and numerical limits.</p>'}<p>Plateau and gap settings are actual terrain dimensions, not commanded wheel travel. Terrain-stability first-contact delay includes circular-rim clearance; the wheel is never forced down into every gap.</p>` : '<p><strong>Prescribed wheel-height bench</strong> · no wheel/terrain collision. The original analytical/Pymunk comparison remains available. The belt drive is locked and the baseline wheel index can remain stationary (K = 0). Use the separate saved contact demo for frictional wheel spin and collision.</p>';
       const legacyScope = document.getElementById(id).querySelector('.quarter-scope');
       legacyScope.hidden = contact;
       const title=document.getElementById(id).querySelector('.solver-heading p');
-      title.textContent=contact?(id==='pymunk'?'Real chassis + wheel · actual terrain contact':'Analytical prescribed-height bench · unavailable for this contact profile'):(id==='pymunk'?'Pymunk chassis body · ideal belt-coupled transmission':'Reduced equations · SciPy DOP853');
+      title.textContent=contact?(id==='pymunk'?'Real chassis + wheel · actual terrain contact':'Independent reduced contact dynamics · unilateral friction impulses'):(id==='pymunk'?'Pymunk chassis body · ideal belt-coupled transmission':'Reduced equations · SciPy DOP853');
       const hold=document.getElementById(id).querySelector('[data-hold]');hold.disabled=contact;hold.title=contact?'Locked-drive static balance is not the freely backdriven contact model.':'';
-      if (id === 'pymunk') {
+      {
         panel.querySelector('[data-contact-mode]').value = contact ? 'terrain-contact' : 'prescribed-height';
         panel.querySelector('[data-contact-friction]').value = config.friction;
         panel.querySelector('[data-contact-friction]').disabled = !contact;

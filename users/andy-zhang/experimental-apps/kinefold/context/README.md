@@ -419,3 +419,82 @@ architecture/browser review approved; final view is paused at4.3s and screenshot
 is ignored .preview/contact-gap-bridging-final.png. Source apps, immutable V4
 reference and canonical components remain unchanged; no hardware/full-vehicle
 validation or all-body linkage contact model is claimed.
+
+## Shared actual-contact engines and case studies — 2026-10-23
+
+This supersedes the prior contact-mode Pymunk-only limitation. Both existing
+dynamic tabs now solve the same actual wheel/terrain contact case. Analytical
+contact is an independent reduced-coordinate mass-matrix/accumulated-impulse
+integrator; it does not import Pymunk. Shared contact_cases.py contains geometry,
+material, controller, energy-screening and case-metric laws, not an integrator.
+Pymunk retains actual chassis/wheel bodies. The prescribed-height benchmark is
+still separate. See [contact-scenarios.md](../contact-scenarios.md) for derivation,
+controller/stop semantics, primary sources and numerical evidence.
+
+Optional project-v3 caseConfig preserves old snapshots when omitted and is
+included in content/model revision, captured identity, comparison and disk/native
+payloads. Both tabs share Terrain stability, Jump and Landing controls. Jump
+starts compressed/rest, extends with entered torque and cuts off at extension.
+Landing starts at editable default2/3 opening, zero speed and entered bottom gap;
+reported spring/external-load compensation holds pose until actual first contact,
+then entered or energy-sized limited braking resists compression. Unilateral
+inelastic travel stops transfer momentum and record loss; bottom-out before arrest
+fails landing. The user supplied editable underside offset50mm below A. Initial
+intersection is rejected, threshold strike terminates, and null means unassessed.
+No chassis collision shape is invented. The point is marked in browser/native
+previews; jump/landing floors are stationary and ignored input/actuation fields
+are disabled. Reversed geometric compression branches are explicitly rejected.
+
+Energy displays separate chassis½m₁v², wheel kinetic energy, spring/gravity energy,
+motor∫τdθ, contact/stop losses and unresolved numerical ledger residual. Pymunk
+impulse-loss accounting includes bias effects; analytical position projection
+energy is separate. Neither is presented as tight conservation or peak torque.
+Vertical flat-floor energy sizing truncates compression at an earlier underside
+threshold; tilted energy sizing/demand is unavailable. Bounded per-engine landing
+search uses a coarse scan/local tested bracket, not a globally monotone minimum.
+Different engine outcomes get a prominent comparison warning rather than being
+hidden by equal observation durations. All exports, including torque assessment,
+remain in the app exports/ folder.
+
+Main validation:8 original Pymunk contact groups,9 shared/Pymunk case groups and
+11 independent analytical groups pass. Flat normal100.5525N/spin28.6478898deg/s,
+frictionless zero spin, held ballistic fall, spring compensation, exact spring-off
+100Nm extension work113.44640138J, zero-torque jump negative control, failed
+zero-brake bottom-out, successful100Nm arrest, initial overlap/clearance guards,
+R100/H1501mm jam termination, sustained bottom-out support and tilted stop momentum
+checks pass. Full analytical R2006.5s case has651rows/frames,0.006285mm maximum
+preprojection penetration, negligible postprojection and0.003178J final ledger
+residual. Independent import check confirms no Pymunk in the analytical process.
+Two-second matched201-sample Jump/Landing comparisons refine max heave difference
+2.24675→1.38403→1.09242mm and4.85817→1.69714→0.910564mm for dt.0005/.00025/.000125.
+Near-boundary200mm energy-sized22.6905Nm landing differs: analytical arrest versus
+Pymunk bottom-out at dt.00025; this is retained and requires refinement.
+
+Presentation/persistence checks pass46 comparison assertions,31 project-state
+groups,13 profile tests,666 contact-drawing and2000 existing model assertions.
+Native regression passes9 with4 GUI tests explicitly skipped, supplemented by
+actual Tk/Pymunk jump pause/scrub/replay/auto-close PASS1. Browser native open,
+ready/status and close also passes. Start/Stop/restart/reuse through project-local
+launchers from unrelated cwd passes4191 after all new assets/API registration.
+No canonical robot, hardware, whole-vehicle or tire-compliance validation is claimed.
+
+
+Final parent architecture/browser approval: fresh6.5s terrain pair has651 exact
+common samples, maximum heave difference0.00416921764mm and wheel-spin RMS
+0.232471deg/s (event maximum5.93141deg/s). The17,768,364byte comparison export
+parses inside exports/. Jump2s/20Nm and100mm Landing2s/20Nm pairs complete with
+201 common rows; the near-boundary200mm energy-sized disagreement is explicit.
+Energy toggle, shared case persistence, stale-result guard, native open/status/
+close and no console warnings/errors are verified. The four named designs and
+working snapshot deep-equal the captured pre-QA backup after UI restore. A later
+unsaved baseline was observed by name without a complete captured snapshot; its
+exact restoration is not claimed. Final proof is ignored
+.preview/shared-contact-cases-final.png, with .preview/landing-case-reviewed.png.
+
+Assessment-only early stopping was added after timing review: each torque trial
+stops on first chassis arrest, bottom-out, underside threshold, jam or duration.
+Ordinary full-duration simulation is unchanged, and later rebound/safety is not
+certified by this first-arrest assessment. Focused full-versus-early first-arrest
+checks for the passing/failing bracket pass in both engines. The default10-trial
+search takes8.63s analytically and1.29s in Pymunk on this PC, both returning the
+10.9375failing/12.5passingNm bracket; these timings are not hardware benchmarks.

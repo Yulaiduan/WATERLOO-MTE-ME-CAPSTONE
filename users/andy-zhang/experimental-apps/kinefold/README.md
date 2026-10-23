@@ -183,8 +183,19 @@ gaps can be bridged. The original height-driven/K=0 bench remains available.
 The exact two-body model supports massless equal links/2:1 guide on a nonsingular
 straight path, with positive chassis/wheel masses and uniform wheel-disc inertia.
 Unsupported curved paths, extra link/rotor/custom inertia and prescribed contact
-loads fail explicitly. No substitute masses are added. Contact mode is Pymunk-only;
-analytical bench comparison is unavailable. Browser/native playback uses actual
+loads fail explicitly. No substitute masses are added. Contact mode runs in both independent engines with exact saved-profile comparison;
+the original prescribed-height benchmark remains a separate interaction model. Browser/native playback uses actual
 world mesh/body transforms, backdriven pulley indices and moving belt markers.
 Read [terrain-contact.md](terrain-contact.md) for equations, limits and actual
 friction/corner/refinement evidence. Profiles/exports stay in the app folders.
+
+## Contact cases and energy studies — 2026-10-23
+
+Both dynamic tabs now solve actual contact for the same saved mechanism/material.
+Choose Terrain stability, Jump or Landing in the shared case selector; jump and
+landing use a stationary flat floor, physical inelastic travel stops and explicit
+motor/hold/braking commands. User-supplied underside offset50mm is editable.
+The energy option separates chassis½mv², wheel/spring/gravity energy and actual
+motor∫τdθ; bounded landing torque assessment reports tested feasibility/brackets.
+Read [contact-scenarios.md](contact-scenarios.md) for independent-engine equations,
+case/controller definitions and limits. Legacy named profiles remain unchanged.

@@ -35,7 +35,7 @@ BLUE = '#527e98'
 
 def is_contact(result):
     """Identify only the explicit contact result contract, without heuristics."""
-    return result.get('schema') == 'kinefold/contact-v1' and result.get('scope', {}).get('mode') == 'terrain-contact'
+    return result.get('schema') in ('kinefold/contact-v1','kinefold/contact-v2') and result.get('scope', {}).get('mode') == 'terrain-contact'
 
 
 def simulate_snapshot(snapshot):
@@ -43,7 +43,7 @@ def simulate_snapshot(snapshot):
     request = {'engine': 'pymunk', 'params': snapshot['params'], 'runConfig': snapshot['runConfig']}
     if (snapshot.get('contactConfig') or {}).get('mode') == 'terrain-contact':
         from contact_dynamics import simulate_contact
-        return simulate_contact({**request, 'contactConfig': snapshot['contactConfig']})
+        return simulate_contact({**request, 'contactConfig': snapshot['contactConfig'], **({'caseConfig':snapshot['caseConfig']} if 'caseConfig' in snapshot else {})})
     return simulate(request)
 
 
@@ -173,7 +173,7 @@ class PlaybackWindow:
         self.contact = is_contact(result)
         if self.contact:
             from contact_dynamics import validate_contact_request
-            self.model = validate_contact_request({key: result[key] for key in ('engine', 'params', 'runConfig', 'contactConfig')})
+            self.model = validate_contact_request({key: result[key] for key in ('engine', 'params', 'runConfig', 'contactConfig', 'caseConfig') if key in result})
         else:
             self.model = Model(result['params'], result['runConfig'])
         self.rows, self.frames = result['rows'], result['frames']
@@ -224,7 +224,7 @@ class PlaybackWindow:
         self.scrub.pack(fill='x', padx=24, pady=(8, 4))
         self.readout = ttk.Label(self.root, font=('Segoe UI', 10), wraplength=1050)
         self.readout.pack(fill='x', padx=24, pady=(0, 6))
-        ttk.Label(self.root, text=('Solid sage: actual collision terrain   ·   gold points: reported contacts   ·   terrain translates → (−x)' if self.contact else
+        ttk.Label(self.root, text=('Solid sage: actual collision terrain   ·   gold points: reported contacts   ·   terrain stationary for jump/landing; translates → (−x) for terrain stability' if self.contact else
                                  'Solid sage: applied profile   ·   dashed amber: requested sharp square   ·   floor moves → (−x) at the study speed'),
                   wraplength=1040).pack(fill='x', padx=24, pady=(0, 5))
         contact_config = result.get('contactConfig', {})
@@ -324,6 +324,11 @@ class PlaybackWindow:
         if self.contact:
             for point in frame['contactPointsMm']:
                 self.circle(point, 4, fill=GOLD, outline=INK)
+        if self.contact and self.result.get('caseConfig',{}).get('undersideOffsetMm') is not None:
+            offset=self.result['caseConfig']['undersideOffsetMm']
+            underside=[A[0],0,A[2]-offset]
+            self.line([(A[0],A[2]),(underside[0],underside[2])],fill='#ad6054',dash=(3,3))
+            self.circle(underside,5,outline='#ad6054',width=2)
         ax, az = self.project(A[0], A[2])
         canvas.create_rectangle(ax - 54, az - 23, ax + 54, az - 7, fill=SAGE, outline=INK)
         canvas.create_text(ax, az - 35, text=f'Chassis m₁ · {p["m1"]:g} kg', fill=INK, font=('Segoe UI', 10, 'bold'))
@@ -337,7 +342,7 @@ class PlaybackWindow:
         self.clock.configure(text=f'{row["t"]:.3f} / {self.times[-1]:.3f} s  ·  frame {self.index + 1}/{len(self.frames)}{event}')
         if self.contact:
             slip = f'{frame["slipMmS"]:.2f} mm/s' if frame.get('slipMmS') is not None else '— / no sampled contact'
-            self.readout.configure(text=f'Chassis z {A[2]:.3f} mm   ·   wheel z {C[2]:.3f} mm   ·   θ₂ {frame["theta2"]:.3f}°   ·   actual spin {frame["wheelAngle"]:.2f}°   ·   normal / tangent {frame["contactNormalForceN"]:.2f} / {frame["contactTangentialForceN"]:.2f} N   ·   slip {slip}   ·   gap / penetration {frame["gapMm"]:.3f} / {frame["penetrationMm"]:.3f} mm')
+            self.readout.configure(text=f'Chassis z {A[2]:.3f} mm   ·   wheel z {C[2]:.3f} mm   ·   θ₂ {frame["theta2"]:.3f}°   ·   actual spin {frame["wheelAngle"]:.2f}°   ·   normal / tangent {frame["contactNormalForceN"]:.2f} / {frame["contactTangentialForceN"]:.2f} N   ·   slip {slip}   ·   gap / penetration {frame["gapMm"]:.3f} / {frame["penetrationMm"]:.3f} mm   ·   phase {row.get("controllerPhase","terrain")}')
         else:
             self.readout.configure(text=f'Chassis z {row["chassisZMm"]:.3f} mm   ·   Δz {row["chassisZMm"] - self.rows[0]["chassisZMm"]:+.3f} mm   ·   θ₂ {row["theta2"]:.3f}°   ·   requested / applied {row["requestedInputMm"]:.1f} / {row["appliedInputMm"]:.1f} mm   ·   input reaction {row["inputReactionN"]:.2f} N')
 

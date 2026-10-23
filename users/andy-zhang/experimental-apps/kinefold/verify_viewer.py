@@ -237,6 +237,37 @@ class ViewerChecks(unittest.TestCase):
         self.assertEqual(state['state'], 'closed')
         self.assertTrue(state['selfTestPassed'], state)
 
+    def test_case_capture_and_native_jump_draw(self):
+        from contact_cases import CASE_DEFAULTS
+        request=self.request(params={**self.params,'rw':200,'m6':1.5},contactConfig={'mode':'terrain-contact','friction':.8,'restitution':0,'drive':'free'},caseConfig={**CASE_DEFAULTS,'kind':'jump'},runConfig={**self.config,'dt':.00025})
+        captured=ViewerService._validate(request)
+        result=simulate_snapshot(captured)
+        self.assertEqual(result['caseConfig']['kind'],'jump')
+        self.assertEqual(result['terrain']['translationVelocityMmS'],[0,0,0])
+        self.assertEqual(captured['caseConfig']['undersideOffsetMm'],50)
+        window=PlaybackWindow.__new__(PlaybackWindow)
+        window.result,window.contact=result,True
+        window.model=SimpleNamespace(p=result['params'])
+        window.rows,window.frames=result['rows'],result['frames']
+        window.times=[row['t'] for row in window.rows]
+        window.index=0
+        window.canvas,window.clock,window.readout=mock.Mock(),mock.Mock(),mock.Mock()
+        window.canvas.winfo_width.return_value=1100
+        window.canvas.winfo_height.return_value=450
+        window._bounds();window.draw();window.index=len(window.frames)-1;window.draw()
+        self.assertIn('phase',window.readout.configure.call_args.kwargs['text'])
+        self.assertEqual(result['frames'][0]['theta2'],self.params['tc'])
+
+    def test_gui_jump_case_controls_and_auto_close(self):
+        if not GUI:self.skipTest('Use --gui for actual case playback and Tk controls.')
+        from contact_cases import CASE_DEFAULTS
+        request=self.request(params={**self.params,'rw':200,'m6':1.5},contactConfig={'mode':'terrain-contact','friction':.8,'restitution':0,'drive':'free'},caseConfig={**CASE_DEFAULTS,'kind':'jump'},runConfig={**self.config,'dt':.00025})
+        envelope={'request':request,'token':'verify-jump-self-test','parentPid':os.getpid()}
+        result=subprocess.run([sys.executable,str(ROOT/'desktop_viewer.py'),'--request-stdin','--self-test'],input=json.dumps(envelope),text=True,capture_output=True,cwd=ROOT,timeout=35)
+        self.assertEqual(result.returncode,0,result.stdout+result.stderr)
+        state=json.loads((ROOT/'.preview'/'viewer-state.json').read_text())
+        self.assertTrue(state['selfTestPassed'],state)
+
     def test_service_open_progress_reject_duplicate_close_restart(self):
         if not GUI:
             self.skipTest('Use --gui for service-owned native lifecycle test.')

@@ -73,7 +73,7 @@ def _finite(value, depth=0):
 
 
 def _project(value):
-    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig"), "project")
+    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig", "caseConfig"), "project")
     if value.get("schema") != "kinefold/project-v3":
         raise StorageError("Only validated project-v3 profiles can be saved.")
     if not isinstance(value.get("id"), str) or not re.fullmatch(r"design-[a-zA-Z0-9-]{1,100}", value["id"]):
@@ -114,10 +114,29 @@ def _project(value):
         _shape(contact, ("mode", "friction", "restitution", "drive"), "contact configuration")
         if set(contact) != {"mode", "friction", "restitution", "drive"} or contact.get("mode") not in ("prescribed-height", "terrain-contact") or contact.get("drive") != "free" or type(contact.get("friction")) not in (int, float) or not 0 <= contact["friction"] <= 2 or type(contact.get("restitution")) not in (int, float) or contact["restitution"] != 0:
             raise StorageError("Contact mode requires friction 0–2, zero bounce and a free backdrivable drive.")
+    if "caseConfig" in value:
+        _case_config(value["caseConfig"])
     _finite(value)
     if len(_encoded(value)) > MAX_PROJECT_BYTES:
         raise StorageError("Design exceeds 200 kB.")
     return copy.deepcopy(value)
+
+
+def _case_config(value):
+    """Validate optional saved studies without importing a physics runtime."""
+    limits = {"jumpTorqueNm": (0, 10000), "landingDropMm": (0, 5000),
+              "landingOpenFraction": (.01, .99), "landingBrakeTorqueNm": (0, 10000),
+              "landingBrakeLimitNm": (0, 10000)}
+    allowed = set(limits) | {"kind", "brakeStrategy", "undersideOffsetMm", "energyMethod"}
+    _shape(value, allowed, "case configuration")
+    if set(value) != allowed or value.get("kind") not in ("terrain-stability", "jump", "landing") or value.get("brakeStrategy") not in ("entered", "energy-sized") or type(value.get("energyMethod")) is not bool:
+        raise StorageError("Unknown or missing case settings.")
+    for key, (lo, hi) in limits.items():
+        if type(value[key]) not in (int, float) or not math.isfinite(value[key]) or not lo <= value[key] <= hi:
+            raise StorageError("Invalid case setting " + key + ".")
+    offset = value["undersideOffsetMm"]
+    if offset is not None and (type(offset) not in (int, float) or not math.isfinite(offset) or not 0 <= offset <= 5000):
+        raise StorageError("Underside offset must be null or 0–5000 mm.")
 
 
 def _config(config, legacy=False):

@@ -61,7 +61,7 @@ class ContactChecks(unittest.TestCase):
         for key,value in (('mode','bench'),('friction',-1),('friction',float('nan')),('restitution',.1),('drive','locked')):
             request=self.payload();request['contactConfig'][key]=value
             with self.subTest(key=key,value=value),self.assertRaises(ValueError):validate_contact_request(request)
-        for transform in (lambda p:p.update(engine='analytical'),lambda p:p['contactConfig'].update(extra=1),lambda p:p.pop('contactConfig')):
+        for transform in (lambda p:p.update(engine='unknown'),lambda p:p['contactConfig'].update(extra=1),lambda p:p.pop('contactConfig')):
             request=self.payload();transform(request)
             with self.assertRaises(ValueError):validate_contact_request(request)
 

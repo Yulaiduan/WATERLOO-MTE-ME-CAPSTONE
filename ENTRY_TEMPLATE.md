@@ -4210,3 +4210,67 @@ Use app-local Start Kinefold.cmd at4191 and read terrain-contact.md for supporte
 Preserve optional contactConfig compatibility, exact saved baseline/backup profiles and null unavailable diagnostics when extending this experimental two-body model; manual native visual QA was occluded while automated actual Tk GUI and browser QA passed.
 
 ---
+
+## Entry: 2026-10-23 — Andy Zhang — Independent contact engines, jump and landing assessment
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental single-leg actual-contact dynamics, case control and analysis.
+- **Associated Issue/Task:** User requested the analytical engine solve the same actual terrain/free-wheel problem as Pymunk, shared Terrain stability/Jump/Landing cases, braking-torque and energy-method assessment. User supplied editable chassis underside offset50mm below hip A.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-scenarios.md`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_study.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.md`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-contact.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-dynamic-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact_comparison.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/viewer_service.py`
+- **API/Interface Changes:** Optional strict project-v3 caseConfig preserves old snapshots when omitted and is saved/captured/hashed with geometry, material and run settings. Independent analytical_contact.py uses reduced SPD mass/contact impulses without importing Pymunk; Pymunk separately integrates actual bodies/contacts. Shared contact_cases.py holds geometry/controller/energy/assessment laws. Both modes use physical unilateral inelastic travel stops, explicit case initial conditions/hold/braking/cutoff, real spin/contact, phase/events and separate motor/chassis/wheel/spring/gravity/stop energy fields. /api/dynamics dispatches both actual-contact engines; bounded same-origin /api/contact-study invokes only the fixed landing-assessment script. Assessment trials stop at first arrest/failure, not later settled safety. Both native dynamic tabs share categorized case controls, outcome mismatch warnings, matching captured comparisons and app-folder exports. Native playback receives the complete saved case and actual mesh. New assets join the fixed allowlist; no dependencies, canonical/shared components, source apps or immutable V4 reference are changed.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Main verify_contact.py8 groups, verify_contact_cases.py9 groups and verify_analytical_contact.py11 groups PASS. Independent checks match flat normal100.5525N, free spin28.6478898deg/s and zero friction spin0; held ballistic landing and compensation; spring-off100Nm extension work113.44640138J; zero-torque jump negative control; zero-brake bottom-out failure/100Nm arrest; exact chassis half-mv-squared; initial intersection, reversed-endpoint and tilted-energy guards; underside-truncated usable stroke; sustained bottom-out support and tilted-stop momentum/refinement. R100/H150 jam controls stop at1mm in both engines. Independent analytical import contains no Pymunk. verify_contact_comparison.py actual2s cases match201 timestamps/hash/profile and refine maximum heave difference Jump2.24675/1.38403/1.09242mm and Landing4.85817/1.69714/0.910564mm atdt.0005/.00025/.000125. Energy residuals remain explicit numerical diagnostics; no tight-conservation or continuous peak-torque claim.46 comparison assertions,31 project groups,13 profile tests,666 contact drawing,2000 model and1123 drawing assertions PASS. Native suite9PASS/4GUI skips, supplemented by actual Tk/Pymunk jump pause/scrub/replay/auto-close PASS1 and browser native open/status/close. Parse/compile and whitespace PASS. Parent browser QA verifies Jump20Nm,100mm Landing20Nm, shared saved cases/energy toggle/staleness, readable plots/underside point/stationary floor,10-trial Pymunk bracket10.9375failing/12.5passingNm, and honest200mm energy-sized22.6905Nm disagreement (analytical arrest/Pymunk bottom-out). Final6.5s terrain pair651 exact common rows/max heave error0.00416921764mm, spin RMS0.232471deg/s,17,768,364byte comparison export parses inside app exports/, console empty. All4 named designs and working snapshot deeply equal the captured pre-QA backup after UI restore; exact restoration of a later unsaved baseline observed only by name is not claimed. Assessment-only early stopping tested against full first-arrest criterion in both engines;10-trial searches8.63s analytical/1.29s Pymunk return identical tested brackets. Ordinary full runs unchanged; later rebound/settling safety explicitly outside search criterion. Initial clearance test expectation was updated to the new initial-intersection rejection and rerun clean. Start/Stop/restart/reuse via actual app-local launchers from unrelated cwd passes4191; no server/profile mutation after final QA. Parent architecture/browser approval received. Required exact-snapshot workspace gates/hooks precede publication; generated profiles/exports/screenshots and unrelated ignored Laptop Access launchers remain excluded.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member experiment; no hardware, tire-compliance, whole-vehicle or peak motor-rating certification is claimed.
+
+## 4. Compute Saving Handoff State
+
+Both native dynamic tabs now solve one captured actual-contact mechanism with independent engines and shared Terrain/Jump/Landing controls, physical stops, explicit hold/braking, energy accounting and tested first-arrest torque brackets.
+Use app-local Start Kinefold.cmd at4191 and contact-scenarios.md for exact controller/search scope, numerical refinement and outcome disagreement; profiles and all exports remain app-local, with original named designs unchanged.
+Preserve optional-case compatibility, independent integration, real spin/contact and explicit ledger residuals; energy-average sizing and first-arrest search do not certify peak torque, settled safety or near-boundary engine agreement.
+
+---

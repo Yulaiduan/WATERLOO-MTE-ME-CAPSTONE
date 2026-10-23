@@ -79,7 +79,7 @@ The Pymunk tab and00 Designs create the separate contact demo deliberately,
 preserving original named designs and backing up an unsaved working snapshot.
 An optional project-v3 `contactConfig` stores mode/friction/restitution/drive;
 old projects without it remain byte-equivalent in their physical fields.
-Analytical/paired bench runs are disabled for a contact profile. Contact charts
+Both independent contact engines now compare the same captured profile; see [contact-scenarios.md](contact-scenarios.md). The original prescribed-height bench is a separate model. Contact charts
 show actual spin, interval normal/tangential forces, slip, gap/penetration and
 guide residual; unavailable prescribed-input/acceleration/work residuals stay null.
 The browser and desktop window render returned actual mesh/body transforms.

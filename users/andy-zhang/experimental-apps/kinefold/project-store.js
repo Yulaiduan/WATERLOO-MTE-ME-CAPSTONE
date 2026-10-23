@@ -11,6 +11,15 @@ const viewDefaults={projection:'side',labels:true,dimensions:true,belts:true,pat
 const legacyDefaults={fixture:'fixed-hip',duration:2,dt:.001,outputHz:100,initialVelocityDegS:0,hipTorqueNm:0,dampingNms:.1,hipRotorInertiaKgM2:.05,inertiaModel:'uniform-rods-discs',I2:0,I3:0,I5:0,I6:0,iterations:80};
 const solverDefaults={...legacyDefaults,fixture:'floating-chassis',duration:6.5,dampingNms:0,hipRotorInertiaKgM2:0,inputHeightMm:150,inputPlateauMm:150,inputGapMm:150,inputSpeedMmS:100,inputRiseMm:0,inputDelayS:.5};
 const contactDefaults={mode:'terrain-contact',friction:.8,restitution:0,drive:'free'};
+const caseDefaults={kind:'terrain-stability',jumpTorqueNm:20,landingDropMm:100,landingOpenFraction:2/3,landingBrakeTorqueNm:20,landingBrakeLimitNm:200,brakeStrategy:'entered',undersideOffsetMm:50,energyMethod:true};
+function validateCase(value){
+ keys(value,Object.keys(caseDefaults),'case configuration');
+ for(const key of Object.keys(caseDefaults))if(!(key in value))throw Error('Missing case setting: '+key);
+ if(!['terrain-stability','jump','landing'].includes(value.kind)||!['entered','energy-sized'].includes(value.brakeStrategy)||typeof value.energyMethod!=='boolean')throw Error('Choose a known case and braking strategy.');
+ for(const [key,[lo,hi]]of Object.entries({jumpTorqueNm:[0,10000],landingDropMm:[0,5000],landingOpenFraction:[.01,.99],landingBrakeTorqueNm:[0,10000],landingBrakeLimitNm:[0,10000]}))if(!Number.isFinite(value[key])||value[key]<lo||value[key]>hi)throw Error(key+' must be between '+lo+' and '+hi+'.');
+ if(value.undersideOffsetMm!==null&&(!Number.isFinite(value.undersideOffsetMm)||value.undersideOffsetMm<0||value.undersideOffsetMm>5000))throw Error('Underside offset must be blank (unassessed) or 0–5000 mm below hip A.');
+ return {...value};
+}
 function validateContact(value){
  keys(value,Object.keys(contactDefaults),'contact configuration');
  if(!['prescribed-height','terrain-contact'].includes(value.mode)||value.drive!=='free'||value.restitution!==0||!Number.isFinite(value.friction)||value.friction<0||value.friction>2)throw Error('Contact mode requires finite friction 0–2, zero bounce and a freely backdrivable drive.');
@@ -36,7 +45,7 @@ function validateConfig(v,legacy=false){const defaults=legacy?legacyDefaults:sol
  return out;
 }
 function validate(value){
- keys(value,['schema','id','name','params','view','solverConfig','createdAt','updatedAt','legacySolverConfig','contactConfig'],'project');if(value.schema!==schema)throw Error('Unsupported project schema.');
+ keys(value,['schema','id','name','params','view','solverConfig','createdAt','updatedAt','legacySolverConfig','contactConfig','caseConfig'],'project');if(value.schema!==schema)throw Error('Unsupported project schema.');
  if(typeof value.id!=='string'||!/^design-[a-zA-Z0-9-]{1,100}$/.test(value.id))throw Error('Invalid design identifier.');
  keys(value.params,Object.keys(Kinefold.defaults),'parameter');const params={};
  for(const [k,v]of Object.entries(Kinefold.defaults)){if(!(k in value.params))throw Error('Missing design parameter: '+k);if(typeof value.params[k]!==typeof v)throw Error('Invalid type for '+k);params[k]=value.params[k];}
@@ -46,6 +55,7 @@ function validate(value){
  const now=new Date().toISOString(),out={schema,id:value.id,name:title(value.name),params,view,solverConfig:validateConfig(value.solverConfig),createdAt:value.createdAt||now,updatedAt:value.updatedAt||now};
  for(const k of ['createdAt','updatedAt'])if(typeof out[k]!=='string'||!/^\d{4}-\d\d-\d\dT/.test(out[k])||!Number.isFinite(Date.parse(out[k])))throw Error('Invalid '+k+'.');
  if('contactConfig' in value)out.contactConfig=validateContact(value.contactConfig);
+ if('caseConfig' in value)out.caseConfig=validateCase(value.caseConfig);
  if('legacySolverConfig' in value)out.legacySolverConfig=validateConfig(value.legacySolverConfig,true);
  return out;
 }
@@ -55,7 +65,7 @@ function decode(value){
  if(value?.schema===Kinefold.schema){keys(value,['schema','name','params','view'],'legacy design');keys(value.params,Object.keys(Kinefold.defaults),'legacy parameter');const d=Kinefold.unpack(value),p=baseline();return {project:validate({...p,name:d.name,params:d.params,view:{...viewDefaults,...d.view},solverConfig:{...solverDefaults,inputRiseMm:['m2','m3','m5','m6'].some(k=>d.params[k]>0)?10:0}}),migrated:true,notice:'Legacy mechanism migrated with unchanged geometry and the new vertical-chassis input profile. Review and save the profile.'};}
  return {project:validate(value),migrated:false};
 }
-const content=p=>JSON.stringify([p.name,p.params,p.view,p.solverConfig,p.legacySolverConfig||null,p.contactConfig||null]);
+const content=p=>JSON.stringify([p.name,p.params,p.view,p.solverConfig,p.legacySolverConfig||null,p.contactConfig||null,p.caseConfig||null]);
 function createStore(storage){
  let library=[],error='',notice='',libraryBlocked=false,persistedLibraryRaw=null;
  try{const currentRaw=storage.getItem(libraryKey),raw=currentRaw||storage.getItem('kinefold-library-v2');persistedLibraryRaw=currentRaw;if(raw){const data=JSON.parse(raw);keys(data,['schema','designs'],'library');if(!['kinefold/library-v3','kinefold/library-v2'].includes(data.schema)||!Array.isArray(data.designs)||data.designs.length>200)throw Error('Invalid library format.');library=data.designs.map(p=>decode(p).project);if(data.schema==='kinefold/library-v2')notice='Saved designs migrated to vertical-chassis profiles. Original v2 library data remains untouched; prior profiles are retained with each migrated design.';if(new Set(library.map(p=>p.id)).size!==library.length)throw Error('Duplicate design identifiers.');}}
@@ -100,5 +110,5 @@ function createDiskStore(storage,request=async payload=>{
   async saveArtifact(filename,value,mime='application/json'){await ready;const content=typeof value==='string'?value:JSON.stringify(value,null,2)+'\n';const result=await request({action:'export',name:filename,content,mime});return result.path;}
  };return store;
 }
-return {schema,viewDefaults,solverDefaults,contactDefaults,validateContact,validateConfig,validate,baseline,decode,clone,content,createStore,createDiskStore,id,title};
+return {schema,viewDefaults,solverDefaults,contactDefaults,caseDefaults,validateCase,validateContact,validateConfig,validate,baseline,decode,clone,content,createStore,createDiskStore,id,title};
 })();

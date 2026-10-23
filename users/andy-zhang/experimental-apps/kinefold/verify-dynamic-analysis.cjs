@@ -34,6 +34,9 @@ const floor0=A.floor(finite,{t:.55},37,-500,500),floor1=A.floor(finite,{t:.65},3
 near(A.inputAtDistance(finite,(.55-config.inputDelayS)*100+40).applied,A.inputAtDistance(finite,(.65-config.inputDelayS)*100+30).applied);
 const contact={...b,scope:{mode:'terrain-contact'},rows:b.rows.map(row=>({...row,theta4:30,theta5:20,theta6:10,wheelAngularVelocityDegS:28.6,accelerationDegS2:null,inputWorkJ:null}))};
 const ce=A.enrich(contact)[0];near(ce.theta6,10);near(ce.rate6,28.6);ok(ce.accel3===null&&ce.accel5===null&&ce.accel6===null);ok(ce.workEnergyResidualJ===null);ok(!A.comparison(a,contact).valid);ok(A.snapshotKey({params:a.params,solverConfig:config})!==A.snapshotKey({params:a.params,solverConfig:config,contactConfig:{mode:'terrain-contact'}}));
+const sameContactA={...contact,engine:'analytical',contactConfig:{...P.contactDefaults},caseConfig:{...P.caseDefaults}},sameContactP={...contact,contactConfig:{...P.contactDefaults},caseConfig:{...P.caseDefaults}};
+const contactComparison=A.comparison(sameContactA,sameContactP);ok(contactComparison.valid&&contactComparison.matched===4);ok(contactComparison.fields.some(([key])=>key==='wheelAngularVelocityDegS'));ok(!A.comparison(sameContactA,{...sameContactP,caseConfig:{...P.caseDefaults,kind:'jump'}}).valid);ok(!A.comparison(sameContactA,{...sameContactP,contactConfig:{...P.contactDefaults,friction:0}}).valid);ok(A.snapshotKey({params:a.params,solverConfig:config,caseConfig:P.caseDefaults})!==A.snapshotKey({params:a.params,solverConfig:config}));
+const differentOutcomes=A.comparison({...sameContactA,caseMetrics:{outcome:'arrested'}},{...sameContactP,caseMetrics:{outcome:'bottom-out-before-arrest'}});ok(differentOutcomes.valid);ok(differentOutcomes.outcomeA==='arrested'&&differentOutcomes.outcomeP==='bottom-out-before-arrest');
 if(process.argv.includes('--real')){
  const python=path.join(root,'.venv',process.platform==='win32'?'Scripts/python.exe':'bin/python');
  const probes=[];

@@ -49,6 +49,21 @@ class ProfileTests(unittest.TestCase):
         self.assertEqual(json.loads((self.root / "profiles/browser-backup.json").read_text())["keys"], raw)
         self.assertEqual(ProfileService(self.root).handle({"action": "list"})[0], state)
 
+    def test_optional_case_roundtrip_preserves_all_originals(self):
+        state, _ = self.migrate()
+        originals = copy.deepcopy(state['designs'])
+        case = project('Landing study')
+        case['id'] = 'design-case-4444'
+        case['caseConfig'] = dict(kind='landing',jumpTorqueNm=20,landingDropMm=250,landingOpenFraction=2/3,landingBrakeTorqueNm=20,landingBrakeLimitNm=200,brakeStrategy='entered',undersideOffsetMm=50,energyMethod=True)
+        saved = self.call('save', project=case, expectedRevision=state['revision'])
+        self.assertEqual(saved['designs'][:2], originals)
+        self.assertEqual(self.call('read', id=case['id'])['project'], case)
+        self.assertNotIn('caseConfig', originals[0])
+        for key, invalid in [('kind','unknown'),('landingDropMm',-1),('undersideOffsetMm',5001),('energyMethod','yes')]:
+            broken = copy.deepcopy(case)
+            broken['caseConfig'][key] = invalid
+            self.call('save', status=400, project=broken, expectedRevision=saved['revision'])
+
     def test_optional_contact_roundtrip_preserves_legacy_profiles(self):
         state, _ = self.migrate()
         originals = copy.deepcopy(state["designs"])

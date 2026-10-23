@@ -43,6 +43,14 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['forces','contact-guide-force','Massless guide actuation force','N',series(['guideForceN','Guide force'])],
     ['energy','contact-energy','Mechanical energy','J',series(['kineticJ','Kinetic'],['potentialJ','Potential'],['energyJ','Total'])],
     ['energy','contact-actuator-work','Cumulative hip actuation & damping work','J',series(['actuatorDampingWorkJ','Hip/damping work'])],
+    ['motion','case-clearance','Chassis underside clearance · when assessed','mm',series(['chassisClearanceMm','Underside clearance'])],
+    ['kinematics','case-motor','Motor / hold / braking torques','N·m',series(['motorTorqueNm','Actual motor command'],['holdTorqueNm','Hold compensation'],['brakeTorqueNm','Braking command'],['demandTorqueNm','Stopping demand estimate'])],
+    ['kinematics','case-travel','Working travel & compression','°',series(['theta2','Hip angle'])],
+    ['energy','case-kinetic','Chassis and wheel kinetic energy','J',series(['chassisKineticJ','½ m₁ v_A²'],['wheelKineticJ','Wheel translation + rotation'])],
+    ['energy','case-potential','Spring and gravity potential','J',series(['springEnergyJ','Spring energy'],['gravityEnergyJ','Gravity potential'])],
+    ['energy','case-work','Motor work and inelastic stop loss','J',series(['motorWorkJ','∫ τ_motor dθ₂'],['stopDissipationJ','Travel-stop loss'])],
+    ['energy','case-ledger','Engine energy-ledger residual · refine dt','J',series(['energyBalanceResidualJ','Unresolved ledger residual'],['positionStabilizationJ','Analytical position-projection energy'])],
+    ['energy','case-contact-loss','Contact / stop impulse losses','J',series(['contactDissipationJ','Contact impulse loss'],['stopDissipationJ','Travel-stop loss'])],
   ].map(([group,id,title,unit,keys])=>({group,id,title,unit,series:keys}));
   const comparisonFields = [
     ['chassisDisplacementMm', 'Chassis displacement', 'mm'],
@@ -52,12 +60,18 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['inputReactionN', 'Wheel-input reaction', 'N'],
     ['workEnergyResidualJ', 'Work–energy residual', 'J'],
   ];
+  const contactComparisonFields = [
+    ['chassisDisplacementMm','Chassis displacement','mm'],['chassisVelocityMmS','Chassis speed','mm/s'],
+    ['theta2','Hip angle','°'],['wheelAngularVelocityDegS','Wheel spin','°/s'],['Fs','Spring tension','N'],
+    ['contactNormalForceN','Contact normal · interval mean','N'],['motorTorqueNm','Motor torque','N·m'],
+    ['chassisKineticJ','Chassis kinetic energy','J'],['motorWorkJ','Motor work','J'],['energyBalanceResidualJ','Energy-ledger residual','J'],
+  ];
   function stable(value) {
     if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
     if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}';
     return JSON.stringify(value);
   }
-  function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null}); }
+  function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null}); }
   function enrich(result) {
     const p = result.params, config = result.runConfig, ref = Kinefold.reference(p);
     const ratios = KinefoldV4.VSL.ratios(ref), k3 = 1 - ratios.qab, k5 = 1 - 1 / ratios.qdc;
@@ -70,16 +84,18 @@ globalThis.KinefoldDynamicAnalysis = (() => {
         theta3: pose.t3, theta4:contact?row.theta4:0,theta5: contact?row.theta5:pose.t5, theta6: contact?row.theta6:pose.t6,
         rate3: k3 * row.velocityDegS,rate4:driveRate, rate5: k5 * row.velocityDegS+driveRate/ratios.qdc, rate6: contact?row.wheelAngularVelocityDegS:k6 * row.velocityDegS,
         accel3:Number.isFinite(row.accelerationDegS2)?k3*row.accelerationDegS2:null, accel5:Number.isFinite(row.accelerationDegS2)?k5*row.accelerationDegS2:null, accel6:Number.isFinite(row.accelerationDegS2)?k6*row.accelerationDegS2:null,
-        motorTorqueNm: config.hipTorqueNm, dampingTorqueNm: -config.dampingNms * row.velocityDegS * Math.PI / 180,
+        motorTorqueNm: Number.isFinite(row.motorTorqueNm)?row.motorTorqueNm:config.hipTorqueNm, dampingTorqueNm: -config.dampingNms * row.velocityDegS * Math.PI / 180,
         workEnergyResidualJ: [row.energyJ,first.energyJ,row.actuatorDampingWorkJ,row.inputWorkJ].every(Number.isFinite)?row.energyJ-first.energyJ-row.actuatorDampingWorkJ-row.inputWorkJ:null,
         constraintPositionErrorMm: frame.constraintPositionErrorMm ?? (result.engine === 'analytical' ? 0 : null),
         constraintAngleErrorDeg: frame.constraintAngleErrorDeg ?? (result.engine === 'analytical' ? 0 : null)};
     });
   }
   function comparison(a, b) {
-    if(a?.scope?.mode==='terrain-contact'||b?.scope?.mode==='terrain-contact')return {valid:false,reason:'Actual Pymunk terrain contact and the analytical prescribed-height bench are different models. Comparison is unavailable.'};
+
     if (a && b && (a.engine !== 'analytical' || b.engine !== 'pymunk')) return {valid:false,reason:'Choose one analytical run and one Pymunk run.'};
     if (!a || !b) return {valid: false, reason: 'Run both engines on the same captured mechanism and input profile.'};
+    if (a.scope?.mode !== b.scope?.mode || stable(a.contactConfig||null)!==stable(b.contactConfig||null) || stable(a.caseConfig||null)!==stable(b.caseConfig||null)) return {valid:false,reason:'Interaction, material or case profiles differ. Run both on the same captured snapshot.'};
+    const fields=a.scope?.mode==='terrain-contact'?contactComparisonFields:comparisonFields;
     if (!a.designHash || a.designHash !== b.designHash || stable(a.params) !== stable(b.params))
       return {valid: false, reason: 'Mechanism snapshots differ. Run both again from one captured design.'};
     if (stable(a.runConfig) !== stable(b.runConfig)) return {valid: false, reason: 'Input or numerical profiles differ. Run both again with the same profile.'};
@@ -89,19 +105,19 @@ globalThis.KinefoldDynamicAnalysis = (() => {
       const br = byTime.get(key(ar));
       if (!br || Math.abs(ar.t - br.t) > 1e-8) continue;
       const row = {t: ar.t, eventSide: ar.eventSide || ''};
-      for (const [field] of comparisonFields) {
+      for (const [field] of fields) {
         row[field + 'A'] = ar[field]; row[field + 'P'] = br[field];
         row[field + 'Error'] = Number.isFinite(br[field]) && Number.isFinite(ar[field]) ? br[field] - ar[field] : null;
       }
       rows.push(row);
     }
     if (!rows.length) return {valid: false, reason: 'No matching time/event-side samples; no interpolation or extrapolation is performed.'};
-    const stats = comparisonFields.map(([field, label, unit]) => {
+    const stats = fields.map(([field, label, unit]) => {
       const values = rows.map(row => row[field + 'Error']).filter(Number.isFinite);
       return {field, label, unit, count: values.length, maxAbs: values.length ? Math.max(...values.map(Math.abs)) : null,
         rms: values.length ? Math.sqrt(values.reduce((v, x) => v + x * x, 0) / values.length) : null};
     });
-    return {valid: true, rows, stats, matched: rows.length, analyticalSamples: aa.length, pymunkSamples: bb.length,
+    return {valid: true, fields, rows, stats, outcomeA:a.caseMetrics?.outcome||null,outcomeP:b.caseMetrics?.outcome||null, matched: rows.length, analyticalSamples: aa.length, pymunkSamples: bb.length,
       start: rows[0].t, end: rows.at(-1).t, complete: rows.length === aa.length && rows.length === bb.length,
       terminationA: a.diagnostics.termination, terminationP: b.diagnostics.termination};
   }

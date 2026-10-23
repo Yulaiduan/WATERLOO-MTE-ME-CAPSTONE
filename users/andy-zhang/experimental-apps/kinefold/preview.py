@@ -33,7 +33,7 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js",
           "solvers.js", "solver-style.css", "project-store.js", "designs.js",
           "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",
-          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js"}
+          "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js", "case-ui.js"}
 
 
 DYNAMICS_LOCK = threading.Lock()
@@ -48,8 +48,8 @@ def reject_nonfinite(value):
 
 def run_dynamics(request):
     """Integrate one bounded request in this app's installed physics environment."""
-    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig"}):
-        return {"error": "Expected engine, params, runConfig and optional contactConfig only."}, 400
+    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "study"}):
+        return {"error": "Expected engine, params, runConfig and optional contactConfig/caseConfig only."}, 400
     if not isinstance(request["engine"], str) or request["engine"] not in {"analytical", "pymunk"}:
         return {"error": "Choose analytical or pymunk."}, 400
     if not isinstance(request["params"], dict) or not isinstance(request["runConfig"], dict):
@@ -58,10 +58,11 @@ def run_dynamics(request):
     if contact is not None and (not isinstance(contact, dict) or contact.get("mode") not in {"prescribed-height", "terrain-contact"}):
         return {"error": "Choose a known interaction mode."}, 400
     contact_mode = bool(contact and contact.get("mode") == "terrain-contact")
-    if contact_mode and request["engine"] != "pymunk":
-        return {"error": "Actual terrain contact is available in Pymunk only. The analytical prescribed-height bench is a different model and cannot be compared to it."}, 422
+    study = request.get("study")
+    if study is not None and (study != "minimum-landing-torque" or not contact_mode):
+        return {"error": "Landing assessment requires actual contact and the known minimum-torque study."}, 400
     payload = request if contact_mode else {key: request[key] for key in ("engine", "params", "runConfig")}
-    script = "contact_dynamics.py" if contact_mode else "dynamics.py"
+    script = "contact_study.py" if study else ("analytical_contact.py" if contact_mode and request["engine"] == "analytical" else "contact_dynamics.py" if contact_mode else "dynamics.py")
     python = ROOT / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     if not python.is_file():
         return {"error": "Dynamics dependencies are not installed. Run Setup Kinefold.cmd in this app folder, then retry. The builder and static solver remain available."}, 503
@@ -139,7 +140,7 @@ def serve():
                 self.send_error(404)
 
         def do_POST(self):
-            if self.path in {"/api/dynamics", "/api/viewer", "/api/profiles"}:
+            if self.path in {"/api/dynamics", "/api/contact-study", "/api/viewer", "/api/profiles"}:
                 if self.headers.get("Origin") != URL.rstrip("/") or self.headers.get("X-Kinefold-Request") != "coupled-dynamics":
                     payload = b'{"error":"Requests must come from this Kinefold page."}'
                     self.send_response(403)
@@ -161,7 +162,7 @@ def serve():
                         if len(raw) != length:
                             raise ValueError("Incomplete request body.")
                         request = json.loads(raw, parse_constant=reject_nonfinite)
-                        if self.path == "/api/dynamics":
+                        if self.path in {"/api/dynamics", "/api/contact-study"}:
                             result, status = run_dynamics(request)
                         elif self.path == "/api/viewer":
                             result, status = viewer.handle(request)

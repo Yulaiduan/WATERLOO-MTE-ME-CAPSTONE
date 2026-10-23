@@ -3,7 +3,7 @@
 The matched comparison below describes the original prescribed-height bench.
 The separate [actual terrain-contact mode](terrain-contact.md) uses two real
 Pymunk bodies, frictional collision, a backdrivable wheel and actual world mesh;
-its analytical comparison is unavailable. No existing bench is relabelled as contact.
+an independent reduced analytical contact integrator now solves the same profile. See [contact cases and energy studies](contact-scenarios.md); the original bench is not relabelled as contact.
 
 Both dynamic tabs use the same categorized Kinefold presentation and saved
 builder mechanism/input profile. They retain the existing floating quarter-model

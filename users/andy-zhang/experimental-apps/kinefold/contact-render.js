@@ -69,8 +69,13 @@ globalThis.KinefoldContactDrawing = (() => {
     if(frame.D&&frame.Q)html+=line([frame.A,frame.D],'var(--amber)',3)+line([frame.D,frame.Q],'var(--amber)',2);
     const [ax,az]=P(frame.A);
     html+=`<rect x="${ax-48}" y="${az-28}" width="96" height="26" rx="4" fill="var(--soft)" stroke="var(--sage)"/><text x="${ax}" y="${az-10}" text-anchor="middle" fill="var(--ink)" font-size="11">m₁ ${p.m1} kg</text>`;
+    const offset=result.caseConfig?.undersideOffsetMm;
+    if(Number.isFinite(offset)) {
+      const point=[frame.A[0],0,frame.A[2]-offset],pixel=P(point);
+      html+=line([frame.A,point],'var(--red)',1,'stroke-dasharray="3 3"')+circle(point,5/scale,'var(--red)',1.5)+`<text x="${pixel[0]+10}" y="${pixel[1]+5}" fill="var(--red)" font-size="11">Underside point · ${offset} mm below A</text>`;
+    }
     for(const [key,point]of [['A',frame.A],['B',frame.B],['C',frame.C]])html+=`<text x="${P(point)[0]+9}" y="${P(point)[1]-9}" fill="var(--ink)" font-size="12">${key}</text>`;
-    html+='<rect x="12" y="12" width="490" height="27" fill="var(--paper)" opacity=".94"/><text x="22" y="30" fill="var(--muted)" font-size="11">ACTUAL PYMUNK CONTACT · WORLD GRID 100 mm · IDEAL MASSLESS LINKS</text><rect x="12" y="385" width="206" height="52" fill="var(--paper)" opacity=".94"/><path d="M90 422H34m8-4-8 4 8 4M90 422V392m-4 8 4-8 4 8" fill="none" stroke="var(--ink)"/><text x="14" y="426" fill="var(--red)" font-size="11">+x</text><text x="101" y="396" fill="var(--blue)" font-size="11">+z</text><text x="106" y="425" fill="var(--sage)" font-size="10">⊙ +y</text><path d="M540 424H620m-8-5 8 5-8 5" stroke="var(--sage)" fill="none"/><text x="526" y="406" fill="var(--sage)" font-size="11">Actual terrain moves −x →</text>';
+    html+='<rect x="12" y="12" width="490" height="27" fill="var(--paper)" opacity=".94"/><text x="22" y="30" fill="var(--muted)" font-size="11">ACTUAL CONTACT · WORLD GRID 100 mm · IDEAL MASSLESS LINKS</text><rect x="12" y="385" width="206" height="52" fill="var(--paper)" opacity=".94"/><path d="M90 422H34m8-4-8 4 8 4M90 422V392m-4 8 4-8 4 8" fill="none" stroke="var(--ink)"/><text x="14" y="426" fill="var(--red)" font-size="11">+x</text><text x="101" y="396" fill="var(--blue)" font-size="11">+z</text><text x="106" y="425" fill="var(--sage)" font-size="10">⊙ +y</text>'+(result.caseConfig?.kind&&result.caseConfig.kind!=='terrain-stability'?'':'<path d="M540 424H620m-8-5 8 5-8 5" stroke="var(--sage)" fill="none"/>')+'<text x="526" y="406" fill="var(--sage)" font-size="11">'+(result.caseConfig?.kind&&result.caseConfig.kind!=='terrain-stability'?'Stationary flat floor':'Actual terrain moves −x →')+'</text>';
     return {html,row,frame};
   }
   return {transmission,bounds,render};
