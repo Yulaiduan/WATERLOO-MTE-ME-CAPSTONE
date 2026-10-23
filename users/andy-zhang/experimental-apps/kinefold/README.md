@@ -18,12 +18,18 @@ No login/boot automation is installed. Node.js is needed only for developer chec
 - **00 Designs:** named saved mechanisms and shared run profiles, a working
   draft, explicit example templates and portable project JSON. Storage
   is local to this browser/origin; export backups for another PC or browser.
-- **Mechanism builder:** Geometry, Suspension, Loadings & preloads at left;
+- **01 Mechanism builder:** Geometry, Suspension, Loadings & preloads at left;
   live side/isometric mechanism preview at right, with layers, dimension labels,
   full-range travel path, pose scrub and prescribed kinematic playback. Mechanism,
   Full travel and Spring detail framing, zoom and drag-to-pan support inspection.
   Parameter shortcuts and ? buttons open the appropriate variable definition.
-- **Conventions & variables:** independently expandable illustrated frame,
+- **02 Equilibrium · static:** all 17 reference plots in native expandable
+  Suspension/support, Kinematics, Loading sweeps and Free-body categories.
+  Four diagnostic sweep axes share the current builder design; ranges never
+  edit physical parameters. See [plot coverage and controls](equilibrium-plots.md).
+- **03 Dynamic analytical / 04 Pymunk:** the shared floating quarter-model
+  workspaces described below.
+- **05 Conventions & variables (last tab):** independently expandable illustrated frame,
   topology, right-hand-rule signs, spring/loading laws, dynamics assumptions and a searchable
   dictionary. Search is available at the top; section shortcuts open the selected
   reference, including a geometrically scaled baseline topology illustration.
@@ -63,6 +69,9 @@ From this directory: `node verify.cjs` checks source parity, geometry, world
 forces/moments, finite-pulley energy derivatives, both spring laws and JSON state.
 `node verify-drawing.cjs` independently checks all index radii/orthogonality and
 finite-difference belt material velocities on both wraps of every pulley stage.
+`node verify-equilibrium.cjs` checks all17 chart datasets against original V4
+series, support gaps and multibranch travel; `node verify-equilibrium-diagrams.cjs`
+checks all five body balances and finite-idler route geometry.
 `node verify-projects.cjs` checks migration/persistence safety; after Setup, run
 `.venv/Scripts/python.exe verify_dynamics.py` for exact square, independent heave,
 source parity, event continuity and cross-engine refinement checks.
@@ -76,7 +85,9 @@ browser. See [context](context/README.md) for actual verification and handoff.
 
 All tabs use Kinefold's own interface. The retained finite-idler equations are
 reference evidence, attributed above; no source app or copied tab is embedded.
-Equilibrium evaluates the current builder and181 samples of its working range.
+Equilibrium evaluates the current builder with cached finite samples: 480 intervals
+for working peaks/loading curves, 720 or more for kinematics, and 180 for α/β.
+Five body diagrams and exact spring-route detail accompany all17 reference plots.
 The sampled peak is not a certified global maximum.
 
 Both dynamic engines use one saved mechanism and profile. The chassis mass m1

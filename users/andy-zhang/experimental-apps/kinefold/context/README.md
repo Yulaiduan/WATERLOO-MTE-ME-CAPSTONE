@@ -268,3 +268,51 @@ not validated. No runtime/UI/profile or source-app changes, no server lifecycle
 change; saved150mm square settings remain intact. An import-order harness error
 and a mistaken assumption that zero-height inputs emit no scheduled events were
 fixed before the clean final check; no numerical tolerance was relaxed.
+
+## Complete native static analytical workspace — 2026-10-22
+
+The current tab order is00 Designs,01 Builder,02 Equilibrium · static,
+03 Dynamic analytical,04 Pymunk guided chassis,05 Conventions. Stable tab IDs,
+query URLs and variable-help links are unchanged; keyboard End reaches Conventions.
+Equilibrium now owns a separate native module; the old solvers.js static renderer
+is removed so shared-design/import events cannot overwrite the expanded UI.
+
+[Plot coverage](../equilibrium-plots.md) maps all17 original charts and series:
+2 suspension/support,3 kinematics and12 loading plots (four axes × three kinds).
+Five native individual-body diagrams and finite-idler spring detail supplement
+these charts. Categories and selected sweep axes render lazily; physical-input
+and diagnostic-range keys cache rows, while series toggles reuse them. Diagnostic
+windows never edit the builder or saved run profile. All points/forces use global
++x left/+z up, couples+y CCW; source d_y maps to−d_x and travel inclinations use
+their own atan2 convention. Undefined support/angle/spring data stays null/gapped.
+
+node verify-equilibrium.cjs passes9404 assertions across266 cases against original
+hash-verified HTML blocks, all17 manifest entries and8 multibranch travel queries.
+node verify-equilibrium-diagrams.cjs passes11757 assertions over45 varied cases:
+maximum world force residual5.24e-13N, moment7.11e-14Nm, route arc endpoint1.43e-14mm.
+Existing2000 model/1123 drawing assertions and18 project-state groups pass.
+Source reference hashes are unchanged. No dynamics engine/profile/schema changes
+were needed, so the earlier floating dynamics and static-limit evidence remains
+separate. No hardware/canonical-robot validation is claimed.
+
+Start launcher reuse/Stop/restart/reuse from C:/Users/zhang passes at4191;
+all four new assets and stable static/conventions URLs returnHTTP200. The same
+project-local Start/Stop launchers remain the durable restart path. Browser QA
+is performed by the parent architect using CUA, with final evidence below.
+
+Parent CUA review passes six-tab order, Home/End navigation and L2 help links,
+all four loading axes (481θ/d_z and181α/β samples), expanded90–270° domain,
+linked angle-series toggles, readable spring detail and all5FBDs without clipped
+tables. Import while static is active changes all groups to the10kg/high-ratio
+145° fixture (τ₂−44.239Nm, spring disabled/support−100%) without changing physical
+stops through diagnostic controls. Exported analytical JSON contains17manifest
+entries/all four sweep datasets; CSV exports the selected axis/context. Actual
+center-travel hover recovers one pose; automated8multiroot queries supply branch
+coverage. The exact pre-test portable backup was restored and reloaded at the
+user's140.8954° pose with its profile unchanged. Browser console is empty.
+
+Review improved plot/FBD grids to two columns with readable14–15px SVG labels;
+small screens use one column. Pointer hover maps screen coordinates through the
+actual SVG screen CTM, preserving correct coordinates under letterboxing. Parent
+architecture/coverage/UI review approved before repository publication. No new
+dynamics runs were needed or claimed for this presentation-only change.

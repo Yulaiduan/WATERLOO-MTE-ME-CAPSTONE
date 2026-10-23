@@ -4054,3 +4054,47 @@ Reproduce with app .venv Python validate_static.py and read static-validation.md
 Preserve the distinction between actual held heave pose, derived ideal support/spring readouts and unverified belt/pin/contact forces when extending the experiment.
 
 ---
+
+## Entry: 2026-10-22 — Andy Zhang — Complete native static analytical plots
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold experimental equilibrium presentation.
+- **Associated Issue/Task:** User requested Conventions last and all Jon VSL v4 static analytical plots in the shared-design native Kinefold interface.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium-data.js`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium-diagrams.js`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium-plots.md`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium.css`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-equilibrium-diagrams.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-equilibrium.cjs`
+- **API/Interface Changes:** Stable tab IDs/query/help links and project-v3 profile schema remain unchanged. UI order is00 Designs,01 Builder,02 Equilibrium static,03 Analytical,04 Pymunk,05 Conventions. New native equilibrium data/plot/diagram modules replace the old static renderer; all17 source charts, four diagnostic axes, five FBDs and finite-idler detail use current builder parameters. Independent windows never mutate physical inputs. JSON/CSV exports include project/ranges/source context, null gaps and signed source quantities. New assets are added to the localhost allowlist. The retained V4 source, dynamics engines, source apps and canonical components are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** node verify-equilibrium.cjs passes9404 assertions/266 independent hash-verified original-source cases, all17 manifest entries, zero-weight/gravity/Jacobian support gaps and8 multi-root travel queries. node verify-equilibrium-diagrams.cjs passes11757 assertions/45 cases: world force residual5.24e-13N, moment7.11e-14Nm, arc endpoint1.43e-14mm. Existing2000 model/1123 drawing assertions and18 project-state groups pass; JS parsing, Python compilation and diff whitespace pass. CUA verifies00..05 ordering/Home/End/help URLs, all4sweeps, expanded90–270° windows, linked angle visibility, readable5FBD/spring detail, selected-static high-ratio10kg145° import freshness, JSON17chart/all-axis coverage and contextual CSV. Exact pre-test140.8954° backup/profile restored and reloaded; console empty. Actual center-travel hover returns one pose; multi-root coverage is automated. SVG hover uses actual screen CTM after the review identified letterboxing. Launcher reuse/Stop/restart/reuse from unrelated cwd and all new assets/stable routes HTTP200 pass. Source reference hashes unchanged; no dynamics or hardware validation rerun/claimed. Parent architecture/coverage/browser review approved. Required repository workspace checks precede publication; unrelated ignored Laptop Access launchers preserved/excluded.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app presentation.
+
+## 4. Compute Saving Handoff State
+
+Equilibrium now contains all17 original static charts in native expandable categories, with shared builder inputs, independent diagnostic windows and exact world-frame FBD/spring illustrations.
+Use app-local Start Kinefold.cmd and4191; read equilibrium-plots.md for series/source anchors, scientific gap/sign conventions and contextual export format.
+Preserve immutable reference equations, sampled-versus-bounded distinctions and shared-design invalidation when extending plots; floating dynamics and saved project profiles are unchanged.
+
+---
