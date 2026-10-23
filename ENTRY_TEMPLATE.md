@@ -4400,3 +4400,50 @@ Read motor-model.md for SI units, independent variable-mass/native-impulse formu
 Preserve exact motor snapshots and additive legacy settings, use timestep refinement for contact/energy conclusions, and retain per-host Plotly queues so repeated results or stale-profile imports cannot purge an active render.
 
 ---
+
+## Entry: 2026-10-23 — Andy Zhang — Energy-only drop height and braking torque calculator
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold standalone energy analysis and compatible profile UI.
+- **Associated Issue/Task:** Calculate drop-height to constant braking torque without a dynamic run, using a50mm editable residual ground-clearance target distinct from the existing underside offset.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+
+- **API/Interface Changes:** Optional project-v3 energyConfig stores calculator-only drop height, residual clearance, available joint torque and explicit stop reserve; absent profiles remain absent and physical simulation snapshot/model revision ignores this analysis-only block. Existing landing opening/underside inputs are read/shared explicitly. New local pure energy analysis/UI modules work on both dynamic tabs, including original massless-wheel V4 and prescribed mode, with no dynamics API call. Formula retains full chassis drop energy plus compression gravity/spring/cogging work over usable angle; joint/shaft conversion, sufficient inverse endpoint capacity, Plotly curve, geometry/work steps and app-folder JSON export are provided. Existing numerical engines/controllers and source apps are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 39 pure-energy assertions PASS, including independent Python baseline11.6103416383Nm, spring-off51.7318271992Nm,20Nm capacity172.214939136mm, closed-form500mm clearance endpoint, inverse work identity, constant-force spring work, fixed-phase cogging/gear conversion, wheel-mass exclusion, no mutation, optional-profile roundtrip, unsupported-input guards and unchanged physical snapshot identity.15 temporary-disk profile tests,33 existing project/library groups,48 comparison,19 Plotly lifecycle and2000 unchanged model assertions PASS. Initial pure test harness cross-realm validation was corrected to deserialize fixtures into the VM, then rerun clean. JS parsing/Python compilation/whitespace PASS. Actual app-local Stop/Start/reuse from unrelated cwd passes4191; energy-analysis.js and energy-ui.js HTTP200. Original revision87 profile library was backed up once before QA. Parent final architecture/browser QA passes baselineH100→11.610341638281414Nm joint/capacity172.214939mm/clearance315.382413mm; H300→34.846Nm; H200 with target500mm→43.452Nm and capacity92.003mm; negative height rejection; zero-reserve stop-boundary warning; shared tabs, N10 shaft1.1610341638281414Nm, reload persistence, Plotly light/dark and app-folder export. Export JSON is11542bytes with81 curve points and captures the exact project/calculation. No console warnings/errors. Current working and all4 named designs deeply equal revision87 pre-energy backup after exact UI restore (current library revision100), with optional motor/energy blocks absent again. Proof .preview/energy-calculator-reviewed.png is ignored. Parent independently verified spring work, endpoint geometry and positive interior kinetic energy. Publication review approved. No full physics rerun is needed because no numerical engine/controller changed. Required exact-snapshot repository gates/hooks precede publication; generated profiles/exports/screenshots and unrelated launchers remain ignored.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member calculator; no hardware, transient impact peak, global drop-height optimum or post-arrest stability validation is claimed.
+
+## 4. Compute Saving Handoff State
+
+Both dynamic tabs provide an instant standalone drop-height to constant resisting-torque calculator with separate residual clearance/underside geometry, explicit stop reserve and joint/shaft outputs.
+Read energy-calculator.md for the conservative chassis-only work assumptions, endpoint-capacity meaning and saved optional energyConfig; use app-local Start Kinefold.cmd at4191 and app-folder exports.
+Preserve unchanged dynamic controllers and physical snapshot identity for calculator-only edits, and never reinterpret the50mm residual clearance as the chassis underside offset or a certified peak-torque requirement.
+
+---

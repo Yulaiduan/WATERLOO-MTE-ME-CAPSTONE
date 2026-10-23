@@ -42,6 +42,15 @@ class ProfileTests(unittest.TestCase):
         raw = {"kinefold-project-v3": json.dumps(working), "kinefold-library-v3": json.dumps({"schema": "kinefold/library-v3", "designs": [first, second]})}
         return self.call("migrate", expectedRevision=0, designs=[first, second], working=working, browserBackup=raw), raw
 
+    def test_optional_energy_profile_preserves_legacy_and_rejects_invalid(self):
+        state,_=self.migrate()
+        value=project('Energy study')
+        value['energyConfig']=dict(dropHeightMm=230,targetClearanceMm=50,torqueLimitNm=20,compressionReserveDeg=1)
+        result=self.call('working',expectedRevision=state['revision'],project=value)
+        self.assertEqual(result['working'],value)
+        self.assertEqual(result['designs'],state['designs'])
+        self.call('working',status=400,expectedRevision=result['revision'],project=dict(value,energyConfig=None))
+
     def test_optional_motor_profile_roundtrip_and_null_rejection(self):
         from motor_model import DEFAULTS
         state, _ = self.migrate()

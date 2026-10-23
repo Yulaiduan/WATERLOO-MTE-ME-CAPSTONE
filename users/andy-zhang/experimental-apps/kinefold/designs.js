@@ -26,7 +26,7 @@ function render(force=false){
  renderCompact();
  if(!library.open){libraryDirty=true;return;}
  if(root.contains(document.activeElement)&&document.activeElement.matches('input')){libraryDirty=true;return;}
- const value=current(),key=JSON.stringify([store.list(),value.id,value.name,value.solverConfig,value.contactConfig,value.caseConfig,value.motorConfig,value.params.L2,value.params.L3,value.params.m1,value.params.springEnabled,value.params.springLaw,dirty(),notice,deleted]);
+ const value=current(),key=JSON.stringify([store.list(),value.id,value.name,value.solverConfig,value.contactConfig,value.caseConfig,value.motorConfig,value.energyConfig,value.params.L2,value.params.L3,value.params.m1,value.params.springEnabled,value.params.springLaw,dirty(),notice,deleted]);
  if(!force&&!libraryDirty&&key===lastLibraryKey)return;
  libraryDirty=false;lastLibraryKey=key;
  const list=store.list().sort((a,b)=>b.updatedAt.localeCompare(a.updatedAt)),changed=dirty(),contact=value.contactConfig?.mode==='terrain-contact';

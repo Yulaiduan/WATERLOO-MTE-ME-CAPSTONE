@@ -5,6 +5,14 @@
 (() => {
 const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const extras=[
+["energyConfig.dropHeightMm","Energy-only drop height H","mm","Separate standalone calculator input; full chassis m1*g*H is retained, without impact-loss credit. Does not change dynamic landingDropMm or controllers.","energyConfig.dropHeightMm"],
+["energyConfig.targetClearanceMm","Residual underbody-to-ground clearance","mm","Energy-only target, default50mm. Distinct from the underside offset BELOW HIP A; actual clearance equals hip height minus that offset.","energyConfig.targetClearanceMm"],
+["energyConfig.compressionReserveDeg","Energy-only compression-stop reserve","°","Explicit pre-stop angular margin, default1degree illustrative. Zero allows a clearly labeled stop-boundary calculation, not stop avoidance.","energyConfig.compressionReserveDeg"],
+["energyConfig.torqueLimitNm","Available constant joint braking magnitude","N·m","Always HIP-JOINT-side, independently of dynamic motor command basis. Equivalent shaft magnitude equals this value divided by active gear ratio.","energyConfig.torqueLimitNm"],
+["requiredJointNm","Energy-screen resisting torque magnitude","N·m","max(0,(chassisdrop+gravityreleased+springreleased+coggingreleased)/usablejointangle). Compression braking command is negative. Constant-work initial-arrest screen, not a peak rating.","requiredJointNm"],
+["requiredShaftNm","Energy-screen motor resisting magnitude","N·m","Required joint magnitude divided by active ideal reduction N. Corresponding compression braking command is negative.","requiredShaftNm"],
+["capacityMm","Drop capacity at selected energy endpoint","mm","Available constant joint work minus compression gravity/spring/cogging release, divided by m1*g. Sufficient endpoint screen, not a global maximum over energy barriers; unavailable when negative.","capacityMm"],
+["qEndDeg","Energy-only arrest endpoint","°","Earlier of pre-stop reserve and target ground-clearance crossing along monotonic compression; first-arrest work balance only.","qEndDeg"],
 ["rotorConstraintPositionResidualRad","Native rotor position residual","rad","Actual scalar joint-side rotor angle minus ideal hip angle. Structural zero for exact elimination; native coupling drift is reported.","rotorConstraintPositionResidualRad"],
 ["rotorConstraintImpulseWorkJ","Signed native rotor constraint work","J","Numerical velocity/bias impulse work of the native rotor coupling; not physical motor friction or a measured impact loss.","rotorConstraintImpulseWorkJ"],
 ["coupledConstraintKineticLossJ","Signed coupled free-to-solved KE change","J","Contains native constraint bias and smooth force-kick splitting work. It is not independently partitioned contact/stop dissipation; refine dt.","coupledConstraintKineticLossJ"],

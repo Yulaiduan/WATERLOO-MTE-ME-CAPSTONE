@@ -217,3 +217,15 @@ inertia by N². Existing profiles retain their ideal actuator until edited.
 Legacy joint inertia/damping stay additive, and the wheel drive remains free.
 Read [motor-model.md](motor-model.md) for phase/units, coupled contact inertia,
 numerical guards, energy accounting and native ABI limitations.
+
+
+## Energy-only drop calculator — 2026-10-23
+
+Both dynamic tabs offer an instant **Energy only · drop height → braking torque**
+calculator without a simulation run. It uses saved chassis/spring/motor geometry,
+separates the50mm ground-clearance target from the underside offset, and reports
+joint/shaft resisting magnitudes, available stroke and endpoint drop capacity.
+The explicit editable1° stop reserve is an illustrative margin. A Plotly curve,
+work breakdown and app-folder export accompany the result. This conservative
+initial-arrest work screen does not change dynamic controller torques or certify
+impact peaks/holding. See [energy-calculator.md](energy-calculator.md).

@@ -557,3 +557,30 @@ was fixed by capturing actual rotor angle before prepare(), with an independent
 with per-host serialized operations, generations and deferred destruction;
 obsolete work is skipped, current errors still surface, and owned ResizeObserver
 replaces Plotly's independent responsive resize callback. Parent final browser/architecture review passes shared motor controls, reload persistence, invalidN rejection and disabled zero effects; eight motor Plotly plots and comparison selectors; actual native desktop open/status/2s/close (manual native visual inspection not claimed). Corrected201-sample100mm Landing pair, N10/Jm.002/motor-basis2Nm, both arrested: max heave difference2.31726mm, motor-work difference0.0363737J, loss difference0.00045759J; final work−6.90556195/−6.94193569J. Numerical ledger maxima2.364J Pymunk versus0.08362J analytical remain explicit, not tight conservation. Captured motor profiles match in4,456,913byte comparisonJSON; CSV201rows/246155bytes parse in app exports/. Final delayed-chart repro passes two paired runs, rapid work/loss/rotor selectors, themes, result replacement and original-profile import/stale purge, with no new console warning/error. Current working and4 named designs deeply equal pre-motor-library backup after exact UI restore (revision85). Proof .preview/motor-comparison-final.png remains ignored.
+
+
+## 2026-10-23 — standalone energy-only drop/torque screen
+
+Both dynamic tabs now include a no-run local calculator with a Plotly curve and
+app-folder JSON export. The residual underbody-to-ground target defaults50mm,
+separate from the shared underside offset below hip A. An explicit editable1°
+pre-stop reserve is an illustrative margin; zero is labeled stop-boundary only.
+Optional energyConfig persists full calculator inputs but is absent in legacy
+profiles and excluded from physical modelRevision/snapshot identity. Shared
+opening/underside edits explicitly change the landing case; no controller laws
+or torque commands are changed automatically.
+
+The chassis-only screen retains m1*g*H without impact/friction credit, adds
+compression gravity and signed spring/cogging release, then divides by available
+joint radians. Rotor endpoints are at rest; no inertia energy is added. The
+inverse is a sufficient selected-endpoint drop capacity, not a global optimum,
+impact peak or post-arrest hold guarantee. Unsupported geometry/loads, slack
+recovery and unavailable stroke are explicit. Original massless-wheel V4 and
+prescribed-height mode work without contact/dynamics setup.
+
+Independent baseline matches11.6103416383Nm at100mm, qend164°, endclearance
+315.382413mm and20Nm endpointcapacity172.214939136mm; spring-disabled torque
+51.7318271992Nm. Pure math39 assertions,15 temporary-disk tests,33 project-state,
+48 comparison,19 Plotly lifecycle and2000 unchanged model assertions pass.
+Launcher Stop/Start/reuse from unrelated cwd and both new assetHTTP200 pass4191.
+Parent final architecture/browser QA passes baselineH100→11.610341638281414Nm joint/capacity172.214939mm/clearance315.382413mm; H300→34.846Nm; H200 with target500mm→43.452Nm and capacity92.003mm; negative height rejection; zero-reserve stop-boundary warning; shared tabs, N10 shaft1.1610341638281414Nm, reload persistence, Plotly light/dark and app-folder export. Export JSON is11542bytes with81 curve points and captures the exact project/calculation. No console warnings/errors. Current working and all4 named designs deeply equal revision87 pre-energy backup after exact UI restore (current library revision100), with optional motor/energy blocks absent again. Proof .preview/energy-calculator-reviewed.png is ignored. Parent independently verified spring work, endpoint geometry and positive interior kinetic energy. Publication review approved.
