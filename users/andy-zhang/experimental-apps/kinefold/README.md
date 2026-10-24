@@ -13,6 +13,11 @@ reuses this app; an occupied port fails visibly. **[Stop Kinefold.cmd](Stop%20Ki
 stops only this app. Failures are readable in the launcher and `.preview/server.log`.
 No login/boot automation is installed. Node.js is needed only for developer checks.
 
+Portable [saved configurations](saved-configurations/README.md) include the
+alpha-zero VSL V4 nominal profile and the explicitly unsupported October 24
+working draft. Import a JSON file through the existing app controls; this is a
+manual snapshot, while the live profile library remains local.
+
 ## Workspace
 
 - **00 Mechanism studio:** compact save/profile actions and an expandable full

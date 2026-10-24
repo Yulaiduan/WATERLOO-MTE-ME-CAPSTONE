@@ -4586,3 +4586,40 @@ Reproduce the spring checks with verify_spring_playback.py and the12-page report
 Keep generated exports/raw runs local, finish manual browser QA when surfaces return, and distinguish constant cable tension from approximately constant coil support and energy screens from hardware survival.
 
 ---
+
+## Entry: 2026-10-24 — Andy Zhang — publish Kinefold saved configuration snapshots
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold member-app portable configurations and continuation documentation.
+- **Associated Issue/Task:** Owner requested committing and pushing all changes. Tracked source started clean on main at fetched 156ba08; new work existed in the ignored local profile store. Publish the named nominal alpha-zero design and exact current working draft as portable project JSON, preserving all local files and existing model behavior.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/2026-10-24-working-draft.json`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/vsl-v4-nominal-alpha0.json`
+
+- **API/Interface Changes:** None. Two existing kinefold/project-v3 snapshots are retained under app-local saved-configurations with import/Save-as instructions and explicit validation status; app README/context link them. Existing profiles/library.json, original project IDs/parameters, dynamics, launchers, dependencies, reference equations, shared interfaces and canonical assets remain unchanged. Live profile storage and raw exports/logs/environments stay ignored.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Both 1587/1722-byte UTF-8 snapshots parse as finite JSON and exactly round-trip through existing KinefoldProjects.decode without migration. Named nominal mechanical/spring/load fields match the tracked VSL V4 saved baseline; source Fy maps explicitly to Fx. Retained October 23 comparison JSON independently matches nominal params/runConfig: both engines terminated at duration with656 matched samples over6.5s, maximum chassis difference0.005940358813631974mm. These are historical run checks, not fresh integrations. Existing contact validator rejects preserved draft with the expected positive explicit m1/m6 requirement. Snapshot capture uses exact source projects from library revision20, SHA256 dba9904e615dfcbb21b7053c70f4808571ab740f9b11e393fba419e6300c913c; nominal remains identical and all draft fields except subsequent live playback theta2 remain unchanged. An initial revision17 capture guard refused the actively changing store; revision20 was captured instead. A later full live equality assertion detected only playback pose changes; focused non-pose equality passes, without overwriting the live library or changing physical inputs. A documentation patch initially failed an exact context match and was reapplied with the correct existing line; no partial source mutation or threshold relaxation. All37 relative Markdown links resolve, fences balance and git diff --check passes. Fetched origin/main is156ba08 and installed .githooks are retained. Required working/staged/require-passed/scoped-gate checks and normal commit/push hooks run before publication. No new numerical simulation, browser import, native GUI, hardware or GPU validation is claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to these isolated member configuration/documentation snapshots. The draft intentionally preserves m2=m3=1kg, m5=m6=0, terrain-contact mode and zero rise; it remains unsupported and must not be described as a validated contact or moving-mass prescribed-height setup. Raw run exports and browser/account material are not published. Both snapshots retain the original shared ID; use Import then Save as to keep distinct named variants on another computer.
+
+## 4. Compute Saving Handoff State
+
+The tracked Kinefold source was already published; saved-configurations now preserves the alpha-zero nominal profile and a separate October24 working draft with clear import and validation notes.
+Use the nominal135-degree/8.75kg/150mm-square profile to reproduce the earlier matched6.5s run, and keep the zero-wheel/moving-link contact draft explicitly unsupported until the intended model and masses are resolved.
+Import a selected project JSON and use Save as for a distinct named copy, retain original local profiles/exports, and continue with the existing Start Kinefold.cmd at port4191 through normal validated direct-to-main publication.
+
+---

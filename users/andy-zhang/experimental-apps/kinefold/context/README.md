@@ -733,3 +733,26 @@ current profile library deeply equals the revision111 pre-task backup, including
 all four named designs. Report text/footers/bounds/glyph checks and30 app-document
 links pass. Actual run environment: Python3.13.12, NumPy2.5.3, SciPy1.18.1,
 Pymunk7.3.0; numerical agreement is scoped to this environment and these fixtures.
+
+## 2026-10-24 — publish local configuration snapshots
+
+The owner requested committing and pushing all changes. Tracked source was
+already clean at `156ba08`; the new work was in the ignored local profile store.
+[Portable configurations](../saved-configurations/README.md) now retain the one
+named VSL V4 nominal alpha-zero profile and a separate exact working-draft copy
+from library revision 20. The live library and original exports are untouched.
+Import either project JSON through the app and use Save as for a new named copy;
+their preserved original IDs are the same.
+
+The nominal profile keeps 8.75 kg chassis, zero other masses, 135-degree starting
+pose, V4 coil and the 150 mm prescribed square over 6.5 s. Its previous local
+analytical/Pymunk pair had 656 matched samples and maximum chassis difference
+0.00594036 mm; those outputs remain ignored and are not new physics evidence.
+The working draft has m2=m3=1 kg, m5=m6=0 and terrain-contact mode, so it is
+explicitly unsupported by the current contact solver. Preserve the owner's
+inputs and resolve model/mass/input requirements before running that draft.
+
+Snapshot JSON/import validation, exact source equality, nominal source parity,
+retained-run evidence and the draft's expected contact rejection are checked
+for this publication. No new simulation, browser or hardware check is claimed;
+the required workspace entry/gate checks and installed hooks apply.
