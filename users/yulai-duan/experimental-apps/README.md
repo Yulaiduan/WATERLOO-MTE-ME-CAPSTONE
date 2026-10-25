@@ -9,4 +9,5 @@ engineering gates and a project-local restart launcher for any localhost server.
 
 | App | Purpose | Status | Verified startup |
 | --- | --- | --- | --- |
+| [Controls Lab](controls-lab/README.md) | Simple control architecture, leg gains and inherited chassis stiffness | Analytical; source parity and browser interactions checked | Standalone HTML; [GitHub Pages](https://yulaiduan.github.io/WATERLOO-MTE-ME-CAPSTONE/users/yulai-duan/experimental-apps/controls-lab/) |
 | [Block-descent study](block-descent-study/README.md) | Passive single-leg block-height, heave and profile studies | Experimental; 43 contact runs and profile checks reproduced | Batch scripts verified; no localhost server |

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "modelVersion": "camel-controls/1.0.0",
+  "geometry": {
+    "id": "jon-v4-dp3",
+    "revision": "5e52a1220d4ecc9881a80995cbd882df1bfc9be6"
+  },
+  "poseDeg": 135,
+  "massKg": 8.75,
+  "gainInput": {
+    "mode": "response",
+    "frequencyHz": 2,
+    "dampingRatio": 0.8
+  },
+  "support": {
+    "frontRearM": 1.2,
+    "leftRightM": 0.8
+  },
+  "activeView": "leg"
+}

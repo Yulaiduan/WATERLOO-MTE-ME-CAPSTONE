@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-25",
+  "runtime": {
+    "node": "v24.19.0"
+  },
+  "model": "camel-controls/1.0.0",
+  "geometry": {
+    "id": "jon-v4-dp3",
+    "revision": "5e52a1220d4ecc9881a80995cbd882df1bfc9be6"
+  },
+  "checks": 3349,
+  "sourcePoses": 651,
+  "maxPathErrorM": 2.220446049250313e-16,
+  "maxFiniteDifferenceJacobianErrorMPerRad": 1.863725840323127e-11,
+  "defaultResults": {
+    "kh": 1381.7446161525102,
+    "ch": 175.92918860102841,
+    "fn": 2,
+    "zeta": 0.8,
+    "knee": [
+      0.12678547852220984,
+      -0.271892336110995
+    ],
+    "hub": [
+      -0.14510685758878517,
+      -0.3986778146332048
+    ],
+    "h": 0.3986778146332048,
+    "J": -0.3986778146332048,
+    "kp": 219.6200161049135,
+    "kd": 27.962888932014916,
+    "heave": {
+      "k": 5526.978464610041,
+      "c": 703.7167544041137
+    },
+    "roll": {
+      "k": 884.3165543376067,
+      "c": 112.59468070465819
+    },
+    "pitch": {
+      "k": 1989.7122472596143,
+      "c": 253.3380315854809
+    }
+  },
+  "htmlSha256": "5eda23d27a7da283b5a5de85bfe233d77aa1469e4afedd5b5cb03c71d1df8cae",
+  "referenceKernelSha256": "dd336831af5a94b56d3b91a0303d2e15ed7c51fc6c9b4ac1f8c069b691f07df7",
+  "sourceNormalizedSha256": "37767388cfd20ae6fe7a03fd932a75f13660f773db5c875b6d902f3a35208cff",
+  "sourceNormalization": "Kernel extracted verbatim from the retained LF-normalized HTML; see reference/README.md.",
+  "sourceOriginalGitBlob": "1aef847b69c4cba4c63960870cea4fd37c59f16f",
+  "limitations": "Arithmetic and source parity only; not hardware gains, body dynamics or contact validation."
+}

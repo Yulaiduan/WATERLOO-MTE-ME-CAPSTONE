@@ -4676,3 +4676,48 @@ Read parametric-presets.md and the app context for physical scope, version/impor
 Preserve the original library and source reference, transfer live preset bundles explicitly between PCs, complete manual browser review when surfaces are available, and keep fixed-amplitude periodic cogging distinct from constant opposing Coulomb friction.
 
 ---
+
+## Entry: 2026-10-25 — Yulai Duan — Publish Controls Lab for GitHub Pages
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Standalone member control-architecture teaching dashboard.
+- **Associated Issue/Task:** User requested a simple adjustable offline tool, then explicitly requested GitHub publication and hosting on the public team repository.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/yulai-duan/experimental-apps/README.md`
+- `users/yulai-duan/experimental-apps/controls-lab/AGENTS.md`
+- `users/yulai-duan/experimental-apps/controls-lab/README.md`
+- `users/yulai-duan/experimental-apps/controls-lab/browser-checks.json`
+- `users/yulai-duan/experimental-apps/controls-lab/context/README.md`
+- `users/yulai-duan/experimental-apps/controls-lab/default-setup.json`
+- `users/yulai-duan/experimental-apps/controls-lab/index.html`
+- `users/yulai-duan/experimental-apps/controls-lab/reference/README.md`
+- `users/yulai-duan/experimental-apps/controls-lab/reference/candidate-gains.json`
+- `users/yulai-duan/experimental-apps/controls-lab/reference/dp3.json`
+- `users/yulai-duan/experimental-apps/controls-lab/reference/solver-kernel.js`
+- `users/yulai-duan/experimental-apps/controls-lab/verification.json`
+- `users/yulai-duan/experimental-apps/controls-lab/verify.cjs`
+
+- **API/Interface Changes:** Self-contained HTML with versioned JSON import/export and saved HTML. No shared APIs, canonical assets or hardware controls changed. Frozen source fixtures make the analytical checker portable. GitHub Pages main/root hosting is a repository setting; no custom deployment workflow is added.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Node verify.cjs passes 3,349 assertions across 651 source poses, finite-difference Jacobians, saved gains, independent chassis matrices, scaling, invalid inputs and JSON round trips. HTML SHA256 remains 5eda23d27a7da283b5a5de85bfe233d77aa1469e4afedd5b5cb03c71d1df8cae, identical to the browser-tested offline delivery. Desktop and 390 px browser interactions, exports/imports and saved HTML contents passed with no console errors; direct file launch was blocked by browser policy and remains unverified. Relative Markdown links and absence of machine-specific paths checked. Required fetched-base, staged, require-passed and workspace gate checks apply before publication; public hosting will be verified after enabling Pages.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app. Analytical agreement is not hardware or dynamic chassis validation.
+
+## 4. Compute Saving Handoff State
+
+Controls Lab provides proposed control flow, DP#3 leg gains and inherited four-support chassis impedance in one offline-capable HTML file.
+Read its README and context for fixed source conventions, assumptions, verification and the stable GitHub Pages URL; settings remain independent per visitor and can be exchanged as JSON.
+Preserve the model versions and source fixtures, verify hosting after publication, and run the numerical checker after future equation changes.
+
+---
