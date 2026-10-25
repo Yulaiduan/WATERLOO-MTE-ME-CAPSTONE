@@ -7,6 +7,12 @@ are migrated on first use; `browser-backup.json` preserves the original raw keys
 once, and those browser keys remain unchanged. Later browser recovery copies
 older designs into new named profiles without replacing the active working copy.
 
+`presets.json` separately stores reusable suspension/mechanism, motor–gearbox,
+input and immutable comparison-study records. It has its own optimistic revision;
+working-pose autosaves do not conflict with component edits. Studies retain full
+captured component versions. Importing a preset bundle creates new copies after
+whole-bundle validation. See [parametric presets](../parametric-presets.md).
+
 These generated JSON files are ignored by Git. Keep a copy of this folder and
 `exports/` when moving the app to another computer. Do not edit files while the
 app is open; reload after external edits. A malformed file fails visibly and is

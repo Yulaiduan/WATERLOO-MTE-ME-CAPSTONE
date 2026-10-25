@@ -262,6 +262,9 @@ class ProfileService:
 
     def _handle(self, request):
         action = request.get("action")
+        if isinstance(action, str) and action.startswith("preset-"):
+            from preset_service import PresetService
+            return PresetService(self).handle(request)
         if action == "export":
             _shape(request, ("action", "name", "content", "mime"), "export request")
             name, content, mime = request.get("name"), request.get("content"), request.get("mime")

@@ -756,3 +756,61 @@ Snapshot JSON/import validation, exact source equality, nominal source parity,
 retained-run evidence and the draft's expected contact rejection are checked
 for this publication. No new simulation, browser or hardware check is claimed;
 the required workspace entry/gate checks and installed hooks apply.
+
+## 2026-10-25 — independent component presets and comparison studies
+
+Based on main `9d086a8`. The user requested reusable motor/gearbox combinations,
+nonideal inertia/cogging/viscous effects, multi-candidate contour/range studies
+and a system graph showing numerical inputs, equations and outputs. Sol workers
+implemented storage, pure calculation and UI in isolated worktrees; parent
+specified the contracts, reviewed the physics mapping and completed integration.
+
+Top tabs now retain00 studio,01 analytical and02 Pymunk, then add03 Presets &
+studies and04 System flow, with05 Conventions last. Stable existing URLs remain.
+[Parametric preset notes](../parametric-presets.md) explain the separate
+profiles/presets.json revision, typed suspension/actuator/input records, immutable
+resolved study copies, import-as-copies and explicit project-v3 composition.
+Existing library.json and all4 named designs/working copy remain byte-identical
+to the pre-task backup at revision111. Preset selection, calculation and batches
+do not edit that working design. Local bundles/outputs stay under app exports;
+source pulls do not synchronize live libraries automatically.
+
+The fixed-hip prescribed-load screen reuses V4 static demand and derives body
+Jacobian inertia, J-prime velocity term, N-squared reflected motor inertia,
+inverse-squared motor-equivalent leg inertia, periodic fixed-amplitude cogging,
+Coulomb and viscous losses. It distinguishes motor EM-equivalent joint demand
+from actual gearbox output load; contact/impulse output loads stay unassessed.
+Computed triangle-clipped isobands/isolines use offline Plotly BASIC scatter.
+Peak/rpm/gearbox ratings are independent bounds, not a torque-speed motor curve.
+Missing passive data blocks composition unless explicitly idealized; speed and
+torque ratings remain nullable. The deliberate V4 example creates separate ideal
+study records without changing the original design. No physical motor law or
+engine integration code changed; actual candidates use the existing laws.
+
+Parent validation:55 preset JS assertions with37 mirrored fixtures,9 temporary
+Python preset groups,92 independent kernel assertions,48 DOM/VM UI assertions
+and20 BASIC chart mounts pass. Existing33 project groups,17 disk-profile tests,
+2000 model/115 energy assertions and19 lifecycle/14 equilibrium/3404 dynamic
+Plotly assertions pass. The UI harness uses real kernel/store contracts with
+mock trajectory rows; actual visual/pointer review is unverified because CUA
+inventory contains no enabled browsers/apps. Parent corrected invalid nested
+motor labels with an accessibility regression and retained actionable candidate
+composition failures before scheduling a backend.
+
+The retained [actual batch check](../verify-preset-batch.cjs) separately passes
+both subprocess and same-origin HTTP modes: two illustrative N5/N10 motors with
+nonzero rotor/cogging/Coulomb/viscous terms, one captured1.5kg-wheel flat-floor
+contact case, four engine jobs over0.3s. Each pair has16 matching samples; max
+chassis differences are0.000390809/0.001226938mm. These are numerical fixtures,
+not measured motor parameters or terrain-edge/hardware certification. An initial
+parent harness called compare instead of comparison; corrected before the clean
+rerun. Worker VM realm fixtures and an explicit-null motor validation omission
+were corrected before final passing tests; production guards were not weakened.
+
+Actual project-local Stop/Start/reuse/Stop/restart from C:/Windows/Temp passes4191.
+Both new routes and all five new assets return200 with exact source bytes;
+preset-list200, foreign Origin403 and stale revision409 are verified. JS parsing,
+Python compilation, whitespace and relative documentation links pass. Publication
+uses workspace scope, normal hooks and fetched-base checks; canonical robot
+physics is NOT APPLICABLE. Stop with Stop Kinefold.cmd and restart through the
+existing Start Kinefold.cmd; no boot/login automation is added.

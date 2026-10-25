@@ -4623,3 +4623,56 @@ Use the nominal135-degree/8.75kg/150mm-square profile to reproduce the earlier m
 Import a selected project JSON and use Save as for a distinct named copy, retain original local profiles/exports, and continue with the existing Start Kinefold.cmd at port4191 through normal validated direct-to-main publication.
 
 ---
+
+## Entry: 2026-10-25 — Andy Zhang — Parametric actuator presets and captured comparison studies
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold reusable component library, multi-actuator analysis and system-flow inspection.
+- **Associated Issue/Task:** Save suspension designs, motor/gearbox combinations and simulation inputs independently; compare their torque/speed/inertia ranges and contours, retain nonideal motor effects and expose the numerical dependency graph. Started clean on main9d086a8 after pulling the laptop configuration commit.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/exports/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/parametric-presets.md`
+- `users/andy-zhang/experimental-apps/kinefold/preset-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-flow.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-workbench.css`
+- `users/andy-zhang/experimental-apps/kinefold/preset-workbench.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/profiles/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-batch.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-presets.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_presets.py`
+
+- **API/Interface Changes:** Existing project-v3, dynamic payloads and disk-library-v1 remain unchanged. New independent preset-library-v1/preset-bundle-v1 records use preset-list/save/remove/import actions under the existing guarded /api/profiles endpoint, separate optimistic revisions and atomic profiles/presets.json writes. Typed component records include explicit unknown passive fields and nullable ratings; immutable studies retain complete resolved component versions. Composition creates a new validated project identity only on explicit Open in studio. Pure pose/rate/acceleration screens derive fixed-hip body inertia and its derivative, motor N/N² transformations, cogging and friction compensation; gearbox output load is distinct from upstream electromagnetic demand. Computed contour isobands/isolines use the unchanged offline BASIC scatter runtime. Sequential captured batches reuse actual engine payloads, retain independent errors/partials and export compact summaries or full individual jobs. New presets/flow tabs precede last conventions; graph nodes inspect live values, units, equations and outcome status. No source app, physical motor law, integrator/controller, dependency, shared interface, canonical asset or rule changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** New55 JS preset assertions including37 mirrored fixtures,9 temporary-disk Python groups,92 independent analytical assertions and48 DOM/VM UI assertions with20 Plotly BASIC mounts PASS. Persistence tests cover immutable imported/deleted component provenance, atomic failure rollback, conflicts, whole-bundle validation and preserved original library. Calculation tests independently check COM Jacobians/custom inertia, J-prime demand, N/N², cogging sign, reversing friction, separate gearbox output, plane-contour equations/total isoband area and unknown-input blocking; batch/UI checks cover exact capture, scheduling, failures, cancellation, stale state, explicit new-ID composition and bounded summary/per-job export separation. Existing33 project groups,17 disk-profile tests,2000 model/115 energy assertions and19 lifecycle/14 equilibrium/3404 dynamic Plotly assertions PASS. Parent actual verify-preset-batch.cjs runs PASS through subprocesses and HTTP: two explicitly illustrative N5/N10 motors with nonzero rotor/cogging/Coulomb/viscous properties, same captured1.5kg-wheel flat contact input, four engine jobs over0.3s,16 matched samples/pair; max heave differences0.000390809/0.001226938mm. Initial VM object-realm fixtures and parent comparison-helper/wrong-cwd parse invocations were corrected before clean reruns. An explicit-null motor guard, invalid nested editor labels and candidate error provenance were fixed with regressions; no physical threshold was weakened. JS parse/Python compile/doc-link checks PASS; first staged whitespace check rejected CRLF in two new files after parent edits, normalized to LF before the clean rerun. Actual app-local Stop/Start/reuse/Stop/restart from unrelated C:/Windows/Temp PASS4191; both new routes/five assets HTTP200 and exact bytes, preset read200/foreign-origin403/stale-revision409 PASS. Entire original library SHA4752f343c1a750acb42f86970039a3343b251e9f67beeac8cd2425e7cbf72ac5 stays byte-identical at revision111 with4 named designs. Browser inventory has no enabled surfaces, so real manual visual/pointer QA is UNVERIFIED; DOM fixtures use mocked trajectory rows and are distinguished from actual engine/API tests. Raw evidence, profile libraries and exports remain ignored. Required fetched-base/staged/require-passed/workspace checks and normal hooks apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app contribution. Fixed-hip sampled envelopes differ from actual quarter-model dynamics; independent peak/rpm/gearbox bounds do not certify a motor curve, hardware braking or survival. Contact/impulsive gearbox output torque stays unassessed; unmeasured component values are not silently substituted.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now saves independent suspension/actuator/input presets and immutable studies, compares computed contour/range screens and runs captured candidate batches through both existing dynamic engines, with a live numerical system-flow inspector.
+Read parametric-presets.md and the app context for physical scope, version/import behavior, explicit unknown-data idealization and actual verification; restart using the app-local Start Kinefold.cmd at4191 and open presets or flow.
+Preserve the original library and source reference, transfer live preset bundles explicitly between PCs, complete manual browser review when surfaces are available, and keep fixed-amplitude periodic cogging distinct from constant opposing Coulomb friction.
+
+---

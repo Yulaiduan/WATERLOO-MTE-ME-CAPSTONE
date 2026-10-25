@@ -28,7 +28,14 @@ manual snapshot, while the live profile library remains local.
   stops. See [plot coverage and controls](equilibrium-plots.md).
 - **01 Analytical / 02 Pymunk:** shared quarter-model case controls, playback,
   categorized result charts and exact-snapshot engine comparison described below.
-- **03 Conventions & variables (last):** expandable frame, topology, signs,
+- **03 Presets & studies:** save suspension/mechanism, motor–gearbox and input
+  components independently, capture immutable multi-candidate studies, compare
+  torque/speed/inertia screens and run the same captured case in both engines.
+  Nullable hardware properties stay unassessed unless an explicit ideal study
+  assumption applies. See [parametric presets](parametric-presets.md).
+- **04 System flow:** selectable nodes show the chosen component values, their
+  equations and the calculations, charts and files they produce.
+- **05 Conventions & variables (last):** expandable frame, topology, signs,
   spring/loading laws, dynamics assumptions and searchable variable definitions.
   The front-left frame is +x forward, +y left, +z up; +x faces left and +z up
   in side view, with positive +y moments counterclockwise.
@@ -38,6 +45,8 @@ npm install is needed. Plotly supports hover, zoom, pan, legends and reset axes.
 Existing contextual JSON/CSV exports write to this app's `exports/` folder;
 Plotly's browser-download camera is removed. Mechanism, spring, free-body and
 conventions drawings remain geometrically scaled SVG illustrations.
+Computed preset contour isobands/isolines also use this offline runtime through
+scatter traces; no unsupported heatmap module or external chart service is used.
 Old `?tab=designs` and `?tab=static` links open the relevant studio section.
 Builder playback defers equilibrium rebuilding until the pose settles and labels
 those charts as showing the last settled pose while it plays.
@@ -77,6 +86,16 @@ manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses
 `node verify-dynamic-plotly.cjs` check lifecycle and trace semantics. The offline
 vendor checksums/provenance and license are in [vendor/README.md](vendor/README.md).
 Real pointer, sizing and zoom behavior also require browser review.
+
+`node verify-presets.cjs`, `python verify_presets.py` and
+`node verify-preset-analysis.cjs` check independent component persistence,
+immutable study versions, unknown inputs, inertia/loss transformations and
+computed contours. After Setup, `node verify-preset-batch.cjs` runs two
+illustrative actuator combinations through both actual contact engines; add
+`--http` to exercise the running app API instead of engine subprocesses.
+It writes compact evidence under ignored `.preview/` and leaves live libraries
+unchanged. The separate preset library is `profiles/presets.json`; use its
+bundle import/export or a private local-file snapshot for transfers between PCs.
 
 From this directory: `node verify.cjs` checks source parity, geometry, world
 forces/moments, finite-pulley energy derivatives, both spring laws and JSON state.
