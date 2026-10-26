@@ -1,0 +1,36 @@
+/* Energy workspace: responsive, equation-first analytical results. */
+#energy { min-width:0; }
+.energy-identity { border:1px solid var(--line); border-radius:8px; padding:12px 16px; margin-bottom:16px; color:var(--muted); overflow-wrap:anywhere; }
+.energy-mode { display:flex; gap:8px; margin:16px 0; flex-wrap:wrap; }
+.energy-mode button { padding:12px 20px; }
+.energy-mode button[aria-pressed="true"] { background:var(--sage); color:var(--paper); border-color:var(--sage); }
+.energy-input-layout,.energy-chart-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.energy-input-card,.energy-chart-card,.energy-summary { border:1px solid var(--line); background:var(--paper); padding:20px; border-radius:10px; min-width:0; margin-bottom:16px; }
+.energy-input-card h3,.energy-chart-card h4 { margin:0 0 10px; }
+.energy-input-card p,.energy-chart-card p { color:var(--muted); line-height:1.55; }
+.energy-input-card .contact-controls { grid-template-columns:repeat(auto-fit,minmax(175px,1fr)); }
+.energy-input-layout .contact-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:12px; }
+.energy-input-layout .contact-controls > div { display:contents; }
+.energy-input-layout label { display:block; margin-bottom:0; }
+.energy-input-card label { min-width:0; }
+.energy-input-card input,.energy-input-card select { width:100%; box-sizing:border-box; }
+.energy-chart-card { margin:0; padding:18px 10px 6px; overflow:hidden; }
+.energy-chart-card h4,.energy-chart-card p { padding:0 10px; }
+.energy-chart-card [data-energy-chart] { width:100%; min-height:410px; }
+.energy-plot-heading { display:flex; justify-content:space-between; gap:18px; align-items:start; margin:16px 0; }
+.energy-range { display:flex; gap:12px; }
+.energy-range label { display:block; font-size:12px; color:var(--muted); }
+.energy-range input { display:block; width:120px; }
+.energy-plots-section { margin-bottom:22px; }
+.energy-equation { font-size:16px; line-height:1.8; padding:14px; background:var(--wash,var(--paper)); overflow-wrap:anywhere; }
+#energy table { width:100%; border-collapse:collapse; font-size:13px; }
+#energy td,#energy th { padding:10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; }
+#energy th { color:var(--muted); }
+#energy details { margin:16px 0; }
+#energy .eqd-table-wrap { max-width:100%; overflow-x:auto; }
+#energy .solver-readouts { grid-template-columns:repeat(4,minmax(0,1fr)); }
+#energy .readout { min-width:0; }
+#energy .readout strong { font-size:24px; overflow-wrap:anywhere; }
+@media (max-width:1100px) { .energy-chart-grid { grid-template-columns:1fr; } #energy .solver-readouts { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media (max-width:700px) { .energy-input-layout { grid-template-columns:1fr; } .energy-plot-heading { display:block; } .energy-range { margin-top:14px; } .energy-input-card { padding:15px; } #energy .readout strong { font-size:21px; } }
+@media (max-width:480px) { .energy-input-layout .contact-controls { grid-template-columns:1fr; } .energy-range { flex-wrap:wrap; } }

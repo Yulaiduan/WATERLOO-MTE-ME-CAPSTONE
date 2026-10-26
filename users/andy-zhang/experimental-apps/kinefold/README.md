@@ -26,16 +26,20 @@ manual snapshot, while the live profile library remains local.
   followed directly by all 17 equilibrium charts in categorized expandable groups.
   Diagnostic ranges inspect the same builder design without editing its physical
   stops. See [plot coverage and controls](equilibrium-plots.md).
-- **01 Analytical / 02 Pymunk:** shared quarter-model case controls, playback,
+- **01 Energy · jump & landing:** immediate work–energy calculations for the
+  current saved mechanism, separate from simulation. Jump and landing show
+  torque-versus-height plots, energy terms, the signed budget through the stroke,
+  geometry and full numerical equation tables. See [energy calculations](energy-calculator.md).
+- **02 Analytical / 03 Pymunk:** shared quarter-model case controls, playback,
   categorized result charts and exact-snapshot engine comparison described below.
-- **03 Presets & studies:** save suspension/mechanism, motor–gearbox and input
+- **04 Presets & studies:** save suspension/mechanism, motor–gearbox and input
   components independently, capture immutable multi-candidate studies, compare
   torque/speed/inertia screens and run the same captured case in both engines.
   Nullable hardware properties stay unassessed unless an explicit ideal study
   assumption applies. See [parametric presets](parametric-presets.md).
-- **04 System flow:** selectable nodes show the chosen component values, their
+- **05 System flow:** selectable nodes show the chosen component values, their
   equations and the calculations, charts and files they produce.
-- **05 Conventions & variables (last):** expandable frame, topology, signs,
+- **06 Conventions & variables (last):** expandable frame, topology, signs,
   spring/loading laws, dynamics assumptions and searchable variable definitions.
   The front-left frame is +x forward, +y left, +z up; +x faces left and +z up
   in side view, with positive +y moments counterclockwise.
@@ -81,6 +85,12 @@ Remote spring housing is schematic. Cable stretch, friction, strength, contact,
 manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses.
 
 ## Developer checks
+
+`node verify-energy.cjs`, `node verify-energy-workspace.cjs` and
+`node verify-energy-ui.cjs` check retained landing values, jump/landing energy
+identities, sampled work ledgers, saved metadata, chart traces and explicit
+command handoff without a simulation request. The UI harness uses an in-memory
+DOM; live pointer, sizing and visual behaviour require browser review.
 
 `node verify-plotly-runtime.cjs`, `node verify-equilibrium-plotly.cjs` and
 `node verify-dynamic-plotly.cjs` check lifecycle and trace semantics. The offline
@@ -245,8 +255,8 @@ numerical guards, energy accounting and native ABI limitations.
 
 ## Energy-only drop calculator — 2026-10-23
 
-Both dynamic tabs offer an instant **Energy only · drop height → braking torque**
-calculator without a simulation run. It uses saved chassis/spring/motor geometry,
+The dedicated **Energy · jump & landing** tab offers instant work calculations
+without a simulation run. Its landing calculator uses saved chassis/spring/motor geometry,
 separates the50mm ground-clearance target from the underside offset, and reports
 joint/shaft resisting magnitudes, available stroke and endpoint drop capacity.
 The explicit editable1° stop reserve is an illustrative margin. A Plotly curve,
@@ -291,7 +301,7 @@ spring law; select **Ideal constant cable force** under Suspension for constant
 tension. This drawing change does not change a force law or saved profile.
 
 Run `.venv/Scripts/python.exe verify_spring_playback.py` to reproduce eight
-actual analytical/Pymunk spring-on/off runs, virtual-work checks and 222 SVG
+actual analytical/Pymunk spring-on/off runs, virtual-work checks and 4,506 SVG/native
 assertions. It supplies captured fixtures to `verify-spring-playback.cjs`;
 the Node helper is not a standalone test. Run
 `.venv/Scripts/python.exe verify_viewer.py --gui` for the native viewer checks.

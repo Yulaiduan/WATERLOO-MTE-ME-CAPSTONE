@@ -857,3 +857,70 @@ drawing, or reopen the desktop viewer. Source publication uses workspace scope,
 normal hooks and fetched-base checks; canonical robot/hardware validation is
 not applicable to this drawing-only change. Historical dial/report evidence
 above describes the earlier representation and is not a new physical package.
+
+## 2026-10-26 — dedicated jump and landing energy workspace
+
+Based on main `5a2b537`. The owner requested all energy calculations and plots,
+with energy sizing separated from the simulation Run workflow. A GPT-6.1 Sol
+worker implemented the feature in an isolated worktree; parent reviewed the
+equations, UI structure, handoff and final integration. Current order is
+00 Mechanism studio, 01 Energy, 02 Analytical, 03 Pymunk, 04 Presets & studies,
+05 System flow and 06 Conventions. Existing tab IDs/legacy studio aliases remain.
+
+Energy has Jump/Landing selectors, immediate edits, the saved mechanism identity,
+four expanded Plotly charts per case, complete quantity/equation/value/unit
+tables and expandable 81-height/161-stroke sample tables. Charts show joint and
+shaft torque versus height, signed energy terms versus height, accumulated work
+and kinetic budget along the stroke, and hip height/underbody clearance versus
+angle. Local plot range defaults to 0–3000mm, editable within 0–5000mm; it is
+not saved as a physical input. Out-of-range targets are labelled. Optional
+catalog controls/long rating tables collapse; calculation tables/charts remain
+visible. Parent made desktop inputs a compact two-column grid and retained a
+single-column small-screen layout; live CSS layout is unverified.
+
+The pure `workspace(project, kind, options)` helper retains the existing landing
+and jump APIs/numbers and adds raw signed work samples. Negative kinetic budgets
+remain negative and flag sampled barriers; no sampled pass certifies a path.
+Jump is an optimistic full-extension/locked-flight work screen, using chassis
+stance gravity and chassis-plus-wheel flight mass. Landing retains full chassis
+drop energy without impact/friction credit and assesses first arrest only.
+The 50mm residual clearance is distinct from the 50mm underside offset. Missing
+stroke/clearance, moving link mass, slack and unsupported geometry stay explicit.
+See [equations and scope](../energy-calculator.md), not a new robot baseline.
+
+Existing energyConfig/torqueTargetConfig store analysis metadata; no schema
+migration or automatic optional block is added. Shared landing opening/underside
+remain physical case edits. Candidate motor/gearing stays analysis-only. Explicit
+Use physical estimate actions recompute with the actual saved motor and cogging,
+convert to its saved torque basis, validate complete commands and open an engine
+without running. Contact incompatibilities block copying, with actionable reasons
+and a settings link; no masses are substituted. Review caught the old landing
+brake limit silently capping a larger command: copying now explicitly raises a
+lower limit, discloses that limit and validates before any write. Dynamic target
+searches and all existing energy plots are retained; duplicate full calculators
+are removed from the dynamic panels. Complete JSON uses energy-workspace-v1;
+curve/stroke CSV and JSON use existing app-folder exports, not Downloads.
+
+Parent integrated checks PASS: 115 retained energy assertions, 4,490 detailed
+energy assertions, 642 DOM/VM assertions with 48 scatter-compatible chart mounts,
+33 project groups, 17 temporary-disk profile tests, 48 preset UI assertions with
+20 chart mounts, 19 Plotly lifecycle assertions, 14 equilibrium and 3,404 dynamic
+trace assertions, and 2,000 core assertions. Fifteen pre-change fixtures match
+exactly across both spring laws/off and heights 0/100/500/2000/5000mm; the V4 2m
+landing result remains 232.345151886620Nm. Initial worker fixtures used an invalid
+spring identifier, wrong independent height formula, host-VM realm and CJS export
+name; these harness errors were corrected before passing. Source EOL churn was
+removed. No production validation guard or tolerance was weakened. JS parsing,
+Python compilation, documentation links and whitespace are checked before push.
+
+Actual project-local Stop/Start/Stop/restart/reuse from an unrelated directory
+PASS at4191. Eight changed assets match disk bytes; all seven tabs and two legacy
+routes return HTTP200. Live library.json is byte-identical to its pre-task backup,
+SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f.
+CUA lists no enabled apps/browsers, and opening IAB reports unavailable. New live
+visual, pointer, console, zoom and real browser theme review remain UNVERIFIED;
+the DOM harness is not a browser. No new dynamic integration/hardware test is
+claimed for this calculation/UI contribution. Canonical robot physics is NOT
+APPLICABLE; normal fetched-base checks and publication hooks still apply.
+Restart via app-root Start Kinefold.cmd, stop via Stop Kinefold.cmd; the preview
+remains http://127.0.0.1:4191/?tab=energy, without login/boot automation.

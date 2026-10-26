@@ -79,6 +79,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
   }
   function jumpEstimate(project,targetHeightMm){
     const p=project.params,motor={...KinefoldProjects.motorDefaults,...project.motorConfig};
+    const errors=Kinefold.validate(p);if(errors.length)throw Error(errors.join(' '));
     if(!(p.m1>0&&p.m6>=0&&p.g>0)||!Number.isFinite(targetHeightMm)||targetHeightMm<0)throw Error('Jump work estimate needs positive chassis mass/gravity and a nonnegative height.');
     if(['m2','m3','m5'].some(k=>p[k]!==0)||Math.abs(p.L2-p.L3)>1e-9||Math.abs(p.ra/p.rb-2)>1e-10||Math.abs(Math.cos(((180+p.phi0)/2-p.alpha)*R))>1e-9)throw Error('Ideal jump work estimate requires massless equal links and vertical straight travel.');
     if(p.loadMode==='contact'||p.loadMode==='global'&&(Math.abs(p.Fx)>1e-12||Math.abs(p.Fz)>1e-12))throw Error('Extra wheel loads are outside this gravity-only jump work estimate.');
@@ -96,5 +97,59 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     return {jointNm,shaftNm:jointNm/N,stanceRiseMm,stanceGravityJ,flightEnergyJ,springReleaseJ,coggingReleaseJ,angularTravelRad:travel,
       meaning:'Optimistic work screen: full extension at takeoff, locked relative pose during flight, all mass rises together; no stop/contact/friction loss or retained rotor kinetic energy. Not guaranteed takeoff or apex.'};
   }
-  return {calculate,landingEstimate,jumpEstimate,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
+  /** Detailed, sampled endpoint work ledger. No time integration or pass claim.
+   * Plot range is local display state in mm; all signed energy budgets stay raw.
+   */
+  function workspace(project,kind='landing',options={}){
+    if(!['jump','landing'].includes(kind))throw Error('Choose jump or landing energy.');
+    const count=options.samples??161,min=options.heightMinMm??0,max=options.heightMaxMm??5000;
+    if(!Number.isInteger(count)||count<3||count>501||![min,max].every(Number.isFinite)||min<0||max<=min||max>5000)throw Error('Plot range needs 0 ≤ minimum < maximum ≤ 5000 mm, with 3–501 samples.');
+    const P=KinefoldProjects,V=KinefoldV4,p=project.params,c={...P.caseDefaults,...project.caseConfig};
+    const e=P.validateEnergy({...P.energyDefaults,dropHeightMm:c.landingDropMm,...project.energyConfig});
+    const target={...P.torqueTargetDefaults,...project.torqueTargetConfig};
+    P.validateTorqueTargets(target);
+    const savedMotor=P.validateMotor({...P.motorDefaults,...project.motorConfig}),screen=resolveScreen(e.screening);
+    P.validateCase(c);
+    const motor=screen?{...savedMotor,enabled:true,gearRatio:screen.ratio,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
+    const analysisProject={...project,motorConfig:motor};
+    let result;
+    if(kind==='landing')result=calculate(project);
+    else{
+      const j=jumpEstimate(analysisProject,target.jumpHeightMm),N=motor.enabled?motor.gearRatio:1,available=screen?screen.effectiveJointNm:e.torqueLimitNm;
+      if(screen){screen.motorPass=j.shaftNm<=screen.peakShaftNm+1e-10;screen.gearboxPass=!screen.gearboxAssessed?null:screen.momentaryNm===null||j.jointNm<=screen.momentaryNm+1e-10;screen.savedPassiveMotorEnabled=savedMotor.enabled;}
+      result={...j,config:e,requiredJointNm:j.jointNm,requiredShaftNm:j.shaftNm,gearRatio:N,availableJointNm:available,availableShaftNm:available/N,screening:screen,
+        qStartDeg:p.tc,qEndDeg:p.te,angularTravelDeg:p.tc-p.te,massKg:p.m1,gravityMS2:p.g,flightMassKg:p.m1+p.m6,wheelMassKg:p.m6,
+        targetHeightMm:target.jumpHeightMm,workJ:j.stanceGravityJ+j.flightEnergyJ-j.springReleaseJ-j.coggingReleaseJ,
+        passes:j.jointNm<=available+1e-10&&(!screen||screen.gearboxAssessed),boundaryOnly:false,undersideOffsetMm:c.undersideOffsetMm};
+    }
+    const ref=Kinefold.reference(p),height=q=>p.rw-V.VSL.state(ref,q).Pg[1];
+    const spring=q=>{if(!p.springEnabled)return 0;const z=V.VSLSpring.state(ref,q);if(!z.valid||!Number.isFinite(z.energy))throw Error(z.reason||'Invalid spring energy.');return z.energy;};
+    const cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*result.gearRatio*q*R+motor.coggingPhaseDeg*R):0;
+    const start=result.qStartDeg,end=result.qEndDeg,h0=height(start),s0=spring(start),c0=cog(start),initialK=kind==='landing'?result.dropJ:0;
+    const stroke=Array.from({length:count},(_,i)=>{
+      const q=start+(end-start)*i/(count-1),travel=Math.abs(q-start)*R,h=height(q),gravityDeltaJ=p.m1*p.g*(h-h0)/1000,springDeltaJ=spring(q)-s0,coggingDeltaJ=cog(q)-c0;
+      const motorWorkJ=(kind==='jump'?1:-1)*result.requiredJointNm*travel;
+      return {hipAngleDeg:q,angularProgressRad:travel,hipHeightMm:h,underbodyClearanceMm:c.undersideOffsetMm===null?null:h-c.undersideOffsetMm,
+        motorWorkJ,gravityDeltaJ,springDeltaJ,coggingDeltaJ,kineticBudgetJ:initialK+motorWorkJ-gravityDeltaJ-springDeltaJ-coggingDeltaJ};
+    });
+    const curve=Array.from({length:81},(_,i)=>{
+      const h=min+(max-min)*i/80;
+      const dropJ=kind==='landing'?p.m1*p.g*h/1000:0,flightEnergyJ=kind==='jump'?(p.m1+p.m6)*p.g*h/1000:0;
+      const gravityJ=kind==='landing'?result.gravityCompressionJ:result.stanceGravityJ,springReleaseJ=kind==='landing'?result.springReleasedJ:result.springReleaseJ,coggingReleaseJ=kind==='landing'?result.coggingReleasedJ:result.coggingReleaseJ;
+      const net=kind==='landing'?dropJ+gravityJ+springReleaseJ+coggingReleaseJ:gravityJ+flightEnergyJ-springReleaseJ-coggingReleaseJ;
+      const jointTorqueNm=Math.max(0,net/result.angularTravelRad);
+      return {heightMm:h,jointTorqueNm,shaftTorqueNm:jointTorqueNm/result.gearRatio,dropJ,flightEnergyJ,gravityJ,springReleaseJ,coggingReleaseJ,netMotorWorkJ:net};
+    });
+    const interior=stroke.slice(1,-1),negative=interior.filter(r=>r.kineticBudgetJ < -1e-8);
+    const minKineticBudgetJ=Math.min(...stroke.map(r=>r.kineticBudgetJ));
+    return {...result,kind,selectedHeightMm:kind==='jump'?target.jumpHeightMm:e.dropHeightMm,initialKineticBudgetJ:initialK,
+      startHipHeightMm:h0,endHipHeightMm:height(end),initialClearanceMm:c.undersideOffsetMm===null?null:h0-c.undersideOffsetMm,endClearanceMm:c.undersideOffsetMm===null?null:height(end)-c.undersideOffsetMm,
+      targetTakeoffSpeedMS:kind==='jump'?Math.sqrt(2*p.g*target.jumpHeightMm/1000):null,
+      generalizedJointCommandNm:-result.requiredJointNm,physicalGearRatio:savedMotor.enabled?savedMotor.gearRatio:1,
+      curve,stroke,plotRange:{heightMinMm:min,heightMaxMm:max,samples:count},minKineticBudgetJ,sampledNegativeInteriorCount:negative.length,
+      pathWarning:negative.length?(kind==='jump'?'Negative interior kinetic budget: the endpoint torque cannot traverse this sampled stroke from rest under the stated ideal assumptions.':'Negative interior kinetic budget: the assumed fixed-wheel stroke cannot reach this endpoint; earlier arrest/reversal may occur.'):'No negative budget at the sampled poses. This sampling does not establish contact, takeoff, peak loads or path feasibility.',
+      endpointKineticBudgetJ:stroke.at(-1).kineticBudgetJ,unclippedMotorWorkJ:result.workJ,
+      assumptions:kind==='jump'?'Optimistic endpoint work: full extension at takeoff; all chassis and wheel mass rises together in locked-pose flight; chassis-only stance rise; no impact/stop/friction losses or retained rotor kinetic energy.':'Conservative chassis-only initial-arrest screen: full m₁gH retained; fixed wheel during compression on stationary flat ground; rest at arrest; wheel impact energy omitted; no impact/friction loss credit or post-arrest hold claim.'};
+  }
+  return {calculate,landingEstimate,jumpEstimate,workspace,resolveScreen,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
 })();

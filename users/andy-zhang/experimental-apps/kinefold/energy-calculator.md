@@ -1,20 +1,81 @@
-# Energy-only drop height to braking torque
+# Jump and landing energy workspace
 
-Andy Zhang / Codex, 2026-10-23. Experimental chassis-only work screen, not a
+Andy Zhang / Codex, updated 2026-10-26. Experimental work screens, not a
 trajectory integration, peak rating, hardware test or post-arrest guarantee.
 
-Open **Energy only · drop height → braking torque** in either dynamic tab.
+Open **01 Energy · jump & landing**, then choose Jump or Landing.
 It calculates immediately in the browser from the same saved mechanism, spring
 and optional motor profile, including the original massless-wheel V4 baseline.
 It works independently of terrain/prescribed mode and requires no dynamics run.
+Editing the height updates the result and all plots; there is no Run action in
+this workspace. The dynamic tabs retain engine-based target searches and link
+here for the separate energy calculation.
 
-The live equation table is visible directly inside the calculator, above its
-Plotly chart. It lists each quantity, equation/source, numerical value and unit,
+The live equation table is visible with the Plotly charts. It lists each quantity,
+equation/source, numerical value and unit,
 including positive spring/cogging storage and the resulting joint/shaft torque.
 Edit the height, clearance, stop reserve and available torque above the table;
 mass, gravity and spring geometry come from the saved mechanism. **2 m drop
 example** changes only the calculator drop height to2000mm, preserving the
 mechanism, landing geometry and dynamic controller commands.
+
+## Jump height to extension torque
+
+The target is chassis rise **above takeoff**, not total rise from the compressed
+starting pose. The ideal work estimate assumes a supported stance from the full
+compression stop `q_c` to the extension stop `q_e`, then one locked relative pose
+in flight. With positive extension magnitude `Δq_j=(q_c−q_e)π/180`, stance rise
+`s_j=h(q_e)−h(q_c)` in metres, and target airborne rise `h_j` in metres:
+
+`τ_jump = max[0, (m1*g*s_j + (m1+m6)*g*h_j − S_j − C_j) / Δq_j]`
+
+Here `S_j=Us(q_c)−Us(q_e)` and `C_j=Uc(q_c)−Uc(q_e)` are signed energy releases.
+The wheel stays on the floor during stance, so its height does not contribute
+stance gravity work. Chassis and wheel both rise in the assumed locked flight,
+so the flight term uses `m1+m6`. Ideal takeoff speed is `sqrt(2*g*h_j)`.
+The shaft magnitude is the joint magnitude divided by the selected ideal ratio.
+During extension q decreases, so a positive extension magnitude corresponds to
+a **negative generalized joint torque**, with positive motor work.
+
+This is an optimistic endpoint work estimate. It omits friction, impact and stop
+losses, and retained rotor kinetic energy. Endpoint arithmetic does not guarantee
+that the mechanism can start, traverse a potential barrier, take off or reach an
+apex. Moving link masses and unsupported geometry remain explicit errors rather
+than being silently ignored.
+
+## Plots and full calculation details
+
+Each case shows these Plotly plots without needing a dynamics result:
+
+- **Torque versus height:** constant hip-joint and motor-shaft magnitudes,
+  selected height, and the available motor/gearbox screen.
+- **Energy versus height:** gravity, spring/cogging contributions and required
+  motor work, with signs and units retained.
+- **Work through the stroke:** accumulated motor work, potential changes and the
+  signed kinetic-energy budget at the selected height.
+- **Geometry versus angle:** hip height and underbody clearance on the same
+  saved mechanism, with the start/end poses and relevant clearance target.
+
+The height range is a plot inspection setting. Equation tables and sampled data
+expose the numerical inputs and outputs; JSON/CSV exports stay in the app's
+`exports/` folder. No plot is presented as an integrated trajectory.
+
+For either stroke the signed work ledger is
+`K_budget(q)=K_start+W_motor(q)−ΔU_gravity(q)−ΔU_spring(q)−ΔU_cog(q)`.
+Landing uses `K_start=m1*g*H` and negative braking work; jump uses zero starting
+kinetic energy and positive extension work. Negative sampled budget values stay
+visible and warn of an energy barrier. Sampling is not a proof of continuous-path
+feasibility, and a landing can arrest before the chosen endpoint.
+
+Explicit handoff actions copy an estimate to a dynamic case and open the chosen
+engine; they do not run it. Physical simulation commands are recomputed with the
+actual saved motor ratio and cogging, then converted to its saved command basis.
+For landing, the copy action also raises a lower brake limit to the copied
+command; the proposed command and limit are shown before the click. This avoids
+silently capping the estimate at a previously saved smaller limit.
+An analysis-only catalog candidate never becomes a physical motor implicitly.
+Unsupported contact settings, including a massless wheel, must be resolved before
+handoff rather than receiving substitute masses.
 
 The default **50mm residual underbody-to-ground clearance** is different from
 **50mm underside offset below hip A**. The former is the requested remaining

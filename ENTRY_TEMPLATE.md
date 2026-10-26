@@ -4801,3 +4801,51 @@ Refresh and rerun the captured case, or reopen the native viewer; use the existi
 Read the new app context for illustrative dimensions and verification, retain historical report evidence separately, and replace drawing dimensions only when physical packaging is specified.
 
 ---
+
+## Entry: 2026-10-26 — Andy Zhang — Dedicated jump and landing energy workspace
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated calculation/UI workspace.
+- **Associated Issue/Task:** Owner requested all energy calculations/plots, torque versus jump/drop height and a separate energy tab instead of mixing sizing with Run simulation. Started from fetched main 5a2b537; retained saved designs and unrelated work.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-workspace.css`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/target-torque.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-workspace.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-ui.cjs`
+
+- **API/Interface Changes:** New stable energy tab after Studio, conventions last; old routes retained. Pure app-owned workspace helper adds 81 height and 161 signed stroke samples without changing legacy estimate numbers. Four expanded Plotly BASIC charts per Jump/Landing case, full equation tables, local plot-range controls, separate catalog screening and app-folder JSON/CSV exports. Energy export schema is kinefold/energy-workspace-v1. Existing project-v3 optional energy/target metadata is reused without migration. Explicit handoff recomputes actual physical gearing/cogging, validates commands, discloses and raises a lower landing brake limit, copies positive controller magnitudes and navigates without running. No backend dynamics law, saved live input, shared interface, source reference, dependency or rule changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Integrated PASS 115 retained energy assertions, 4,490 detailed energy assertions, 642 DOM/VM assertions with 48 scatter-compatible mounts, 33 project groups, 17 temporary-disk profile tests, 48 preset UI assertions/20 mounts, 19 Plotly lifecycle assertions, 14 equilibrium/3,404 dynamic trace assertions and 2,000 core assertions. Fifteen pre-change reference fixtures match exactly; V4 2m remains 232.345151886620Nm. Worker fixture identifier/formula/VM-realm/export-name errors were corrected before passing; no production guard or tolerance weakened. Parent review corrected the smaller brake-limit handoff, explicit plot ranges and irrelevant jump controls; EOL churn removed. Actual app-root Stop/Start/Stop/restart/reuse from unrelated cwd PASS4191; eight assets match exact bytes, all seven tabs/two legacy routes HTTP200. Live profile library remains byte-identical to pre-task backup, SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f. JS parse/Python compile, relative links, whitespace and fetched-base/staged/require-passed/workspace publication checks apply before push with normal hooks. CUA has no apps/browsers and IAB is unavailable: live browser visuals, pointer, console and theme review remain UNVERIFIED; DOM fixtures are not a browser. No new trajectory/hardware validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app work screen/UI. Endpoint work and sampled energy budgets do not certify takeoff, impact peaks, path feasibility, post-arrest holding or hardware performance.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now separates immediate Jump/Landing energy sizing from simulation, showing all four chart families, full equations and sampled data for the current saved mechanism.
+Open the stable energy route, inspect candidate versus physical motor assumptions and use explicit command-copy actions only when the contact guards pass; the existing app-root Start/Stop Kinefold.cmd launchers retain4191.
+Read the new app context and energy-calculator notes for equations, defaults, exact tests and unavailable browser review, preserve saved inputs and use normal scoped checks before future publication.
+
+---

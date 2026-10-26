@@ -40,8 +40,10 @@ Stop/contact/friction losses and retained rotor kinetic energy are excluded;
 this optimistic work estimate cannot guarantee takeoff or the target apex.
 The existing conservative chassis-only landing estimate is evaluated for the
 visible drop and clearance target and explicitly states its pre-stop reserve.
-**Copy landing targets to energy calculator** copies these two values into the
-separate energy-only tool. It does not silently change its independently saved inputs.
+**Copy landing targets & open Energy** copies these two values into the
+separate Energy tab and opens it. The standalone energy workspace also provides
+jump-height and drop-height torque curves, a signed stroke-work ledger and full
+equation tables without running either engine; see [energy calculations](energy-calculator.md).
 The legacy energy-sized braking strategy remains available and explicitly says
 it is not clearance-targeted; applying a tested result selects entered braking.
 
