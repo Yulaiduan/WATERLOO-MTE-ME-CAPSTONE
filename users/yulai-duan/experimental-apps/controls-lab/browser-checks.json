@@ -1,65 +1,106 @@
 {
-  "date": "2026-10-25",
-  "testedViews": [
-    "leg",
-    "chassis"
-  ],
-  "viewports": [
-    {
-      "width": 1365,
-      "height": 768
+  "date": "2026-10-26",
+  "model": "camel-controls/2.0.0",
+  "priorDelivery": {
+    "date": "2026-10-25",
+    "testedViews": [
+      "leg",
+      "chassis"
+    ],
+    "viewports": [
+      {
+        "width": 1365,
+        "height": 768
+      },
+      {
+        "scrollWidth": 390,
+        "width": 390
+      }
+    ],
+    "valueAssertions": [
+      "kh = 5,526.98",
+      "ch = 351.86",
+      "kh = 11,053.96",
+      "kd = 0.00",
+      "kp = 3,278.53",
+      "kp = 3,278.53",
+      "kp = 219.62",
+      "kp = 220.39",
+      "kh = 2,000.00",
+      "ch = 100.00",
+      "heave-k = 8,000.00",
+      "roll-k = 2,000.00",
+      "pitch-k = 4,500.00",
+      "pitch-k = 4,500.00",
+      "kp = 219.62",
+      "kh = 2,000.00",
+      "ch = 0.00"
+    ],
+    "controls": [
+      "mass",
+      "frequency",
+      "damping",
+      "pose",
+      "keyboard pose slider",
+      "direct/response mode",
+      "stiffness",
+      "vertical damping",
+      "both tabs and keyboard navigation",
+      "support length",
+      "support width",
+      "heave/roll/pitch",
+      "architecture/geometry/gain/model disclosure panels",
+      "reset",
+      "setup export/import",
+      "save dashboard"
+    ],
+    "invalidCases": [
+      "out-of-range pose preserves last valid output and disables export",
+      "zero mass blocks export",
+      "unsupported imported model preserves current setup"
+    ],
+    "downloads": {
+      "jsonRoundTrip": "passed",
+      "htmlEmbeddedSetup": "inspected syntax and expected values"
     },
-    {
-      "scrollWidth": 390,
-      "width": 390
-    }
-  ],
-  "valueAssertions": [
-    "kh = 5,526.98",
-    "ch = 351.86",
-    "kh = 11,053.96",
-    "kd = 0.00",
-    "kp = 3,278.53",
-    "kp = 3,278.53",
-    "kp = 219.62",
-    "kp = 220.39",
-    "kh = 2,000.00",
-    "ch = 100.00",
-    "heave-k = 8,000.00",
-    "roll-k = 2,000.00",
-    "pitch-k = 4,500.00",
-    "pitch-k = 4,500.00",
-    "kp = 219.62",
-    "kh = 2,000.00",
-    "ch = 0.00"
-  ],
-  "controls": [
-    "mass",
-    "frequency",
-    "damping",
-    "pose",
-    "keyboard pose slider",
-    "direct/response mode",
-    "stiffness",
-    "vertical damping",
-    "both tabs and keyboard navigation",
-    "support length",
-    "support width",
-    "heave/roll/pitch",
-    "architecture/geometry/gain/model disclosure panels",
-    "reset",
-    "setup export/import",
-    "save dashboard"
-  ],
-  "invalidCases": [
-    "out-of-range pose preserves last valid output and disables export",
-    "zero mass blocks export",
-    "unsupported imported model preserves current setup"
-  ],
-  "downloads": {
-    "jsonRoundTrip": "passed",
-    "htmlEmbeddedSetup": "inspected syntax and expected values"
+    "consoleWarningsOrErrors": [],
+    "offlineFileLaunch": "Not verified: browser URL policy disallows file://."
   },
-  "consoleWarningsOrErrors": [],
-  "offlineFileLaunch": "Not verified: browser URL policy disallows file://."
+  "currentMassControlChecks": {
+    "viewports": [
+      {
+        "width": 1365,
+        "height": 900
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "scrollWidth": 390
+      }
+    ],
+    "controls": [
+      "Chassis numeric input and slider synchronize both ways",
+      "Upper and lower per-link numeric inputs and sliders synchronize both ways",
+      "Pose change recalculates link inertia and plotted gains",
+      "Chassis tab displays inherited gains for new masses",
+      "Direct mode keeps k_h/c_h fixed and derives slower response as mass rises",
+      "Reset restores 35 kg chassis and zero linkage masses",
+      "Invalid zero chassis mass retains last valid outputs and disables saving",
+      "Schema-1 JSON import converts 8.75 kg corner mass to 35 kg chassis",
+      "Schema-2 JSON export/import preserves 35 kg chassis, 0.6 kg upper and 0.65 kg lower link masses and chassis view",
+      "Saved HTML embeds the same setup; embedded model deserializes and UI parses"
+    ],
+    "valueAssertions": [
+      "35 kg chassis with zero links: 8.750 kg per leg, k_h=1381.74 N/m, Kp=219.62 N m/rad",
+      "70 kg chassis, 0.6/0.65 kg links at 135 deg: 17.500 kg chassis share, 0.806 kg link equivalent, 18.306 kg effective per leg, 75.000 kg physical subtotal",
+      "35 kg chassis, 1/1.5 kg links at 100 deg: 11.004 kg link equivalent, 19.754 kg effective, k_h=3119.41 N/m",
+      "Direct mode mass increase keeps k_h=3119.41 and gives f_n=1.54 Hz",
+      "35 kg chassis, 0.6/0.65 kg links: 40.000 kg subtotal and heave K=6036.39 N/m"
+    ],
+    "consoleWarningsOrErrors": [],
+    "limitations": [
+      "Uniform rods and prescribed local heave constraints; not hardware or full body/contact dynamics",
+      "Direct file launch remains unverified; downloaded HTML contents, model restore and UI syntax were checked"
+    ]
+  }
 }

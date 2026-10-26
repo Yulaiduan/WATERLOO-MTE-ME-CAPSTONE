@@ -4721,3 +4721,42 @@ Read its README and context for fixed source conventions, assumptions, verificat
 Preserve the model versions and source fixtures, verify hosting after publication, and run the numerical checker after future equation changes.
 
 ---
+
+## Entry: 2026-10-26 — Yulai Duan — Total chassis and linkage mass controls
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Controls Lab isolated member app.
+- **Associated Issue/Task:** User requested total chassis mass divided by four, chassis/linkage sliders, and explicitly selected a labelled linkage inertia estimate affecting gains.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/yulai-duan/experimental-apps/controls-lab/README.md`
+- `users/yulai-duan/experimental-apps/controls-lab/browser-checks.json`
+- `users/yulai-duan/experimental-apps/controls-lab/context/README.md`
+- `users/yulai-duan/experimental-apps/controls-lab/default-setup.json`
+- `users/yulai-duan/experimental-apps/controls-lab/index.html`
+- `users/yulai-duan/experimental-apps/controls-lab/verification.json`
+- `users/yulai-duan/experimental-apps/controls-lab/verify.cjs`
+
+- **API/Interface Changes:** App-only model 2.0.0/schema 2 stores chassisMassKg and explicit per-upper/per-lower-link masses under uniform-rods/1. Schema-1/model-1 JSON migrates old corner mass times four with zero linkage masses, preserving gains. Chassis contribution is M/4; the uniform-rod COM/rotational kinetic-energy estimate adds local pose-dependent equivalent mass. Numeric inputs and three sliders synchronize; gain charts, chassis table, export/import and saved HTML use the same masses. Frozen geometry/source fixtures and shared robot interfaces are unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Node verify.cjs --write PASS 3,772 assertions including 651 retained source poses, 131 independent finite-difference source-endpoint rod-energy integrations (max generalized inertia error 1.59e-10 kg m²), baseline/scaling/direct gain behavior, invalid masses, schema round trips and legacy migrations. Browser checks PASS numeric/slider synchronization both ways for all three masses, pose-dependent readouts, chassis results, direct gains remaining fixed, Reset, invalid-zero retention/disabled saving, actual schema-1 and schema-2 file imports, JSON export and saved HTML contents/embedded model restoration. Desktop 1365x900 and phone 390x844 inspected, phone scrollWidth390; no browser warnings/errors. Downloaded HTML model deserializes all masses and its UI parses; direct local-file navigation remains unverified. Relative documentation links and whitespace checked before publication. Fetched-base, staged, require-passed and workspace gate checks apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app. The uniform-rod local heave approximation omits wheel/gear inertia, full roll/pitch mass coupling, tire/contact dynamics and changed gravity feedforward; arithmetic agreement is not hardware validation. Zero linkage defaults preserve the original baseline and are not measured masses.
+
+## 4. Compute Saving Handoff State
+
+Controls Lab now exposes total chassis mass and per-upper/per-lower-link mass sliders with a visible chassis-quarter, linkage-equivalent and physical-subtotal breakdown.
+Read its README for the local heave kinetic-energy assumptions, schema-1 migration and omitted dynamics; model 2 exports schema 2 and preserves the existing hosted path.
+Retain frozen DP#3 fixtures and the labelled approximation, identify actual component inertia and gravity compensation before hardware use, and run numerical/browser checks after model or control changes.
+
+---

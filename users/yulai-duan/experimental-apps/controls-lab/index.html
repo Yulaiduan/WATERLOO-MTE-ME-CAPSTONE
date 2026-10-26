@@ -13,6 +13,7 @@
 @media(min-width:1001px){.vertical-label{display:none}.readouts .metric{padding:9px 10px}.readouts .metric strong{line-height:1.15}.joint-label{margin:12px 0 5px}.compact-readouts{margin-top:10px}.readouts .teaching-note{margin-top:10px;padding:7px 10px}.readouts{padding-top:10px}}
 @media(max-width:700px){.header-inner{align-items:start;flex-direction:column;padding:16px}.toolbar{width:100%}.toolbar button{flex:1;font-size:12px;padding:8px}.shell{padding:16px 12px}.intro{align-items:start}.intro p{max-width:245px}.intro .badge{display:none}.flow{grid-template-columns:1fr 1fr;gap:17px;padding:16px}.step:nth-child(2):after{content:''}.step p{font-size:12px}.loop-explanation{grid-template-columns:1fr}.workspace{grid-template-columns:1fr}.sidebar{padding:17px}.basic-fields{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}.basic-fields .field:first-child{grid-column:1/-1}.field{margin-top:12px}.sidebar details{margin-top:13px;padding-top:12px}.leg-grid{padding:4px 14px 14px}.panel-head{padding:16px 14px 0}.diagram{height:285px}.readout-blocks{display:block}.joint-label{margin-top:13px}.metric strong{font-size:26px}.charts{grid-template-columns:1fr;gap:10px}.chart{height:145px}.pose-control{padding:13px;gap:10px}.pose-title{min-width:70px}.pose-value{width:78px}.model-notes .details-body{grid-template-columns:1fr}.chart-heading{display:block}.chart-heading .hint{margin-top:3px}.support-fields{padding:0 14px;gap:10px}.chassis-grid{padding:14px}.result-table td{padding:12px 5px}.result-table strong{font-size:17px}footer{align-items:start;flex-direction:column}.chart-card{padding:14px}.tabs button{font-size:13px}.compact-readouts strong{font-size:15px}.source-list{grid-template-columns:1fr auto}}
 @media print{body{background:white}.toolbar,.sidebar,footer button,.pose-slider{display:none}.workspace{display:block}.shell{padding:8px}.card,.architecture{break-inside:avoid}.tabs{border:0}.tabs button[aria-selected=false]{display:none}button{color:var(--ink)!important}.status{font-size:10px}}
+.mass-slider{width:100%;margin:8px 0 0;accent-color:var(--teal)}.mass-summary{padding:10px 12px;background:var(--tint);border-radius:7px;font-size:12px;margin-top:14px}.mass-summary p{margin:3px 0}.mass-summary strong{font-variant-numeric:tabular-nums}.link-mass-fields{border-top:1px solid var(--line);margin-top:14px;padding-top:1px}.basic-fields .mass-field{grid-column:1/-1}
 </style>
 </head>
 <body>
@@ -29,7 +30,14 @@
 <aside class="card sidebar" aria-label="Shared leg parameters">
 <div class="eyebrow">Shared across both views</div><h2 style="margin-top:5px">Leg response</h2><p class="hint">What should one corner feel like?</p>
 <div class="basic-fields">
-<div class="field"><label for="mass">Effective corner mass <span class="muted">· assumed</span></label><div class="input-wrap"><input id="mass" type="number" step="any" value="8.75" aria-describedby="mass-help"><span class="unit">kg</span></div><p class="hint" id="mass-help">Dynamic mass used to size gains. Replace the assumption when identified.</p></div>
+<div class="field mass-field"><label for="mass">Total chassis mass <span class="muted">· assumed</span></label><div class="input-wrap"><input id="mass" type="number" min="0" step="any" value="35" aria-describedby="mass-help"><span class="unit">kg</span></div><input id="mass-slider" class="mass-slider" type="range" min="0.1" max="100" step="any" value="35" aria-label="Total chassis mass slider, kg"><p class="hint" id="mass-help">Whole chassis including carried payload; excludes links and wheels. Divided equally over four legs.</p></div>
+<div class="mass-field link-mass-fields">
+<div class="field"><label for="upper-mass">Upper link mass <span class="muted">· each Link2</span></label><div class="input-wrap"><input id="upper-mass" type="number" min="0" step="any" value="0" aria-describedby="link-mass-help"><span class="unit">kg</span></div><input id="upper-mass-slider" class="mass-slider" type="range" min="0" max="5" step="any" value="0" aria-label="Upper link mass slider, kg per link"></div>
+<div class="field"><label for="lower-mass">Lower link mass <span class="muted">· each Link3</span></label><div class="input-wrap"><input id="lower-mass" type="number" min="0" step="any" value="0" aria-describedby="link-mass-help"><span class="unit">kg</span></div><input id="lower-mass-slider" class="mass-slider" type="range" min="0" max="5" step="any" value="0" aria-label="Lower link mass slider, kg per link"></div>
+<p class="hint" id="link-mass-help">Four of each link. Inertia estimate: uniform 300 mm rods. Zero preserves the earlier massless-link baseline; enter estimates to include them.</p>
+<div class="mass-summary" aria-live="polite"><p>Chassis ÷ 4: <strong id="corner-mass">—</strong></p><p>Link inertia equivalent: <strong id="link-equivalent-mass">—</strong></p><p>Mass used per leg: <strong id="effective-mass">—</strong></p><p>Chassis + all links: <strong id="modeled-mass">—</strong></p></div>
+<p class="hint">The inertia equivalent changes with pose; it is not an extra physical mass. Wheels, transmissions and contact dynamics are omitted.</p>
+</div>
 <div class="field"><label for="frequency">Natural frequency</label><div class="input-wrap"><input id="frequency" type="number" step="any" value="2" aria-describedby="frequency-help"><span class="unit">Hz</span></div><p class="hint" id="frequency-help">Higher means a stiffer, faster target. This is not the update rate.</p></div>
 <div class="field"><label for="damping">Damping ratio</label><div class="input-wrap"><input id="damping" type="number" step="any" value="0.8" aria-describedby="damping-help"><span class="unit">ζ</span></div><p class="hint" id="damping-help">Resists oscillation. 1 is critical damping in the assumed scalar model.</p></div>
 </div>
@@ -43,20 +51,22 @@
 <div class="card"><div class="panel-head"><div><h2>Same response. Different joint gains.</h2><p class="hint">Move the leg to see how its geometry changes the mapping.</p></div></div>
 <div class="leg-grid"><div><svg id="mechanism" class="diagram" viewBox="0 0 440 350" role="img" aria-labelledby="mechanism-title mechanism-desc"><title id="mechanism-title">DP#3 linked leg at the selected pose</title><desc id="mechanism-desc">A two-link leg from the hip through the knee to the wheel centre, with the source wheel path and vertical height.</desc></svg></div><div class="readouts"><div class="readout-blocks"><div><p class="vertical-label">Wheel-output response</p><div class="metric-pair"><div class="metric"><span class="label">Vertical stiffness kₕ</span><strong id="kh">—</strong><span class="units">N/m</span></div><div class="metric"><span class="label">Vertical damping cₕ</span><strong id="ch">—</strong><span class="units">N·s/m</span></div></div></div><div><p class="joint-label">Mapped to Link2 · height contribution</p><div class="metric-pair"><div class="metric accent"><span class="label">Proportional Kp</span><strong id="kp">—</strong><span class="units">N·m/rad</span></div><div class="metric accent"><span class="label">Derivative Kd</span><strong id="kd">—</strong><span class="units">N·m·s/rad</span></div></div></div></div><div class="compact-readouts"><div><span class="muted">Hip-to-wheel drop</span><strong id="height">—</strong></div><div><span class="muted">Height sensitivity Jₕ</span><strong id="jacobian">—</strong></div></div><p class="teaching-note" id="pose-insight"></p></div></div>
 <div class="pose-control"><label class="pose-title" for="pose">Link2 pose<br><span class="muted">θ₂ · source CCW</span></label><div class="pose-slider"><label class="sr-only" for="pose-slider">Link2 pose slider, degrees</label><input id="pose-slider" type="range" min="100" max="165" step="0.1" value="135"><div class="range-labels"><span>100° · extended</span><span>165° · folded</span></div></div><div class="input-wrap pose-value"><input id="pose" type="number" min="100" max="165" step="any" value="135" aria-label="Link2 pose, degrees"><span class="unit">°</span></div></div></div>
-<div class="card chart-card"><div class="chart-heading"><h3>Why schedule gains with pose?</h3><span class="hint">Kp = kₕ Jₕ² &nbsp; · &nbsp; Kd = cₕ Jₕ²</span></div><div class="charts"><svg id="kp-chart" class="chart" viewBox="0 0 400 150" role="img" aria-label="Proportional Link2 gain versus pose"></svg><svg id="kd-chart" class="chart" viewBox="0 0 400 150" role="img" aria-label="Derivative Link2 gain versus pose"></svg></div><p class="hint">Each plot has its own labelled scale. Dots mark your pose; these are gain curves, not motion over time.</p></div>
+<div class="card chart-card"><div class="chart-heading"><h3>Why schedule gains with pose?</h3><span class="hint">Kp = kₕ Jₕ² &nbsp; · &nbsp; Kd = cₕ Jₕ²</span></div><div class="charts"><svg id="kp-chart" class="chart" viewBox="0 0 400 150" role="img" aria-label="Proportional Link2 gain versus pose"></svg><svg id="kd-chart" class="chart" viewBox="0 0 400 150" role="img" aria-label="Derivative Link2 gain versus pose"></svg></div><p class="hint">With nonzero linkage masses, the inertia estimate is recalculated at every pose. Each plot has its own labelled scale. Dots mark your pose; these are gain curves, not motion over time.</p></div>
 </section>
 <section id="chassis-view" role="tabpanel" aria-labelledby="tab-chassis" hidden>
 <div class="card"><div class="panel-head"><div><h2>Four legs already create body stiffness.</h2><p class="hint">Reuse the same kₕ and cₕ. This is the combined effect with fixed leg references.</p></div></div><div class="support-fields"><div class="field"><label for="length">Front–rear support spacing L</label><div class="input-wrap"><input id="length" type="number" step="any" value="1.2" aria-describedby="length-help"><span class="unit">m</span></div><p class="hint" id="length-help">Assumed force lever arm; governs pitch.</p></div><div class="field"><label for="width">Left–right support spacing W</label><div class="input-wrap"><input id="width" type="number" step="any" value="0.8" aria-describedby="width-help"><span class="unit">m</span></div><p class="hint" id="width-help">Assumed force lever arm; governs roll.</p></div></div><div class="chassis-grid"><div><div class="motion-tabs" role="group" aria-label="Illustrated chassis motion"><button data-motion="heave" aria-pressed="true">Heave</button><button data-motion="roll" aria-pressed="false">Roll</button><button data-motion="pitch" aria-pressed="false">Pitch</button></div><svg id="support" class="support-diagram" viewBox="0 0 360 280" role="img" aria-label="Top view of four chassis supports"></svg><p class="motion-copy" id="motion-copy"></p></div><div><table class="result-table"><caption class="sr-only">Inherited chassis stiffness and damping</caption><thead><tr><th scope="col">Body motion</th><th scope="col">Stiffness K</th><th scope="col">Damping C</th></tr></thead><tbody><tr id="row-heave"><th scope="row">Heave</th><td><strong id="heave-k">—</strong><small>N/m</small></td><td><strong id="heave-c">—</strong><small>N·s/m</small></td></tr><tr id="row-roll"><th scope="row">Roll</th><td><strong id="roll-k">—</strong><small>N·m/rad</small></td><td><strong id="roll-c">—</strong><small>N·m·s/rad</small></td></tr><tr id="row-pitch"><th scope="row">Pitch</th><td><strong id="pitch-k">—</strong><small>N·m/rad</small></td><td><strong id="pitch-c">—</strong><small>N·m·s/rad</small></td></tr></tbody></table><p class="teaching-note" id="chassis-insight"></p><p class="hint" style="margin-top:12px">This table is an inherited impedance, not an additional body PID to stack on top. Body frequencies need actual inertias and a declared plant.</p></div></div><p class="assumptions"><strong>Assumptions:</strong> four symmetric vertical supports, identical compliant legs, small motions and fixed references. L and W are effective support-force spacings pending confirmed geometry, not automatically chassis or hip dimensions. This is not a terrain/contact simulation.</p></div>
 </section>
-<details class="card model-notes" id="model-details"><summary>Model details, coordinates &amp; limits</summary><div class="details-body"><div><p><strong>One-leg mapping.</strong> q is source Link2 θ₂ in radians, positive CCW. h is positive downward hip-to-wheel-centre drop. The drawing uses Jon's global y/z coordinates and the actual source wheel path.</p><pre>ω = 2π fₙ
+<details class="card model-notes" id="model-details"><summary>Model details, coordinates &amp; limits</summary><div class="details-body"><div><p><strong>One-leg mapping.</strong> q is source Link2 θ₂ in radians, positive CCW. h is positive downward hip-to-wheel-centre drop. The drawing uses Jon's global y/z coordinates and the actual source wheel path.</p><pre>m_corner = M_chassis / 4
+m_eff = m_corner + m_link,equiv(q)
+ω = 2π fₙ
 kₕ = m_eff ω²    cₕ = 2ζ m_eff ω
 h(q) = 0.6 cos(20°) sin(q)
 Jₕ(q) = 0.6 cos(20°) cos(q)
 Kp = kₕ Jₕ²     Kd = cₕ Jₕ²
-Ki = 0</pre><p>Local zero-error gains assume current-pose static-load/spring compensation. The axial spring rate (6 N/mm in the source) is a separate quantity from kₕ. These are not complete inverse dynamics, measured force tracking or final driver gains.</p></div><div><p><strong>Wheel coupling remains.</strong> DP#3 obeys Δφ_w = −0.25 Δq + 0.25 Δθ₄. Holding wheel angle during articulation requires Δθ₄ = Δq in source coordinates. Wheel feedback introduces cross terms; independent local motor PDs do not automatically reproduce them. Additional motor reduction and vendor conversions are outside this lab.</p><pre>a = L/2     b = W/2
+Ki = 0</pre><p><strong>Linkage inertia estimate.</strong> Each link is a uniform 300 mm rod with its centre of mass at the midpoint and I = mℓ²/12. At each pose, kinetic energy gives m_link,equiv = Σ[mᵢ‖dr_COM,i/dq‖² + Iᵢ(dθᵢ/dq)²]/Jₕ². The hip moves vertically without body rotation; hub height is fixed while horizontal wheel motion is unconstrained. Wheel mass/inertia, gearing and tyre/contact dynamics are omitted. This estimates a local heave response, not body roll/pitch frequencies. See the model derivation in the app README.</p><p>Local zero-error gains assume current-pose static-load/spring compensation. The axial spring rate (6 N/mm in the source) is a separate quantity from kₕ. These are not complete inverse dynamics, measured force tracking or final driver gains.</p></div><div><p><strong>Wheel coupling remains.</strong> DP#3 obeys Δφ_w = −0.25 Δq + 0.25 Δθ₄. Holding wheel angle during articulation requires Δθ₄ = Δq in source coordinates. Wheel feedback introduces cross terms; independent local motor PDs do not automatically reproduce them. Additional motor reduction and vendor conversions are outside this lab.</p><pre>a = L/2     b = W/2
 K_heave = 4kₕ    C_heave = 4cₕ
 K_roll = 4kₕb²   C_roll = 4cₕb²
-K_pitch = 4kₕa²  C_pitch = 4cₕa²</pre><p>Direct gain mode uses fₙ = √(kₕ/m_eff)/(2π) and ζ = cₕ/(2√(kₕm_eff)). Zero damping is allowed as an ideal undamped case. Slider bounds are exploration/source limits, not validated hardware limits.</p><p class="hint">Model v1.0.0 · retained DP#3 snapshot, October 23, 2026 · guide prepared October 25, 2026.</p></div></div></details>
+K_pitch = 4kₕa²  C_pitch = 4cₕa²</pre><p>Direct gain mode uses fₙ = √(kₕ/m_eff)/(2π) and ζ = cₕ/(2√(kₕm_eff)). Zero damping is allowed as an ideal undamped case. Slider bounds are exploration/source limits, not validated hardware limits.</p><p class="hint">Model v2.0.0 · retained DP#3 snapshot, October 23, 2026 · mass controls updated October 26, 2026.</p></div></div></details>
 <div class="status"><b>Analytical model — hardware gains not validated</b><span id="damping-status"></span></div>
 </div></div>
 <footer><div class="footer-copy"><strong>Keep a setup. Share an experiment.</strong> Export/import JSON to exchange settings. “Save dashboard” downloads a standalone HTML file with your current setup; send it to a teammate and open it in a browser. Changes are personal to each open copy.</div><button id="save-dashboard">Save dashboard ↓</button></footer>
@@ -66,9 +76,9 @@ K_pitch = 4kₕa²  C_pitch = 4cₕa²</pre><p>Direct gain mode uses fₙ = √(
 /* Pure, SI-unit analytical core. New geometry needs its own version and parity checks. */
 globalThis.CamelModel = (() => {
   'use strict';
-  const MODEL = 'camel-controls/1.0.0';
+  const MODEL = 'camel-controls/2.0.0';
   const GEOMETRY = Object.freeze({id:'jon-v4-dp3',revision:'5e52a1220d4ecc9881a80995cbd882df1bfc9be6'});
-  const DEFAULTS = Object.freeze({mass:8.75,frequency:2,damping:.8,pose:135,length:1.2,width:.8,mode:'response',stiffness:1381.7446161525102,verticalDamping:175.92918860102841,view:'leg'});
+  const DEFAULTS = Object.freeze({chassisMass:35,upperMass:0,lowerMass:0,frequency:2,damping:.8,pose:135,length:1.2,width:.8,mode:'response',stiffness:1381.7446161525102,verticalDamping:175.92918860102841,view:'leg'});
   const rad = Math.PI / 180;
   function geometry(deg) {
     const q = deg*rad, alpha = 20*rad, t3 = Math.PI-q;
@@ -77,19 +87,36 @@ globalThis.CamelModel = (() => {
     const knee=rotate(kneeLocal),hub=rotate([kneeLocal[0]-.3*Math.cos(t3),kneeLocal[1]-.3*Math.sin(t3)]);
     return {knee,hub,h:-hub[1],J:.6*Math.cos(alpha)*Math.cos(q)};
   }
+  function massProperties(s) {
+    const q=s.pose*rad, a=20*rad, l=.3;
+    const rotate=([y,z])=>[Math.cos(a)*y+Math.sin(a)*z,-Math.sin(a)*y+Math.cos(a)*z];
+    const kneePrime=rotate([l*Math.sin(q),-l*Math.cos(q)]);
+    const hubPrime=rotate([0,-2*l*Math.cos(q)]), J=-hubPrime[1];
+    // Hip y is fixed and hip z = -hub-relative z; wheel hub z is fixed.
+    const upperPrime=[kneePrime[0]/2,J+kneePrime[1]/2];
+    const lowerPrime=[(kneePrime[0]+hubPrime[0])/2,J+(kneePrime[1]+hubPrime[1])/2];
+    // Both absolute link angles have |dtheta/dq| = 1 in DP#3.
+    const upperFactor=(upperPrime[0]**2+upperPrime[1]**2+l*l/12)/(J*J);
+    const lowerFactor=(lowerPrime[0]**2+lowerPrime[1]**2+l*l/12)/(J*J);
+    const cornerMass=s.chassisMass/4;
+    const linkEquivalentMass=s.upperMass*upperFactor+s.lowerMass*lowerFactor;
+    return {cornerMass,linkEquivalentMass,effectiveMass:cornerMass+linkEquivalentMass,
+      modeledMass:s.chassisMass+4*(s.upperMass+s.lowerMass),upperFactor,lowerFactor};
+  }
   function calculate(s) {
-    const kh=s.mode==='direct'?s.stiffness:s.mass*(2*Math.PI*s.frequency)**2;
-    const ch=s.mode==='direct'?s.verticalDamping:2*s.damping*s.mass*2*Math.PI*s.frequency;
-    const fn=s.mode==='direct'?Math.sqrt(kh/s.mass)/(2*Math.PI):s.frequency;
-    const zeta=s.mode==='direct'?ch/(2*Math.sqrt(kh*s.mass)):s.damping;
+    const mass=massProperties(s), m=mass.effectiveMass;
+    const kh=s.mode==='direct'?s.stiffness:m*(2*Math.PI*s.frequency)**2;
+    const ch=s.mode==='direct'?s.verticalDamping:2*s.damping*m*2*Math.PI*s.frequency;
+    const fn=s.mode==='direct'?Math.sqrt(kh/m)/(2*Math.PI):s.frequency;
+    const zeta=s.mode==='direct'?ch/(2*Math.sqrt(kh*m)):s.damping;
     const g=geometry(s.pose);
-    return {kh,ch,fn,zeta,...g,kp:kh*g.J*g.J,kd:ch*g.J*g.J,
+    return {kh,ch,fn,zeta,...g,...mass,kp:kh*g.J*g.J,kd:ch*g.J*g.J,
       heave:{k:4*kh,c:4*ch},roll:{k:kh*s.width*s.width,c:ch*s.width*s.width},pitch:{k:kh*s.length*s.length,c:ch*s.length*s.length}};
   }
   function validate(s) {
     const errors={};
     const check=(key,label,zero=false)=>{if(!Number.isFinite(s[key])||(zero?s[key]<0:s[key]<=0))errors[key]=`${label} must be a finite ${zero?'nonnegative':'positive'} number.`;};
-    check('mass','Effective mass');check('length','Front–rear spacing');check('width','Left–right spacing');
+    check('chassisMass','Total chassis mass');check('upperMass','Upper link mass',true);check('lowerMass','Lower link mass',true);check('length','Front–rear spacing');check('width','Left–right spacing');
     if(!['response','direct'].includes(s.mode)) errors.mode='Choose a supported gain input mode.';
     if(!['leg','chassis'].includes(s.view))errors.view='Choose a supported view.';
     if(s.mode==='direct'){check('stiffness','Vertical stiffness');check('verticalDamping','Vertical damping',true);}
@@ -97,32 +124,36 @@ globalThis.CamelModel = (() => {
     if(!Number.isFinite(s.pose)||s.pose<100||s.pose>165)errors.pose='Link2 pose must be between 100° and 165°.';
     if(!Object.keys(errors).length){
       const c=calculate(s);
-      const values=[c.kh,c.ch,c.fn,c.zeta,c.kp,c.kd,c.heave.k,c.heave.c,c.roll.k,c.roll.c,c.pitch.k,c.pitch.c];
+      const values=[c.cornerMass,c.linkEquivalentMass,c.effectiveMass,c.modeledMass,c.kh,c.ch,c.fn,c.zeta,c.kp,c.kd,c.heave.k,c.heave.c,c.roll.k,c.roll.c,c.pitch.k,c.pitch.c];
       if(values.some(x=>!Number.isFinite(x))||[c.kh,c.fn,c.kp,c.heave.k,c.roll.k,c.pitch.k].some(x=>x<=0)|| (c.ch>0&&[c.kd,c.heave.c,c.roll.c,c.pitch.c].some(x=>x<=0)))errors.calculation='These values exceed the numerical range of this model. Use smaller, physically meaningful inputs.';
     }
     return errors;
   }
   function serialize(s) {
     if(Object.keys(validate(s)).length)throw Error('Correct the highlighted inputs before saving.');
-    return {schemaVersion:1,modelVersion:MODEL,geometry:{...GEOMETRY},poseDeg:s.pose,massKg:s.mass,
+    return {schemaVersion:2,modelVersion:MODEL,geometry:{...GEOMETRY},poseDeg:s.pose,chassisMassKg:s.chassisMass,
+      linkage:{model:'uniform-rods/1',upperLinkMassKg:s.upperMass,lowerLinkMassKg:s.lowerMass},
       gainInput:s.mode==='response'?{mode:s.mode,frequencyHz:s.frequency,dampingRatio:s.damping}:{mode:s.mode,stiffnessNPerM:s.stiffness,dampingNsPerM:s.verticalDamping},
       support:{frontRearM:s.length,leftRightM:s.width},activeView:s.view};
   }
   function deserialize(o) {
     const obj=x=>x&&typeof x==='object'&&!Array.isArray(x);
-    if(!obj(o)||o.schemaVersion!==1)throw Error('Unsupported setup schema. Import a Controls Lab schemaVersion 1 JSON file.');
-    if(o.modelVersion!==MODEL)throw Error(`Unsupported model version. This dashboard requires ${MODEL}.`);
+    if(!obj(o)||![1,2].includes(o.schemaVersion))throw Error('Unsupported setup schema. Import a Controls Lab schemaVersion 1 or 2 JSON file.');
+    const legacy=o.schemaVersion===1;
+    if(o.modelVersion!==(legacy?'camel-controls/1.0.0':MODEL))throw Error(`Unsupported model version for this setup schema.`);
+    if(legacy&&(!Number.isFinite(o.massKg)||o.massKg<=0))throw Error('Legacy corner mass must be a finite positive number.');
+    if(!legacy&&(!obj(o.linkage)||o.linkage.model!=='uniform-rods/1'))throw Error('Missing or unsupported linkage inertia estimate.');
     if(!obj(o.geometry)||o.geometry.id!==GEOMETRY.id||o.geometry.revision!==GEOMETRY.revision)throw Error('Unsupported geometry or revision. This dashboard requires the retained Jon V4 DP#3 preset.');
     if(!obj(o.gainInput)||!obj(o.support))throw Error('The setup is missing gainInput or support settings.');
     const g=o.gainInput;
-    const s={...DEFAULTS,mass:o.massKg,pose:o.poseDeg,mode:g.mode,view:o.activeView,length:o.support.frontRearM,width:o.support.leftRightM};
+    const s={...DEFAULTS,chassisMass:legacy?4*o.massKg:o.chassisMassKg,upperMass:legacy?0:o.linkage.upperLinkMassKg,lowerMass:legacy?0:o.linkage.lowerLinkMassKg,pose:o.poseDeg,mode:g.mode,view:o.activeView,length:o.support.frontRearM,width:o.support.leftRightM};
     if(g.mode==='response'){s.frequency=g.frequencyHz;s.damping=g.dampingRatio;}
     else if(g.mode==='direct'){s.stiffness=g.stiffnessNPerM;s.verticalDamping=g.dampingNsPerM;}
     const errors=validate(s);
     if(Object.keys(errors).length)throw Error(Object.values(errors).join(' '));
     const c=calculate(s);return {...s,frequency:c.fn,damping:c.zeta,stiffness:c.kh,verticalDamping:c.ch};
   }
-  return Object.freeze({MODEL,GEOMETRY,DEFAULTS,geometry,calculate,validate,serialize,deserialize});
+  return Object.freeze({MODEL,GEOMETRY,DEFAULTS,geometry,massProperties,calculate,validate,serialize,deserialize});
 })();
 </script>
 <script id="camel-ui">
@@ -130,14 +161,15 @@ globalThis.CamelModel = (() => {
   'use strict';
   const M=CamelModel,$=id=>document.getElementById(id);
   let state={...M.DEFAULTS}, motion='heave', invalid=false;
-  const fields={mass:'mass',frequency:'frequency',damping:'damping',stiffness:'stiffness',verticalDamping:'vertical-damping',pose:'pose',length:'length',width:'width'};
+  const fields={chassisMass:'mass',upperMass:'upper-mass',lowerMass:'lower-mass',frequency:'frequency',damping:'damping',stiffness:'stiffness',verticalDamping:'vertical-damping',pose:'pose',length:'length',width:'width'};
   const fmt=(x,d=2)=>Math.abs(x)>0&&(Math.abs(x)>=1e7||Math.abs(x)<.001)?x.toExponential(3):x.toLocaleString('en-CA',{minimumFractionDigits:d,maximumFractionDigits:d});
   const inputString=x=>String(Number(x.toPrecision(13)));
   function notice(text,error=false){$('message').textContent=text;$('message').className='message'+(error?' error':'');$('message').hidden=false;}
   function readInputs(){const candidate={...state};for(const [key,id] of Object.entries(fields)){if((state.mode==='direct'&&['frequency','damping'].includes(key))||(state.mode==='response'&&['stiffness','verticalDamping'].includes(key)))continue;candidate[key]=$(id).value.trim()===''?NaN:Number($(id).value);}return candidate;}
   function showValidation(errors){invalid=Object.keys(errors).length>0;for(const [key,id] of Object.entries(fields)){$(id).setAttribute('aria-invalid',String(Boolean(errors[key])));}const box=$('validation');box.hidden=!invalid;box.replaceChildren();if(invalid){const title=document.createElement('strong');title.textContent='Showing the last valid results. Correct these inputs to update or export:';box.append(title);const list=document.createElement('ul');list.className='error-list';Object.values(errors).forEach(t=>{const li=document.createElement('li');li.textContent=t;list.append(li);});box.append(list);}['export','save-dashboard'].forEach(id=>$(id).disabled=invalid);}
   function update(){$('message').hidden=true;const candidate=readInputs(),errors=M.validate(candidate);showValidation(errors);if(invalid)return;state=candidate;render();}
-  function syncInputs(){for(const [key,id] of Object.entries(fields))$(id).value=inputString(state[key]);$('pose-slider').value=state.pose;$('gain-mode').value=state.mode;syncMode();}
+  function syncInputs(){for(const [key,id] of Object.entries(fields))$(id).value=inputString(state[key]);syncMassSliders();$('pose-slider').value=state.pose;$('gain-mode').value=state.mode;syncMode();}
+  function syncMassSliders(){for(const [key,id,max,min] of [['chassisMass','mass',100,.1],['upperMass','upper-mass',5,0],['lowerMass','lower-mass',5,0]]){const slider=$(id+'-slider');slider.min=Math.min(min,state[key]);slider.max=Math.max(max,state[key]);slider.value=state[key];slider.setAttribute('aria-valuetext',fmt(state[key],2)+' kg');}}
   function syncMode(){const direct=state.mode==='direct';$('direct-fields').hidden=!direct;['frequency','damping'].forEach(id=>$(id).readOnly=direct);$('mode-help').textContent=direct?'Vertical gains drive the calculation. Frequency and damping ratio above are derived, read-only values.':'Frequency and damping ratio drive the calculation.';if(direct)$('gain-details').open=true;}
   function line(x1,y1,x2,y2,stroke,width=1,extra=''){return `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${stroke}" stroke-width="${width}" ${extra}/>`;}
   function text(x,y,t,fill='#526c7c',size=12,extra=''){return `<text x="${x}" y="${y}" fill="${fill}" font-size="${size}" ${extra}>${t}</text>`;}
@@ -149,19 +181,29 @@ globalThis.CamelModel = (() => {
     const start=arcPoint(0),end=arcPoint(state.pose),baseline=arcPoint(0);
     $('mechanism').innerHTML=`<title id="mechanism-title">DP#3 leg at ${fmt(state.pose,1)} degrees</title><desc id="mechanism-desc">Hip, knee and wheel centre in the source y/z plane. Wheel-centre drop ${fmt(c.h,4)} metres; height sensitivity ${fmt(c.J,4)} metres per radian.</desc><defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><path d="M 24 0 L 0 0 0 24" fill="none" stroke="#edf2f4" stroke-width="1"/></pattern><marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#657a87"/></marker></defs><rect x="10" y="9" width="420" height="332" rx="8" fill="url(#grid)"/>${text(25,30,'SOURCE y / z PLANE','#526c7c',10)}<path d="${path.map((p,i)=>(i?'L':'M')+p.join(',')).join(' ')}" fill="none" stroke="#91aab5" stroke-width="2" stroke-dasharray="4 4"/>${line(O[0]-26,O[1]-10,O[0]+34,O[1]-10,'#182f3d',7,'stroke-linecap="round"')}${line(O[0],O[1],B[0],B[1],'#307cef',10,'stroke-linecap="round"')}${line(B[0],B[1],P[0],P[1],'#e78b3e',10,'stroke-linecap="round"')}<circle cx="${P[0]}" cy="${P[1]}" r="${.2*S}" fill="#f1f5f8" fill-opacity=".8" stroke="#8398a7" stroke-width="3"/>${line(P[0]-.2*S,P[1],P[0]+.2*S,P[1],'#d2dde4',1)}${line(P[0],P[1]-.2*S,P[0],P[1]+.2*S,'#d2dde4',1)}${[O,B,P].map(p=>`<circle cx="${p[0]}" cy="${p[1]}" r="6" fill="white" stroke="#182f3d" stroke-width="2"/>`).join('')}${text(O[0]+40,O[1]-5,'Hip','#182f3d')}${text(B[0]+14,B[1]+4,'Knee','#182f3d')}${text(P[0]-12,P[1]+22,'Wheel centre','#182f3d',12,'text-anchor="middle"')}${text((O[0]+B[0])/2+12,(O[1]+B[1])/2-4,'Link2','#2569ce',11)}${text((B[0]+P[0])/2+4,(B[1]+P[1])/2-10,'Link3','#a65c27',11)}${line(70,O[1],70,P[1],'#087f82',1.5,'marker-start="url(#arrow)" marker-end="url(#arrow)"')}${line(70,O[1],O[0]-40,O[1],'#acbcc4',1,'stroke-dasharray="3 4"')}${line(70,P[1],P[0]-.2*S-3,P[1],'#acbcc4',1,'stroke-dasharray="3 4"')}${text(61,(O[1]+P[1])/2,'h','#087f82',15,'text-anchor="end"')}${line(O[0],O[1],baseline[0]-12,baseline[1]+4,'#a4b5bf',1,'stroke-dasharray="3 3"')}<path d="M ${start} A 35 35 0 0 0 ${end}" fill="none" stroke="#657a87" stroke-width="1.3" marker-end="url(#arrow)"/>${text(149,86,'+q ↺ CCW','#526c7c',11)}${text(26,325,'Dashed line: wheel-centre path','#526c7c',10)}${line(375,310,405,310,'#657a87',1,'marker-end="url(#arrow)"')}${line(375,310,375,280,'#657a87',1,'marker-end="url(#arrow)"')}${text(409,315,'y','#526c7c',10)}${text(371,274,'z','#526c7c',10)}`;
   }
-  function drawChart(id,factor,label,color){const w=400,h=150,left=48,right=15,top=30,bottom=29;const max=Math.max(factor*M.geometry(165).J**2*1.1,1);const x=q=>left+(q-100)/65*(w-left-right),y=v=>h-bottom-v/max*(h-top-bottom);const pts=Array.from({length:131},(_,i)=>{const q=100+i*.5;return [x(q),y(factor*M.geometry(q).J**2)];});let s=`<title>${label} versus Link2 pose</title>${text(left,15,label,color,11)}`;[0,.5,1].forEach(t=>{const yy=y(max*t);s+=line(left,yy,w-right,yy,'#e5ecef')+text(left-7,yy+4,fmt(max*t,max<10?1:0),'#526c7c',10,'text-anchor="end"');});[100,120,140,165].forEach(q=>s+=text(x(q),h-11,q+'°','#526c7c',10,'text-anchor="middle"'));s+=`<path d="${pts.map((p,i)=>(i?'L':'M')+p.join(',')).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"/>`+line(x(state.pose),top,x(state.pose),h-bottom,'#657a87',1,'stroke-dasharray="3 3"')+`<circle cx="${x(state.pose)}" cy="${y(factor*M.geometry(state.pose).J**2)}" r="4.5" fill="${color}" stroke="white" stroke-width="2"/>`;$(id).innerHTML=s;}
+  function drawChart(id,key,label,color){
+    const w=400,h=150,left=48,right=15,top=30,bottom=29;
+    const samples=Array.from({length:131},(_,i)=>{const q=100+i*.5;return [q,M.calculate({...state,pose:q})[key]];});
+    const max=Math.max(...samples.map(p=>p[1]),1)*1.1;
+    const x=q=>left+(q-100)/65*(w-left-right),y=v=>h-bottom-v/max*(h-top-bottom);
+    let s=`<title>${label} versus Link2 pose</title>${text(left,15,label,color,11)}`;
+    [0,.5,1].forEach(t=>{const yy=y(max*t);s+=line(left,yy,w-right,yy,'#e5ecef')+text(left-7,yy+4,fmt(max*t,max<10?1:0),'#526c7c',10,'text-anchor="end"');});
+    [100,120,140,165].forEach(q=>s+=text(x(q),h-11,q+'°','#526c7c',10,'text-anchor="middle"'));
+    s+=`<path d="${samples.map(([q,v],i)=>(i?'L':'M')+[x(q),y(v)].join(',')).join(' ')}" fill="none" stroke="${color}" stroke-width="2.5"/>`+line(x(state.pose),top,x(state.pose),h-bottom,'#657a87',1,'stroke-dasharray="3 3"')+`<circle cx="${x(state.pose)}" cy="${y(M.calculate(state)[key])}" r="4.5" fill="${color}" stroke="white" stroke-width="2"/>`;$(id).innerHTML=s;
+  }
   function drawChassis(c){const cx=167,cy=145,scale=158/Math.max(state.length,state.width),dx=Math.max(18,state.width*scale/2),dy=Math.max(18,state.length*scale/2);const corners=[['FL',cx-dx,cy-dy],['FR',cx+dx,cy-dy],['RL',cx-dx,cy+dy],['RR',cx+dx,cy+dy]];const signs=motion==='heave'?[1,1,1,1]:motion==='roll'?[1,-1,1,-1]:[-1,-1,1,1];let s=`<title>Four supports, ${motion} pattern</title>${text(cx,18,'FRONT · +x','#526c7c',11,'text-anchor="middle"')}<rect x="${cx-dx}" y="${cy-dy}" width="${dx*2}" height="${dy*2}" rx="8" fill="#f3f6f8" stroke="#bdcdd6" stroke-width="2"/>${line(cx,cy-dy,cx,cy+dy,'#cbd8df',1,'stroke-dasharray="3 4"')}${line(cx-dx,cy,cx+dx,cy,'#cbd8df',1,'stroke-dasharray="3 4"')}${text(cx,cy-4,'TOP VIEW','#657a87',10,'text-anchor="middle"')}${text(cx,cy+12,'+ = upward','#657a87',10,'text-anchor="middle"')}`;corners.forEach(([label,x,y],i)=>{s+=`<circle cx="${x}" cy="${y}" r="17" fill="${signs[i]>0?'#e9f6f4':'#f8eee5'}" stroke="${signs[i]>0?'#087f82':'#bc6422'}" stroke-width="2"/>`+text(x,y+5,signs[i]>0?'+':'−',signs[i]>0?'#087f82':'#a65c27',17,'text-anchor="middle"')+text(x+(i%2?-26:26),y+(i<2?-23:30),label,'#182f3d',11,'text-anchor="middle"');});s+=line(cx+dx+42,cy-dy,cx+dx+42,cy+dy,'#91a5b1',1)+text(cx+dx+48,cy,'L','#526c7c',12)+line(cx-dx,cy+dy+43,cx+dx,cy+dy+43,'#91a5b1',1)+text(cx,cy+dy+59,'W','#526c7c',12,'text-anchor="middle"');$('support').innerHTML=s;
     const descriptions={heave:'Heave: all four corners move together. Equal vertical force changes add to a body lifting force.',roll:'Positive roll: left corners rise and right corners fall. Left/right force differences create a roll moment.',pitch:'Positive pitch (right-hand, +y): front corners fall and rear corners rise. Front/rear force differences create a pitch moment.'};$('motion-copy').textContent=descriptions[motion]+' Signs show a schematic motion pattern, not a running simulation.';
     ['heave','roll','pitch'].forEach(k=>{$('row-'+k).classList.toggle('highlight',k===motion);$(k+'-k').textContent=fmt(c[k].k);$(k+'-c').textContent=fmt(c[k].c);});document.querySelectorAll('[data-motion]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.motion===motion)));
     $('chassis-insight').textContent=`Each leg contributes ${fmt(c.kh)} N/m and ${fmt(c.ch)} N·s/m. Doubling W multiplies roll stiffness and damping by four; doubling L does the same for pitch.`;
   }
-  function render(){const c=M.calculate(state);['kh','ch','kp','kd'].forEach(k=>$(k).textContent=fmt(c[k]));$('height').textContent=fmt(c.h,4)+' m';$('jacobian').textContent=fmt(c.J,4)+' m/rad';$('pose-slider').value=state.pose;$('pose-slider').setAttribute('aria-valuetext',fmt(state.pose,1)+' degrees');$('pose-insight').textContent=`Here, +1° changes height by about ${fmt(c.J*Math.PI/180*1000,2)} mm locally. A larger |Jₕ| needs higher joint gains for the same vertical response.`;
+  function render(){const c=M.calculate(state);syncMassSliders();for(const [id,key] of [['corner-mass','cornerMass'],['link-equivalent-mass','linkEquivalentMass'],['effective-mass','effectiveMass'],['modeled-mass','modeledMass']])$(id).textContent=fmt(c[key],3)+' kg';['kh','ch','kp','kd'].forEach(k=>$(k).textContent=fmt(c[k]));$('height').textContent=fmt(c.h,4)+' m';$('jacobian').textContent=fmt(c.J,4)+' m/rad';$('pose-slider').value=state.pose;$('pose-slider').setAttribute('aria-valuetext',fmt(state.pose,1)+' degrees');$('pose-insight').textContent=`Here, +1° changes height by about ${fmt(c.J*Math.PI/180*1000,2)} mm locally. A larger |Jₕ| needs higher joint gains for the same vertical response.`;
     if(state.mode==='direct'){$('frequency').value=inputString(c.fn);$('damping').value=inputString(c.zeta);}else{$('stiffness').value=inputString(c.kh);$('vertical-damping').value=inputString(c.ch);}
     $('damping-status').textContent=c.zeta===0?'Undamped ideal case · ζ = 0':`Equivalent scalar response: ${fmt(c.fn,2)} Hz · ζ = ${fmt(c.zeta,2)}`;
-    drawLeg(c);drawChart('kp-chart',c.kh,'Kp · N·m/rad','#307cef');drawChart('kd-chart',c.ch,'Kd · N·m·s/rad','#7956af');drawChassis(c);['leg','chassis'].forEach(v=>{$(v+'-view').hidden=v!==state.view;$('tab-'+v).setAttribute('aria-selected',String(v===state.view));$('tab-'+v).tabIndex=v===state.view?0:-1;});
+    drawLeg(c);drawChart('kp-chart','kp','Kp · N·m/rad','#307cef');drawChart('kd-chart','kd','Kd · N·m·s/rad','#7956af');drawChassis(c);['leg','chassis'].forEach(v=>{$(v+'-view').hidden=v!==state.view;$('tab-'+v).setAttribute('aria-selected',String(v===state.view));$('tab-'+v).tabIndex=v===state.view?0:-1;});
   }
   function switchView(v){state.view=v;render();}
   Object.values(fields).forEach(id=>$(id).addEventListener('input',update));
+  ['mass','upper-mass','lower-mass'].forEach(id=>$(id+'-slider').addEventListener('input',()=>{$(id).value=$(id+'-slider').value;update();}));
   $('pose-slider').addEventListener('input',()=>{$('pose').value=$('pose-slider').value;update();});
   $('gain-mode').addEventListener('change',()=>{$('message').hidden=true;const candidate=readInputs(),errors=M.validate(candidate);showValidation(errors);if(invalid){$('gain-mode').value=state.mode;return;}const c=M.calculate(candidate);state={...candidate,mode:$('gain-mode').value,frequency:c.fn,damping:c.zeta,stiffness:c.kh,verticalDamping:c.ch};syncInputs();render();});
   ['leg','chassis'].forEach(v=>{$('tab-'+v).addEventListener('click',()=>switchView(v));$('tab-'+v).addEventListener('keydown',e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?'leg':e.key==='End'?'chassis':v==='leg'?'chassis':'leg';switchView(next);$('tab-'+next).focus();}});});
@@ -169,8 +211,8 @@ globalThis.CamelModel = (() => {
   function download(name,contents,type){const url=URL.createObjectURL(new Blob([contents],{type}));const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);}
   $('export').addEventListener('click',()=>{if(invalid)return;download('camel-controls-setup.json',JSON.stringify(M.serialize(state),null,2)+'\n','application/json');notice('Setup exported. Import this JSON into any copy of Controls Lab to reproduce the same results.');});
   $('import').addEventListener('click',()=>$('import-file').click());
-  $('import-file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>100000)throw Error('Setup file is too large. Choose a Controls Lab JSON setup under 100 KB.');let data;try{data=JSON.parse(await file.text());}catch{throw Error('This file is not valid JSON. Choose an exported Controls Lab setup.');}state=M.deserialize(data);showValidation({});syncInputs();render();notice('Setup imported. Geometry, gain mode, pose, support spacings and active view restored.');}catch(error){notice(error.message,true);}finally{e.target.value='';}});
-  $('reset').addEventListener('click',()=>{state={...M.DEFAULTS};motion='heave';showValidation({});['gain-details','geometry-details','model-details','architecture-details'].forEach(id=>$(id).open=false);syncInputs();render();notice('Reset to Jon V4 DP#3: 8.75 kg, 2 Hz, ζ 0.8, 135°, L 1.2 m and W 0.8 m.');});
+  $('import-file').addEventListener('change',async e=>{const file=e.target.files[0];if(!file)return;try{if(file.size>100000)throw Error('Setup file is too large. Choose a Controls Lab JSON setup under 100 KB.');let data;try{data=JSON.parse(await file.text());}catch{throw Error('This file is not valid JSON. Choose an exported Controls Lab setup.');}state=M.deserialize(data);showValidation({});syncInputs();render();notice('Setup imported. Masses, gain mode, pose, support spacings and active view restored. Legacy corner masses are converted to total chassis mass with zero linkage masses.');}catch(error){notice(error.message,true);}finally{e.target.value='';}});
+  $('reset').addEventListener('click',()=>{state={...M.DEFAULTS};motion='heave';showValidation({});['gain-details','geometry-details','model-details','architecture-details'].forEach(id=>$(id).open=false);syncInputs();render();notice('Reset to Jon V4 DP#3: 35 kg chassis, zero linkage masses, 2 Hz, ζ 0.8, 135°, L 1.2 m and W 0.8 m.');});
   $('save-dashboard').addEventListener('click',()=>{if(invalid)return;const clone=document.documentElement.cloneNode(true);clone.querySelector('#launch-setup').textContent=JSON.stringify(M.serialize(state));clone.querySelector('#message').hidden=true;download('CAMEL-Controls-Lab.html','<!doctype html>\n'+clone.outerHTML,'text/html;charset=utf-8');notice('Dashboard saved with this setup embedded. Send the HTML file; it opens offline in an ordinary browser.');});
   try{const launch=JSON.parse($('launch-setup').textContent);if(launch)state=M.deserialize(launch);}catch(e){notice('Embedded setup could not be restored. Documented defaults loaded. '+e.message,true);}
   // A saved page may contain an old rendered alert or read-only fields. Normalize all controls at startup.

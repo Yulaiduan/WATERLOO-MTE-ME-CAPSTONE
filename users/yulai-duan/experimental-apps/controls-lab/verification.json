@@ -1,15 +1,17 @@
 {
-  "date": "2026-10-25",
+  "date": "2026-10-26",
   "runtime": {
     "node": "v24.19.0"
   },
-  "model": "camel-controls/1.0.0",
+  "model": "camel-controls/2.0.0",
   "geometry": {
     "id": "jon-v4-dp3",
     "revision": "5e52a1220d4ecc9881a80995cbd882df1bfc9be6"
   },
-  "checks": 3349,
+  "checks": 3772,
   "sourcePoses": 651,
+  "linkInertiaPoses": 131,
+  "maxLinkInertiaErrorKgM2": 1.5821255416881286e-10,
   "maxPathErrorM": 2.220446049250313e-16,
   "maxFiniteDifferenceJacobianErrorMPerRad": 1.863725840323127e-11,
   "defaultResults": {
@@ -27,6 +29,12 @@
     ],
     "h": 0.3986778146332048,
     "J": -0.3986778146332048,
+    "cornerMass": 8.75,
+    "linkEquivalentMass": 0,
+    "effectiveMass": 8.75,
+    "modeledMass": 35,
+    "upperFactor": 0.8707308390384,
+    "lowerFactor": 0.4369680047542973,
     "kp": 219.6200161049135,
     "kd": 27.962888932014916,
     "heave": {
@@ -42,7 +50,7 @@
       "c": 253.3380315854809
     }
   },
-  "htmlSha256": "5eda23d27a7da283b5a5de85bfe233d77aa1469e4afedd5b5cb03c71d1df8cae",
+  "htmlSha256": "05f6f1c877715314846b640622677045346e527447c5d121f9338ae525377ce1",
   "referenceKernelSha256": "dd336831af5a94b56d3b91a0303d2e15ed7c51fc6c9b4ac1f8c069b691f07df7",
   "sourceNormalizedSha256": "37767388cfd20ae6fe7a03fd932a75f13660f773db5c875b6d902f3a35208cff",
   "sourceNormalization": "Kernel extracted verbatim from the retained LF-normalized HTML; see reference/README.md.",
