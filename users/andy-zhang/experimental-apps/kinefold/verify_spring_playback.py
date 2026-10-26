@@ -91,8 +91,10 @@ class SpringPlaybackChecks(unittest.TestCase):
         for mode in ('prescribed', 'contact'):
             result = self.results[mode, 'pymunk', True]
             model = Model({**result['params'], 'm6': 0}, self.config)
+            result['nativeSpringDrawing'] = {}
             for frame in (result['frames'][0], result['frames'][len(result['frames']) // 2], result['frames'][-1]):
                 drawing = spring_drawing(model, frame)
+                result['nativeSpringDrawing'][result['frames'].index(frame)] = drawing
                 for key in ('D', 'Q'):
                     for actual, expected in zip(drawing[key], frame[key]):
                         self.assertAlmostEqual(actual, expected, delta=2e-10)
@@ -100,10 +102,18 @@ class SpringPlaybackChecks(unittest.TestCase):
                 self.assertAlmostEqual(math.dist(drawing['arc'][-1], drawing['out']), 0, delta=1e-10)
                 shifted = {**frame, 'actualA': [frame['A'][0] + 37, 0, frame['A'][2] + 93]}
                 moved = spring_drawing(model, shifted)
-                for key in ('D', 'S', 'out', 'remote'):
+                for key in ('D', 'S', 'out', 'remote', 'fixedSeat', 'movingSeat'):
                     self.assertAlmostEqual(moved[key][0] - drawing[key][0], 37, delta=1e-10)
                     self.assertAlmostEqual(moved[key][2] - drawing[key][2], 93, delta=1e-10)
                 self.assertEqual(moved['forceN'], drawing['forceN'])
+                self.assertAlmostEqual(math.dist(drawing['fixedSeat'], drawing['movingSeat']), drawing['lengthMm'], delta=1e-10)
+                self.assertGreaterEqual(drawing['lengthMm'], 80 - 1e-8)
+                self.assertTrue(all(math.isfinite(value) for point in drawing['assemblyPoints'] for value in point))
+                self.assertNotIn('witnessAngle', drawing)
+            first, last = [spring_drawing(model, frame) for frame in (result['frames'][0], result['frames'][-1])]
+            self.assertAlmostEqual(last['lengthMm'] - first['lengthMm'], -(last['payoutMm'] - first['payoutMm']), delta=1e-10)
+            self.assertAlmostEqual(first['payoutMm'] + math.dist(first['out'], first['movingSeat']),
+                                   last['payoutMm'] + math.dist(last['out'], last['movingSeat']), delta=1e-10)
             fixtures.append(result)
         output = subprocess.check_output(['node', 'verify-spring-playback.cjs'], input=json.dumps(fixtures), cwd=ROOT, text=True)
         self.report['svgChecks'] = json.loads(output)

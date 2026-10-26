@@ -4760,3 +4760,44 @@ Read its README for the local heave kinetic-energy assumptions, schema-1 migrati
 Retain frozen DP#3 fixtures and the labelled approximation, identify actual component inertia and gravity compensation before hardware use, and run numerical/browser checks after model or control changes.
 
 ---
+
+## Entry: 2026-10-26 — Andy Zhang — Linear compression-spring playback
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold browser/native dynamic preview.
+- **Associated Issue/Task:** Owner requested a visibly compressing axial spring in place of the round payout dial. Started clean after fast-forwarding main to 599a626; preserved unrelated Controls Lab work and existing saved designs.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/preview-geometry.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-spring-playback.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_spring_playback.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_viewer.py`
+
+- **API/Interface Changes:** Drawing-only fields expose fixed/moving seats, wire/rails, illustrative length/stroke and full assembly points instead of witnessAngle. Shared browser drawing serves both dynamic tabs; Tk mirrors it. Camera bounds include the complete assembly. Increasing payout retracts the cable-attached seat 1:1; exact existing full-travel extrema keep the illustrative length positive without clamping. Assembly dimensions are explicitly illustrative. No force-law, integrator, controller, schema, saved-input, dependency, canonical/shared-interface or rule changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Three spring groups PASS: eight actual prescribed/contact analytical/Pymunk on/off runs, independent virtual-work checks and 4,506 SVG/native geometry assertions including cable continuity, 1:1 compression, finite bounds and unchanged force law. Existing 1,123 drawing/666 contact-drawing/2,000 core assertions PASS. Worker actual Tk GUI suite14 groups PASS; parent focused Tk compression-seat test PASS after final stroke styling. First inherited arbitrary5px dial-witness threshold failed because calibrated seat motion was1.946px; replaced with exact camera-scaled travel and independent >5mm world-stroke check, then clean rerun. Initial parent SVG rasterization rejected bare data attributes; explicit empty values fixed XML, and both actual contact-frame SVGs parse/render and were visually inspected after thinning wire/seat strokes. CUA apps/browsers inventory is empty; real live browser/pointer/native visual review remains UNVERIFIED. Actual app-root Stop/Start/Stop/restart/reuse from unrelated cwd PASS4191; both dynamic routes HTTP200 and three changed browser assets match exact disk bytes. Full live profile library remains byte-identical to pre-task backup, SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f. Raw evidence/images stay ignored. Initial appended-log trailing blank line was removed before the clean whitespace check. JS parsing, Python compilation, relative documentation links, whitespace and required fetched-base/staged/require-passed/workspace gates run before publication with normal hooks.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app drawing change. Illustrative spring packaging does not certify real compression-spring geometry, stops, material or hardware performance; selected constant-force behavior remains distinct from the V4 linear spring law.
+
+## 4. Compute Saving Handoff State
+
+Both dynamic browser previews and the desktop Pymunk viewer now show a linear compression assembly with a fixed seat, cable-attached moving seat and visible 1:1 shortening.
+Refresh and rerun the captured case, or reopen the native viewer; use the existing app-root Start/Stop Kinefold.cmd at4191 and preserve all saved inputs.
+Read the new app context for illustrative dimensions and verification, retain historical report evidence separately, and replace drawing dimensions only when physical packaging is specified.
+
+---

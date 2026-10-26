@@ -814,3 +814,46 @@ Python compilation, whitespace and relative documentation links pass. Publicatio
 uses workspace scope, normal hooks and fetched-base checks; canonical robot
 physics is NOT APPLICABLE. Stop with Stop Kinefold.cmd and restart through the
 existing Start Kinefold.cmd; no boot/login automation is added.
+
+
+## 2026-10-26 — visible linear compression spring
+
+Based on main 599a626 after fast-forwarding the unrelated Controls Lab updates.
+The owner requested a compression-spring illustration in place of the circular
+remote-housing/payout dial. A GPT-6.1 Sol worker implemented the shared browser
+and native drawing; parent reviewed, integrated and visually refined the wire.
+
+Both dynamic browser previews and the desktop viewer now show a fixed near seat,
+moving cable seat, axial spring body and complete cable. Positive cable payout
+retracts the far seat by exactly the same distance, compressing the spring while
+keeping total geometric cable length constant. The illustrative seat separation
+is 80 mm plus full-travel maximum payout minus current payout. Exact existing
+route extrema provide a stable envelope; there is no visual stroke clamp.
+Assembly points participate in fixed-camera bounds. The 80 mm clearance, wire
+radius and mounting offset are drawing choices, not measured spring packaging,
+new physical stops or additional inertia. Selected V4/constant-force laws,
+prescribed/contact solvers, project schemas and saved inputs are unchanged.
+
+Actual verification: three spring groups pass, including eight existing actual
+engine on/off runs and 4,506 browser/native geometry assertions for route,
+compression direction, 1:1 stroke and constant total cable length. Existing
+1,123 drawing, 666 contact-drawing and 2,000 core assertions pass. Worker native
+GUI suite passes all 14 groups; parent reran the focused actual Tk compression
+seat/motion check after thinning the final wire/seat strokes. The inherited
+arbitrary 5-pixel dial threshold initially failed; it was replaced with exact
+camera-scaled seat travel and an independent greater-than-5-mm physical-stroke
+check. Parent XML rendering initially rejected valueless data attributes; explicit
+empty values fixed both standalone SVGs before successful XML/raster checks.
+Two actual contact frames were rasterized and visually inspected; spring turns,
+shortening and complete framing are clear. Real browser/pointer review remains
+unverified because CUA reports no enabled surfaces.
+
+Actual project-local Stop/Start/Stop/restart/reuse from an unrelated directory
+passes at 4191. Both dynamic routes return HTTP200, and all three changed browser
+assets match disk bytes. The complete live profile library remains byte-identical
+to the pre-task backup (SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f).
+The preview stays running; refresh and rerun a case to use the new browser
+drawing, or reopen the desktop viewer. Source publication uses workspace scope,
+normal hooks and fetched-base checks; canonical robot/hardware validation is
+not applicable to this drawing-only change. Historical dial/report evidence
+above describes the earlier representation and is not a new physical package.

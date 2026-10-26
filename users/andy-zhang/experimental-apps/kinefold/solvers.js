@@ -128,7 +128,7 @@ function camera(state,p) {
   const bounds={loX:Infinity,hiX:-Infinity,loY:Infinity,hiY:-Infinity};
   for(const frame of state.result.frames) {
     const spring=KinefoldDrawing.spring(p,frame);
-    const points=[frame.A,[frame.A[0],0,frame.A[2]+100],frame.B,...(spring.valid?[spring.D,spring.S,spring.remote,[spring.remote[0],0,spring.remote[2]+200]]:[]),
+    const points=[frame.A,[frame.A[0],0,frame.A[2]+100],frame.B,...(spring.valid?[spring.D,spring.S,...spring.assemblyPoints]:[]),
       [frame.C[0]-p.rw,0,frame.C[2]-p.rw],[frame.C[0]+p.rw,0,frame.C[2]+p.rw]];
     for(const point of points){bounds.loX=Math.min(bounds.loX,-point[0]);bounds.hiX=Math.max(bounds.hiX,-point[0]);bounds.loY=Math.min(bounds.loY,-point[2]);bounds.hiY=Math.max(bounds.hiY,-point[2]);}
   }

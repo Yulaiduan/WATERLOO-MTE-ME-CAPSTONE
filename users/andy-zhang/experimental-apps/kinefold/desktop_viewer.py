@@ -10,8 +10,8 @@ integration. Actual chassis frames drive an explicitly ideal condensed linkage.
 Prescribed mode illustrates a wheel-height input. Terrain-contact mode renders
 the actual collision mesh and integrated chassis/wheel bodies, with an ideal
 condensed massless linkage. Neither mode establishes all-body/hardware fidelity.
-The finite-idler cable follows captured pose/chassis; a schematic remote housing
-and payout witness distinguish ideal constant cable force from the V4 coil law.
+The finite-idler cable follows captured pose/chassis and drives an illustrative
+linear compression assembly. Its packaging dimensions do not alter either law.
 """
 from __future__ import annotations
 
@@ -73,11 +73,11 @@ def index_endpoint(point, radius, angle_degrees):
 
 
 def spring_drawing(model, frame):
-    """Exact captured-frame cable route, world mm, plus a schematic payout dial.
+    """Exact captured-frame cable route plus a 1:1 compression assembly, mm.
 
     Reconstruct from returned theta2 and actual chassis translation, never the
-    builder's initial pose. The housing/dial illustrates remote spring payout;
-    its graphic radius is not a physical spring/drum dimension or added inertia.
+    builder's initial pose. Illustrative seats, wire and clearance are drawing
+    dimensions only; no new stiffness, inertia or package specification is used.
     """
     p = model.p
     if not p['springEnabled']:
@@ -94,11 +94,33 @@ def spring_drawing(model, frame):
     arc = [world((p['Su'] + p['rs'] * math.cos(psi - z['wrap'] * i / 64),
                   p['Sv'] + p['rs'] * math.sin(psi - z['wrap'] * i / 64))) for i in range(65)] if p['rs'] else []
     delta = z['payout'] - model.reference_payout
+    # Reuse exact route extrema, stable across all frames of this captured model.
+    if not hasattr(model, '_spring_illustration_envelope'):
+        payouts = [model.geometry(q)['payout'] for q in model.candidates(model.lo, model.hi)]
+        model._spring_illustration_envelope = (min(payouts), max(payouts))
+    minimum, maximum = model._spring_illustration_envelope
+    length = 80 + maximum - z['payout']
+    if not length > 0:
+        raise ValueError('Pose exceeds illustrative compression assembly travel.')
+    def along(distance, normal=0):
+        return world((outgoing[0] + direction[0] * distance - direction[1] * normal,
+                      outgoing[1] + direction[1] * distance + direction[0] * normal))
+    fixed = along(125)
+    moving = along(125 + length)
+    fixed_bar = [along(125, -20), along(125, 20)]
+    moving_bar = [along(125 + length, -20), along(125 + length, 20)]
+    wire = [along(125 + 6 + (length - 12) * i / 168,
+                  14 * math.sin(i / 168 * 14 * math.pi)) for i in range(169)]
+    rails = [[along(125, n) for n in (-18, 18)],
+             [along(125 + 80 + maximum - minimum, n) for n in (-18, 18)]]
     return dict(enabled=True, law='Ideal constant cable force' if p['springLaw'] == 'constant' else 'V4 linear coil',
                 A=A, D=world(z['D']), Q=world(z['Q']), S=world((p['Su'], p['Sv'])),
-                out=world(outgoing), remote=world(tuple(outgoing[i] + 125 * direction[i] for i in range(2))),
+                out=world(outgoing), remote=moving, fixedSeat=fixed, movingSeat=moving,
+                fixedBar=fixed_bar, movingBar=moving_bar, wire=wire, rails=rails,
+                assemblyPoints=fixed_bar + moving_bar + wire + rails[0] + rails[1],
+                lengthMm=length, compressionMm=z['payout'] - minimum, strokeMm=maximum - minimum,
                 arc=arc, forceN=z['force'], torqueNm=z['torque'], payoutMm=z['payout'],
-                deltaMm=delta, witnessAngle=delta / 20)
+                deltaMm=delta)
 
 
 def floor_height(model, row, x, applied=True):
@@ -276,7 +298,7 @@ class PlaybackWindow:
         for frame in self.frames:
             spring = spring_drawing(self.model, frame)
             if spring['enabled']:
-                points.extend(spring[key] for key in ('D', 'S', 'remote'))
+                points.extend([spring['D'], spring['S'], *spring['assemblyPoints']])
         radius = self.model.p['rw']
         xs = [point[0] for point in points]
         zs = [point[2] for point in points]
@@ -360,15 +382,16 @@ class PlaybackWindow:
             self.line([pair(spring[key]) for key in ('D', 'Q')], fill=GOLD, width=2)
             self.line([pair(point) for point in spring['arc']], fill=GOLD, width=3)
             self.circle(spring['S'], p['rs'], outline=GOLD, width=1)
-            self.line([pair(spring[key]) for key in ('out', 'remote')], fill=GOLD, width=2)
-            rx, ry = self.project(*pair(spring['remote']))
-            radius = 12
-            canvas.create_rectangle(rx - 17, ry - 17, rx + 17, ry + 17, fill=BACKGROUND, outline=GOLD, width=2)
-            canvas.create_oval(rx - radius, ry - radius, rx + radius, ry + radius, outline=GOLD)
-            canvas.create_line(rx, ry, rx + radius * math.cos(spring['witnessAngle']),
-                               ry + radius * math.sin(spring['witnessAngle']), fill='#ad6054', width=2,
-                               tags=('spring-payout-witness',))
-            canvas.create_text(rx + 23, ry + 4, anchor='w', text='Spring · schematic', fill=GOLD, font=('Segoe UI', 9))
+            self.line([pair(spring[key]) for key in ('out', 'remote')], fill=GOLD, width=1.4)
+            for index in (0, 1):
+                self.line([pair(spring['rails'][0][index]), pair(spring['rails'][1][index])],
+                          fill='#d9c8a8', width=1)
+            self.line([pair(point) for point in spring['fixedBar']], fill=GOLD, width=3,
+                      tags=('spring-fixed-seat',))
+            self.line([pair(point) for point in spring['movingBar']], fill=GOLD, width=3,
+                      tags=('spring-moving-seat',))
+            self.line([pair(point) for point in spring['wire']], fill=GOLD, width=1.3,
+                      tags=('spring-compression-body',))
         if self.contact:
             for point in frame['contactPointsMm']:
                 self.circle(point, 4, fill=GOLD, outline=INK)
@@ -387,7 +410,7 @@ class PlaybackWindow:
         canvas.create_text(17, 37, anchor='nw', text='Actual chassis / wheel bodies + ideal linkage' if self.contact else 'Actual chassis body + ideal linkage', fill=INK, font=('Segoe UI', 10))
         canvas.create_text(17, 58, anchor='nw', text=(f'{spring["law"]} · Fₛ {spring["forceN"]:.2f} N · τₛ {spring["torqueNm"]:.2f} N·m' if spring['enabled'] else 'Spring disabled · no spring force'), fill=GOLD, font=('Segoe UI', 10))
         if spring['enabled']:
-            canvas.create_text(17, 79, anchor='nw', text=f'Cable payout ΔL₉₀ {spring["deltaMm"]:.2f} mm · dial follows payout, housing schematic', fill='#68736b', font=('Segoe UI', 9))
+            canvas.create_text(17, 79, anchor='nw', text=f'Compression spring · illustrative size · 1:1 cable stroke · ΔL₉₀ {spring["deltaMm"]:.2f} mm', fill='#68736b', font=('Segoe UI', 9))
         canvas.create_text(17, canvas.winfo_height() - 17, anchor='sw', text='← +x     +z ↑     +y toward you', fill=SAGE, font=('Segoe UI', 10, 'bold'))
         event = ' · ' + row['eventSide'] + ' exact jump' if row.get('eventSide') else ''
         self.clock.configure(text=f'{row["t"]:.3f} / {self.times[-1]:.3f} s  ·  frame {self.index + 1}/{len(self.frames)}{event}')

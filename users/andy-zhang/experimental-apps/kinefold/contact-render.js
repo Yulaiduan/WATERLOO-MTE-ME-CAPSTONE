@@ -42,7 +42,7 @@ globalThis.KinefoldContactDrawing = (() => {
     let minX=Infinity,maxX=-Infinity,minZ=0,maxZ=-Infinity;
     for (const f of result.frames) {
       const spring=KinefoldDrawing.spring(p,f);
-      for (const point of [f.A,f.B,f.C,...(spring.valid?[spring.D,spring.S,spring.remote]:[])]) {
+      for (const point of [f.A,f.B,f.C,...(spring.valid?[spring.D,spring.S,...spring.assemblyPoints]:[])]) {
         minX=Math.min(minX,point[0]-p.rw);maxX=Math.max(maxX,point[0]+p.rw);
         minZ=Math.min(minZ,point[2]-p.rw);maxZ=Math.max(maxZ,point[2]+200);
       }

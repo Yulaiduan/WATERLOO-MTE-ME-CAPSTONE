@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import importlib.util
 import json
+import math
 import os
 from pathlib import Path
 import subprocess
@@ -25,7 +26,7 @@ import unittest
 from unittest import mock
 
 from desktop_viewer import (PlaybackWindow, contact_mesh, floor_height, floor_points,
-                            index_endpoint, is_contact, parent_alive, simulate_snapshot)
+                            index_endpoint, is_contact, parent_alive, simulate_snapshot, spring_drawing)
 from dynamic_model import Model, defaults
 from dynamics import simulate
 from contact_dynamics import validate_contact_request
@@ -238,7 +239,7 @@ class ViewerChecks(unittest.TestCase):
         self.assertEqual(state['state'], 'closed')
         self.assertTrue(state['selfTestPassed'], state)
 
-    def test_gui_constant_force_payout_witness(self):
+    def test_gui_constant_force_compression_seats(self):
         if not GUI:
             self.skipTest('Use --gui for actual constant-force Tk canvas drawing.')
         request = self.request(params={**self.params, 'm6': 1.5, 'springLaw': 'constant'},
@@ -248,15 +249,25 @@ class ViewerChecks(unittest.TestCase):
         window = PlaybackWindow(result, 'Constant cable force verification', mock.Mock(), os.getpid())
         try:
             window.root.update_idletasks()
-            vectors = []
+            lengths = []
             for index in (0, len(window.frames) - 1):
                 window.index = index
                 window.draw()
-                items = window.canvas.find_withtag('spring-payout-witness')
-                self.assertEqual(len(items), 1)
-                x1, y1, x2, y2 = window.canvas.coords(items[0])
-                vectors.append((x2 - x1, y2 - y1))
-            self.assertGreater(sum(abs(a - b) for a, b in zip(*vectors)), 5)
+                centers = []
+                for tag in ('spring-fixed-seat', 'spring-moving-seat'):
+                    items = window.canvas.find_withtag(tag)
+                    self.assertEqual(len(items), 1)
+                    x1, y1, x2, y2 = window.canvas.coords(items[0])
+                    centers.append(((x1+x2)/2, (y1+y2)/2))
+                lengths.append(math.dist(*centers))
+                self.assertEqual(len(window.canvas.find_withtag('spring-compression-body')), 1)
+                self.assertEqual(len(window.canvas.find_withtag('spring-payout-witness')), 0)
+            # True millimetre stroke follows the calibrated camera, rather than
+            # an arbitrary exaggerated dial motion or fixed pixel threshold.
+            scale = math.dist(window.project(0, 0), window.project(1, 0))
+            first, last = [spring_drawing(window.model, frame) for frame in (window.frames[0], window.frames[-1])]
+            self.assertGreater(abs(last['payoutMm'] - first['payoutMm']), 5)
+            self.assertAlmostEqual(lengths[0] - lengths[1], (last['payoutMm'] - first['payoutMm']) * scale, delta=1e-8)
             self.assertTrue(all(row['Fs'] == self.params['p0'] for row in result['rows']))
         finally:
             window.close()

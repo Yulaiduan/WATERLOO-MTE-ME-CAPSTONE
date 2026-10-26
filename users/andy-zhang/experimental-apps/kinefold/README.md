@@ -278,14 +278,17 @@ handling and first-flight/first-arrest limits are documented in
 
 ## Findings PDF and visible dynamic spring — 2026-10-23
 
-Both dynamic browser previews and the desktop Pymunk viewer now reconstruct the
+Both dynamic browser previews and the desktop Pymunk viewer reconstruct the
 spring from each captured frame: horn, incoming tangent, finite idler wrap and
-outgoing cable to a schematic housing. The housing dial follows actual cable
-payout; the readout names the active spring law and shows tension, hip torque
-and payout relative to the 90-degree reference. It has no invented drum inertia.
-Playback must change the leg pose to change the payout. The saved V4 baseline
-still uses its coil law; select **Ideal constant cable force** under Suspension
-for constant tension. No force law or saved profile was changed by this fix.
+outgoing cable to a linear compression assembly. A fixed seat and moving cable
+seat show the spring shortening as cable payout increases, with one millimetre
+of seat motion per millimetre of payout. The former circular payout dial is
+removed. Assembly dimensions remain illustrative because physical free length
+and packaging are unspecified; they do not add mass, stiffness or travel limits.
+The readout retains the selected spring law, tension, hip torque and payout
+relative to the 90-degree reference. The saved V4 baseline still uses its linear
+spring law; select **Ideal constant cable force** under Suspension for constant
+tension. This drawing change does not change a force law or saved profile.
 
 Run `.venv/Scripts/python.exe verify_spring_playback.py` to reproduce eight
 actual analytical/Pymunk spring-on/off runs, virtual-work checks and 222 SVG
