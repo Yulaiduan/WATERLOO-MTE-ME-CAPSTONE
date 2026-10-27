@@ -91,6 +91,8 @@ manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses
 identities, sampled work ledgers, saved metadata, chart traces and explicit
 command handoff without a simulation request. The UI harness uses an in-memory
 DOM; live pointer, sizing and visual behaviour require browser review.
+`node verify-energy-alpha.cjs` independently checks tilted world projections,
+gravity work, unchanged chassis-local spring energy and clearance endpoints.
 
 `node verify-plotly-runtime.cjs`, `node verify-equilibrium-plotly.cjs` and
 `node verify-dynamic-plotly.cjs` check lifecycle and trace semantics. The offline
@@ -257,6 +259,7 @@ numerical guards, energy accounting and native ABI limitations.
 
 The dedicated **Energy · jump & landing** tab offers instant work calculations
 without a simulation run. Its landing calculator uses saved chassis/spring/motor geometry,
+including saved mounting pitch α through the full world-height projection,
 separates the50mm ground-clearance target from the underside offset, and reports
 joint/shaft resisting magnitudes, available stroke and endpoint drop capacity.
 The explicit editable1° stop reserve is an illustrative margin. A Plotly curve,

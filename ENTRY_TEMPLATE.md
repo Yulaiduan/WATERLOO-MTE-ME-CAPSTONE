@@ -4849,3 +4849,45 @@ Open the stable energy route, inspect candidate versus physical motor assumption
 Read the new app context and energy-calculator notes for equations, defaults, exact tests and unavailable browser review, preserve saved inputs and use normal scoped checks before future publication.
 
 ---
+
+## Entry: 2026-10-26 — Andy Zhang — Include mounting pitch α in jump and landing energy
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated energy calculator/UI workspace.
+- **Associated Issue/Task:** Owner requested α in energy calculations. Started from fetched main08acb24; retained all live saved designs and source/backend models.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-alpha.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-workspace.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy.cjs`
+
+- **API/Interface Changes:** Existing energy APIs now accept fixed tilted straight guides with monotonic world-height compression, using full rotated wheel coordinates for gravity and clearance endpoints. Additive α/φ₀/guide/projection/x-travel metadata and per-row α in CSV/JSON; saved project-v3/energy-workspace-v1 schemas remain compatible. Visible saved α/Edit Studio action, projection equations, α chart titles and signed x samples clarify the calculation. Spring work remains chassis-local and is not retuned or cosine-scaled. Negative-demand jump surplus/landing earlier arrest are distinguished. No dynamic integrator, legacy energy-sized controller, source reference, live saved input, shared interface, dependency or rule changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Parent integrated PASS185,698 independent tilt assertions across480 endpoints;115 retained energy;4,490 workspace;712 DOM/VM with52 BASIC-compatible mounts;2,000 core;33 project groups;48 preset UI/20 mounts;19 Plotly lifecycle;6 motor UI. Raw two-link rotation independently covers α0/10/20/30/45°, φ₀0/20°, both spring laws/on/off, stop/clearance roots, H0/100/2000mm, signed work, spring invariance, gearing, purity/reload/export and tilted physical handoff. Full-potential finite-derivative work integration passes. Worker corrected a clearance fixture400→450mm because the φ₀20° stop leaves409.0268mm; production guards/tolerances remain intact. Retained V4 α0 2m232.345151886620Nm; copied current profile α30 gives226.970867387894Nm. Four actual-data Plotly PNGs, combined sheet and ZIP produced in app exports, images/ZIP validated and visually checked after correcting mixed light/dark capture palette. Actual app-local Stop/Start/Stop/restart/reuse from unrelated cwd PASS4191; three served assets exact, five routes HTTP200. Full live library remains byte-identical SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f. JS syntax, relative docs links, whitespace and fetched-base/staged/require-passed/workspace checks apply before publication with normal hooks. Live browser/pointer review and new contact trajectories/hardware tests remain UNVERIFIED; figures are not UI screenshots.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app endpoint-work feature. Fixed chassis pitch, horizontal floor, zero retained endpoint rolling/rotor energy and no loss credits remain explicit assumptions; sampled work does not certify takeoff, impact survival, trajectory feasibility or post-arrest holding.
+
+## 4. Compute Saving Handoff State
+
+Both jump and landing energy calculations now use saved α through the full world projection, with visible equations, plot labels and exported geometry/work data.
+Refresh the energy route and edit α in Mechanism studio; existing app-root Start/Stop Kinefold.cmd retains4191 and all saved designs remain unchanged.
+Read the app context and calculator scope before extending contact or losses, retain the legacy controller distinction, and run the focused tilt suite plus normal workspace gates before publication.
+
+---

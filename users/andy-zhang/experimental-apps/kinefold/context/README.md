@@ -924,3 +924,59 @@ claimed for this calculation/UI contribution. Canonical robot physics is NOT
 APPLICABLE; normal fetched-base checks and publication hooks still apply.
 Restart via app-root Start Kinefold.cmd, stop via Stop Kinefold.cmd; the preview
 remains http://127.0.0.1:4191/?tab=energy, without login/boot automation.
+
+## 2026-10-26 — mounting pitch α in energy calculations
+
+Based on main `08acb24`. Owner requested α in energy calculations. A GPT-6.1 Sol
+worker implemented the calculation/UI/tests in an isolated worktree; parent
+reviewed the rotation, work signs, glossary and final integration. The old
+blanket vertical-guide rejection is removed for supported straight, nonsingular,
+monotonic world-height branches. Both Jump and Landing use the full saved
+projection `C_z=−sin(α)P_u+cos(α)P_v`, `h=r_w−C_z`; signed wheel x coordinates
+use `C_x=−cos(α)P_u−sin(α)P_v`. Here source P is the local wheel centre,
+distinct from Kinefold's statics rim-load point P. Nonzero φ₀ is included.
+
+The chassis retains fixed x and pitch and moves vertically, on a horizontal
+stationary floor. Wheel height stays r_w but horizontal wheel motion is allowed.
+This is an endpoint work assumption, not a new contact integration. Ideal guide
+and floor reactions do no work; retained wheel-spin/rotor kinetic energy and
+rolling/contact/impact/friction losses remain outside this screen. Spring geometry
+is chassis-local: α alone neither retunes preload/stiffness nor scales spring
+work. Only φ₀=0 reduces vertical travel/gravity to the cos(α) expression. The
+underside offset remains the declared vertical distance below A. Clearance roots
+use rotated geometry and retain the earlier stop/clearance limit.
+
+The Energy tab now shows saved α with an Edit in Mechanism studio action, full
+projection equations and guide orientation, signed horizontal wheel travel,
+α-labelled Plotly charts and explicit α in every height/stroke CSV row. Additive
+JSON fields carry these same projections/metadata; no saved-profile/schema or
+default-input migration occurs. Negative signed demand still clamps only the
+torque magnitude: jump surplus or landing's unreachable endpoint/earlier arrest
+are explained separately. Physical command handoff supports tilted contact cases
+without running them. The separate legacy dynamic energy-sized controller stays
+vertical-only and impact-adjusted; it was not changed by this contribution.
+
+Integrated checks PASS: 185,698 independent tilted assertions across480 endpoint
+fixtures (α0/10/20/30/45°, φ₀0/20°, both spring laws/on/off, stop/clearance limits,
+heights0/100/2000mm);115 retained energy;4,490 workspace;712 DOM/VM with52 BASIC
+chart mounts;2,000 core;33 project groups;48 preset UI with20 mounts;19 Plotly
+lifecycle and6 motor UI. Independent raw two-link rotation, full-potential finite
+derivative integration, gravity cos projection, invariant local spring work,
+signed budgets, gearing, purity, reload/export and tilted handoff are covered.
+The initial450mm-clearance fixture was corrected from400mm because the φ₀20°
+stop already leaves409.0268mm; no guard or tolerance was weakened. V4 α0 2m
+remains232.345151886620Nm. Copied current free-wheel design at α30 gives
+226.970867387894Nm, unchanged spring storage29.644002342084J and lower compression
+gravity25.667800887858J. Those sensitivity copies never replace the saved design.
+Fifteen retained pre-change α0 fixtures match all195 numeric fields exactly.
+
+Actual app-root Stop/Start/Stop/restart/reuse from unrelated cwd PASS4191; three
+served JS assets match disk and five relevant routes returnHTTP200. Live profile
+library remains byte-identical, SHA256
+efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f.
+Four actual-data Plotly PNGs plus a combined overview/ZIP are exported under
+ignored app exports and visually checked; initial mixed light/dark plotting
+palette was corrected before final review. PNGs are static figures, not browser
+screenshots. Live browser/pointer review and new trajectories/hardware tests are
+UNVERIFIED; canonical robot physics is NOT APPLICABLE to this member workspace.
+Use the existing app-root Start/Stop launchers and refresh the stable energy URL.

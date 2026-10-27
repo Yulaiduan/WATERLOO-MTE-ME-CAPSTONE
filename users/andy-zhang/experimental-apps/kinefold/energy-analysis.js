@@ -1,7 +1,7 @@
 /** Pure chassis-only landing energy screen, without integrating a trajectory.
  * Load after model.js/project-store.js. Inputs mm/deg/kg/N and optional saved
  * energyConfig. Outputs J, Nm, geometry and sufficient endpoint drop capacity.
- * Assumes held vertical flat-floor drop, fixed wheel during compression, rest
+ * Assumes held flat-floor drop, fixed chassis pitch and wheel height, rest
  * endpoints, massless moving links; not peak torque or post-arrest stability.
  */
 globalThis.KinefoldEnergyAnalysis=(()=>{
@@ -27,10 +27,29 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const idealJointPeakNm=v.peakShaftNm*ratio,effectiveJointNm=momentaryNm===null?idealJointPeakNm:Math.min(idealJointPeakNm,momentaryNm);
     return {...v,motorName:motor?.name??'Custom motor',catalogPeakShaftNm:motor?.peakShaftNm??null,peakOverridden:!!motor&&motor.peakShaftNm!==v.peakShaftNm,duration:motor?.duration??'Custom peak duration unassessed',gearboxName:gearbox?.name??(v.gearboxId==='direct'?'Direct drive':'Custom reduction'),ratio,nominalNm:gearbox?.nominalNm??null,momentaryNm,idealJointPeakNm,effectiveJointNm,gearboxAssessed:v.gearboxId!=='custom'||momentaryNm!==null,forwardEfficiency:gearbox?.forwardEfficiency??null};
   }
+  // Rotate complete local straight-path geometry before evaluating gravity.
+  // α is fixed mounting pitch, not terrain slope. Wheel x motion is allowed.
+  function straightProjection(p){
+    if(Math.abs(p.L2-p.L3)>1e-9||Math.abs(p.ra/p.rb-2)>1e-10)throw Error('This energy screen requires equal links and r_a/r_b=2 for straight travel.');
+    const mean=(180+p.phi0)/2,angle=(mean-p.alpha)*R;
+    for(let n=-2;n<4;n++)if(mean+n*180>=p.te-1e-9&&mean+n*180<=p.tc+1e-9)throw Error('Working travel crosses a singular or reversing straight-path branch.');
+    const axisX=Math.cos(angle),axisZ=-Math.sin(angle),mid=(p.te+p.tc)/2;
+    const dCzDq=axisZ*(-2*p.L2*Math.sin((mid-mean)*R));
+    if(!(p.tc>p.te&&dCzDq>1e-9))throw Error('Compression toward θ_c must monotonically decrease world chassis height on a nonsingular branch.');
+    return {alphaDeg:p.alpha,phi0Deg:p.phi0,guideAxisX:axisX,guideAxisZ:axisZ,guideTiltFromDownDeg:Math.atan2(axisX,-axisZ)/R,
+      sourceVerticalProjection:'C_z(q, α) = −sin(α) P_u(q) + cos(α) P_v(q)',
+      sourceHorizontalProjection:'C_x(q, α) = −cos(α) P_u(q) − sin(α) P_v(q)',hipHeightEquation:'h(q, α) = r_w − C_z(q, α)',
+      contactAssumption:'Fixed wheel height z_w = r_w on a stationary horizontal floor; horizontal wheel motion allowed; fixed chassis x and mounting pitch α.'};
+  }
+  function point(ref,q){
+    const s=KinefoldV4.VSL.state(ref,q);
+    return {sourcePuMm:s.P[0],sourcePvMm:s.P[1],wheelCxMm:-s.Pg[0],wheelCzMm:s.Pg[1],hipHeightMm:ref.rw-s.Pg[1]};
+  }
   function calculate(project){
     const p=project.params,P=KinefoldProjects,V=KinefoldV4;
     const e=P.validateEnergy({...P.energyDefaults,dropHeightMm:project.caseConfig?.landingDropMm??P.caseDefaults.landingDropMm,...project.energyConfig});
     const c={...P.caseDefaults,...project.caseConfig},savedMotor={...P.motorDefaults,...project.motorConfig},screening=resolveScreen(e.screening);
+    P.validateCase(c);P.validateMotor(savedMotor);
     // Candidate reduction changes conservative cogging phase; never mutate dynamics.
     // Disabled saved passives stay zero. No catalog inertia/loss guesses are made.
     const motor=screening?{...savedMotor,enabled:true,gearRatio:screening.ratio,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
@@ -39,13 +58,9 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     if(!(p.m1>0&&p.g>0))throw Error('This drop-height energy screen requires positive chassis mass m₁ and gravity g.');
     if(['m2','m3','m5'].some(k=>p[k]!==0))throw Error('Chassis-only energy assumes massless moving links/compound pulley (m₂=m₃=m₅=0).');
     if(p.loadMode==='contact'||p.loadMode==='global'&&(Math.abs(p.Fx)>1e-12||Math.abs(p.Fz)>1e-12))throw Error('Additional prescribed wheel loads are outside this chassis gravity/spring/cogging screen. Use weight reference or zero additional global loads.');
-    if(Math.abs(p.L2-p.L3)>1e-9||Math.abs(p.ra/p.rb-2)>1e-10)throw Error('This fixed-wheel screen requires equal links and r_a/r_b=2 for certified straight travel.');
-    const mean=(180+p.phi0)/2,ax=-Math.cos((mean-p.alpha)*R),az=-Math.sin((mean-p.alpha)*R);
-    if(Math.abs(ax)>1e-9)throw Error('This energy screen requires a vertical wheel path on stationary flat ground; tilted travel needs a full energy/dynamic model.');
-    for(let n=-2;n<4;n++)if(mean+n*180>=p.te-1e-9&&mean+n*180<=p.tc+1e-9)throw Error('Working travel crosses a singular or reversing straight-path branch.');
+    const projection=straightProjection(p);
     const q0=p.tc+c.landingOpenFraction*(p.te-p.tc),stop=p.tc-e.compressionReserveDeg;
-    const J=q=>-2*p.L2/1000*Math.sin((q-mean)*R);
-    if(!(p.tc>q0&&az*J((q0+p.tc)/2)>0))throw Error('The saved landing opening must compress toward θ_c with decreasing chassis height.');
+    if(!(p.tc>q0))throw Error('The saved landing opening must compress toward θ_c with decreasing chassis height.');
     if(c.undersideOffsetMm===null)throw Error('Set the shared underside offset below hip A before calculating ground clearance.');
     const ref=Kinefold.reference(p),height=q=>p.rw-V.VSL.state(ref,q).Pg[1],clearance=q=>height(q)-c.undersideOffsetMm;
     const initialClearance=clearance(q0);
@@ -63,13 +78,14 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const requiredJointNm=Math.max(0,(dropJ+fixedWorkJ)/travel),capacityRawMm=(availableJointNm*travel-fixedWorkJ)/weight*1000;
     const terms={dropJ,gravityCompressionJ,springReleasedJ,coggingReleasedJ};
     if(screening){screening.motorPass=requiredJointNm/N<=screening.peakShaftNm+1e-10;screening.gearboxPass=!screening.gearboxAssessed?null:screening.momentaryNm===null||requiredJointNm<=screening.momentaryNm+1e-10;screening.savedPassiveMotorEnabled=savedMotor.enabled;}
-    return {config:e,openingFraction:c.landingOpenFraction,undersideOffsetMm:c.undersideOffsetMm,qStartDeg:q0,qEndDeg:end,angularTravelRad:travel,angularTravelDeg:end-q0,
+    return {...projection,config:e,openingFraction:c.landingOpenFraction,undersideOffsetMm:c.undersideOffsetMm,qStartDeg:q0,qEndDeg:end,angularTravelRad:travel,angularTravelDeg:end-q0,
+      startWheelCxMm:point(ref,q0).wheelCxMm,endWheelCxMm:point(ref,end).wheelCxMm,horizontalWheelTravelMm:point(ref,end).wheelCxMm-point(ref,q0).wheelCxMm,
       startHipHeightMm:height(q0),endHipHeightMm:height(end),initialClearanceMm:initialClearance,endClearanceMm:clearance(end),chassisCompressionMm:height(q0)-height(end),limiter,
       boundaryOnly:e.compressionReserveDeg===0&&limiter==='Mechanical stop boundary',massKg:p.m1,gravityMS2:p.g,impactSpeedMS:Math.sqrt(2*p.g*e.dropHeightMm/1000),gearRatio:N,
       requiredJointNm,requiredShaftNm:requiredJointNm/N,availableJointNm,availableShaftNm:availableJointNm/N,screening,
       capacityRawMm,capacityMm:capacityRawMm>=0?capacityRawMm:null,passes:requiredJointNm<=availableJointNm+1e-10&&(!screening||screening.gearboxAssessed),
       workJ:dropJ+fixedWorkJ,availableWorkJ:availableJointNm*travel,...terms,
-      curve:Array.from({length:81},(_,i)=>{const drop=Math.min(5000,Math.max(500,e.dropHeightMm*1.5))*i/80;return {dropHeightMm:drop,jointTorqueNm:Math.max(0,(weight*drop/1000+fixedWorkJ)/travel)};})};
+      curve:Array.from({length:81},(_,i)=>{const drop=Math.min(5000,Math.max(500,e.dropHeightMm*1.5))*i/80;return {alphaDeg:p.alpha,dropHeightMm:drop,jointTorqueNm:Math.max(0,(weight*drop/1000+fixedWorkJ)/travel)};})};
   }
   function landingEstimate(project,dropHeightMm,targetClearanceMm){
     // Dynamic-case guidance must use its physical motor, never a catalog candidate.
@@ -79,12 +95,12 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
   }
   function jumpEstimate(project,targetHeightMm){
     const p=project.params,motor={...KinefoldProjects.motorDefaults,...project.motorConfig};
+    KinefoldProjects.validateMotor(motor);
     const errors=Kinefold.validate(p);if(errors.length)throw Error(errors.join(' '));
     if(!(p.m1>0&&p.m6>=0&&p.g>0)||!Number.isFinite(targetHeightMm)||targetHeightMm<0)throw Error('Jump work estimate needs positive chassis mass/gravity and a nonnegative height.');
-    if(['m2','m3','m5'].some(k=>p[k]!==0)||Math.abs(p.L2-p.L3)>1e-9||Math.abs(p.ra/p.rb-2)>1e-10||Math.abs(Math.cos(((180+p.phi0)/2-p.alpha)*R))>1e-9)throw Error('Ideal jump work estimate requires massless equal links and vertical straight travel.');
+    if(['m2','m3','m5'].some(k=>p[k]!==0))throw Error('Ideal jump work estimate requires massless moving links/compound pulley.');
+    const projection=straightProjection(p);
     if(p.loadMode==='contact'||p.loadMode==='global'&&(Math.abs(p.Fx)>1e-12||Math.abs(p.Fz)>1e-12))throw Error('Extra wheel loads are outside this gravity-only jump work estimate.');
-    const mean=(180+p.phi0)/2;
-    for(let n=-2;n<4;n++)if(mean+n*180>=p.te-1e-9&&mean+n*180<=p.tc+1e-9)throw Error('Jump travel crosses a singular or reversing straight-path branch.');
     const ref=Kinefold.reference(p),V=KinefoldV4,travel=(p.tc-p.te)*R;
     if(p.springEnabled){const span=V.VSLSpring.interval(ref,p.te,p.tc),z=V.VSLSpring.geometry(ref,90);if(!span.valid||!z.valid)throw Error(span.reason||z.reason);if(ref.p0+ref.springK*(span.min-z.payout)<-1e-8)throw Error('The jump cable becomes slack within the full stroke; slack recovery is outside this energy screen.');}
     const stanceRiseMm=V.VSL.state(ref,p.tc).Pg[1]-V.VSL.state(ref,p.te).Pg[1];
@@ -94,8 +110,8 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const stanceGravityJ=p.m1*p.g*stanceRiseMm/1000,flightEnergyJ=(p.m1+p.m6)*p.g*targetHeightMm/1000;
     const springReleaseJ=spring(p.tc)-spring(p.te),coggingReleaseJ=cog(p.tc)-cog(p.te);
     const jointNm=Math.max(0,(stanceGravityJ+flightEnergyJ-springReleaseJ-coggingReleaseJ)/travel);
-    return {jointNm,shaftNm:jointNm/N,stanceRiseMm,stanceGravityJ,flightEnergyJ,springReleaseJ,coggingReleaseJ,angularTravelRad:travel,
-      meaning:'Optimistic work screen: full extension at takeoff, locked relative pose during flight, all mass rises together; no stop/contact/friction loss or retained rotor kinetic energy. Not guaranteed takeoff or apex.'};
+    return {...projection,startWheelCxMm:point(ref,p.tc).wheelCxMm,endWheelCxMm:point(ref,p.te).wheelCxMm,horizontalWheelTravelMm:point(ref,p.te).wheelCxMm-point(ref,p.tc).wheelCxMm,jointNm,shaftNm:jointNm/N,stanceRiseMm,stanceGravityJ,flightEnergyJ,springReleaseJ,coggingReleaseJ,angularTravelRad:travel,
+      meaning:'Optimistic work screen: full extension at takeoff, locked relative pose during flight, all mass rises together; fixed wheel height and horizontal wheel motion allowed during stance. No stop/contact/rolling/friction loss or retained wheel-spin/rotor kinetic energy. Not guaranteed takeoff or apex.'};
   }
   /** Detailed, sampled endpoint work ledger. No time integration or pass claim.
    * Plot range is local display state in mm; all signed energy budgets stay raw.
@@ -127,9 +143,9 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*result.gearRatio*q*R+motor.coggingPhaseDeg*R):0;
     const start=result.qStartDeg,end=result.qEndDeg,h0=height(start),s0=spring(start),c0=cog(start),initialK=kind==='landing'?result.dropJ:0;
     const stroke=Array.from({length:count},(_,i)=>{
-      const q=start+(end-start)*i/(count-1),travel=Math.abs(q-start)*R,h=height(q),gravityDeltaJ=p.m1*p.g*(h-h0)/1000,springDeltaJ=spring(q)-s0,coggingDeltaJ=cog(q)-c0;
+      const q=start+(end-start)*i/(count-1),travel=Math.abs(q-start)*R,position=point(ref,q),h=position.hipHeightMm,gravityDeltaJ=p.m1*p.g*(h-h0)/1000,springDeltaJ=spring(q)-s0,coggingDeltaJ=cog(q)-c0;
       const motorWorkJ=(kind==='jump'?1:-1)*result.requiredJointNm*travel;
-      return {hipAngleDeg:q,angularProgressRad:travel,hipHeightMm:h,underbodyClearanceMm:c.undersideOffsetMm===null?null:h-c.undersideOffsetMm,
+      return {alphaDeg:p.alpha,hipAngleDeg:q,angularProgressRad:travel,...position,horizontalWheelDisplacementMm:position.wheelCxMm-point(ref,start).wheelCxMm,underbodyClearanceMm:c.undersideOffsetMm===null?null:h-c.undersideOffsetMm,
         motorWorkJ,gravityDeltaJ,springDeltaJ,coggingDeltaJ,kineticBudgetJ:initialK+motorWorkJ-gravityDeltaJ-springDeltaJ-coggingDeltaJ};
     });
     const curve=Array.from({length:81},(_,i)=>{
@@ -138,7 +154,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
       const gravityJ=kind==='landing'?result.gravityCompressionJ:result.stanceGravityJ,springReleaseJ=kind==='landing'?result.springReleasedJ:result.springReleaseJ,coggingReleaseJ=kind==='landing'?result.coggingReleasedJ:result.coggingReleaseJ;
       const net=kind==='landing'?dropJ+gravityJ+springReleaseJ+coggingReleaseJ:gravityJ+flightEnergyJ-springReleaseJ-coggingReleaseJ;
       const jointTorqueNm=Math.max(0,net/result.angularTravelRad);
-      return {heightMm:h,jointTorqueNm,shaftTorqueNm:jointTorqueNm/result.gearRatio,dropJ,flightEnergyJ,gravityJ,springReleaseJ,coggingReleaseJ,netMotorWorkJ:net};
+      return {alphaDeg:p.alpha,heightMm:h,jointTorqueNm,shaftTorqueNm:jointTorqueNm/result.gearRatio,dropJ,flightEnergyJ,gravityJ,springReleaseJ,coggingReleaseJ,netMotorWorkJ:net};
     });
     const interior=stroke.slice(1,-1),negative=interior.filter(r=>r.kineticBudgetJ < -1e-8);
     const minKineticBudgetJ=Math.min(...stroke.map(r=>r.kineticBudgetJ));
@@ -147,9 +163,9 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
       targetTakeoffSpeedMS:kind==='jump'?Math.sqrt(2*p.g*target.jumpHeightMm/1000):null,
       generalizedJointCommandNm:-result.requiredJointNm,physicalGearRatio:savedMotor.enabled?savedMotor.gearRatio:1,
       curve,stroke,plotRange:{heightMinMm:min,heightMaxMm:max,samples:count},minKineticBudgetJ,sampledNegativeInteriorCount:negative.length,
-      pathWarning:negative.length?(kind==='jump'?'Negative interior kinetic budget: the endpoint torque cannot traverse this sampled stroke from rest under the stated ideal assumptions.':'Negative interior kinetic budget: the assumed fixed-wheel stroke cannot reach this endpoint; earlier arrest/reversal may occur.'):'No negative budget at the sampled poses. This sampling does not establish contact, takeoff, peak loads or path feasibility.',
+      pathWarning:negative.length?(kind==='jump'?'Negative interior kinetic budget: the endpoint torque cannot traverse this sampled stroke from rest under the stated ideal assumptions.':'Negative interior kinetic budget: the assumed fixed-height-wheel stroke cannot reach this endpoint; earlier arrest/reversal may occur.'):'No negative budget at the sampled poses. This sampling does not establish contact, takeoff, peak loads or path feasibility.',
       endpointKineticBudgetJ:stroke.at(-1).kineticBudgetJ,unclippedMotorWorkJ:result.workJ,
-      assumptions:kind==='jump'?'Optimistic endpoint work: full extension at takeoff; all chassis and wheel mass rises together in locked-pose flight; chassis-only stance rise; no impact/stop/friction losses or retained rotor kinetic energy.':'Conservative chassis-only initial-arrest screen: full m₁gH retained; fixed wheel during compression on stationary flat ground; rest at arrest; wheel impact energy omitted; no impact/friction loss credit or post-arrest hold claim.'};
+      assumptions:kind==='jump'?'Optimistic endpoint work: full extension at takeoff; all chassis and wheel mass rises together in locked-pose flight; chassis-only stance rise; fixed wheel height, horizontal wheel motion allowed. Ideal stationary floor and horizontal chassis guide reactions do no work; no impact/stop/rolling/friction losses or retained wheel-spin/rotor kinetic energy.':'Conservative chassis-only initial-arrest screen: full m₁gH retained; fixed wheel height during compression on stationary horizontal ground, horizontal wheel motion allowed; fixed chassis x and mounting pitch. Ideal floor/guide reactions do no work. Rest at arrest; wheel impact energy and retained wheel-spin/rotor kinetic energy omitted; no impact/rolling/friction loss credit or post-arrest hold claim.'};
   }
   return {calculate,landingEstimate,jumpEstimate,workspace,resolveScreen,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
 })();

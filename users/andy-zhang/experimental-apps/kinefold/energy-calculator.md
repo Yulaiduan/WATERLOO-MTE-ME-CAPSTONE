@@ -15,7 +15,9 @@ The live equation table is visible with the Plotly charts. It lists each quantit
 equation/source, numerical value and unit,
 including positive spring/cogging storage and the resulting joint/shaft torque.
 Edit the height, clearance, stop reserve and available torque above the table;
-mass, gravity and spring geometry come from the saved mechanism. **2 m drop
+mass, gravity, mounting pitch α and spring geometry come from the saved mechanism.
+The saved α is shown above the controls; **Edit α in Mechanism studio** opens
+the authoritative geometry input. **2 m drop
 example** changes only the calculator drop height to2000mm, preserving the
 mechanism, landing geometry and dynamic controller commands.
 
@@ -85,6 +87,31 @@ Zero reserve allows a clearly labeled mechanical-boundary calculation.
 
 ## Geometry and work
 
+Mounting pitch **α is included through the full world projection**, not treated
+as terrain slope. If the local wheel centre is `[P_u(q), P_v(q)]`, then
+
+`C_z(q,α) = −sin(α) P_u(q) + cos(α) P_v(q)`
+
+`C_x(q,α) = −cos(α) P_u(q) − sin(α) P_v(q)`
+
+`h(q,α) = r_w − C_z(q,α)`
+
+The chassis keeps fixed horizontal position and pitch while moving vertically.
+The wheel stays at radius above the stationary horizontal floor but may move
+horizontally along it; it is not pinned at a fixed x. The ideal floor and chassis
+guide reactions do no work. Wheel rolling/spin energy and contact losses are not
+resolved by this endpoint model. Signed wheel x travel, α and projected heights
+are included in the equation/sample tables and JSON/CSV exports; chart titles
+identify the saved α.
+
+For equal links with guide ratio2 and φ₀=0 only, this reduces to
+`h(q,α)=r_w+2L*sin(q)*cos(α)`. Thus stance rise/compression scales with cos(α)
+at fixed angular endpoints. Nonzero φ₀ uses the full projection above. Spring
+horn/idler geometry is chassis-local: changing α alone does **not** retune saved
+preload/stiffness, change spring work or multiply it by cos(α). World-height
+projection also determines the clearance-limited landing endpoint. The underside
+offset remains a fixed vertical distance below A, not a rotated chassis shape.
+
 The saved landing opening fraction f gives
 `q0 = tc + f*(te−tc)` (default f=2/3). With the wheel centre held at radius above
 stationary flat ground, hip height is `h(q)=rw−Cz(q)` and underbody clearance is
@@ -125,6 +152,8 @@ magnitude is **232.345151887Nm**. Ideal shaft demand is that value divided by
 reduction N; it is not a transient peak, continuous rating or hardware-survival
 claim. The arrest endpoint remains315.382413mm above ground because the stop
 reserve, rather than the50mm residual-clearance target, limits usable travel.
+These retained baseline numbers use α=0°; tilted designs are recomputed from
+their saved α rather than reusing these values.
 
 ## Assumptions and storage
 
@@ -205,10 +234,21 @@ private workbook URLs and unrelated spreadsheet data are not bundled in the app.
 This screen retains the full chassis m1*g*H without impact-loss credit. Wheel
 impact energy is excluded. Rotor starts/ends at rest, so its endpoint kinetic
 change is zero; inertia still changes actual impact trajectories and peaks.
-Motor/joint friction is given no energy credit. The path must be vertical and
-straight (equal links,2:1 guide), with massless moving links/compound pulley,
+Motor/joint friction is given no energy credit. The relative path must be
+straight (equal links,2:1 guide), nonsingular and monotonic in world height,
+with massless moving links/compound pulley,
 positive m1/g, no extra prescribed loads and a valid spring cable route.
 Unsupported geometry, slack recovery or unavailable stroke is shown explicitly.
+Fixed tilted guides are supported in this standalone work calculator. The
+legacy dynamic `energy-sized` landing controller remains a separate vertical-only,
+impact-adjusted approximation; the explicit handoff instead copies the physical
+constant-torque estimate into the entered-torque controller without running it.
+
+When signed motor demand is negative, the displayed magnitude is zero and the
+signed endpoint kinetic budget remains visible. In jump this can leave surplus
+energy beyond the selected target; in landing the assumed endpoint can be
+unreachable because arrest occurs earlier. A zero magnitude does not establish
+the requested trajectory or exact arrest pose.
 
 Optional saved `energyConfig` holds drop height, clearance target, stop reserve
 and available joint torque. Old profiles remain unchanged until edited; Remove
