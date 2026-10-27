@@ -980,3 +980,71 @@ palette was corrected before final review. PNGs are static figures, not browser
 screenshots. Live browser/pointer review and new trajectories/hardware tests are
 UNVERIFIED; canonical robot physics is NOT APPLICABLE to this member workspace.
 Use the existing app-root Start/Stop launchers and refresh the stable energy URL.
+
+## 2026-10-27 — actual contact work integrals and separate chassis arrest
+
+Based on fetched main `c2c59d8`. The owner requested integral portions stored by
+the spring in both proper dynamic engines and clarification of velocity at
+ground contact. A GPT-6.1 Sol worker implemented the isolated app changes;
+parent reviewed event semantics, work signs, external-load/projection accounting,
+native energy partitions, plot endpoints and integration. No contact force law,
+velocity clamp, spring law, saved profile, reference source or canonical model
+was changed. V4 remains approximately constant chassis support; exact ideal
+chassis gravity compensation is distinct from constant cable tension.
+
+Both actual-contact tabs now open eight matching Plotly work views, exact event
+tables and signed first-contact-to-arrest accounts. Landing defaults to the
+earlier arrest/compression-stop endpoint; full trajectory retains rebound and
+signed reversals. Exact step states survive sparse display sampling. First
+contact means first wheel impulse: analytical speculative contact can begin at
+positive gap, so its first wheel velocity need not be zero. Chassis arrest is
+later; bottom-out before or at arrest remains failure. Source/loss/numerical
+terms and unavailable native rotor partitions are kept separate.
+
+Additive contact-v2 work metadata, row deltas and contact-prefixed CSV columns
+reuse per-step motor/source/loss work and exact spring potentials. Additional
+global-force/couple work is now explicit, excluding analytical position
+projection. Pymunk component wheel kinetic/gravity energy now uses actual body
+states; ideal-guide reconstruction had differed slightly from native total
+energy under constraint residual. CSV safely quotes nested objects and strings.
+The glossary defines signed accounts and their contact-relative aliases.
+
+Worker checks PASS: six new Python work groups; 530 real-engine Plotly/work
+assertions; nine existing contact-case groups and 27 independent analytical,
+motor-contact/native-rotor groups. Parent integration PASS: 530 work, 3,770
+dynamic-trace, 48 comparison, 2,000 core, 33 project and 19 Plotly lifecycle
+assertions, syntax/compile and eight copied saved-profile rollouts. The initial
+test assumption of exactly zero wheel speed at the first analytical impulse
+was corrected to the actual speculative-contact definition; a harness calling
+the prescribed-height CLI with contact input was corrected. No production
+guard or tolerance was weakened. Native energy-component mismatch was fixed
+before the work-ledger checks passed.
+The staged whitespace check caught CRLF in the two new test files; those files
+were normalized to LF before the clean staged/publication checks.
+
+Actual copied 2m/260Nm/200Hz landing at dt0.000125s: analytical first impulse
+0.638500s/arrest0.742375s, spring storage25.722834J, motor removal171.272717J,
+compression gravity25.754155J; Pymunk0.638625s/0.742625s,25.828902J/171.843841J/
+25.822637J. Both arrest before bottom-out. Chassis is still descending about
+6.26m/s at first impulse. Full-run maximum unresolved residual decreases
+2.714240→1.354243J analytical and4.381007→2.107557J Pymunk when dt halves
+0.00025→0.000125s; this is not tight conservation. Zero-braking 2m controls
+bottom out in both engines. The 100mm/12.5Nm copied landing still arrests.
+
+Parent rendered19 actual-data PNGs (three comparison figures plus all16 new
+app-generated traces), CSV, complete eight-run JSON and source/hash ZIP under
+ignored app exports. All images and ZIP were checked, with overview/contact
+sheets visually reviewed. Initial export dimensions defaulted to700×500; they
+were explicitly corrected to1500px width before delivery. PNGs are scientific
+figures, not browser screenshots. CUA has no enabled surfaces, so live visual,
+pointer and browser-console review remains unverified. Reviewed plots and data
+were uploaded as actual Notion attachments under the existing studies page.
+
+Actual app-root Stop/Start/Stop/restart/reuse from C:/Windows/Temp PASS4191.
+Five routes returnHTTP200; all five changed browser assets match disk bytes.
+Fresh same-origin API landing requests pass both engines with81 rows each and
+the same first-arrest times. The full live profile library remains byte-identical
+SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f.
+Canonical robot/hardware physics is NOT APPLICABLE to this isolated experimental
+workspace. Use app-root Start Kinefold.cmd after shutdown, Stop Kinefold.cmd
+to close it; http://127.0.0.1:4191/?tab=analytical retains the original server.

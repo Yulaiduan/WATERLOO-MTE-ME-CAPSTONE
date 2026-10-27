@@ -242,6 +242,20 @@ motor∫τdθ; bounded landing torque assessment reports tested feasibility/brac
 Read [contact-scenarios.md](contact-scenarios.md) for independent-engine equations,
 case/controller definitions and limits. Legacy named profiles remain unchanged.
 
+Actual contact results also provide matching **Work integrals & energy portions**
+plots in both dynamic tabs. Inspect signed spring storage, motor extraction,
+kinetic energy, gravity/source work and the separate loss/numerical accounts,
+plus shaded force–payout, torque–angle and chassis kinetic integrals. First
+contact and first chassis arrest have their own event readouts: the chassis
+continues descending as the leg compresses after wheel contact. Spring storage
+can return on rebound; a stop impact is not successful controlled absorption.
+The saved V4 spring retains its actual approximately constant-support law;
+ideal constant chassis gravity compensation is not constant cable tension.
+Run `.venv/Scripts/python.exe verify_contact_work.py` and
+`node verify-contact-work.cjs` for independent force/payout work checks, actual
+event states, signed rebound, external loads, native rotor accounting and both
+engines' matching Plotly traces.
+
 
 ## Optional geared hip motor — 2026-10-23
 

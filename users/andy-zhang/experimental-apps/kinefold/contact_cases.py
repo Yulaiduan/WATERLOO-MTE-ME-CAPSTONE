@@ -240,6 +240,55 @@ def energy_fields(m,q,h,vh,sd,omega):
         gravityEnergyJ=p['g']*(p['m1']*h+p['m6']*(h+az*s)))
 
 
+def contact_work_state(m, row):
+    """Exact conservative state differences; accumulated engine work is retained."""
+    spring=m.spring(row['theta2']*R)
+    return {**row, 'Fs':spring['force'], 'springTorqueNm':spring['torque'],
+        'springCablePayoutMm':spring.get('payout',m.reference_payout)-m.reference_payout,
+        'hipAngleRad':row['theta2']*R}
+
+
+def annotate_contact_work(result,m):
+    """Add signed work ledgers without integrating decimated display samples.
+
+    Inputs/outputs: actual contact-v2 rows/events, J, rad and mm. Conservative
+    storage is an exact potential difference; motor/source/loss work comes from
+    integrator accumulators. The unresolved residual remains numerical, not loss.
+    """
+    first=result['rows'][0]
+    impact=next((e for e in result['events'] if e['type']=='first-contact'),None)
+    reference=impact.get('state') if impact else None
+    pairs=(('springStoredJ','springEnergyJ',1),('gravityReleasedJ','gravityEnergyJ',-1),
+        ('coggingStoredJ','coggingPotentialJ',1),('kineticChangeJ','kineticJ',1),
+        ('chassisKineticChangeJ','chassisKineticJ',1),('motorRemovedJ','motorWorkJ',-1),
+        ('dampingRemovedJ','dampingWorkJ',-1),('motorLossJ','motorDissipatedJ',1),
+        ('terrainSuppliedJ','terrainWorkJ',1),('externalSuppliedJ','externalWorkJ',1),
+        ('contactLossJ','contactDissipationJ',1),('stopLossJ','stopDissipationJ',1),
+        ('coupledNumericalLossJ','coupledConstraintKineticLossJ',1),
+        ('projectionEnergyJ','positionStabilizationJ',1),('ledgerResidualJ','energyBalanceResidualJ',1))
+    def difference(row,base):
+        return {key:sign*(row[source]-base[source]) if isinstance(row.get(source),(int,float)) and isinstance(base.get(source),(int,float)) else None for key,source,sign in pairs}
+    for row in result['rows']:
+        row.update(contact_work_state(m,row))
+        row.update(difference(row,first))
+        row['sinceContact']=difference(row,reference) if reference and row['t']>=impact['t']-1e-12 else None
+        for key,_,_ in pairs:
+            row['contact'+key[0].upper()+key[1:]]=row['sinceContact'][key] if row['sinceContact'] else None
+    for event in result['events']:
+        if event.get('state'):
+            event['state'].update(contact_work_state(m,event['state']))
+            event['sinceContact']=difference(event['state'],reference) if reference and event['t']>=impact['t'] else None
+    result['workIntegrals']=dict(reference='Actual first-contact post-step state; not an interpolated output row.',
+        conservative='Spring stored = Us−Us_ref = integral(F_cable d payout) = −integral(tau_s d theta). Recoverable; negative means release.',
+        motor='Motor removed = −integral(tau_motor d motor-coordinate), accumulated each integration step. Signed net work, not guaranteed regeneration.',
+        kinetic='Chassis kinetic change = integral(m1*v_A dv_A) = 0.5*m1*(v_A²−v_ref²).',
+        balance='ΔK = gravity released − spring stored − cogging stored − motor removed − damping removed − motor losses + terrain/external work − impulse accounting + projection + residual.',
+        shading='Force/torque chart fill joins output samples in trajectory order. Reversals overlap; displayed polygon area is not the authoritative integral.',
+        springLaw='disabled' if not m.p['springEnabled'] else 'ideal constant cable tension' if m.p['springLaw']=='constant' else 'V4 linear spring; approximately constant chassis support',
+        exactChassisGravityCompensation=False)
+    return result
+
+
 def case_metrics(rows,events,m,case):
     impact=next((e for e in events if e['type']=='first-contact'),None)
     takeoff=next((e for e in events if e['type']=='takeoff'),None)

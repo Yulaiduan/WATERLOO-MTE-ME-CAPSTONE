@@ -4891,3 +4891,51 @@ Refresh the energy route and edit α in Mechanism studio; existing app-root Star
 Read the app context and calculator scope before extending contact or losses, retain the legacy controller distinction, and run the focused tilt suite plus normal workspace gates before publication.
 
 ---
+
+## Entry: 2026-10-27 — Andy Zhang — Actual dynamic work integrals and landing contact events
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated analytical/Pymunk contact results and Plotly presentation.
+- **Associated Issue/Task:** Owner requested signed integral portions stored by the spring in both actual dynamic models and clarification of velocity at ground contact; retain the clarified chassis gravity-compensation intent. Started from fetched main c2c59d8 with unchanged saved designs.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact-scenarios.md`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.md`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-contact-work.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact_work.py`
+
+- **API/Interface Changes:** Additive app contact-v2 work metadata, run-start/contact-relative signed row accounts and exact integration-step contact/arrest/travel-stop snapshots. Eight matching Plotly work plots in both actual-contact tabs show recoverable storage, signed motor removal, kinetic/source/loss/numerical accounts and sampled force/payout, torque/angle and momentum/speed areas. Landing defaults to the earlier arrest/stop with full-trajectory option; comparison keeps absolute time and exact snapshot checks. Per-step additional global-load work is now accounted separately; analytical work excludes numerical position projection. Native component wheel kinetic/gravity energy now uses actual bodies, consistent with total energy under small guide residuals. CSV quotes nested objects/strings and retains flat numerical columns; glossary documents new signed aliases. No saved-project schema, contact/velocity law, spring law, live library, reference source, dependency, shared interface or rule change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Worker PASS six new Python work groups, 530 actual-engine Plotly/work assertions, nine contact-case groups and 27 independent analytical/motor-contact/native-rotor groups. Parent PASS 530 work, 3,770 dynamic trace, 48 comparison, 2,000 core, 33 profile and 19 Plotly lifecycle assertions; JS syntax/Python compile/whitespace checks. Eight copied saved-profile rollouts include 2m/260Nm timestep refinement, 100mm/12.5Nm and zero-braking negative controls. At dt0.000125s both 2m cases arrest before bottom-out: analytical contact/arrest0.638500/0.742375s, spring25.722834J/motor171.272717J; Pymunk0.638625/0.742625s,25.828902J/171.843841J. Chassis remains about6.26m/s downward at first impulse. Full-run unresolved energy residual reduces2.714→1.354J and4.381→2.108J as dt halves; it is not physical absorption or tight conservation. Zero-brake controls bottom out. Initial zero-wheel-speed and wrong contact-CLI harness assumptions were corrected, native energy-component inconsistency fixed, and EOL churn removed before passing; no physics guard/tolerance weakened. Nineteen 1500px PNGs, summary CSV, complete eight-run JSON and validated ZIP generated in ignored exports and visually checked, then uploaded as actual Notion attachments. Initial incorrect raster dimensions were corrected before delivery. Actual app-root Stop/Start/Stop/restart/reuse from unrelated cwd PASS4191; five routes HTTP200/five browser assets exact; fresh same-origin landing API requests return81 rows and successful arrest in each engine. Live library remains byte-identical SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f. Browser surfaces unavailable: live layout, pointer and console review remain UNVERIFIED; figures are not UI screenshots. Fetched-base, require-passed, staged and workspace publication gates use normal hooks before push.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+The staged whitespace check caught CRLF in the two new test files; normalize them to LF and rerun the staged/whitespace checks before publication. Numerical source and validated trajectory values are unchanged by this formatting repair.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app work-accounting feature. Experimental rigid quarter-model agreement does not establish tire compliance, impact peaks, hardware survival, regeneration or post-arrest safety; exact ideal chassis compensation was not substituted for the saved V4 spring.
+
+## 4. Compute Saving Handoff State
+
+Both actual-contact dynamic tabs now show the same eight signed work views with exact wheel-contact and chassis-arrest states, recoverable spring energy and separate loss/numerical accounts.
+Refresh either dynamic route and rerun the captured mechanism; the app-root Start and Stop Kinefold command launchers retain port4191 and saved designs remain unchanged.
+Read the app context and contact-work definitions before extending models, retain speculative-impulse and bottom-out distinctions, and use the new actual-engine work tests plus scoped publication checks.
+
+---

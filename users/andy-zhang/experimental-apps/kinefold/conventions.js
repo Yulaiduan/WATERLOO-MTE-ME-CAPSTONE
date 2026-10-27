@@ -5,6 +5,37 @@
 (() => {
 const $=id=>document.getElementById(id),esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const extras=[
+["springStoredJ","Signed recoverable spring storage","J","U_s(t)−U_s(reference)=∫F_cable d payout=−∫tau_spring dtheta. Positive stores energy, negative releases it. It is not dissipated energy or exact chassis gravity compensation.","springStoredJ"],
+["springCablePayoutMm","Finite-idler cable payout","mm","Exact tangent-plus-wrap cable path minus its 90° reference. Plot work against payout in metres; positive payout compresses the illustrated spring.","springCablePayoutMm"],
+["motorRemovedJ","Signed net motor work removed","J","Negative of per-integration-step motor work. Positive removes mechanical energy, negative supplies it. Reversals are signed; electrical regeneration is unassessed. Native rotor work uses the actual coupled rotor coordinate.","motorRemovedJ"],
+["gravityReleasedJ","Signed gravity energy released","J","Gravity potential at reference minus current gravity potential, including the chassis and wheel. Positive downward motion supplies energy; rising consumes it.","gravityReleasedJ"],
+["externalWorkJ","Additional prescribed-load work","J","Per-step global wheel force dot wheel displacement plus applied wheel couple times wheel angular travel. Distinct from gravity and terrain contact work; no extra weight-sized force is added.","externalWorkJ"],
+["sinceContact","Contact-relative signed work accounts","J","Each account subtracts the exact post-step first-contact event state, not a decimated or interpolated chart row. Includes spring/cogging storage, motor/damping removal, kinetic change, sources, impulse and numerical terms. Flat CSV contact-prefixed columns carry the same values.","sinceContact"],
+["chassisKineticChangeJ","Chassis signed kinetic integral","J","∫m1*v_A dv_A=½m1(v_A²−v_reference²). The shaded m1|v_A| versus |v_A| chart illustrates kinetic energy; direct velocity-state differences are authoritative.","chassisKineticChangeJ"],
+["first-contact","First wheel contact event","s","Actual unilateral wheel impulse. Before/after wheel and chassis velocities are recorded at the integration step. It does not clamp chassis velocity; the leg can continue compressing.","first-contact"],
+["chassis-arrest","First chassis vertical arrest","s","The first post-contact downward-to-nonnegative chassis speed crossing. The discrete post-step speed can slightly overshoot zero. Compression stop before or at arrest remains bottom-out, not a successful landing.","chassis-arrest"],
+["springTorqueNm","Signed spring hip torque","N·m","Actual finite-idler generalized spring torque. Its negative angular work is recoverable spring storage; positive compression torque is not assumed.","springTorqueNm"],
+["hipAngleRad","Actual hip angle in radians","rad","Actual theta2 multiplied by pi/180. Torque work uses signed radians, not degrees or absolute accumulated travel.","hipAngleRad"],
+...[
+ ['springStoredJ','Spring storage','Recoverable change of spring potential.'],
+ ['gravityReleasedJ','Gravity released','Decrease of chassis plus wheel gravity potential.'],
+ ['coggingStoredJ','Cogging storage','Recoverable change of conservative motor detent potential.'],
+ ['kineticChangeJ','Total kinetic change','Change of chassis, wheel and resolved rotor kinetic energy.'],
+ ['chassisKineticChangeJ','Chassis kinetic change','Signed change of one-half chassis mass times squared vertical velocity.'],
+ ['motorRemovedJ','Motor work removed','Negative of actual accumulated motor work; can be negative when the motor supplies energy.'],
+ ['dampingRemovedJ','Joint damping removed','Negative of accumulated legacy joint damping work.'],
+ ['motorLossJ','Motor friction loss','Accumulated motor-side Coulomb and viscous loss reflected through the physical gearing.'],
+ ['terrainSuppliedJ','Terrain work supplied','Work supplied through the translating terrain contact.'],
+ ['externalSuppliedJ','Additional load work supplied','Work of explicit global wheel forces and wheel couple, excluding gravity.'],
+ ['contactLossJ','Contact impulse account','Contact impulse energy account; includes engine numerical effects and is unavailable with the native coupled-rotor partition.'],
+ ['stopLossJ','Travel-stop impulse account','Travel-stop energy account; bottom-out is a failure even when this account removes kinetic energy.'],
+ ['coupledNumericalLossJ','Coupled native constraint account','Signed free-to-solved native kinetic change; not an independent physical loss to add to contact and stop accounts.'],
+ ['projectionEnergyJ','Position-projection energy','Signed analytical configuration-projection energy change, separate from physical work.'],
+ ['ledgerResidualJ','Unresolved numerical residual','Signed energy-ledger discrepancy; refine the timestep rather than treating it as absorption.']
+].flatMap(([key,label,meaning])=>[
+ ...(['springStoredJ','gravityReleasedJ','motorRemovedJ','chassisKineticChangeJ'].includes(key)?[]:[[key,label,'J',meaning+' Reference is the beginning of the run; unavailable accounts remain null.',key]]),
+ ['contact'+key[0].toUpperCase()+key.slice(1),label+' since first wheel impulse','J',meaning+' Subtracts the exact post-step first-contact state. Before contact this value is unavailable.','contact'+key[0].toUpperCase()+key.slice(1)]
+]),
 ["preset.version","Saved component version","integer","Each independently saved suspension, actuator or input has its own version. A study retains complete captured versions; later preset edits do not silently alter it.","preset.version"],
 ["preset.unknownFields","Unmeasured actuator properties","list","Explicitly marks unknown rotor inertia, cogging amplitude and Coulomb/viscous coefficients. Placeholder zeros cannot enter composition unless the study explicitly elects ideal-zero unknown passive effects.","preset.unknownFields"],
 ["preset.idealizeUnknowns","Idealize unknown passive effects","boolean","An explicit study assumption applying zero to flagged unknown passive terms. It supplies no measured hardware data, and unknown torque or speed ratings remain unassessed.","preset.idealizeUnknowns"],

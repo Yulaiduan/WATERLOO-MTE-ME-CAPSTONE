@@ -52,6 +52,18 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['energy','case-ledger','Engine energy-ledger residual · refine dt','J',series(['energyBalanceResidualJ','Unresolved ledger residual'],['positionStabilizationJ','Analytical position-projection energy'])],
     ['energy','case-contact-loss','Contact / stop impulse losses','J',series(['contactDissipationJ','Contact impulse loss'],['stopDissipationJ','Travel-stop loss'])],
   ].map(([group,id,title,unit,keys])=>({group,id,title,unit,series:keys}));
+  // Conservative differences and per-step accumulators share one engine catalog.
+  // Filled output paths illustrate area, never replace the authoritative work.
+  const integralManifest = [
+    {group:'integrals',id:'integral-event-speed',title:'First wheel contact ≠ chassis arrest',unit:'mm/s',series:series(['chassisVelocityMmS','Chassis +z speed'],['wheelVelocityZMmS','Wheel centre +z speed']),note:'Contact and arrest markers retain actual integration-step states; vertical chassis speed is never clamped to zero on wheel contact. Mechanical bottom-out before arrest remains a failed landing.'},
+    {group:'integrals',id:'integral-storage',title:'Signed energy stored / removed since first contact',unit:'J',series:series(['contactSpringStoredJ','Spring stored · recoverable'],['contactMotorRemovedJ','Motor net work removed'],['contactCoggingStoredJ','Cogging stored · recoverable'])},
+    {group:'integrals',id:'integral-kinetic',title:'Actual kinetic energy and contact reference',unit:'J',series:series(['kineticJ','Total kinetic'],['chassisKineticJ','Chassis ½m₁v²'],['wheelKineticJ','Wheel kinetic'],['contactInitialKineticJ','Total kinetic at first contact'])},
+    {group:'integrals',id:'integral-sources',title:'Signed energy supplied after first contact',unit:'J',series:series(['contactGravityReleasedJ','Gravity released'],['contactTerrainSuppliedJ','Terrain work'],['contactExternalSuppliedJ','Additional load work'])},
+    {group:'integrals',id:'integral-losses',title:'Loss accounts and numerical terms · kept separate',unit:'J',series:series(['contactDampingRemovedJ','Joint damping removed'],['contactMotorLossJ','Motor friction loss'],['contactContactLossJ','Contact impulse accounting'],['contactStopLossJ','Stop impulse accounting'],['contactCoupledNumericalLossJ','Coupled native constraint · signed numerical'],['contactProjectionEnergyJ','Position projection · signed numerical'],['contactLedgerResidualJ','Unresolved numerical residual'])},
+    {group:'integrals',id:'integral-spring-area',title:'Cable force × payout · sampled area',unit:'N',xKey:'contactCableTravelM',xLabel:'Payout − first-contact payout · m',fill:true,series:series(['contactSpringForceN','Cable force']),note:'ΔUₛ = ∫F dℓ = −∫τₛ dθ₂. Running storage above uses exact potential differences. Filled output-sample paths can overlap on reversal; their union is not signed work.'},
+    {group:'integrals',id:'integral-torque-area',title:'Resisting torque × signed hip travel · sampled area',unit:'N·m',xKey:'contactHipTravelRad',xLabel:'θ₂ − first-contact θ₂ · rad',fill:true,series:series(['contactSpringResistingNm','−τ_spring'],['contactMotorResistingNm','−τ_motor']),note:'Positive area during positive compression means stored/removed energy; reversals change the work sign. Cumulative motor work is integrated every engine step; a native rotor uses its actual motor coordinate, whose small constraint residual is reported separately.'},
+    {group:'integrals',id:'integral-momentum-area',title:'Chassis kinetic integral · sampled area',unit:'kg·m/s',xKey:'chassisSpeedMagnitudeMS',xLabel:'Chassis speed magnitude |v_A| · m/s',fill:true,series:series(['chassisMomentumMagnitudeKgMS','m₁ |v_A|']),note:'K_chassis = ∫₀^|v| m₁u du = ½m₁v². Wheel contact constrains wheel normal velocity; chassis downward speed continues while the leg compresses. Arrest is a separate event.'},
+  ];
   const motorManifest=[
     ['motor','motor-speed','Motor shaft speed','rad/s',series(['motorVelocityRadS','Shaft angular speed'])],
     ['motor','motor-command','Motor and joint electromagnetic torque','N·m',series(['shaftCommandNm','Motor shaft command'],['jointElectromagneticNm','Joint electromagnetic command'])],
@@ -76,7 +88,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['theta2','Hip angle','°'],['wheelAngularVelocityDegS','Wheel spin','°/s'],['Fs','Spring tension','N'],
     ['contactNormalForceN','Contact normal · interval mean','N'],['motorTorqueNm','Motor torque','N·m'],
     ['rotorKineticJ','Motor rotor energy','J'],['shaftCommandNm','Motor shaft command','N·m'],['motorDissipatedJ','Motor dissipated energy','J'],
-    ['chassisKineticJ','Chassis kinetic energy','J'],['motorWorkJ','Motor work','J'],['energyBalanceResidualJ','Energy-ledger residual','J'],
+    ['chassisKineticJ','Chassis kinetic energy','J'],['springStoredJ','Spring stored from run start','J'],['motorRemovedJ','Motor removed from run start','J'],['gravityReleasedJ','Gravity released from run start','J'],['externalWorkJ','Additional load work','J'],['contactSpringStoredJ','Spring stored since each engine contact','J'],['contactMotorRemovedJ','Motor removed since each engine contact','J'],['motorWorkJ','Motor work','J'],['energyBalanceResidualJ','Energy-ledger residual','J'],
   ];
   function stable(value) {
     if (Array.isArray(value)) return '[' + value.map(stable).join(',') + ']';
@@ -84,6 +96,41 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     return JSON.stringify(value);
   }
   function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null}); }
+  function integralRow(result,row) {
+    const since=row.sinceContact, impact=result.events?.find(e=>e.type==='first-contact')?.state;
+    const fields={};
+    for(const [key,value] of Object.entries(since||{})) fields['contact'+key[0].toUpperCase()+key.slice(1)]=value;
+    const hasContact=!!since&&!!impact;
+    return {...row,...fields,contactInitialKineticJ:hasContact?impact.kineticJ:null,
+      contactCableTravelM:hasContact?(row.springCablePayoutMm-impact.springCablePayoutMm)/1000:null,
+      contactHipTravelRad:hasContact?row.hipAngleRad-impact.hipAngleRad:null,
+      contactSpringForceN:hasContact?row.Fs:null,contactSpringResistingNm:hasContact?-row.springTorqueNm:null,
+      contactMotorResistingNm:hasContact?-row.motorTorqueNm:null,
+      chassisSpeedMagnitudeMS:Math.abs(row.chassisVelocityMmS)/1000,
+      chassisMomentumMagnitudeKgMS:result.params.m1*Math.abs(row.chassisVelocityMmS)/1000};
+  }
+  function integralRows(result,rows,throughArrest=true) {
+    const impact=result.events?.find(e=>e.type==='first-contact'), arrest=result.events?.find(e=>e.type==='chassis-arrest');
+    const stop=result.events?.find(e=>e.type==='compression-stop');
+    const end=throughArrest?Math.min(arrest?.t??Infinity,stop?.t??Infinity):Infinity;
+    const start=throughArrest?(impact?.t??0):0;
+    const out=rows.filter(r=>r.t>=start-1e-12&&r.t<=end+1e-12).map(r=>({...r}));
+    for(const event of result.events||[]) if(event.state&&event.t>=start-1e-12&&event.t<=end+1e-12){
+      const state=integralRow(result,{...event.state,sinceContact:event.sinceContact,eventSide:event.type});
+      const index=out.findIndex(r=>Math.abs(r.t-event.t)<1e-12);
+      if(index>=0)out.splice(index,1);
+      out.push(state);
+    }
+    return out.sort((a,b)=>a.t-b.t);
+  }
+  function velocityRows(result,rows) {
+    const impact=result.events?.find(e=>e.type==='first-contact');
+    if(!impact?.state||!rows.length||impact.t<rows[0].t-1e-12||impact.t>rows.at(-1).t+1e-12)return rows;
+    const before={...impact.state,eventSide:'before wheel impulse',
+      chassisVelocityMmS:impact.preImpulseChassisVelocityMmS,wheelVelocityZMmS:impact.preImpulseWheelVelocityZMmS};
+    const index=rows.findIndex(r=>r.t>=impact.t-1e-12);
+    const out=[...rows];out.splice(index<0?out.length:index,0,before);return out;
+  }
   function enrich(result) {
     const p = result.params, config = result.runConfig, ref = Kinefold.reference(p);
     const ratios = KinefoldV4.VSL.ratios(ref), k3 = 1 - ratios.qab, k5 = 1 - 1 / ratios.qdc;
@@ -92,7 +139,8 @@ globalThis.KinefoldDynamicAnalysis = (() => {
       const pose = KinefoldV4.VSL.state(ref, row.theta2), frame = result.frames[i], contact=result.scope?.mode==='terrain-contact';
       const driveRate=contact?ratios.qdc*ratios.qfe*(row.wheelAngularVelocityDegS-k6*row.velocityDegS):0;
       const structuralRotor=!contact||result.engine==='analytical'||!(config.hipRotorInertiaKgM2+(result.motorConfig?.enabled?result.motorConfig.gearRatio**2*result.motorConfig.rotorInertiaKgM2:0));
-      return {...row, chassisDisplacementMm: row.chassisZMm - first.chassisZMm,
+      const integralFields=contact?integralRow(result,row):{};
+      return {...row,...integralFields, chassisDisplacementMm: row.chassisZMm - first.chassisZMm,
         wheelDisplacementXMm: row.CxMm - first.CxMm,
         theta3: pose.t3, theta4:contact?row.theta4:0,theta5: contact?row.theta5:pose.t5, theta6: contact?row.theta6:pose.t6,
         rate3: k3 * row.velocityDegS,rate4:driveRate, rate5: k5 * row.velocityDegS+driveRate/ratios.qdc, rate6: contact?row.wheelAngularVelocityDegS:k6 * row.velocityDegS,
@@ -173,5 +221,5 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     }
     return {requested, applied, atWheel: inputAtDistance(config, distance, row.eventSide === 'before' ? 'left' : 'right'), distance, dense: end - start >= 2000};
   }
-  return {manifest,contactManifest,motorManifest, comparisonFields, stable, snapshotKey, enrich, comparison, inputAtDistance, floor};
+  return {manifest,contactManifest,integralManifest,motorManifest, comparisonFields, stable, snapshotKey, enrich, integralRow, integralRows, velocityRows, comparison, inputAtDistance, floor};
 })();

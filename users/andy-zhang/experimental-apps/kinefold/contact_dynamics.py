@@ -19,7 +19,7 @@ from dynamic_model import Model, R, mul, validate, finite
 
 
 from contact_cases import (ContactGeometry, validate_contact_request, resolve_case, initial_conditions, terrain_spec,
-    CaseController, energy_fields, case_metrics, model_identity, stopping_demand, floor_under_hip)
+    CaseController, energy_fields, case_metrics, model_identity, stopping_demand, floor_under_hip, annotate_contact_work)
 
 
 def _world(v):
@@ -96,7 +96,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     actuator_work=0.;max_residual=0.;max_penetration=0.;max_N=0.;max_T=0.;first_raised=None
     penetration_limit_mm=1.
     max_rotor_position=max_rotor_velocity=0.;max_stop_drift=0.
-    motor_loss=0.;coupled_loss=0.;motor_work=0.;stop_dissipation=0.;damping_work=0.;contact_dissipation=0.;terrain_work=0.;had_contact=False;arrested=False;previous_vh=chassis.velocity.y
+    motor_loss=0.;coupled_loss=0.;motor_work=0.;stop_dissipation=0.;damping_work=0.;contact_dissipation=0.;terrain_work=0.;external_work=0.;had_contact=False;arrested=False;previous_vh=chassis.velocity.y
     control=controller.torques(m.q0,qd0);last_contact=False
     def state():
         relative=wheel.position-chassis.position
@@ -105,6 +105,15 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         exact=m.sites(q)['6'][0]
         residual=math.hypot(relative.x-exact[0],relative.y-exact[1])*1000
         return q,qd,residual
+    def actual_energy(q):
+        # Native guide residuals are numerical; report actual body energy rather
+        # than the ideal reconstructed wheel velocity/height in the partition.
+        ee=energy_fields(m,q,chassis.position.y,chassis.velocity.y,(wheel.velocity-chassis.velocity).dot(pymunk.Vec2d(*m.axis)),wheel.angular_velocity)
+        ee.update(wheelKineticJ=.5*wheel.mass*wheel.velocity.length_squared+.5*wheel.moment*wheel.angular_velocity**2,
+            gravityEnergyJ=p['g']*(chassis.mass*chassis.position.y+wheel.mass*wheel.position.y))
+        if rotor is not None:
+            ee.update(rotorKineticJ=.5*m.motor.reflected_inertia*rotor.omega**2,legacyJointRotorKineticJ=.5*c['hipRotorInertiaKgM2']*rotor.omega**2,coggingPotentialJ=m.motor.motor_state(rotor.angle,rotor.omega,0)['coggingPotentialJ'])
+        return ee
     def separation():
         # Signed closest distance to the exact union of base and raised boxes.
         pos=wheel.position;offset=ground.position.x
@@ -127,9 +136,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         max_N=max(max_N,nf);max_T=max(max_T,tf)
         kinetic=.5*chassis.mass*chassis.velocity.length_squared+.5*wheel.mass*wheel.velocity.length_squared+.5*wheel.moment*wheel.angular_velocity**2
         potential=p['g']*(chassis.mass*chassis.position.y+wheel.mass*wheel.position.y)+spring['energy']
-        ee=energy_fields(m,q,chassis.position.y,chassis.velocity.y,(wheel.velocity-chassis.velocity).dot(pymunk.Vec2d(*m.axis)),wheel.angular_velocity)
-        if rotor is not None:
-            ee.update(rotorKineticJ=.5*m.motor.reflected_inertia*rotor.omega**2,legacyJointRotorKineticJ=.5*c['hipRotorInertiaKgM2']*rotor.omega**2,coggingPotentialJ=m.motor.motor_state(rotor.angle,rotor.omega,control['motorTorqueNm'])['coggingPotentialJ'])
+        ee=actual_energy(q)
         kinetic+=ee['rotorKineticJ']+ee['legacyJointRotorKineticJ'];potential+=ee['coggingPotentialJ']
         theta6=wheel.angle/R+p['alpha'];theta4=m.dc*m.fe*(theta6-m.K*(q/R-p['te']))
         theta5=(1-1/m.dc)*(q/R-p['te'])+theta4/m.dc
@@ -157,15 +164,15 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
                  slipMmS=frame['slipMmS'],gapMm=gapmm,penetrationMm=penetration,guideResidualMm=residual,
                  guideForceN=(spring['torque']+control['motorTorqueNm']+control['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=actuator_work,terrainWorkJ=None,inputWorkJ=None)
         row.update(energy_fields(m,q,chassis.position.y,chassis.velocity.y,(wheel.velocity-chassis.velocity).dot(pymunk.Vec2d(*m.axis)),wheel.angular_velocity))
-        row.update(control,motorDissipatedJ=motor_loss,motorDissipationJ=motor_loss,motorFrictionLossJ=motor_loss,motorWorkJ=motor_work,stopDissipationJ=stop_dissipation,dampingWorkJ=damping_work,contactDissipationJ=contact_dissipation,terrainWorkJ=terrain_work,demandTorqueNm=stopping_demand(m,q,qd,chassis.velocity.y,case))
+        row.update(control,motorDissipatedJ=motor_loss,motorDissipationJ=motor_loss,motorFrictionLossJ=motor_loss,motorWorkJ=motor_work,stopDissipationJ=stop_dissipation,dampingWorkJ=damping_work,externalWorkJ=external_work,contactDissipationJ=contact_dissipation,terrainWorkJ=terrain_work,demandTorqueNm=stopping_demand(m,q,qd,chassis.velocity.y,case))
         row.update(ee)
         row.update(m.motor.motor_state(rotor.angle if rotor else q,rotor.omega if rotor else qd,control['motorTorqueNm']))
         if rotor is not None:row.update(legacyJointRotorKineticJ=.5*c['hipRotorInertiaKgM2']*rotor.omega**2,idealMotorVelocityRadS=m.motor.config['gearRatio']*qd,rotorConstraintPositionResidualRad=rotor.position_residual,rotorConstraintVelocityResidualRadS=rotor.velocity_residual)
         row['chassisClearanceMm']=A[2]-case['undersideOffsetMm']-floor_under_hip(spec,t)*1000 if case['undersideOffsetMm'] is not None else None
-        row['energyBalanceResidualJ']=row['energyJ']-(rows[0]['energyJ'] if rows else row['energyJ'])-motor_work-damping_work-terrain_work+motor_loss+stop_dissipation+contact_dissipation
+        row['energyBalanceResidualJ']=row['energyJ']-(rows[0]['energyJ'] if rows else row['energyJ'])-motor_work-damping_work-terrain_work-external_work+motor_loss+stop_dissipation+contact_dissipation
         if rotor is not None:
             row.update(coupledConstraintKineticLossJ=coupled_loss,rotorConstraintImpulseWorkJ=rotor.constraint_work_j,contactDissipationJ=None,stopDissipationJ=None)
-            row['energyBalanceResidualJ']=row['energyJ']-(rows[0]['energyJ'] if rows else row['energyJ'])-motor_work-damping_work-terrain_work+motor_loss+coupled_loss
+            row['energyBalanceResidualJ']=row['energyJ']-(rows[0]['energyJ'] if rows else row['energyJ'])-motor_work-damping_work-terrain_work-external_work+motor_loss+coupled_loss
         row['positionStabilizationJ']=None
         row['motionPhase']='end-stop' if min(abs(m.distance(q)-bounds[0]),abs(m.distance(q)-bounds[1]))<1e-7 and abs(qd)<1e-5 else 'contact' if last_contact else 'free-flight'
         frame.update(controllerPhase=control['controllerPhase'],undersideClearanceMm=row['chassisClearanceMm'])
@@ -200,7 +207,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         wheel.force=force+pymunk.Vec2d(*m.force);chassis.force=-force;wheel.torque=m.Mw
         impulse.clear();points.clear();slips.clear();normal_impulses.clear();tangent_impulses.clear()
         before_power=(control['motorTorqueNm']-c['dampingNms']*qd)*qd
-        pre_vh=chassis.velocity.y
+        pre_vh=chassis.velocity.y;before_position=(wheel.position.x,wheel.position.y,wheel.angle);event_start=len(events)
         wheel_free=wheel.velocity+(force+pymunk.Vec2d(*m.force))/p['m6']*step+pymunk.Vec2d(0,-p['g']*step)
         chassis_free=chassis.velocity-force/p['m1']*step+pymunk.Vec2d(0,-p['g']*step)
         omega_free=wheel.angular_velocity+m.Mw/wheel.moment*step
@@ -219,6 +226,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         contactJ=pymunk.Vec2d(sum(j[0] for j in impulse),sum(j[1] for j in impulse))
         terrain_increment=contactJ.dot(ground.velocity)
         contact_work=contactJ.dot((wheel_free+wheel.velocity)*.5)+wheel.moment*(wheel.angular_velocity-omega_free)*(wheel.angular_velocity+omega_free)*.5
+        external_work+=m.force[0]*(wheel.position.x-before_position[0])+m.force[1]*(wheel.position.y-before_position[1])+m.Mw*(wheel.angle-before_position[2])
         terrain_work+=terrain_increment;contact_dissipation+=max(0.,terrain_increment-contact_work)
         if rotor is not None:
             solved_ke=.5*p['m1']*chassis.velocity.length_squared+.5*p['m6']*wheel.velocity.length_squared+.5*wheel.moment*wheel.angular_velocity**2+.5*m.Jref*rotor.omega**2
@@ -250,13 +258,23 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
             if which=='extension-stop' and case['kind']=='jump':controller.extended=True
         active=bool(points)
         if active and not had_contact:
-            had_contact=True;events.append(dict(t=t,type='first-contact',chassisVelocityMmS=pre_vh*1000))
+            had_contact=True;events.append(dict(t=t,type='first-contact',chassisVelocityMmS=pre_vh*1000,preImpulseChassisVelocityMmS=chassis_free.y*1000,preImpulseWheelVelocityZMmS=wheel_free.y*1000,postImpulseChassisVelocityMmS=chassis.velocity.y*1000,postImpulseWheelVelocityZMmS=wheel.velocity.y*1000,contactGapMm=separation(),contactDetection='Actual Pymunk collision impulse'))
         if last_contact and not active and wheel.position.y>radius+1e-7:
             if not any(e['type']=='takeoff' for e in events):events.append(dict(t=t,type='takeoff'))
         if case['kind']=='jump' and pre_vh>0>=chassis.velocity.y and any(e['type']=='takeoff' for e in events) and not any(e['type']=='apex' for e in events):
             events.append(dict(t=t,type='apex',chassisZMm=chassis.position.y*1000))
         if case['kind']=='landing' and had_contact and not arrested and pre_vh<0<=chassis.velocity.y:
-            arrested=True;events.append(dict(t=t,type='chassis-arrest'))
+            arrested=True;events.append(dict(t=t,type='chassis-arrest',beforeStepChassisVelocityMmS=pre_vh*1000,afterStepChassisVelocityMmS=chassis.velocity.y*1000))
+        for event in events[event_start:]:
+            if event['type'] in ('first-contact','chassis-arrest','compression-stop','extension-stop'):
+                ee=actual_energy(q2)
+                event['state']=dict(t=t,theta2=q2/R,chassisVelocityMmS=chassis.velocity.y*1000,wheelVelocityZMmS=wheel.velocity.y*1000,
+                    kineticJ=sum(ee[k] for k in ('chassisKineticJ','wheelKineticJ','rotorKineticJ','legacyJointRotorKineticJ')),motorTorqueNm=control['motorTorqueNm'],
+                    motorWorkJ=motor_work,dampingWorkJ=damping_work,motorDissipatedJ=motor_loss,terrainWorkJ=terrain_work,externalWorkJ=external_work,
+                    contactDissipationJ=None if rotor else contact_dissipation,stopDissipationJ=None if rotor else stop_dissipation,
+                    coupledConstraintKineticLossJ=coupled_loss if rotor else None,positionStabilizationJ=None,**ee)
+                impulse_ledger=coupled_loss if rotor else stop_dissipation+contact_dissipation
+                event['state']['energyBalanceResidualJ']=event['state']['kineticJ']+sum(ee[k] for k in ('springEnergyJ','gravityEnergyJ','coggingPotentialJ'))-rows[0]['energyJ']-motor_work-damping_work-terrain_work-external_work+motor_loss+impulse_ledger
         last_contact=active
         if case['undersideOffsetMm'] is not None and chassis.position.y*1000-case['undersideOffsetMm']-floor_under_hip(spec,t)*1000<=0:
             termination='underside-contact';events.append(dict(t=t,type='underside-contact'))
@@ -309,7 +327,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     result['caseConfig']=case
     result['caseMetrics']=case_metrics(rows,events,m,case)
     result['energyEstimate']=result['caseMetrics']['energyEstimate']
-    diagnostics['energyBalanceResidualJ']=rows[-1]['energyJ']-rows[0]['energyJ']-motor_work-damping_work-terrain_work+motor_loss+stop_dissipation+contact_dissipation
+    diagnostics['energyBalanceResidualJ']=rows[-1]['energyJ']-rows[0]['energyJ']-motor_work-damping_work-terrain_work-external_work+motor_loss+stop_dissipation+contact_dissipation
     if rotor is not None:
         diagnostics['coupledConstraintKineticLossMeaning']='Signed free-to-solved total kinetic change including native bias and smooth-force splitting; not a physical dissipation measurement.'
         diagnostics.update(coupledConstraintKineticLossJ=coupled_loss,contactDissipationJ=None,stopDissipationJ=None,energyBalanceResidualJ=rows[-1]['energyBalanceResidualJ'])
@@ -324,7 +342,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     json.dumps(result,allow_nan=False)
     if rotor is not None:rotor.close()
     result['targetObservations']=observation.result()
-    return result
+    return annotate_contact_work(result,m)
 
 
 def main():

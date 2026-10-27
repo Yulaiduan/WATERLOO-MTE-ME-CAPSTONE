@@ -19,6 +19,7 @@
 .dyn-series{display:flex;gap:10px 16px;flex-wrap:wrap;margin-bottom:10px;font-size:12px}
 .dyn-series label{display:flex;align-items:center;gap:6px;cursor:pointer}
 .dyn-chart-stage{position:relative}
+.dyn-work-summary{margin-bottom:20px;font-size:13px;line-height:1.65}.dyn-work-summary h3{font-size:17px}.dyn-work-summary table{font-variant-numeric:tabular-nums}.dyn-integral-note{font-size:12px;line-height:1.6;color:var(--muted)}.dyn-integral-range{display:flex;align-items:center;gap:12px;flex-wrap:wrap;font-size:13px;margin:18px 0}.dyn-integral-range select{max-width:100%;padding:8px;background:var(--paper);color:var(--ink);border:1px solid var(--line);border-radius:5px}
 
 .dyn-comparison-summary{display:flex;flex-wrap:wrap;gap:7px 20px;margin-bottom:12px;padding:13px;background:var(--soft);font-size:12px}
 .dyn-comparison-summary strong{flex-basis:100%;font-size:14px}

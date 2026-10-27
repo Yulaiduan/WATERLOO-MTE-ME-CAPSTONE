@@ -11,7 +11,7 @@ import math
 import sys
 from contact_cases import (validate_contact_request, resolve_case, initial_conditions,
     terrain_spec, CaseController, energy_fields, case_metrics, model_identity,
-    stopping_demand, world, energy_estimate)
+    stopping_demand, world, energy_estimate, annotate_contact_work)
 from torque_targets import TargetObservation
 from contact_cases import check_motor_step
 from dynamic_model import R, mul
@@ -39,7 +39,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     v=[-az*m.jacobian(q)*qd,m.jacobian(q)*qd,0.]
     sl,sh=sorted((m.distance(m.lo),m.distance(m.hi)))
     t=0.;steps=0;rows=[];frames=[];events=[];next_sample=1/c['outputHz'];sample_t=0.
-    sumJ=[0.,0.];sumN=sumT=0.;points=[];slips=[];work=stoploss=stabilization=dampingwork=terrainwork=contactloss=motorloss=0.;maxpen=0.;contacted=False;previous_contact=False
+    sumJ=[0.,0.];sumN=sumT=0.;points=[];slips=[];work=stoploss=stabilization=dampingwork=terrainwork=contactloss=motorloss=externalwork=0.;maxpen=0.;contacted=False;previous_contact=False
     termination='duration';first_raised=None;maxnf=0.;maxtf=0.;tor=ctl.torques(q,qd)
     penetration_limit_mm=1.;prepen=postpen=maxpre=maxpost=0.;max_stop_position_error=0.
     def geometry(time):
@@ -65,14 +65,14 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         frame=dict(t=t,theta2=q/R,A=A,B=translate(m.sites(q)['5'][0]),C=C,actualA=A,actualC=C,chassisZMm=A[2],wheelZMm=C[2],wheelAngle=u[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,
             bodyPositionsMm={'1':A,'6':C},bodyAnglesDeg={'1':0.,'6':u[2]/R},indexAnglesDeg={'a':0,'b':p['phi0']+(180-q/R)*(m.ab-1),'c':theta4,'d':theta5,'e':theta5,'f':theta6},terrainOffsetMm=world((speed*t,0)),terrainPolygonsMm=[[world((a+speed*t,b)) for a,b in box] for box in boxes],contactPointsMm=list(points),contactNormalForceN=nf,contactTangentialForceN=tf,slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,constraintPositionErrorMm=0.,constraintAngleErrorDeg=0.)
         if p['springEnabled']:frame.update(D=translate(mul(m.rotate(spring['D']),.001)),Q=translate(mul(m.rotate(spring['Q']),.001)))
-        row=dict(t=t,theta2=q/R,velocityDegS=qd/R,accelerationDegS2=None,Fs=spring['force'],tauStatic=None,tauApplied=tor['motorTorqueNm']+tor['jointFrictionNm']-c['dampingNms']*qd,kineticJ=ke,potentialJ=pe,energyJ=ke+pe,CxMm=C[0],CzMm=C[2],chassisZMm=A[2],chassisVelocityMmS=v[0]*1000,chassisAccelerationMmS2=None,wheelZMm=C[2],wheelVelocityXMmS=-ax*v[1]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,wheelAngle=u[2]/R,wheelAngularVelocityDegS=v[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,requestedInputMm=None,appliedInputMm=None,inputVelocityMmS=None,inputAccelerationMmS2=None,inputReactionN=None,contactNormalForceN=nf,contactTangentialForceN=tf,contactForceXN=-sumJ[0]/elapsed if elapsed else 0.,contactForceZN=sumJ[1]/elapsed if elapsed else 0.,contactNormalImpulseNs=sumN,contactTangentialImpulseNs=sumT,contactCount=len(points),slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,guideForceN=(spring['torque']+tor['motorTorqueNm']+tor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=work+dampingwork,motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,motorDissipationJ=motorloss,motorFrictionLossJ=motorloss,contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,terrainWorkJ=terrainwork,inputWorkJ=terrainwork,stoppingDemandTorqueNm=stopping_demand(m,q,qd,v[0],case),**e,**tor)
+        row=dict(t=t,theta2=q/R,velocityDegS=qd/R,accelerationDegS2=None,Fs=spring['force'],tauStatic=None,tauApplied=tor['motorTorqueNm']+tor['jointFrictionNm']-c['dampingNms']*qd,kineticJ=ke,potentialJ=pe,energyJ=ke+pe,CxMm=C[0],CzMm=C[2],chassisZMm=A[2],chassisVelocityMmS=v[0]*1000,chassisAccelerationMmS2=None,wheelZMm=C[2],wheelVelocityXMmS=-ax*v[1]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,wheelAngle=u[2]/R,wheelAngularVelocityDegS=v[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,requestedInputMm=None,appliedInputMm=None,inputVelocityMmS=None,inputAccelerationMmS2=None,inputReactionN=None,contactNormalForceN=nf,contactTangentialForceN=tf,contactForceXN=-sumJ[0]/elapsed if elapsed else 0.,contactForceZN=sumJ[1]/elapsed if elapsed else 0.,contactNormalImpulseNs=sumN,contactTangentialImpulseNs=sumT,contactCount=len(points),slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,guideForceN=(spring['torque']+tor['motorTorqueNm']+tor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=work+dampingwork,motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,motorDissipationJ=motorloss,motorFrictionLossJ=motorloss,contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,terrainWorkJ=terrainwork,inputWorkJ=terrainwork,externalWorkJ=externalwork,stoppingDemandTorqueNm=stopping_demand(m,q,qd,v[0],case),**e,**tor)
         row.update(m.motor.motor_state(q,qd,tor['motorTorqueNm']))
         ground_under_hip=max([0.]+[box[2][1] for box in boxes if box[0][0]+speed*t<=0<=box[1][0]+speed*t])
         clearance=(u[0]-ground_under_hip)*1000-case['undersideOffsetMm'] if case['undersideOffsetMm'] is not None else None
         phase='end-stop' if min(abs(u[1]-sl),abs(u[1]-sh))<1e-8 and abs(v[1])<1e-7 else 'contact' if previous_contact else 'free-flight'
         row.update(demandTorqueNm=row['stoppingDemandTorqueNm'],chassisClearanceMm=clearance,motionPhase=phase,
             preProjectionPenetrationMm=prepen,postProjectionPenetrationMm=postpen,
-            energyBalanceResidualJ=ke+pe-(rows[0]['energyJ'] if rows else ke+pe)-work-dampingwork-terrainwork+motorloss+stoploss+contactloss-stabilization)
+            energyBalanceResidualJ=ke+pe-(rows[0]['energyJ'] if rows else ke+pe)-work-dampingwork-terrainwork-externalwork+motorloss+stoploss+contactloss-stabilization)
         frame.update(chassisClearanceMm=clearance,motionPhase=phase,controllerPhase=tor['controllerPhase'])
         rows.append(row);frames.append(frame);sample_t=t;sumJ[:]=[0.,0.];sumN=sumT=0.;points.clear();slips.clear()
     append()
@@ -100,7 +100,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
                 positive=[root for root in roots if 1e-10<root<=dt]
                 if positive:dt=min(positive)
         check_motor_step(m,qd,dt)
-        beforeq=q;beforevh=v[0]
+        beforeq=q;beforevh=v[0];beforewheelvh=v[0]+az*v[1];before_position=(ax*u[1],u[0]+az*u[1],u[2]);event_start=len(events)
         # Exact constant-force drift/kick; contacts use the physical velocity only.
         for k in range(3):u[k]+=v[k]*dt+.5*acc[k]*dt*dt;v[k]+=acc[k]*dt
         t+=dt;steps+=1
@@ -122,7 +122,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
             if (gap<=1e-8 or gap+normal_speed*dt<=0) and product(jn,inverse(jn))>1e-14:
                 tangent=(n[1],-n[0]);jt=jac(tangent,True)
                 contacts.append([gap,n,pt,jn,jt,0.,0.])
-        contact_ke_before=kinetic(v);step_terrain_work=0.;stop_loss_before=stoploss
+        contact_ke_before=kinetic(v);pre_contact_vh=v[0];pre_contact_wheel_vh=v[0]+az*v[1];step_terrain_work=0.;stop_loss_before=stoploss
         stop_constraints=[]
         if u[1]<=sl+1e-9:stop_constraints.append([(0.,1.,0.),0.])
         if u[1]>=sh-1e-9:stop_constraints.append([(0.,-1.,0.),0.])
@@ -143,11 +143,13 @@ def simulate_contact(payload, *, stop_at_assessment=False):
                 active=True;step_terrain_work+=speed*(n[0]*ln+n[1]*lt);sumN+=ln;sumT+=abs(lt);sumJ[0]+=n[0]*ln+n[1]*lt;sumJ[1]+=n[1]*ln-n[0]*lt;points.append(world(pt));slips.append((product(jt,v)-n[1]*speed)*1000)
                 if first_raised is None and pt[1]>1e-7:first_raised=t;events.append(dict(t=t,type='first-raised-terrain-contact'))
         terrainwork+=step_terrain_work;contactloss+=contact_ke_before+step_terrain_work-kinetic(v)-(stoploss-stop_loss_before)
-        if active and not contacted:contacted=True;events.append(dict(t=t,type='first-contact',chassisVelocityMmS=beforevh*1000))
+        if active and not contacted:contacted=True;events.append(dict(t=t,type='first-contact',chassisVelocityMmS=beforevh*1000,preImpulseChassisVelocityMmS=pre_contact_vh*1000,preImpulseWheelVelocityZMmS=pre_contact_wheel_vh*1000,postImpulseChassisVelocityMmS=v[0]*1000,postImpulseWheelVelocityZMmS=(v[0]+az*v[1])*1000,contactGapMm=min(g[0] for g in geometry(t))*1000,contactDetection='First unilateral impulse; positive gap uses speculative gap/step contact'))
         if previous_contact and not active and case['kind']=='jump' and not any(e['type']=='takeoff' for e in events):events.append(dict(t=t,type='takeoff'))
         previous_contact=active
         if case['kind']=='jump' and beforevh>0>=v[0] and any(e['type']=='takeoff' for e in events) and not any(e['type']=='apex' for e in events):events.append(dict(t=t,type='apex',chassisZMm=u[0]*1000))
-        if contacted and beforevh<0<=v[0] and not any(e['type']=='chassis-arrest' for e in events):events.append(dict(t=t,type='chassis-arrest'))
+        if contacted and beforevh<0<=v[0] and not any(e['type']=='chassis-arrest' for e in events):events.append(dict(t=t,type='chassis-arrest',beforeStepChassisVelocityMmS=beforevh*1000,afterStepChassisVelocityMmS=v[0]*1000))
+        externalwork+=fx*(ax*u[1]-before_position[0])+fz*(u[0]+az*u[1]-before_position[1])+m.Mw*(u[2]-before_position[2])
+        # Additional-load work excludes the numerical position projection.
         # Separate mass-weighted position projection; never changes velocity/KE.
         def potential():
             qq=m.inverse(max(sl,min(sh,u[1])));return m.motor.motor_state(qq,0,0)['coggingPotentialJ']+m.spring(qq)['energy']+p['g']*(mt*u[0]+mw*az*u[1])
@@ -174,6 +176,15 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         q=m.inverse(u[1]);stabilization+=potential()+kinetic(v)-potential_before
         work_q=m.lo if case['kind']=='jump' and ctl.extended and tor['motorTorqueNm']!=0 else q
         work+=tor['motorTorqueNm']*(work_q-beforeq)
+        for event in events[event_start:]:
+            if event['type'] in ('first-contact','chassis-arrest','compression-stop','extension-stop'):
+                ee=energy_fields(m,q,u[0],v[0],v[1],v[2])
+                event['state']=dict(t=t,theta2=q/R,chassisVelocityMmS=v[0]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,
+                    kineticJ=sum(ee[k] for k in ('chassisKineticJ','wheelKineticJ','rotorKineticJ','legacyJointRotorKineticJ')),motorTorqueNm=tor['motorTorqueNm'],
+                    motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,terrainWorkJ=terrainwork,externalWorkJ=externalwork,
+                    contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,**ee)
+                event['state']['energyBalanceResidualJ']=event['state']['kineticJ']+sum(ee[k] for k in ('springEnergyJ','gravityEnergyJ','coggingPotentialJ'))-rows[0]['energyJ']-work-dampingwork-terrainwork-externalwork+motorloss+stoploss+contactloss-stabilization
+
         if postpen>penetration_limit_mm:
             termination='contact-penetration-limit';events.append(dict(t=t,type=termination,penetrationMm=postpen,limitMm=penetration_limit_mm,stage='after-coupled-position-projection'));append();break
         ground_under_hip=max([0.]+[box[2][1] for box in boxes if box[0][0]+speed*t<=0<=box[1][0]+speed*t])
@@ -193,7 +204,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     result['energyEstimate']=energy_estimate(m,case) if case['energyMethod'] else None
     result['diagnostics'].update(reflectedHipInertiaKgM2=m.Jref,energyBalanceResidualJ=rows[-1]['energyBalanceResidualJ'],maxPreProjectionPenetrationMm=maxpre,maxPostProjectionPenetrationMm=maxpost,penetrationTerminationLimitMm=penetration_limit_mm,maxTravelStopDriftMm=max_stop_position_error)
     result['targetObservations']=observation.result()
-    return result
+    return annotate_contact_work(result,m)
 
 
 if __name__=='__main__':

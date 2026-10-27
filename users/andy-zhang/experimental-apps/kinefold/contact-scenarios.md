@@ -90,6 +90,45 @@ Profiles remain in `profiles/library.json`; project/run/comparison/study exports
 stay in `exports/`. Native desktop playback uses captured Pymunk case frames and
 the same actual mesh. No new top-level tab, copied source UI or iframe is used.
 
+## First wheel contact is different from chassis arrest
+
+First contact constrains the wheel's normal motion against the floor. The
+chassis can continue downward while the leg compresses; zero restitution does
+not set the chassis velocity to zero. Chassis arrest is a later zero crossing
+of its downward velocity. A travel stop can also arrest motion by impact, so
+an arrest after bottom-out does not pass the landing criterion. Rigid-contact
+impulses depend on the coupled inertia, geometry and numerical solver.
+The reported first-contact event is the first wheel impulse. Analytical contact
+can apply a speculative impulse just before the gap closes, so wheel normal
+speed need not be exactly zero in that first event. Inspect its gap and
+before/after velocities; compare event timing under timestep refinement.
+
+Spring work is recoverable storage, not dissipation. With signed cable payout
+`c` in metres and hip angle `q` in radians:
+
+```
+ΔUs = ∫ Fs dc = −∫ τspring dq
+Wmotor = ∫ τmotor dq
+Bmotor = −Wmotor
+ΔK = Wmotor + Wdamping + Wterrain + Wexternal
+     − ΔUs − ΔUg − ΔUc − motorLoss − constraintLoss
+     + positionStabilization + unresolvedResidual
+```
+
+Positive `Bmotor` means net mechanical extraction; it is not automatically heat
+or electrical regeneration. Negative spring-storage change means release back
+into the system. Integrals follow actual signed displacement through reversals,
+rather than total absolute travel. Contact/stop accounting, native coupled-rotor
+constraint work, projection energy and the unresolved residual retain their
+engine-specific meanings; they must not be counted twice as physical absorption.
+
+The owner's requested ideal constant chassis support is `Fgc=m1*g`. Constant
+cable tension is a different law. On a supported compression stroke ideal
+gravity compensation removes exactly the gravitational work added by chassis
+descent, leaving incoming kinetic energy for braking. The saved V4 linear
+spring approximates that support but retains its actual finite-idler force law;
+these plots do not silently replace it with an ideal compensation actuator.
+
 
 ## Actual numerical and UI evidence
 

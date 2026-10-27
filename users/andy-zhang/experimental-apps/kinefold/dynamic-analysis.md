@@ -12,6 +12,51 @@ and wheel height is prescribed. Pymunk integrates the actual chassis body with
 ideal transmission/inertia condensed into its force law. It is not an all-body
 linkage or collision/tire-contact simulation. No guide rods are drawn.
 
+## Actual-contact work and landing plots
+
+Actual contact results use the matching analytical/Pymunk contact plot catalog,
+in addition to the retained prescribed-height bench below. The work views show
+recoverable spring storage, signed motor work, kinetic energy, gravity release
+and separately labelled losses/numerical terms from the actual trajectory.
+First wheel contact and first chassis arrest are separate events: chassis
+velocity is not clamped when the wheel meets the floor. An inelastic travel
+stop can remove energy, but bottom-out before arrest remains a failed landing.
+
+Shaded force-versus-payout and torque-versus-angle curves illustrate work areas;
+their display sampling does not replace the engines' work accumulators or exact
+spring-potential difference. Signed travel through a reversal returns storage,
+so an overlapping path is not an unsigned energy-absorption polygon. See
+[contact work and event definitions](contact-scenarios.md#first-wheel-contact-is-different-from-chassis-arrest).
+
+| Work plot in both contact tabs | Quantities |
+| --- | --- |
+| First wheel contact versus chassis arrest | Actual signed wheel/chassis vertical velocities; first-impulse before/after states |
+| Signed energy stored / removed | Recoverable spring/cogging storage and net motor extraction |
+| Kinetic energy and contact reference | Total, chassis and wheel kinetic energy; exact post-first-impulse baseline |
+| Energy supplied after first contact | Gravity release, terrain and additional load work |
+| Loss accounts and numerical terms | Damping, motor friction, impulse accounting, projection and unresolved residual |
+| Cable-force integral | Force versus signed payout in metres, with sampled fill |
+| Hip-torque integral | Resisting spring/motor torque versus signed hip radians, with sampled fill |
+| Chassis kinetic integral | Momentum magnitude versus speed magnitude; area equals chassis kinetic energy |
+
+This group opens by default. Landing plots span first contact through the earlier
+of first arrest or compression stop, inserting exact event states even with
+sparse output. Full trajectory retains signed reversals and rebound. Event
+snapshots carry the torque actually applied during that integration step; they
+do not rerun the controller at a different phase. Parametric plot clicks seek
+their actual timestamp, rather than treating cable payout or angle as seconds.
+
+Contact-v2 results add `workIntegrals`, event `state`/`sinceContact` and signed
+row accounts. Run-start differences use names such as `springStoredJ`; flattened
+`contactSpringStoredJ` columns and nested `sinceContact` use the exact post-first-
+impulse reference. Comparison offers both without moving either engine's event
+times. JSON preserves nested accounts, and CSV quotes those objects and strings
+while retaining flat numerical columns. Saved project schemas are unchanged.
+
+The standalone Energy tab is an endpoint work screen. Actual dynamic plots
+retain impact, wheel/rotor kinetic energy, controller switching and timestep
+errors; they are not the endpoint calculation replayed as an animation.
+
 ## Matched plot categories
 
 | Category | Matching plots in both engine tabs |

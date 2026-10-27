@@ -159,7 +159,7 @@ async function download(id,csv) {
   const name=state.snapshot.name.replace(/[^a-z0-9_-]+/gi,'-').slice(0,60)||'mechanism';
   const content=csv?(()=>{
     const keys=Object.keys(state.result.rows[0]);
-    return keys.join(',')+'\n'+state.result.rows.map(row=>keys.map(key=>typeof row[key]==='string'?'"'+row[key].replaceAll('"','""')+'"':row[key]??'').join(',')).join('\n');
+    return keys.join(',')+'\n'+state.result.rows.map(row=>keys.map(key=>typeof row[key]==='object'&&row[key]!==null?'"'+JSON.stringify(row[key]).replaceAll('"','""')+'"':typeof row[key]==='string'?'"'+row[key].replaceAll('"','""')+'"':row[key]??'').join(',')).join('\n');
   })():JSON.stringify({schema:'kinefold/run-v1',engine:id,projectSnapshot:state.snapshot,runConfig:state.snapshot.solverConfig,result:state.result},null,2);
   try { await KinefoldStudio.saveArtifact(`${name}-${id}.${csv?'csv':'json'}`,content,csv?'text/csv':'application/json'); }
   catch(error) { status(id,'Run export failed: '+error.message,'error'); }
