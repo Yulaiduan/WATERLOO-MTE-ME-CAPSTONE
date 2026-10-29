@@ -1,0 +1,58 @@
+{
+  "rows": {
+    "MC": {
+      "parts": 2120,
+      "detail_pages": 2120,
+      "formula_errors": 0,
+      "filter": true,
+      "frozen_header_rows": 1,
+      "frozen_identifier_columns": 3
+    },
+    "ME": {
+      "parts": 4719,
+      "detail_pages": 4719,
+      "formula_errors": 0,
+      "filter": true,
+      "frozen_header_rows": 1,
+      "frozen_identifier_columns": 3
+    },
+    "MT": {
+      "parts": 558,
+      "detail_pages": 558,
+      "formula_errors": 0,
+      "filter": true,
+      "frozen_header_rows": 1,
+      "frozen_identifier_columns": 3
+    }
+  },
+  "numeric_cells_checked": 36985,
+  "native_hyperlinks_checked": 7397,
+  "duplicate_ids": 0,
+  "invalid_numeric_values": 0,
+  "catalogue_rows": 7397,
+  "source_counts_reconciled": true,
+  "missing_detail_parts": [],
+  "screening_status_counts": {
+    "Nominal linear screening data available": 6117,
+    "Review supplier force / rate / travel mismatch": 521,
+    "Missing a catalogued force / travel / rate limit": 13,
+    "Cut geometry and end formation required": 119,
+    "Rubber force law requires review": 33,
+    "Assortment; no single spring rating": 4,
+    "Initial tension not rated; verify force law": 32,
+    "Torsion mounting / linkage model required": 558
+  },
+  "force_rating_review_rows": 521,
+  "workbook_sha256": "5316ca1b12b6e72e4b5af71a63638ca9714f85353f7707f5f1a1b1d7c2e42b95",
+  "native_excel_ui_tested": false,
+  "all_prices_and_pack_quantities_present": true,
+  "normalized_exports_match_payload": true,
+  "stable_id_registry_checked": true,
+  "all_four_sheet_previews_reviewed": true,
+  "conversion_input_change_recalculation_checked": [
+    "MC",
+    "ME",
+    "MT"
+  ],
+  "assortment_descriptions_not_coerced_to_dimensions": true
+}

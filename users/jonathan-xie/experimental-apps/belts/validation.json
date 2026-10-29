@@ -1,0 +1,9 @@
+{
+  "individual_layouts": 7084,
+  "paired_layouts": 4994,
+  "max_forward_residual_mm": 4.547473508864641e-13,
+  "max_identity_error_mm": 1.1368683772161603e-13,
+  "original_center_mismatch_mm": 0.016691778189738216,
+  "nominal_exact_threshold_mm": 1e-08,
+  "limits": "Nominal pitch-line geometry only; no load or hardware validation."
+}

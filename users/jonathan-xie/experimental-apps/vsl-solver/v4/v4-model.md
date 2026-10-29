@@ -345,3 +345,16 @@ their saved outputs. The library's fitted-variable column summarizes the mask.
 exact point-limit linear fits, held-value preservation, dense peak checks and
 signed equilibrium. `verify-library.cjs` covers migration; `verify_excel.py`
 covers mask/sign preservation in the XLSX state sheet.
+
+## Horn H and additional plot signals — 2026-10-23
+
+The spring cable attachment is labeled H in V4 drawings and displayed equations.
+Existing internal D/Dg fields remain compatible aliases in the numerical code;
+they denote this same horn point, not an additional mechanism point.
+All four internal-force sweeps include scalar spring tension Fs (N), with its
+own visibility checkbox and hover value. Disabled/slack spring tension is zero.
+The displacement-versus-theta2 plot also shows absolute virtual spring length
+l=|S−H| (mm), with its own checkbox and hover value. This is center-to-pin distance,
+not displacement from the extension stop. For finite rs, the incoming straight
+rope is sqrt(l²−rs²), and payout c additionally includes changing wrap length;
+the plot does not substitute l for c in the spring-force/energy model.

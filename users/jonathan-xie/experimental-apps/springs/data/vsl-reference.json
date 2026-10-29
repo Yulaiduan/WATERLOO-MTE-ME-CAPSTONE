@@ -1,0 +1,21 @@
+{
+  "source": "../vsl-solver/v5/v5-fall.html",
+  "sha256": "18f5fc726bf077d7f804a11abe05093e8a70512fe1706d8db4fddea66bd5281c",
+  "repository_head": "5e52a1220d4ecc9881a80995cbd882df1bfc9be6",
+  "source_status": "Local v5 source; folder is currently untracked in this checkout",
+  "inspected_date": "2026-10-28",
+  "length_unit": "mm",
+  "force_unit": "N",
+  "linear_stiffness_unit": "N/mm",
+  "angle_unit": "deg",
+  "motor_torque_unit": "N m",
+  "initial_theta2_range_deg": [
+    100,
+    165
+  ],
+  "spring_interface": [
+    "VSLSpring.geometry",
+    "VSLSpring.interval",
+    "VSLSpring.state"
+  ]
+}

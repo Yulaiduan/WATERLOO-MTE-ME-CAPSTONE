@@ -430,3 +430,12 @@ The V4 effective support error graph now fits its finite sampled min/max with
 m_total; right ticks show the same error in percent. Negative kg means deficient
 spring support relative to the total target weight. Hover shows both units;
 zero-weight/Jacobian cases remain undefined. Raw torque and saved designs are unchanged.
+
+
+## Horn and plot signals — 2026-10-23
+
+V4 names the horn cable attachment H in drawings/equations; numerical D fields
+remain compatible. Internal-force sweeps now offer scalar Fs in N. The final
+theta2 displacement plot also offers absolute l=|S−H| in mm, including hover
+and saved visibility. Finite-pulley payout c still includes tangent and wrap;
+l is the virtual center-to-pin span. Workbooks are not automatically rewritten.

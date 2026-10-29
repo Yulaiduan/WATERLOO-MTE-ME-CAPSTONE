@@ -1,0 +1,36 @@
+{
+  "checks": 6550,
+  "corePreserved": true,
+  "modelSha256": "4b4f432bbf7754c0ee9b6c9c179c58c0349996628dccfdf99a99f38ca021e2cf",
+  "normal": {
+    "torqueNm": 18.91155765470654,
+    "catchTimeS": 0.4663851619824106,
+    "impactSpeed": 2.2147234590350102,
+    "peakAccelerationG": 2.1133414030123734,
+    "peakForceN": 267.2414426810746,
+    "strokeMm": 435.5932247458122
+  },
+  "independentTimeDomain": [
+    {
+      "alpha": 0,
+      "spring": true,
+      "strokeErrorM": -1.8318679906315083e-14,
+      "timeErrorS": -2.520761377411418e-13
+    },
+    {
+      "alpha": 20,
+      "spring": true,
+      "strokeErrorM": -1.9595436384634013e-14,
+      "timeErrorS": -1.1207701433590955e-13
+    },
+    {
+      "alpha": 30,
+      "spring": false,
+      "strokeErrorM": -1.923960990524165e-12,
+      "timeErrorS": -5.44597700269378e-12
+    }
+  ],
+  "constantAccelerationTimeErrorS": 1.6009416015094757e-13,
+  "earlyStopReason": "Constant maximum braking stops the robot before θ₂ᶜ. The energy-only torque bound is not a feasible full-stroke trajectory.",
+  "scope": "vertical point-mass numerical checks; not hardware validation"
+}

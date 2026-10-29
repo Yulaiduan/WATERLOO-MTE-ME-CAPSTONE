@@ -1,0 +1,60 @@
+{
+  "schema_version": "mmc-springs/1",
+  "retrieved_date": "2026-10-28",
+  "supplier": "McMaster-Carr",
+  "currency": "USD",
+  "coverage": [
+    {
+      "type": "MC",
+      "expected": 2120,
+      "captured": 2120,
+      "detail_pages": 2120,
+      "listing_conflicts": [],
+      "families": {
+        "Compression Springs": 2120
+      }
+    },
+    {
+      "type": "ME",
+      "expected": 4719,
+      "captured": 4719,
+      "detail_pages": 4719,
+      "listing_conflicts": [],
+      "families": {
+        "Extension Springs": 4447,
+        "Extension Springs with Swivel-Hook Ends": 1,
+        "Cut-to-Length Extension Springs": 119,
+        "Mil. Spec. Extension Springs": 83,
+        "Extra-Stretch Extension Springs": 33,
+        "Extension Spring Assortments": 4,
+        "Overload-Prevention Extension Springs": 32
+      }
+    },
+    {
+      "type": "MT",
+      "expected": 558,
+      "captured": 558,
+      "detail_pages": 558,
+      "listing_conflicts": [],
+      "families": {
+        "Torsion Springs": 358,
+        "Corrosion-Resistant Torsion Springs": 200
+      }
+    }
+  ],
+  "files": {
+    "mc-catalogue.json.gz": {
+      "sha256": "4ab36a77bf600fc4a122e6dd113c15f20a2a052fb7f849ae29a5b805bff2763e",
+      "rows": 2120
+    },
+    "me-catalogue.json.gz": {
+      "sha256": "fb9c8543ab5830880f64ea300b1d82cbe5ec0e0da0cbe7d74e6c0c955ef0a50d",
+      "rows": 4719
+    },
+    "mt-catalogue.json.gz": {
+      "sha256": "a903150cdd54bb0d5b93e3703cd1046affebef735f11916835a2897eeb350ec8",
+      "rows": 558
+    }
+  },
+  "vsl_reference_file": "vsl-reference.json"
+}

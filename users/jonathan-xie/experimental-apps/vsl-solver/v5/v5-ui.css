@@ -1,0 +1,107 @@
+/* V5 master controls/fall charts. Loaded after the retained V4 styles.
+   Three mode choices stay visible; only their parameter panel changes. */
+#masterRibbonStart{min-width:0;position:relative;margin-bottom:18px;}
+#masterControls.master-ribbon{display:block;position:relative;top:auto;left:auto;z-index:40;margin:0;padding:8px 12px;background:#fff;border:1px solid #cedee4;border-radius:9px;max-height:none;overflow:visible;box-shadow:none;}
+#masterControls.is-pinned{position:fixed;top:0;max-height:55vh;overflow:auto;box-shadow:0 5px 18px #24404e30;border-radius:0 0 9px 9px;}
+#masterControls .ribbon-heading{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#657a87;line-height:16px;}
+#masterControls .ribbon-status{display:none;color:#087f82;font-weight:700;}
+#masterControls.is-pinned .ribbon-status{display:inline;}
+#masterControls .master-pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+#masterControls .master-row{display:grid;grid-template-columns:28px 36px 56px minmax(28px,1fr) 56px 70px;gap:5px;align-items:center;padding:4px 0;margin:0;min-width:0;border-bottom:1px solid #edf1f3;}
+#masterControls .theta-master{grid-template-columns:32px 60px 70px minmax(60px,1fr) 70px 76px 112px;}
+#masterControls .master-row>label,#masterControls .master-row>button,#masterControls .master-row>input{grid-column:auto;grid-row:auto;min-width:0;}
+#masterControls .master-row label{font-size:10px;font-weight:600;}
+#masterControls .master-row small{display:block;font-size:9px;color:#78909c;}
+#masterControls input[type=number]{height:28px;padding:3px 5px;font-size:12px;}
+#masterControls input[type=range]{margin:0;min-width:28px;width:100%;}
+#masterControls button{font-size:10px;padding:5px 3px;min-width:0;}
+#masterControls .theta-cycle{display:flex;align-items:center;gap:4px;font-size:10px;}
+#masterControls .theta-cycle select{width:60px;padding:3px;}
+#masterControls .theta-cycle button{width:24px;}
+#masterControls .force-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:6px;}
+#masterControls .analysis-mode-label{display:block;grid-column:1/-1;font-size:10px;line-height:14px;color:#657a87;writing-mode:horizontal-tb;transform:none;}
+#masterControls .force-column{min-width:0;background:#f7f9fa;border:1px solid #cddce3;border-radius:7px;margin:0;padding:8px;opacity:1;}
+#masterControls .force-column.driving{border:2px solid #087f82;background:#eaf6f3;padding:7px;}
+#masterControls .force-column-head{display:block;padding:0;opacity:1;}
+#masterControls .force-column-head label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;color:#183c4b;min-height:23px;cursor:pointer;}
+#masterControls .force-column-head input{flex:none;width:15px;height:15px;accent-color:#087f82;}
+#masterControls .force-column strong{font-size:12px;color:#183c4b;}
+#masterControls .mode-description{font-size:10px;color:#657a87;margin:4px 0 0 23px;}
+#masterControls .fall-mode-height{display:flex;align-items:center;gap:5px;margin:4px 0 0 23px;font-size:10px;padding:0;}
+#masterControls .fall-mode-height input{width:80px;height:25px;}
+#masterControls .analysis-values{margin-top:4px;}
+#masterControls .analysis-values[hidden]{display:none!important;}
+#masterControls .analysis-values .master-row{grid-template-columns:25px 30px 54px minmax(25px,1fr) 54px 65px 65px;}
+#masterControls .analysis-values .current-g{color:#087f82;}
+#masterControls .fall-mode-status{display:block;font-size:11px;color:#4c6a79;padding:3px 0;}
+.zeta-negative input{opacity:.48;background:#f1f4f6;}
+.zeta-positive input{font-weight:800!important;border:2px solid #c88516!important;background:#fff2d7!important;box-shadow:0 0 0 2px #ffe4ab;color:#6a4500!important;}
+.fall-panel{margin-top:18px;}
+.fall-body{padding:14px;}
+.fall-plot-options{display:flex;align-items:center;flex-wrap:wrap;gap:10px 20px;margin:0 0 12px;font-size:12px;}
+.fall-plot-options label{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.fall-plot-options .plot-toggle{border:1px solid #99b5bf;background:#fff;padding:7px 11px;font-size:12px;}
+.fall-plot-options .plot-toggle[aria-pressed=true]{background:#087f82;border-color:#087f82;color:white;}
+.fall-plot-options .plot-toggle[aria-pressed=true]::before{content:'✓ ';}
+.fall-table-scroll{overflow-x:auto;overscroll-behavior-x:contain;}
+.fall-column-heads,.fall-grid{display:grid;grid-template-columns:repeat(4,minmax(230px,1fr));gap:12px;min-width:956px;}
+.fall-column-heads{margin:12px 0 8px;text-align:center;font-size:12px;font-weight:700;color:#526c79;}
+.fall-plot-card{min-width:0;border:1px solid #d8e3e8;border-radius:8px;background:#fff;}
+.fall-plot-title{padding:10px 10px 0;color:#294b5b;font-size:12px;font-weight:700;display:flex;justify-content:space-between;gap:5px;flex-wrap:wrap;}
+.fall-plot-title small{font-weight:400;color:#6a808b;}
+.fall-grid svg{display:block;width:100%;min-height:180px;}
+.fall-grid svg text{font:12px system-ui,sans-serif;fill:#587180;}
+.fall-summary{display:flex;gap:8px 20px;flex-wrap:wrap;padding:10px 12px;background:#edf7f6;border-radius:7px;font-size:12px;color:#244b51;}
+.fall-summary strong{width:100%;font-size:16px;}
+.fall-summary small{width:100%;font-size:11px;}
+.fall-summary.error{background:#fff0f0;color:#a73843;}
+.fall-summary.warning{background:#fff7e9;color:#86550c;}
+.fall-foot{font-size:11px;line-height:1.6;color:#657a87;padding:10px 2px;}
+.fall-method{margin:0 0 12px;}
+html{scroll-padding-top:var(--master-ribbon-offset,8px);}
+@media(max-width:1100px){
+ #masterControls .master-pair{grid-template-columns:1fr;gap:0;}
+ #masterControls .fall-master-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+ #masterControls .fall-master-pair .master-row{grid-template-columns:24px 28px 43px minmax(20px,1fr) 43px 56px;gap:3px;}
+}
+@media(max-width:700px){
+ #masterControls .theta-master{grid-template-columns:26px 46px 58px minmax(30px,1fr) 58px 65px;}
+ #masterControls .theta-cycle{grid-column:1/-1;justify-content:flex-end;}
+ #masterControls .fall-master-pair{grid-template-columns:1fr;}
+ #masterControls .force-columns{gap:5px;}
+ #masterControls .force-column{padding:6px;}
+ #masterControls .force-column.driving{padding:5px;}
+ #masterControls .force-column-head label{font-size:11px;gap:4px;flex-wrap:wrap;}
+ #masterControls .mode-description,#masterControls .fall-mode-height{margin-left:0;}
+ #masterControls .fall-mode-height{flex-wrap:wrap;}
+}
+
+/* Respond to the actual remaining main-column width, including a pinned library. */
+body.library-pinned>.layout{grid-template-columns:240px minmax(0,1fr);}
+#masterControls.is-pinned .master-row{padding-top:2px;padding-bottom:2px;}
+#masterControls.is-pinned input[type=number]{height:25px;}
+#masterControls.narrow .master-pair{grid-template-columns:1fr;gap:0;}
+#masterControls.narrow .fall-master-pair{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;}
+#masterControls.very-narrow .fall-master-pair{grid-template-columns:1fr;}
+#masterControls.very-narrow .master-row{grid-template-columns:28px 38px repeat(3,minmax(42px,1fr));}
+#masterControls.very-narrow .master-row>input[type=range]{grid-column:1/-1;grid-row:2;}
+#masterControls.very-narrow .master-row>.master-bound:nth-of-type(2){grid-column:3;grid-row:1;}
+#masterControls.very-narrow .master-row>.master-bound:nth-of-type(3){grid-column:4;grid-row:1;}
+#masterControls.very-narrow .master-row>.master-current{grid-column:5;grid-row:1;}
+#masterControls.very-narrow .theta-cycle{grid-column:1/-1;grid-row:3;justify-content:flex-end;}
+#masterControls.very-narrow .analysis-values .master-row{grid-template-columns:repeat(4,minmax(0,1fr));}
+#masterControls.very-narrow .analysis-values .master-row>label:first-child{grid-column:1;grid-row:1;}
+#masterControls.very-narrow .analysis-values .master-row>button{grid-column:2;grid-row:1;}
+#masterControls.very-narrow .analysis-values .master-row>input[type=range]{grid-column:3/5;grid-row:1;}
+#masterControls.very-narrow .analysis-values .master-row>.master-bound:nth-of-type(2){grid-column:1;grid-row:2;}
+#masterControls.very-narrow .analysis-values .master-row>.master-bound:nth-of-type(3){grid-column:2;grid-row:2;}
+#masterControls.very-narrow .analysis-values .master-row>.master-current{grid-column:3;grid-row:2;}
+#masterControls.very-narrow .analysis-values .master-row>.current-g{grid-column:4;grid-row:2;}
+#masterControls.very-narrow .force-column-head label{flex-wrap:wrap;gap:4px;}
+#masterControls.very-narrow .fall-mode-height,#masterControls.very-narrow .mode-description{margin-left:0;}
+#masterControls.very-narrow .fall-mode-height{flex-wrap:wrap;}
+
+@media(max-width:1500px){
+ body.library-pinned>.layout{grid-template-columns:minmax(0,1fr);}
+ body.library-pinned>.layout>aside{position:relative;top:auto;max-height:280px;overflow:auto;}
+}

@@ -1,0 +1,512 @@
+[
+  {
+    "key": "dp",
+    "label": "DP#",
+    "type": "number",
+    "path": null
+  },
+  {
+    "key": "name",
+    "label": "Name",
+    "type": "string",
+    "path": null
+  },
+  {
+    "key": "save",
+    "label": "Save",
+    "type": "string",
+    "path": null
+  },
+  {
+    "key": "load",
+    "label": "Load",
+    "type": "string",
+    "path": null
+  },
+  {
+    "key": "savedAt",
+    "label": "Last saved (UTC)",
+    "type": "date",
+    "path": null
+  },
+  {
+    "key": "totalMass",
+    "label": "Total mass (kg)",
+    "type": "number",
+    "path": null
+  },
+  {
+    "key": "L2",
+    "label": "L2 (mm)",
+    "type": "number",
+    "path": "parameters.L2"
+  },
+  {
+    "key": "L3",
+    "label": "L3 (mm)",
+    "type": "number",
+    "path": "parameters.L3"
+  },
+  {
+    "key": "qab",
+    "label": "q_ab",
+    "type": "number",
+    "path": null
+  },
+  {
+    "key": "alpha",
+    "label": "alpha (deg)",
+    "type": "number",
+    "path": "parameters.alpha"
+  },
+  {
+    "key": "globalMaxDz",
+    "label": "global_max_dz (mm)",
+    "type": "number",
+    "path": "outputs.globalMaxDz"
+  },
+  {
+    "key": "springK",
+    "label": "k (N/mm)",
+    "type": "number",
+    "path": "parameters.springK"
+  },
+  {
+    "key": "qdc",
+    "label": "q_dc",
+    "type": "number",
+    "path": null
+  },
+  {
+    "key": "qfe",
+    "label": "q_fe",
+    "type": "number",
+    "path": null
+  },
+  {
+    "key": "m1",
+    "label": "m1 (kg)",
+    "type": "number",
+    "path": "parameters.m1"
+  },
+  {
+    "key": "m2",
+    "label": "m2 (kg)",
+    "type": "number",
+    "path": "parameters.m2"
+  },
+  {
+    "key": "m3",
+    "label": "m3 (kg)",
+    "type": "number",
+    "path": "parameters.m3"
+  },
+  {
+    "key": "m5",
+    "label": "m5 (kg)",
+    "type": "number",
+    "path": "parameters.m5"
+  },
+  {
+    "key": "m6",
+    "label": "m6 (kg)",
+    "type": "number",
+    "path": "parameters.m6"
+  },
+  {
+    "key": "g",
+    "label": "g (m/s²)",
+    "type": "number",
+    "path": "parameters.g"
+  },
+  {
+    "key": "ra",
+    "label": "r_a (mm)",
+    "type": "number",
+    "path": "parameters.ra"
+  },
+  {
+    "key": "rb",
+    "label": "r_b (mm)",
+    "type": "number",
+    "path": "parameters.rb"
+  },
+  {
+    "key": "rc",
+    "label": "r_c (mm)",
+    "type": "number",
+    "path": "parameters.rc"
+  },
+  {
+    "key": "rd",
+    "label": "r_d (mm)",
+    "type": "number",
+    "path": "parameters.rd"
+  },
+  {
+    "key": "re",
+    "label": "r_e (mm)",
+    "type": "number",
+    "path": "parameters.re"
+  },
+  {
+    "key": "rf",
+    "label": "r_f (mm)",
+    "type": "number",
+    "path": "parameters.rf"
+  },
+  {
+    "key": "rw",
+    "label": "r_w (mm)",
+    "type": "number",
+    "path": "parameters.rw"
+  },
+  {
+    "key": "phi0",
+    "label": "phi0 (deg)",
+    "type": "number",
+    "path": "parameters.phi0"
+  },
+  {
+    "key": "te",
+    "label": "theta2 min (deg)",
+    "type": "number",
+    "path": "parameters.te"
+  },
+  {
+    "key": "tc",
+    "label": "theta2 max (deg)",
+    "type": "number",
+    "path": "parameters.tc"
+  },
+  {
+    "key": "beta",
+    "label": "beta (deg)",
+    "type": "number",
+    "path": "parameters.beta"
+  },
+  {
+    "key": "Fy",
+    "label": "Fy (N)",
+    "type": "number",
+    "path": "parameters.Fy"
+  },
+  {
+    "key": "Fz",
+    "label": "Fz (N)",
+    "type": "number",
+    "path": "parameters.Fz"
+  },
+  {
+    "key": "Fn",
+    "label": "Fn (N)",
+    "type": "number",
+    "path": "parameters.Fn"
+  },
+  {
+    "key": "Ft",
+    "label": "Ft (N)",
+    "type": "number",
+    "path": "parameters.Ft"
+  },
+  {
+    "key": "loadMode",
+    "label": "Force convention",
+    "type": "string",
+    "path": "parameters.loadMode"
+  },
+  {
+    "key": "hornR",
+    "label": "r_h (mm)",
+    "type": "number",
+    "path": "parameters.hornR"
+  },
+  {
+    "key": "Sv",
+    "label": "S_v (mm)",
+    "type": "number",
+    "path": "parameters.Sv"
+  },
+  {
+    "key": "rs",
+    "label": "r_s (mm)",
+    "type": "number",
+    "path": "parameters.rs"
+  },
+  {
+    "key": "p0",
+    "label": "p0 (N)",
+    "type": "number",
+    "path": "parameters.p0"
+  },
+  {
+    "key": "nu",
+    "label": "nu (deg)",
+    "type": "number",
+    "path": "parameters.nu"
+  },
+  {
+    "key": "Su",
+    "label": "S_u (mm)",
+    "type": "number",
+    "path": "parameters.Su"
+  },
+  {
+    "key": "springEnabled",
+    "label": "Spring enabled",
+    "type": "boolean",
+    "path": "parameters.springEnabled"
+  },
+  {
+    "key": "Tab0",
+    "label": "T_ab preload (N)",
+    "type": "number",
+    "path": "parameters.Tab0"
+  },
+  {
+    "key": "Tcd0",
+    "label": "T_cd preload (N)",
+    "type": "number",
+    "path": "parameters.Tcd0"
+  },
+  {
+    "key": "Tef0",
+    "label": "T_ef preload (N)",
+    "type": "number",
+    "path": "parameters.Tef0"
+  },
+  {
+    "key": "theta2",
+    "label": "Current theta2 (deg)",
+    "type": "number",
+    "path": "theta2"
+  },
+  {
+    "key": "springDriven",
+    "label": "Fitted spring variables",
+    "type": "string",
+    "path": null
+  },
+  {
+    "key": "period",
+    "label": "Cycle (s)",
+    "type": "number",
+    "path": "period"
+  },
+  {
+    "key": "tau2",
+    "label": "Current tau2 CCW (Nm)",
+    "type": "number",
+    "path": "outputs.tau2"
+  },
+  {
+    "key": "tauG",
+    "label": "Current tauG (Nm)",
+    "type": "number",
+    "path": "outputs.tauG"
+  },
+  {
+    "key": "tauS",
+    "label": "Current tauS (Nm)",
+    "type": "number",
+    "path": "outputs.tauS"
+  },
+  {
+    "key": "tau4",
+    "label": "Current tau4 CCW (Nm)",
+    "type": "number",
+    "path": "outputs.tau4"
+  },
+  {
+    "key": "Fs",
+    "label": "Current Fs (N)",
+    "type": "number",
+    "path": "outputs.Fs"
+  },
+  {
+    "key": "pe",
+    "label": "p_e (N)",
+    "type": "number",
+    "path": "outputs.pe"
+  },
+  {
+    "key": "globalMaxTau2",
+    "label": "Global max tau2 signed (Nm)",
+    "type": "number",
+    "path": "outputs.globalMaxTau2"
+  },
+  {
+    "key": "globalMaxTau4",
+    "label": "Global max tau4 signed (Nm)",
+    "type": "number",
+    "path": "outputs.globalMaxTau4"
+  },
+  {
+    "key": "globalMaxFs",
+    "label": "Global max Fs (N)",
+    "type": "number",
+    "path": "outputs.globalMaxFs"
+  },
+  {
+    "key": "globalMaxTab",
+    "label": "Global max Tab (N)",
+    "type": "number",
+    "path": "outputs.globalMaxTab"
+  },
+  {
+    "key": "compensationError",
+    "label": "Current mg error (%)",
+    "type": "number",
+    "path": "outputs.compensationError"
+  },
+  {
+    "key": "zeta",
+    "label": "zeta required (deg)",
+    "type": "number",
+    "path": "outputs.zeta"
+  },
+  {
+    "key": "zetaApplied",
+    "label": "zeta applied CW (deg)",
+    "type": "number",
+    "path": "outputs.zetaApplied"
+  },
+  {
+    "key": "range_alpha_min",
+    "label": "alpha min",
+    "type": "number",
+    "path": "ranges.alpha.min"
+  },
+  {
+    "key": "range_alpha_max",
+    "label": "alpha max",
+    "type": "number",
+    "path": "ranges.alpha.max"
+  },
+  {
+    "key": "range_beta_min",
+    "label": "beta min",
+    "type": "number",
+    "path": "ranges.beta.min"
+  },
+  {
+    "key": "range_beta_max",
+    "label": "beta max",
+    "type": "number",
+    "path": "ranges.beta.max"
+  },
+  {
+    "key": "range_Fy_min",
+    "label": "Fy min",
+    "type": "number",
+    "path": "ranges.Fy.min"
+  },
+  {
+    "key": "range_Fy_max",
+    "label": "Fy max",
+    "type": "number",
+    "path": "ranges.Fy.max"
+  },
+  {
+    "key": "range_Fz_min",
+    "label": "Fz min",
+    "type": "number",
+    "path": "ranges.Fz.min"
+  },
+  {
+    "key": "range_Fz_max",
+    "label": "Fz max",
+    "type": "number",
+    "path": "ranges.Fz.max"
+  },
+  {
+    "key": "range_Fn_min",
+    "label": "Fn min",
+    "type": "number",
+    "path": "ranges.Fn.min"
+  },
+  {
+    "key": "range_Fn_max",
+    "label": "Fn max",
+    "type": "number",
+    "path": "ranges.Fn.max"
+  },
+  {
+    "key": "range_Ft_min",
+    "label": "Ft min",
+    "type": "number",
+    "path": "ranges.Ft.min"
+  },
+  {
+    "key": "range_Ft_max",
+    "label": "Ft max",
+    "type": "number",
+    "path": "ranges.Ft.max"
+  },
+  {
+    "key": "color",
+    "label": "Row color",
+    "type": "string",
+    "path": null
+  },
+  {
+    "key": "fallHeight",
+    "label": "Fall height h (m)",
+    "type": "number",
+    "path": "fallStudy.heightM"
+  },
+  {
+    "key": "fall_massBounds_min",
+    "label": "Fall massBounds min",
+    "type": "number",
+    "path": "fallStudy.massBounds.min"
+  },
+  {
+    "key": "fall_massBounds_max",
+    "label": "Fall massBounds max",
+    "type": "number",
+    "path": "fallStudy.massBounds.max"
+  },
+  {
+    "key": "fall_heightBounds_min",
+    "label": "Fall heightBounds min",
+    "type": "number",
+    "path": "fallStudy.heightBounds.min"
+  },
+  {
+    "key": "fall_heightBounds_max",
+    "label": "Fall heightBounds max",
+    "type": "number",
+    "path": "fallStudy.heightBounds.max"
+  },
+  {
+    "key": "fallTorque",
+    "label": "Fall min peak torque (Nm)",
+    "type": "number",
+    "path": "outputs.fallTorque"
+  },
+  {
+    "key": "fallTime",
+    "label": "Fall catch time (s)",
+    "type": "number",
+    "path": "outputs.fallTime"
+  },
+  {
+    "key": "fallPeakAcceleration",
+    "label": "Fall peak acceleration (g)",
+    "type": "number",
+    "path": "outputs.fallPeakAcceleration"
+  },
+  {
+    "key": "fallPeakForce",
+    "label": "Fall peak Fz (N)",
+    "type": "number",
+    "path": "outputs.fallPeakForce"
+  },
+  {
+    "key": "fallPeakSpeed",
+    "label": "Fall peak speed (m/s)",
+    "type": "number",
+    "path": "outputs.fallPeakSpeed"
+  }
+]

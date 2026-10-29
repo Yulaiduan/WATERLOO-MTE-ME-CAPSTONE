@@ -1,0 +1,39 @@
+[
+  {
+    "type": "MC",
+    "expected": 2120,
+    "captured": 2120,
+    "detail_pages": 2120,
+    "listing_conflicts": [],
+    "families": {
+      "Compression Springs": 2120
+    }
+  },
+  {
+    "type": "ME",
+    "expected": 4719,
+    "captured": 4719,
+    "detail_pages": 4719,
+    "listing_conflicts": [],
+    "families": {
+      "Extension Springs": 4447,
+      "Extension Springs with Swivel-Hook Ends": 1,
+      "Cut-to-Length Extension Springs": 119,
+      "Mil. Spec. Extension Springs": 83,
+      "Extra-Stretch Extension Springs": 33,
+      "Extension Spring Assortments": 4,
+      "Overload-Prevention Extension Springs": 32
+    }
+  },
+  {
+    "type": "MT",
+    "expected": 558,
+    "captured": 558,
+    "detail_pages": 558,
+    "listing_conflicts": [],
+    "families": {
+      "Torsion Springs": 358,
+      "Corrosion-Resistant Torsion Springs": 200
+    }
+  }
+]
