@@ -36,7 +36,8 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "solvers.js", "solver-style.css", "project-store.js", "designs.js",
           "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",
           "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js", "case-ui.js", "plotly-runtime.js", "plotly.css", "studio.css", "motor-ui.js", "energy-analysis.js", "energy-ui.js", "energy-workspace.css",
-          "preset-store.js", "preset-analysis.js", "preset-workbench.js", "preset-workbench.css", "preset-flow.js"}
+          "preset-store.js", "preset-analysis.js", "preset-workbench.js", "preset-workbench.css", "preset-flow.js",
+          "terrain-catalog.json", "terrain-profiles.js", "terrain-profiles.css", "terrain-ui.js"}
 
 
 VENDOR_ROUTE = "/vendor/plotly-basic-4.1.2.min.js"
@@ -67,7 +68,7 @@ def reject_nonfinite(value):
 
 def run_dynamics(request):
     """Integrate one bounded request in this app's installed physics environment."""
-    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "motorConfig", "study", "torqueTargetConfig"}):
+    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "motorConfig", "study", "torqueTargetConfig", "terrainConfig"}):
         return {"error": "Expected engine, params, runConfig and optional contactConfig/caseConfig only."}, 400
     if not isinstance(request["engine"], str) or request["engine"] not in {"analytical", "pymunk"}:
         return {"error": "Choose analytical or pymunk."}, 400

@@ -15,6 +15,7 @@ from contact_cases import (validate_contact_request, resolve_case, initial_condi
 from torque_targets import TargetObservation
 from contact_cases import check_motor_step
 from dynamic_model import R, mul
+from terrain_profiles import circle_contacts, surface_height
 
 # Contact complementarity: https://underactuated.csail.mit.edu/multibody.html
 # Accumulated PGS: https://box2d.org/posts/2024/02/solver2d/
@@ -44,6 +45,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     penetration_limit_mm=1.;prepen=postpen=maxpre=maxpost=0.;max_stop_position_error=0.
     def geometry(time):
         x=ax*u[1];z=u[0]+az*u[1];out=[]
+        if 'segments' in terrain:return circle_contacts(terrain,time,x,z,r)
         out.append((z-r,(0.,1.),(x,0.)))
         for b in boxes:
             left,right=b[0][0]+speed*time,b[1][0]+speed*time;top=b[2][1]
@@ -67,7 +69,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         if p['springEnabled']:frame.update(D=translate(mul(m.rotate(spring['D']),.001)),Q=translate(mul(m.rotate(spring['Q']),.001)))
         row=dict(t=t,theta2=q/R,velocityDegS=qd/R,accelerationDegS2=None,Fs=spring['force'],tauStatic=None,tauApplied=tor['motorTorqueNm']+tor['jointFrictionNm']-c['dampingNms']*qd,kineticJ=ke,potentialJ=pe,energyJ=ke+pe,CxMm=C[0],CzMm=C[2],chassisZMm=A[2],chassisVelocityMmS=v[0]*1000,chassisAccelerationMmS2=None,wheelZMm=C[2],wheelVelocityXMmS=-ax*v[1]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,wheelAngle=u[2]/R,wheelAngularVelocityDegS=v[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,requestedInputMm=None,appliedInputMm=None,inputVelocityMmS=None,inputAccelerationMmS2=None,inputReactionN=None,contactNormalForceN=nf,contactTangentialForceN=tf,contactForceXN=-sumJ[0]/elapsed if elapsed else 0.,contactForceZN=sumJ[1]/elapsed if elapsed else 0.,contactNormalImpulseNs=sumN,contactTangentialImpulseNs=sumT,contactCount=len(points),slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,guideForceN=(spring['torque']+tor['motorTorqueNm']+tor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=work+dampingwork,motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,motorDissipationJ=motorloss,motorFrictionLossJ=motorloss,contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,terrainWorkJ=terrainwork,inputWorkJ=terrainwork,externalWorkJ=externalwork,stoppingDemandTorqueNm=stopping_demand(m,q,qd,v[0],case),**e,**tor)
         row.update(m.motor.motor_state(q,qd,tor['motorTorqueNm']))
-        ground_under_hip=max([0.]+[box[2][1] for box in boxes if box[0][0]+speed*t<=0<=box[1][0]+speed*t])
+        ground_under_hip=surface_height(terrain,t)
         clearance=(u[0]-ground_under_hip)*1000-case['undersideOffsetMm'] if case['undersideOffsetMm'] is not None else None
         phase='end-stop' if min(abs(u[1]-sl),abs(u[1]-sh))<1e-8 and abs(v[1])<1e-7 else 'contact' if previous_contact else 'free-flight'
         row.update(demandTorqueNm=row['stoppingDemandTorqueNm'],chassisClearanceMm=clearance,motionPhase=phase,
@@ -104,6 +106,9 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         # Exact constant-force drift/kick; contacts use the physical velocity only.
         for k in range(3):u[k]+=v[k]*dt+.5*acc[k]*dt*dt;v[k]+=acc[k]*dt
         t+=dt;steps+=1
+        # Keep the same canonical output clock as the native contact engine.
+        if abs(t-c['duration'])<1e-10:t=c['duration']
+        elif abs(t-next_sample)<1e-10:t=next_sample
         inv=mass_at(m.inverse(max(sl,min(sh,u[1]))))
         # Unilateral guide-end impulse conserves chassis/wheel vertical momentum.
         if u[1]<=sl+1e-12 and v[1]<0 or u[1]>=sh-1e-12 and v[1]>0:
@@ -187,7 +192,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
 
         if postpen>penetration_limit_mm:
             termination='contact-penetration-limit';events.append(dict(t=t,type=termination,penetrationMm=postpen,limitMm=penetration_limit_mm,stage='after-coupled-position-projection'));append();break
-        ground_under_hip=max([0.]+[box[2][1] for box in boxes if box[0][0]+speed*t<=0<=box[1][0]+speed*t])
+        ground_under_hip=surface_height(terrain,t)
         if case['undersideOffsetMm'] is not None and (u[0]-ground_under_hip)*1000<=case['undersideOffsetMm']:
             events.append(dict(t=t,type='underside-contact'));termination='underside-contact';append();break
         observation.step(t,u[0],v[0],u[0]+az*u[1],v[0]+az*v[1],r,active,events)
@@ -196,10 +201,13 @@ def simulate_contact(payload, *, stop_at_assessment=False):
             termination='assessment-outcome';append();break
         if t>=next_sample-1e-10 or t>=c['duration']-1e-10:append();next_sample+=1/c['outputHz']
     snapshot=dict(params=p,solverConfig=c,contactConfig=cc)
+    if 'terrainConfig' in payload:snapshot['terrainConfig']=m.terrain_config
     if 'caseConfig' in payload:snapshot['caseConfig']=case
     if 'motorConfig' in payload:snapshot['motorConfig']=m.motor.config
     result=dict(schema='kinefold/contact-v2',engine='analytical',params=p,runConfig=c,contactConfig=cc,caseConfig=case,snapshot=snapshot,designHash=model_identity(m,cc,case),rows=rows,frames=frames,events=events,caseMetrics=case_metrics(rows,events,m,case),terrain=terrain['terrain'],diagnostics=dict(termination=termination,elapsedSeconds=t,steps=steps,dt=c['dt'],iterations=c['iterations'],integrator='Independent reduced-mass constant-force drift with accumulated unilateral Coulomb PGS impulses',rigidBodies=2,chassisBodyMassKg=p['m1'],wheelBodyMassKg=mw,wheelMomentKgM2=I,chassisPitchLocked=True,wheelSpinFree=True,maxPenetrationMm=maxpen,maxGuideResidualMm=0.,maxConstraintPositionErrorMm=0.,maxConstraintAngleErrorDeg=0.,maxContactNormalForceN=maxnf,maxContactTangentialForceN=maxtf,firstRaisedContactTimeS=first_raised,effectiveFriction=cc['friction'],restitution=0,positionStabilization='Separate configuration-dependent mass-weighted projection; no velocity kick; kinetic/potential change ledgered',stopDissipationJ=stoploss,resolvedInertiasKgM2=m.I,builderMassesKg={k:p['m'+k] for k in ('1','2','3','5','6')},modelRevision='straight-guide-contact-v2'),scope=dict(mode='terrain-contact',quarterModel=True,fixture='floating-chassis',coordinates='+x left / +z up / mm'),warnings=['Experimental rigid two-body quarter model; no tire, rigid chassis collision shape or hardware validation; entered underside point-clearance stops are assessed.','Position projection applies no physical velocity kick; its geometry-induced rotor kinetic and potential energy change is recorded separately.','Sharp contact impulse peaks and travel-stop events require timestep refinement.'])
 
+    if 'terrainConfig' in payload:result['terrainConfig']=m.terrain_config
+    if m.terrain_config and case['kind']=='terrain-stability':result['warnings'].append('Source terrain is a synthesized design envelope represented by a rigid periodic 2D profile. Grade, cross-slope, corridor, soil/snow/water behavior and surface-specific friction are not simulated.')
     if 'motorConfig' in payload:result['motorConfig']=m.motor.config
     result['energyEstimate']=energy_estimate(m,case) if case['energyMethod'] else None
     result['diagnostics'].update(reflectedHipInertiaKgM2=m.Jref,energyBalanceResidualJ=rows[-1]['energyBalanceResidualJ'],maxPreProjectionPenetrationMm=maxpre,maxPostProjectionPenetrationMm=maxpost,penetrationTerminationLimitMm=penetration_limit_mm,maxTravelStopDriftMm=max_stop_position_error)

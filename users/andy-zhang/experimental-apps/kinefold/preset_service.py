@@ -24,7 +24,7 @@ SCHEMA = 'kinefold/preset-library-v1'
 BUNDLE_SCHEMA = 'kinefold/preset-bundle-v1'
 UNKNOWN_KEYS = ('rotorInertiaKgM2', 'coggingAmplitudeNm', 'coulombFrictionNm', 'viscousFrictionNms')
 RATING_KEYS = ('peakShaftNm', 'maxShaftRpm', 'gearboxContinuousNm', 'gearboxPeakNm')
-OPTIONAL = ('contactConfig', 'caseConfig', 'energyConfig', 'torqueTargetConfig')
+OPTIONAL = ('contactConfig', 'caseConfig', 'energyConfig', 'torqueTargetConfig', 'terrainConfig')
 # A validation shell only; never saved, composed, or substituted for user inputs.
 _PARAMS = dict(L2=300, L3=300, ra=50, rb=25, rc=35, rd=35, re=25, rf=25, rw=200,
               alpha=0, phi0=0, te=100, tc=165, theta2=132.5, m1=8.75, m2=0, m3=0,

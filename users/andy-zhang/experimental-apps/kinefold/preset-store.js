@@ -8,7 +8,7 @@
 globalThis.KinefoldPresets=(()=>{
 'use strict';
 const P=KinefoldProjects,schema='kinefold/preset-library-v1',bundleSchema='kinefold/preset-bundle-v1';
-const optional=['contactConfig','caseConfig','energyConfig','torqueTargetConfig'];
+const optional=['contactConfig','caseConfig','energyConfig','torqueTargetConfig','terrainConfig'];
 const unknownKeys=['rotorInertiaKgM2','coggingAmplitudeNm','coulombFrictionNm','viscousFrictionNms'];
 const ratingKeys=['peakShaftNm','maxShaftRpm','gearboxContinuousNm','gearboxPeakNm'];
 const clone=P.clone;

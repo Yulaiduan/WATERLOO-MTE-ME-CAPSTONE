@@ -8,6 +8,7 @@ Rigid quarter-model laws are illustrative, not hardware peak-torque certificatio
 import math
 import hashlib
 import json
+from terrain_profiles import validate_terrain, periodic_spec, surface_height
 from dynamic_model import Model, R, mul, validate, finite
 from motor_model import Motor
 
@@ -96,7 +97,7 @@ class ContactGeometry(Model):
 
 
 def validate_contact_request(payload):
-    if not isinstance(payload,dict) or not {'engine','params','runConfig','contactConfig'}<=set(payload) or set(payload)-{'engine','params','runConfig','contactConfig','caseConfig','motorConfig'}:
+    if not isinstance(payload,dict) or not {'engine','params','runConfig','contactConfig'}<=set(payload) or set(payload)-{'engine','params','runConfig','contactConfig','caseConfig','motorConfig','terrainConfig'}:
         raise ValueError('Contact request requires exactly engine, params, runConfig and contactConfig.')
     if payload['engine'] not in ('pymunk','analytical'):
         raise ValueError('Contact engine must be analytical or pymunk.')
@@ -114,6 +115,7 @@ def validate_contact_request(payload):
     if 'motorConfig' in payload and not isinstance(payload['motorConfig'],dict):
         raise ValueError('motorConfig must be an object when supplied.')
     model.motor=Motor.resolve(payload.get('motorConfig'))
+    model.terrain_config=validate_terrain(payload['terrainConfig']) if 'terrainConfig' in payload else None
     model.motor_config_present='motorConfig' in payload
     model.Jref=model.c['hipRotorInertiaKgM2']+model.motor.reflected_inertia
     if case['kind'] in ('jump','landing') and model.axis[1]*model.jacobian((model.lo+model.hi)/2)<=0:
@@ -136,6 +138,7 @@ def world(v):return [-v[0]*1000,0,v[1]*1000]
 
 
 def terrain_spec(m,case):
+    if getattr(m,'terrain_config',None) is not None and case['kind']=='terrain-stability':return periodic_spec(m,case,initial_conditions(m,case))
     p,c=m.p,m.c;r=p['rw']/1000;q,h,x,z=initial_conditions(m,case)
     speed=c['inputSpeedMmS']/1000 if case['kind']=='terrain-stability' else 0.
     height=c['inputHeightMm']/1000 if case['kind']=='terrain-stability' else 0.
@@ -158,7 +161,7 @@ def terrain_spec(m,case):
 
 
 def model_identity(m,contact,case):
-    return hashlib.sha256(json.dumps(dict(params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(dict(params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'terrainConfig':m.terrain_config} if getattr(m,'terrain_config',None) is not None else {}),**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
 def usable_compression(m,q,case):
@@ -352,8 +355,7 @@ def minimum_required_torque(payload,simulate,iterations=5):
 
 def floor_under_hip(spec,t):
     """Highest exact terrain surface under the x-fixed hip, in source metres."""
-    offset=spec['speed']*t
-    return max([0.]+[spec['height'] for b in spec['boxes'] if b[0][0]+offset<=0<=b[1][0]+offset])
+    return surface_height(spec,t)
 
 
 def check_motor_step(m,qd,dt):

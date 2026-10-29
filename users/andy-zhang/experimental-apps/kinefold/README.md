@@ -338,3 +338,64 @@ The builder uses the dated reviewed [evidence summary](spring-report-evidence.js
 and local source records; it does not rerun physics or refresh catalog ratings.
 The generated PDF stays in the app's ignored `exports/` directory. Its source,
 assumptions and reproduction steps are versioned; no Downloads export is used.
+
+## Periodic terrain surfaces from the estimates sheet — 2026-10-29
+
+Both dynamic tabs provide **Terrain surfaces**, using an offline snapshot of
+[Terrain Data Table / Terrain Estimates](https://docs.google.com/spreadsheets/d/129-3mE__DX2Nzua44cZMdNvjQa4hlLUuPyqEzx5_DCU/edit?gid=101#gid=101),
+retrieved 2026-10-29, range `A4:X20`. The 16 archetypes retain typical, difficult
+and extreme obstacle/RMS estimates, source row, evidence status, confidence and
+context. These are synthesized engineering envelopes, not measured biome averages.
+The compact source record is [terrain-catalog.json](terrain-catalog.json).
+
+Choose a surface, severity and representation; inspect the Plotly preview, then
+apply it to the shared input. **Apply surface · keep speed & duration** preserves
+the entered run timing. **Apply 6 s per repeat / 6.5 s preview** explicitly sets
+speed to repeat distance divided by six seconds, delay to 0.5 s and duration to
+6.5 s. This is a demonstration speed, not a sheet recommendation. The initial
+circular-rim lead consumes travel, so a complete repeat need not pass the wheel
+in that window. Selection alone does not save, change the mechanism or run a solver.
+
+The two representations are separate tests:
+
+- **Obstacle height & spacing:** one smooth bump occupies the middle half of a
+  repeat, reaching the source obstacle height. Generated RMS is reported separately.
+- **Continuous RMS roughness:** a raised cosine is scaled so the actual segmented
+  contour has the specified mean-removed RMS. Its peak is reported separately and
+  can exceed the discrete obstacle estimate. Reusing obstacle spacing as roughness
+  wavelength is an explicit simplification; the sheet supplies no roughness spectrum.
+
+For phase `p = (distance mod period) / period`, the obstacle shape is
+`H/2 × [1 − cos(4π(p − 1/4))]` for `1/4 < p < 3/4`, and zero elsewhere.
+The roughness template is `1 − cos(2πp)`. Each repeat uses 96 connected linear
+segments. Its mean and second moment are integrated exactly over those segments
+before normalization, rather than assuming the samples are an exact sine wave.
+Both engines collide with that same top contour; it translates toward −x while
+the wheel can roll, slip or separate. Browser and native desktop playback use the
+returned contour and terrain transform. Old square-contact geometry is retained
+when no periodic configuration is selected.
+
+The sheet has no extreme spacing; its default repeat explicitly reuses difficult
+spacing and remains editable. The snow row's `M:X` cells are misaligned: RMS,
+spacing and corridor values remain unresolved. Snow obstacle heights are retained,
+but applying snow requires an entered repeat distance; its RMS representation is
+blocked. A snow period shown in a report illustration is not a sourced value.
+
+Source grade is percent, converted to degrees with `atan(percent/100)`. Grade,
+cross-slope, corridor and surface/soft-ground notes are context only. These periodic
+rigid 2D shapes have zero average grade and do not model soil deformation, sinkage,
+snow depth, water, rolling resistance or surface-specific friction. Existing
+friction, mechanism, spring, motor and masses are preserved. Severe inputs can
+reach travel/clearance/penetration limits; those stops remain visible outcomes.
+
+An optional strict `kinefold/terrain-v1` block in project-v3 freezes source revision,
+profile ID, severity, representation, period, obstacle height and RMS. It travels
+with independent input presets, captured comparisons, exports and viewer requests.
+**Save current input as preset** uses the existing app-folder preset library.
+Jump/landing retain this block but use their stationary flat floor; the prescribed
+wheel-height benchmark also leaves it unused. **Use original square input** removes
+the periodic block and retains the square dimensions and current timing.
+
+The existing app-root Start/Stop launchers retain `127.0.0.1:4191`; no additional
+server, dependency or source-app runtime is needed. Actual checks and remaining
+limitations are recorded in [context](context/README.md).

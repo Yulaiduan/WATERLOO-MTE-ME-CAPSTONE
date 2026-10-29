@@ -33,6 +33,7 @@ globalThis.KinefoldContactUI = (() => {
     if (project.contactConfig) value.contactConfig = project.contactConfig;
     if (project.caseConfig) value.caseConfig = project.caseConfig;
     if (project.motorConfig) value.motorConfig = project.motorConfig;
+    if (project.terrainConfig) value.terrainConfig = project.terrainConfig;
     return value;
   }
   async function demo() {
@@ -58,7 +59,7 @@ globalThis.KinefoldContactUI = (() => {
   function mount(id, root) {
     const panel = document.createElement('section');
     panel.className = 'contact-mode-panel'; panel.dataset.contactPanel = id;
-    panel.innerHTML = `<div class="contact-mode-heading"><div><span class="eyebrow">INTERACTION MODEL</span><h3>Terrain contact or prescribed-height bench</h3></div><button data-contact-demo>Save & open contact demo</button></div><div class="contact-controls"><label>Mode<select data-contact-mode><option value="prescribed-height">Prescribed wheel-height bench</option><option value="terrain-contact">Actual wheel / square-terrain contact</option></select></label><label>Effective friction μ<input data-contact-friction type="number" min="0" max="2" step=".05"></label><span>Restitution 0 · freely backdrivable drive</span></div><div data-contact-description></div>`;
+    panel.innerHTML = `<div class="contact-mode-heading"><div><span class="eyebrow">INTERACTION MODEL</span><h3>Terrain contact or prescribed-height bench</h3></div><button data-contact-demo>Save & open contact demo</button></div><div class="contact-controls"><label>Mode<select data-contact-mode><option value="prescribed-height">Prescribed wheel-height bench</option><option value="terrain-contact">Actual wheel / terrain contact</option></select></label><label>Effective friction μ<input data-contact-friction type="number" min="0" max="2" step=".05"></label><span>Restitution 0 · freely backdrivable drive</span></div><div data-contact-description></div>`;
     root.querySelector('.quarter-scope').before(panel);
     {
       panel.querySelector('[data-contact-demo]').onclick = demo;

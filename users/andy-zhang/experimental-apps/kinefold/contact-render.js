@@ -60,6 +60,7 @@ globalThis.KinefoldContactDrawing = (() => {
     for(let x=Math.ceil(b.minX/100)*100;x<=b.maxX;x+=100)html+=line([[x,0,b.minZ],[x,0,b.maxZ]],'var(--line)');
     for(let z=Math.ceil(b.minZ/100)*100;z<=b.maxZ;z+=100)html+=line([[b.minX,0,z],[b.maxX,0,z]],'var(--line)');
     const polygons=frame.terrainPolygonsMm || result.terrain.polygonsMm.map(poly=>poly.map(v=>v.map((n,i)=>n+(frame.terrainOffsetMm?.[i]||0))));
+    if(result.terrain.contourMm){const top=result.terrain.contourMm.map(v=>v.map((n,i)=>n+(frame.terrainOffsetMm?.[i]||0)));html+=line(top,'var(--sage)',2.5);}
     for(const polygon of polygons)html+=`<polygon points="${polygon.map(v=>P(v).join(',')).join(' ')}" fill="var(--sage-soft)" stroke="var(--sage)" stroke-width="2"/>`;
     const base=result.terrain.baseSegmentMm.map(v=>v.map((n,i)=>n+(frame.terrainOffsetMm?.[i]||0)));
     html+=line(base,'var(--sage)',2)+line([frame.A,frame.B],'var(--sage)',11)+line([frame.B,frame.C],'var(--blue)',9)+circle(frame.C,p.rw,'var(--ink)',2);

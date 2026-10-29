@@ -16,6 +16,7 @@ import sys
 from torque_targets import TargetObservation
 from contact_cases import check_motor_step
 from dynamic_model import Model, R, mul, validate, finite
+from terrain_profiles import circle_contacts
 
 
 from contact_cases import (ContactGeometry, validate_contact_request, resolve_case, initial_conditions, terrain_spec,
@@ -73,7 +74,13 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     space.add(wheel_shape)
     height=spec['height'];boxes=spec['boxes'];base=spec['base'];shapes=[]
     for vertices in boxes:shapes.append(pymunk.Poly(ground,vertices,radius=0))
-    shapes.append(pymunk.Segment(ground,*base,0))
+    if 'segments' in spec:
+        chain=spec['contour']
+        for i,(a,b) in enumerate(spec['segments']):
+            shape=pymunk.Segment(ground,a,b,0)
+            shape.set_neighbors(chain[max(0,i-1)],chain[min(len(chain)-1,i+2)])
+            shapes.append(shape)
+    else:shapes.append(pymunk.Segment(ground,*base,0))
     for shape in shapes:
         shape.friction=1;shape.elasticity=0;shape.collision_type=2
         shape.filter=pymunk.ShapeFilter(categories=2,mask=1)
@@ -115,6 +122,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
             ee.update(rotorKineticJ=.5*m.motor.reflected_inertia*rotor.omega**2,legacyJointRotorKineticJ=.5*c['hipRotorInertiaKgM2']*rotor.omega**2,coggingPotentialJ=m.motor.motor_state(rotor.angle,rotor.omega,0)['coggingPotentialJ'])
         return ee
     def separation():
+        if 'segments' in spec:return min(g[0] for g in circle_contacts(spec,t,wheel.position.x,wheel.position.y,radius))*1000
         # Signed closest distance to the exact union of base and raised boxes.
         pos=wheel.position;offset=ground.position.x
         distance=pos.y
@@ -215,6 +223,10 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
             rotor_free=rotor.omega+(m.spring(q)['torque']+control['motorTorqueNm']+control['jointPassiveNm']-c['dampingNms']*qd)/m.Jref*step
             free_ke=.5*p['m1']*chassis_free.length_squared+.5*p['m6']*wheel_free.length_squared+.5*wheel.moment*omega_free**2+.5*m.Jref*rotor_free**2
         space.step(step);t+=step;steps+=1
+        # Snap accumulated clock roundoff at output boundaries. An epsilon
+        # remainder must not become another warm-started contact impulse step.
+        if abs(t-c['duration'])<1e-10:t=c['duration']
+        elif abs(t-next_sample)<1e-10:t=next_sample
         if rotor is not None:
             rotor.check()
             max_rotor_position=max(max_rotor_position,abs(rotor.position_residual))
@@ -318,7 +330,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
                 snapshot=dict(params=p,solverConfig=c,contactConfig=cc),designHash=model_identity(m,cc,case),rows=rows,frames=frames,events=events,
                 diagnostics=diagnostics,terrain=terrain,
                 scope=dict(mode='terrain-contact',quarterModel=True,fixture='floating-chassis',coordinates='+x left / +z up / mm',
-                           chassis='real m1 body, vertical only, fixed horizontal position/pitch',input='moving sharp terrain' if case['kind']=='terrain-stability' else 'stationary flat floor; actual unilateral wheel contact'),
+                           chassis='real m1 body, vertical only, fixed horizontal position/pitch',input=('moving periodic segmented terrain' if m.terrain_config else 'moving sharp terrain') if case['kind']=='terrain-stability' else 'stationary flat floor; actual unilateral wheel contact'),
                 warnings=['Experimental two-body quarter model; no tire compliance, rigid chassis collision shape, link mass or hardware validation; entered underside point-clearance stops are assessed.',
                           'Wheel spin is free; ideal backdriven belts reconstruct indices without added inertia or motor lock.',
                           'Gravity acts once on each actual massive body. No prescribed wheel height or forced gap following.',
@@ -332,6 +344,10 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         diagnostics['coupledConstraintKineticLossMeaning']='Signed free-to-solved total kinetic change including native bias and smooth-force splitting; not a physical dissipation measurement.'
         diagnostics.update(coupledConstraintKineticLossJ=coupled_loss,contactDissipationJ=None,stopDissipationJ=None,energyBalanceResidualJ=rows[-1]['energyBalanceResidualJ'])
     diagnostics['stopDissipationMeaning']='Constraint impulse work from free to solved velocities; includes solver bias work, requires timestep refinement.' if rotor is None else 'Stop/contact partition unavailable with coupled rotor; signed coupledConstraintKineticLossJ includes native constraint bias and force-kick splitting work and requires refinement.'
+    if 'terrainConfig' in payload:
+        result['terrainConfig']=m.terrain_config
+        result['snapshot']['terrainConfig']=m.terrain_config
+        if case['kind']=='terrain-stability':result['warnings'].append('Source terrain is a synthesized design envelope represented by a rigid periodic 2D profile. Grade, cross-slope, corridor, soil/snow/water behavior and surface-specific friction are not simulated.')
     if 'caseConfig' in payload:result['snapshot']['caseConfig']=case
     if 'motorConfig' in payload:
         result['snapshot']['motorConfig']=m.motor.config

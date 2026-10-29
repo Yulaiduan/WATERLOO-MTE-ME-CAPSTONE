@@ -1048,3 +1048,55 @@ SHA256 efc400c3fd5e3112cfce92ecddb25ac81b0683a7b55f1633306d6211ec01eb7f.
 Canonical robot/hardware physics is NOT APPLICABLE to this isolated experimental
 workspace. Use app-root Start Kinefold.cmd after shutdown, Stop Kinefold.cmd
 to close it; http://127.0.0.1:4191/?tab=analytical retains the original server.
+
+## 2026-10-29 — sheet-derived periodic terrain profiles
+
+Based on main `e83271d`. Owner requested short periodic terrain representations
+from Terrain Data Table, Terrain Estimates `A4:X20`; sheet read-only, retrieved
+2026-10-29. A GPT-6.1 Sol worker implemented the isolated feature; parent reviewed
+source extraction, geometry, integration and actual API behavior. All 16 source
+archetypes retain synthesized status/confidence and typical/difficult/extreme
+estimates in the offline catalog. Snow's misaligned RMS/spacing/corridor stay
+unresolved; an explicit period is required, and snow RMS mode is blocked.
+
+Both dynamic tabs have source/severity/representation/repeat controls, Plotly
+preview, explicit Apply, short preview, square restoration and existing input
+preset saving. One optional strict terrain-v1 block flows through project-v3,
+disk/input presets, immutable comparison identities, exports and viewer dispatch.
+Both actual engines collide with the same 96-segment periodic top contour;
+native/browser playback uses returned geometry plus the actual moving transform.
+Obstacle peak and continuous mean-removed RMS are separate representations.
+Extreme spacing reuses difficult spacing explicitly; roughness wavelength reuse
+is an assumption. Short preview sets period/6 speed and6.5s duration with0.5s
+delay; rim lead can prevent a full cycle passing the wheel. Physical mechanism,
+spring, motor and friction are preserved. Flat average grade and rigid2D contact
+do not reproduce grade/cross-slope/corridor or soil/snow/water behavior.
+
+Parent verification passes12,802 independent source/geometry assertions across
+93 configurations,34 terrain DOM assertions/29 Plotly mounts,7 Python terrain
+groups,33 project groups,55 preset assertions and rerun9 contact-case/8 contact
+groups. Worker separately passed91 mirrored contours,48 preset UI/712 energy UI/
+3770 dynamic Plotly/48 comparison/666 contact-drawing assertions,17 disk-profile/
+9 disk-preset groups and actual Tk contour/playback smoke. Three worker surfaces
+(gravel obstacle/RMS,300mm talus) completed6.5s in each engine. These are selected
+numerical fixtures, not validated traversability of all archetypes or hardware.
+
+Parent HTTP review caught missing static-asset allowlist entries and corrected
+them. A20Hz final-output remainder also exposed a false36GN warm-start impulse
+spike; both contact clocks now snap only output-boundary roundoff within1e-10s,
+with a6.5s flat-support regression. No force/velocity/penetration clamp was added.
+Fresh actual API gravel runs after repair complete131 rows through6.5s at
+dt0.0005s: analytical13.37s wall/Pymunk1.51s, penetration0.008381/0.016758mm,
+responses1.13/1.37MB, matching captured design hashes. Seven served browser assets
+match disk exactly. Read-only probes leave the current library byte-identical at
+SHA256 b681d0f2f86f1d487a3700dd9efd8696215ced3ed276b5594a454b61ff13d458;
+no named designs or preset library are written by validation.
+
+Two scientific Plotly PNGs (16-surface overview and actual engine comparison)
+and their data ZIP live in ignored exports and are visually verified. They are
+not UI screenshots. Browser review was interrupted/unavailable; the user then
+explicitly disallowed computer-use, so final live layout/pointer/console review
+remains unverified. Actual app-local Start/Stop/restart/reuse is checked at4191;
+use the existing Start Kinefold.cmd after shutdown. Canonical physics is NOT
+APPLICABLE to this isolated experimental workspace. Publication uses normal
+workspace/log checks and hooks; no shared model, dependency or rule changes.

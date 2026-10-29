@@ -1,0 +1,653 @@
+{
+  "schema": "kinefold/terrain-catalog-v1",
+  "revision": "2026-10-29",
+  "source": {
+    "title": "Terrain Data Table / Terrain Estimates",
+    "url": "https://docs.google.com/spreadsheets/d/129-3mE__DX2Nzua44cZMdNvjQa4hlLUuPyqEzx5_DCU/edit?gid=101#gid=101",
+    "retrievedAt": "2026-10-29",
+    "range": "'Terrain Estimates'!A4:X20",
+    "evidence": "Synthesized engineering estimates; not biome-wide measured averages."
+  },
+  "profiles": [
+    {
+      "id": "talus-boulder-field",
+      "name": "Talus / boulder field",
+      "sourceRow": 5,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 300.0,
+        "difficult": 500.0,
+        "extreme": 600.0
+      },
+      "gradePercent": {
+        "typical": 20.0,
+        "difficult": 30.0,
+        "extreme": 40.0
+      },
+      "crossSlopePercent": {
+        "typical": 20.0,
+        "difficult": 25.0,
+        "extreme": 30.0
+      },
+      "rmsMm": {
+        "typical": 100.0,
+        "difficult": 200.0,
+        "extreme": 250.0
+      },
+      "obstacleSpacingM": {
+        "typical": 1.0,
+        "difficult": 0.5,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.5,
+        "difficult": 0.8
+      },
+      "surfaceClass": "Hard / loose rock",
+      "environmentNotes": "Low soft-ground relevance",
+      "notes": "Natural boulder prevalence is not standardized; values are design estimates",
+      "sourceWarning": ""
+    },
+    {
+      "id": "alpine-scree-trail",
+      "name": "Alpine / scree trail",
+      "sourceRow": 6,
+      "evidence": "Synthesized estimate",
+      "confidence": "Low–Medium",
+      "obstacleMm": {
+        "typical": 150.0,
+        "difficult": 300.0,
+        "extreme": 400.0
+      },
+      "gradePercent": {
+        "typical": 20.0,
+        "difficult": 30.0,
+        "extreme": 50.0
+      },
+      "crossSlopePercent": {
+        "typical": 15.0,
+        "difficult": 20.0,
+        "extreme": 30.0
+      },
+      "rmsMm": {
+        "typical": 80.0,
+        "difficult": 120.0,
+        "extreme": 150.0
+      },
+      "obstacleSpacingM": {
+        "typical": 2.0,
+        "difficult": 0.8,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.2,
+        "difficult": 0.5
+      },
+      "surfaceClass": "Loose / rock",
+      "environmentNotes": "Snow possible",
+      "notes": "Regional variation is huge; intentionally challenging design envelope",
+      "sourceWarning": ""
+    },
+    {
+      "id": "urban-rubble-collapsed-hard-terrain",
+      "name": "Urban rubble / collapsed hard terrain",
+      "sourceRow": 7,
+      "evidence": "Synthesized estimate",
+      "confidence": "Low–Medium",
+      "obstacleMm": {
+        "typical": 100.0,
+        "difficult": 300.0,
+        "extreme": 500.0
+      },
+      "gradePercent": {
+        "typical": 10.0,
+        "difficult": 20.0,
+        "extreme": 30.0
+      },
+      "crossSlopePercent": {
+        "typical": 10.0,
+        "difficult": 15.0,
+        "extreme": 20.0
+      },
+      "rmsMm": {
+        "typical": 50.0,
+        "difficult": 120.0,
+        "extreme": 200.0
+      },
+      "obstacleSpacingM": {
+        "typical": 2.0,
+        "difficult": 0.5,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 0.8,
+        "difficult": 0.5
+      },
+      "surfaceClass": "Hard / mixed",
+      "environmentNotes": "Dust/debris",
+      "notes": "Highly site-specific; repeatable test envelope rather than environmental average",
+      "sourceWarning": ""
+    },
+    {
+      "id": "primitive-atv-backcountry-trail",
+      "name": "Primitive ATV / backcountry trail",
+      "sourceRow": 8,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium–High",
+      "obstacleMm": {
+        "typical": 150.0,
+        "difficult": 250.0,
+        "extreme": 300.0
+      },
+      "gradePercent": {
+        "typical": 15.0,
+        "difficult": 25.0,
+        "extreme": 35.0
+      },
+      "crossSlopePercent": {
+        "typical": 10.0,
+        "difficult": 15.0,
+        "extreme": 20.0
+      },
+      "rmsMm": {
+        "typical": 60.0,
+        "difficult": 90.0,
+        "extreme": 120.0
+      },
+      "obstacleSpacingM": {
+        "typical": 3.0,
+        "difficult": 1.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.2,
+        "difficult": 0.8
+      },
+      "surfaceClass": "Mixed / loose",
+      "environmentNotes": "Soft/unstable sections possible",
+      "notes": "Extreme obstacle/grade intentionally aligns to USFS Class 2: 305 mm / 35% short pitch",
+      "sourceWarning": ""
+    },
+    {
+      "id": "canadian-boreal-shield",
+      "name": "Canadian boreal / Shield",
+      "sourceRow": 9,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 150.0,
+        "difficult": 250.0,
+        "extreme": 350.0
+      },
+      "gradePercent": {
+        "typical": 15.0,
+        "difficult": 25.0,
+        "extreme": 30.0
+      },
+      "crossSlopePercent": {
+        "typical": 10.0,
+        "difficult": 15.0,
+        "extreme": 20.0
+      },
+      "rmsMm": {
+        "typical": 50.0,
+        "difficult": 90.0,
+        "extreme": 120.0
+      },
+      "obstacleSpacingM": {
+        "typical": 2.0,
+        "difficult": 1.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.2,
+        "difficult": 0.8
+      },
+      "surfaceClass": "Hard / mixed / soft",
+      "environmentNotes": "Wetlands/peat; seasonal snow",
+      "notes": "Obstacle/RMS values are estimates; NRCan supplies environmental context only",
+      "sourceWarning": ""
+    },
+    {
+      "id": "rough-forest-trail",
+      "name": "Rough forest trail",
+      "sourceRow": 10,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 100.0,
+        "difficult": 200.0,
+        "extreme": 250.0
+      },
+      "gradePercent": {
+        "typical": 15.0,
+        "difficult": 20.0,
+        "extreme": 30.0
+      },
+      "crossSlopePercent": {
+        "typical": 10.0,
+        "difficult": 15.0,
+        "extreme": 20.0
+      },
+      "rmsMm": {
+        "typical": 50.0,
+        "difficult": 80.0,
+        "extreme": 100.0
+      },
+      "obstacleSpacingM": {
+        "typical": 3.0,
+        "difficult": 1.5,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.2,
+        "difficult": 1.0
+      },
+      "surfaceClass": "Mixed",
+      "environmentNotes": "Mud possible",
+      "notes": "Bridge category between maintained and primitive trails; not a published terrain class",
+      "sourceWarning": ""
+    },
+    {
+      "id": "temperate-mountain-forest",
+      "name": "Temperate mountain forest",
+      "sourceRow": 11,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 100.0,
+        "difficult": 200.0,
+        "extreme": 300.0
+      },
+      "gradePercent": {
+        "typical": 15.0,
+        "difficult": 25.0,
+        "extreme": 35.0
+      },
+      "crossSlopePercent": {
+        "typical": 10.0,
+        "difficult": 15.0,
+        "extreme": 20.0
+      },
+      "rmsMm": {
+        "typical": 40.0,
+        "difficult": 80.0,
+        "extreme": 100.0
+      },
+      "obstacleSpacingM": {
+        "typical": 3.0,
+        "difficult": 1.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.2,
+        "difficult": 0.7
+      },
+      "surfaceClass": "Mixed",
+      "environmentNotes": "Seasonal mud / snow",
+      "notes": "Roots/rocks/confinement dominate; values are engineering synthesis",
+      "sourceWarning": ""
+    },
+    {
+      "id": "amazon-wet-forest",
+      "name": "Amazon wet forest",
+      "sourceRow": 12,
+      "evidence": "Synthesized estimate",
+      "confidence": "Low–Medium",
+      "obstacleMm": {
+        "typical": 100.0,
+        "difficult": 200.0,
+        "extreme": 300.0
+      },
+      "gradePercent": {
+        "typical": 10.0,
+        "difficult": 20.0,
+        "extreme": 30.0
+      },
+      "crossSlopePercent": {
+        "typical": 10.0,
+        "difficult": 15.0,
+        "extreme": 20.0
+      },
+      "rmsMm": {
+        "typical": 50.0,
+        "difficult": 80.0,
+        "extreme": 100.0
+      },
+      "obstacleSpacingM": {
+        "typical": 2.0,
+        "difficult": 1.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.0,
+        "difficult": 0.6
+      },
+      "surfaceClass": "Soft / mixed",
+      "environmentNotes": "Seasonal flooding; wet soil",
+      "notes": "No universal Amazon obstacle-height/RMS dataset used",
+      "sourceWarning": ""
+    },
+    {
+      "id": "arctic-tundra",
+      "name": "Arctic tundra",
+      "sourceRow": 13,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 100.0,
+        "difficult": 200.0,
+        "extreme": 300.0
+      },
+      "gradePercent": {
+        "typical": 5.0,
+        "difficult": 10.0,
+        "extreme": 20.0
+      },
+      "crossSlopePercent": {
+        "typical": 5.0,
+        "difficult": 10.0,
+        "extreme": 15.0
+      },
+      "rmsMm": {
+        "typical": 30.0,
+        "difficult": 60.0,
+        "extreme": 100.0
+      },
+      "obstacleSpacingM": {
+        "typical": 3.0,
+        "difficult": 1.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 3.0,
+        "difficult": 2.0
+      },
+      "surfaceClass": "Soft / mixed",
+      "environmentNotes": "20–60 cm active layer published; seasonal snow/water",
+      "notes": "Hummock/RMS values are estimates; thaw-depth context is published",
+      "sourceWarning": ""
+    },
+    {
+      "id": "maintained-natural-trail",
+      "name": "Maintained natural trail",
+      "sourceRow": 14,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium–High",
+      "obstacleMm": {
+        "typical": 75.0,
+        "difficult": 150.0,
+        "extreme": 200.0
+      },
+      "gradePercent": {
+        "typical": 10.0,
+        "difficult": 15.0,
+        "extreme": 25.0
+      },
+      "crossSlopePercent": {
+        "typical": 5.0,
+        "difficult": 10.0,
+        "extreme": 15.0
+      },
+      "rmsMm": {
+        "typical": 30.0,
+        "difficult": 60.0,
+        "extreme": 80.0
+      },
+      "obstacleSpacingM": {
+        "typical": 5.0,
+        "difficult": 2.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 1.5,
+        "difficult": 1.2
+      },
+      "surfaceClass": "Mixed",
+      "environmentNotes": "Occasional mud / loose soil",
+      "notes": "150–200 mm interpretation is synthesis; USFS Class 3 max obstacle is 152 mm",
+      "sourceWarning": ""
+    },
+    {
+      "id": "muskeg-wetland",
+      "name": "Muskeg / wetland",
+      "sourceRow": 15,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 50.0,
+        "difficult": 150.0,
+        "extreme": 300.0
+      },
+      "gradePercent": {
+        "typical": 3.0,
+        "difficult": 5.0,
+        "extreme": 10.0
+      },
+      "crossSlopePercent": {
+        "typical": 3.0,
+        "difficult": 5.0,
+        "extreme": 10.0
+      },
+      "rmsMm": {
+        "typical": 20.0,
+        "difficult": 40.0,
+        "extreme": 60.0
+      },
+      "obstacleSpacingM": {
+        "typical": 5.0,
+        "difficult": 2.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 3.0,
+        "difficult": 2.0
+      },
+      "surfaceClass": "Soft",
+      "environmentNotes": "Standing water ~50–500+ mm; organic layer can be deep",
+      "notes": "Geometry can appear easy while bearing capacity is the main limiter",
+      "sourceWarning": ""
+    },
+    {
+      "id": "grassland-savanna-open-field",
+      "name": "Grassland / savanna / open field",
+      "sourceRow": 16,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 50.0,
+        "difficult": 100.0,
+        "extreme": 200.0
+      },
+      "gradePercent": {
+        "typical": 5.0,
+        "difficult": 10.0,
+        "extreme": 20.0
+      },
+      "crossSlopePercent": {
+        "typical": 5.0,
+        "difficult": 10.0,
+        "extreme": 15.0
+      },
+      "rmsMm": {
+        "typical": 20.0,
+        "difficult": 50.0,
+        "extreme": 80.0
+      },
+      "obstacleSpacingM": {
+        "typical": 10.0,
+        "difficult": 3.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 3.0,
+        "difficult": 2.0
+      },
+      "surfaceClass": "Mixed",
+      "environmentNotes": "Seasonal soft/wet soil",
+      "notes": "Hidden holes/rocks may dominate autonomy more than gross terrain geometry",
+      "sourceWarning": ""
+    },
+    {
+      "id": "gravel-service-fire-road",
+      "name": "Gravel / service / fire road",
+      "sourceRow": 17,
+      "evidence": "Synthesized estimate",
+      "confidence": "High",
+      "obstacleMm": {
+        "typical": 25.0,
+        "difficult": 50.0,
+        "extreme": 75.0
+      },
+      "gradePercent": {
+        "typical": 8.0,
+        "difficult": 12.0,
+        "extreme": 15.0
+      },
+      "crossSlopePercent": {
+        "typical": 5.0,
+        "difficult": 8.0,
+        "extreme": 10.0
+      },
+      "rmsMm": {
+        "typical": 15.0,
+        "difficult": 25.0,
+        "extreme": 30.0
+      },
+      "obstacleSpacingM": {
+        "typical": 10.0,
+        "difficult": 5.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 3.0,
+        "difficult": 2.0
+      },
+      "surfaceClass": "Hard / loose",
+      "environmentNotes": "Can rut when wet",
+      "notes": "RMS anchored to NATO secondary-road band; obstacle envelope synthesized",
+      "sourceWarning": ""
+    },
+    {
+      "id": "sand-dune-field",
+      "name": "Sand / dune field",
+      "sourceRow": 18,
+      "evidence": "Synthesized estimate",
+      "confidence": "Medium",
+      "obstacleMm": {
+        "typical": 25.0,
+        "difficult": 50.0,
+        "extreme": 100.0
+      },
+      "gradePercent": {
+        "typical": 18.0,
+        "difficult": 36.0,
+        "extreme": 67.0
+      },
+      "crossSlopePercent": {
+        "typical": 10.0,
+        "difficult": 20.0,
+        "extreme": 30.0
+      },
+      "rmsMm": {
+        "typical": 10.0,
+        "difficult": 30.0,
+        "extreme": 50.0
+      },
+      "obstacleSpacingM": {
+        "typical": 10.0,
+        "difficult": 5.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 5.0,
+        "difficult": 3.0
+      },
+      "surfaceClass": "Loose / soft",
+      "environmentNotes": "Sinkage/slip dominate",
+      "notes": "67% ≈ tan(34°), based on dry-sand angle of repose; not a normal route target",
+      "sourceWarning": ""
+    },
+    {
+      "id": "improved-paved-road",
+      "name": "Improved paved road",
+      "sourceRow": 19,
+      "evidence": "Synthesized estimate",
+      "confidence": "High",
+      "obstacleMm": {
+        "typical": 10.0,
+        "difficult": 25.0,
+        "extreme": 50.0
+      },
+      "gradePercent": {
+        "typical": 5.0,
+        "difficult": 7.0,
+        "extreme": 10.0
+      },
+      "crossSlopePercent": {
+        "typical": 3.0,
+        "difficult": 5.0,
+        "extreme": 8.0
+      },
+      "rmsMm": {
+        "typical": 5.0,
+        "difficult": 8.0,
+        "extreme": 10.0
+      },
+      "obstacleSpacingM": {
+        "typical": 50.0,
+        "difficult": 20.0,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": 3.0,
+        "difficult": 2.7
+      },
+      "surfaceClass": "Hard",
+      "environmentNotes": "Low relevance",
+      "notes": "RMS anchored to published road classes; obstacle heights are design-envelope estimates",
+      "sourceWarning": ""
+    },
+    {
+      "id": "snow-covered-terrain",
+      "name": "Snow-covered terrain",
+      "sourceRow": 20,
+      "evidence": "Synthesized soft-ground class",
+      "confidence": "Low–Medium",
+      "obstacleMm": {
+        "typical": 50.0,
+        "difficult": 100.0,
+        "extreme": 200.0
+      },
+      "gradePercent": {
+        "typical": 5.0,
+        "difficult": 10.0,
+        "extreme": 20.0
+      },
+      "crossSlopePercent": {
+        "typical": 5.0,
+        "difficult": 10.0,
+        "extreme": 20.0
+      },
+      "rmsMm": {
+        "typical": null,
+        "difficult": null,
+        "extreme": null
+      },
+      "obstacleSpacingM": {
+        "typical": null,
+        "difficult": null,
+        "extreme": null
+      },
+      "corridorM": {
+        "typical": null,
+        "difficult": null
+      },
+      "surfaceClass": "Soft",
+      "environmentNotes": "Snow depth is intentionally not fixed because regional/seasonal spread is enormous.",
+      "notes": "Snow depth is intentionally not fixed because regional/seasonal spread is enormous.",
+      "sourceWarning": "Row20 M:X is misaligned. RMS, spacing and corridor are unresolved; enter period explicitly. No snow depth is inferred."
+    }
+  ]
+}

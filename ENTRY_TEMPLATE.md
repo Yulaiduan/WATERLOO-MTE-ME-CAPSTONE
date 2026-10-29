@@ -4939,3 +4939,66 @@ Refresh either dynamic route and rerun the captured mechanism; the app-root Star
 Read the app context and contact-work definitions before extending models, retain speculative-impulse and bottom-out distinctions, and use the new actual-engine work tests plus scoped publication checks.
 
 ---
+
+## Entry: 2026-10-29 — Andy Zhang — Periodic terrain profiles from the estimates sheet
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated experimental terrain/contact workspace.
+- **Associated Issue/Task:** Owner requested the sheet's terrain surfaces as short periodic input profiles. Started from fetched main e83271d; source Terrain Data Table / Terrain Estimates A4:X20 retrieved read-only2026-10-29. GPT-6.1 Sol development worker; parent architecture/review/integration. No source-sheet edits.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preset_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/preset-flow.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-workbench.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/terrain_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-catalog.json`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-profiles.css`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-profiles.js`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify_terrain_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify-terrain-profiles.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/viewer_service.py`
+
+- **API/Interface Changes:** Additive optional strict kinefold/terrain-v1 in project-v3, input presets/composition, actual-contact API and comparison/viewer snapshots. Offline16-archetype source catalog; 96-segment mirrored JS/Python obstacle/RMS surfaces with exact piecewise-linear RMS. Both independent engines and native/browser playback share the moving contour. Native source/preview/explicit Apply/6s-per-repeat controls in both dynamic tabs; source grade/cross-slope/corridor/soft-ground context remains unmodeled. Snow unresolved fields are blocked; difficult spacing reuse for extreme and wavelength assumptions disclosed. Old square defaults and jump/landing flat floor retained. Static asset allowlist fixed during actual HTTP review. Both contact clocks canonicalize output-boundary roundoff within1e-10s to prevent an epsilon final warm-start force spike, without changing physical force/velocity/penetration guards. No shared interface, canonical asset, dependency, source app or agent-rule changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Parent PASS12,802 independent source/contour assertions across93 configurations,34 terrain DOM assertions/29 BASIC Plotly mounts,7 Python terrain groups (including6.5s/20Hz flat-support final-force regression),33 project/55 preset assertions and rerun9 contact-case/8 contact groups. Worker PASS91 JS/Python contours,48 preset UI/712 energy UI/3770 dynamic Plotly/48 comparison/666 contact-drawing assertions;17 disk-profile/9 disk-preset groups; actual Tk periodic contour/play/pause/scrub/replay/close. Existing viewer suite9pass/5GUI-skipped remains distinct. Three representative worker surfaces run6.5s/100Hz/dt0.0005 in each engine, duration termination, <=0.082mm penetration and3.92–4.38MB output. Parent fresh HTTP same-capture gravel pair after clock repair completes131rows/6.5s/dt0.0005/20Hz; analytical13.37s wall/Pymunk1.51s, penetration0.008381/0.016758mm, responses1.13/1.37MB;7served assets exact. Initial404 allowlist omission and false final36GN spike corrected before passing. Initial native geometry oracle lacked cache_bb; test fixture corrected without guard/tolerance weakening. Read-only HTTP probes preserve current library SHA256 b681d0f2f86f1d487a3700dd9efd8696215ced3ed276b5594a454b61ff13d458; presets.json absent and untouched. Two Plotly PNGs/data ZIP visually/integrity checked in ignored app exports. Actual app-local Start/Stop/restart/reuse from unrelated cwd checked4191; syntax/compile/whitespace/relative links plus fetched-base/staged/require-passed/workspace publication checks run before push. Browser API/native review was interrupted; user disallowed further computer-use, so live layout/pointer/console review remains UNVERIFIED. No all-terrain traversability, deformable-soil or hardware claim.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Whitespace checks flagged a CRLF final separator in this newly appended entry and CRLF endings in newly staged terrain files; only those additions were normalized to LF, and the staged whitespace check then passed. Earlier entries are retained intact; source values and equations are unchanged.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app contribution. The terrain sheet contains synthesized estimates; source geometry and selected numerical fixtures do not certify real terrain or hardware performance.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now offers all16 sheet-derived terrain archetypes with independent obstacle/RMS periodic representations, immutable saved input configurations and matching contact geometry in both engines.
+Open either dynamic tab, select Terrain stability and explicitly apply a surface; the existing app-root Start/Stop Kinefold.cmd launchers retain4191 and local libraries remain independent of source Git pulls.
+Read the app README/context and offline source metadata before extending terrain fidelity, preserve unresolved snow fields and source/model distinctions, and rerun focused geometry/contact/API checks plus normal workspace publication gates.
+
+---

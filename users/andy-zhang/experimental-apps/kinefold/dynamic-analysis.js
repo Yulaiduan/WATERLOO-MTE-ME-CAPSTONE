@@ -95,7 +95,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}';
     return JSON.stringify(value);
   }
-  function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null}); }
+  function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null,terrain:snapshot.terrainConfig||null}); }
   function integralRow(result,row) {
     const since=row.sinceContact, impact=result.events?.find(e=>e.type==='first-contact')?.state;
     const fields={};
@@ -158,6 +158,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
 
     if (a && b && (a.engine !== 'analytical' || b.engine !== 'pymunk')) return {valid:false,reason:'Choose one analytical run and one Pymunk run.'};
     if (!a || !b) return {valid: false, reason: 'Run both engines on the same captured mechanism and input profile.'};
+    if(stable(a.terrainConfig||null)!==stable(b.terrainConfig||null))return {valid:false,reason:'Periodic terrain profiles differ. Run both from the same captured design.'};
     if(stable(a.motorConfig||null)!==stable(b.motorConfig||null))return {valid:false,reason:'Motor/gear profiles differ. Run both from the same captured design.'};
     if (a.scope?.mode !== b.scope?.mode || stable(a.contactConfig||null)!==stable(b.contactConfig||null) || stable(a.caseConfig||null)!==stable(b.caseConfig||null)) return {valid:false,reason:'Interaction, material or case profiles differ. Run both on the same captured snapshot.'};
     const fields=a.scope?.mode==='terrain-contact'?contactComparisonFields:comparisonFields;

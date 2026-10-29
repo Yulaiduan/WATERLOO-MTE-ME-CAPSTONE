@@ -73,7 +73,7 @@ def _finite(value, depth=0):
 
 
 def _project(value):
-    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig", "caseConfig", "motorConfig", "energyConfig", "torqueTargetConfig"), "project")
+    _shape(value, ("schema", "id", "name", "params", "view", "solverConfig", "createdAt", "updatedAt", "legacySolverConfig", "contactConfig", "caseConfig", "motorConfig", "energyConfig", "torqueTargetConfig", "terrainConfig"), "project")
     if value.get("schema") != "kinefold/project-v3":
         raise StorageError("Only validated project-v3 profiles can be saved.")
     if not isinstance(value.get("id"), str) or not re.fullmatch(r"design-[a-zA-Z0-9-]{1,100}", value["id"]):
@@ -109,6 +109,10 @@ def _project(value):
             datetime.fromisoformat(value[key].replace("Z", "+00:00"))
         except ValueError as error:
             raise StorageError(f"Invalid {key}.") from error
+    if "terrainConfig" in value:
+        from terrain_profiles import validate_terrain
+        try: validate_terrain(value["terrainConfig"])
+        except (ValueError, TypeError) as error: raise StorageError(str(error)) from error
     if "contactConfig" in value:
         contact = value["contactConfig"]
         _shape(contact, ("mode", "friction", "restitution", "drive"), "contact configuration")

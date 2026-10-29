@@ -42,11 +42,11 @@ def is_contact(result):
 
 def simulate_snapshot(snapshot):
     """Dispatch the captured payload to its fixed genuine Pymunk backend."""
-    request = {'engine': 'pymunk', 'params': snapshot['params'], 'runConfig': snapshot['runConfig'], **({'motorConfig':snapshot['motorConfig']} if 'motorConfig' in snapshot else {})}
+    request = {'engine': 'pymunk', 'params': snapshot['params'], 'runConfig': snapshot['runConfig'], **({'motorConfig':snapshot['motorConfig']} if 'motorConfig' in snapshot else {}), **({'terrainConfig':snapshot['terrainConfig']} if 'terrainConfig' in snapshot else {})}
     if (snapshot.get('contactConfig') or {}).get('mode') == 'terrain-contact':
         from contact_dynamics import simulate_contact
         return simulate_contact({**request, 'contactConfig': snapshot['contactConfig'], **({'caseConfig':snapshot['caseConfig']} if 'caseConfig' in snapshot else {})})
-    return simulate(request)
+    return simulate({key:value for key,value in request.items() if key != 'terrainConfig'})
 
 
 def contact_mesh(result, frame):
@@ -63,6 +63,8 @@ def contact_mesh(result, frame):
                 for polygon in frame['terrainPolygonsMm']]
     base = [(point[0] + offset[0], point[2] + offset[2])
             for point in result['terrain']['baseSegmentMm']]
+    if result['terrain'].get('contourMm'):
+        base=[(p[0]+offset[0],p[2]+offset[2]) for p in result['terrain']['contourMm']]
     return polygons, base
 
 
@@ -226,7 +228,7 @@ class PlaybackWindow:
         self.contact = is_contact(result)
         if self.contact:
             from contact_dynamics import validate_contact_request
-            self.model = validate_contact_request({key: result[key] for key in ('engine', 'params', 'runConfig', 'contactConfig', 'caseConfig') if key in result})
+            self.model = validate_contact_request({key: result[key] for key in ('engine', 'params', 'runConfig', 'contactConfig', 'caseConfig', 'motorConfig', 'terrainConfig') if key in result})
         else:
             self.model = Model(result['params'], result['runConfig'])
         self.rows, self.frames = result['rows'], result['frames']
@@ -312,6 +314,7 @@ class PlaybackWindow:
             # Inspect returned terrain only. Contact runs have no wheel-height law.
             terrain_z = [point[2] for polygon in self.result['terrain']['polygonsMm'] for point in polygon]
             terrain_z += [point[2] for point in self.result['terrain']['baseSegmentMm']]
+            terrain_z += [point[2] for point in self.result['terrain'].get('contourMm',[])]
             self.bounds = (self.bounds[0], self.bounds[1], min(self.bounds[2], min(terrain_z) - 50),
                            max(self.bounds[3], max(terrain_z) + 50))
             contact_mesh(self.result, self.frames[0])

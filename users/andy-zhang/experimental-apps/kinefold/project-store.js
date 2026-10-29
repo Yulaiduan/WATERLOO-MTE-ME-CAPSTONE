@@ -70,7 +70,7 @@ function validateConfig(v,legacy=false){const defaults=legacy?legacyDefaults:sol
  return out;
 }
 function validate(value){
- keys(value,['schema','id','name','params','view','solverConfig','createdAt','updatedAt','legacySolverConfig','contactConfig','caseConfig','motorConfig','energyConfig','torqueTargetConfig'],'project');if(value.schema!==schema)throw Error('Unsupported project schema.');
+ keys(value,['schema','id','name','params','view','solverConfig','createdAt','updatedAt','legacySolverConfig','contactConfig','caseConfig','motorConfig','energyConfig','torqueTargetConfig','terrainConfig'],'project');if(value.schema!==schema)throw Error('Unsupported project schema.');
  if(typeof value.id!=='string'||!/^design-[a-zA-Z0-9-]{1,100}$/.test(value.id))throw Error('Invalid design identifier.');
  keys(value.params,Object.keys(Kinefold.defaults),'parameter');const params={};
  for(const [k,v]of Object.entries(Kinefold.defaults)){if(!(k in value.params))throw Error('Missing design parameter: '+k);if(typeof value.params[k]!==typeof v)throw Error('Invalid type for '+k);params[k]=value.params[k];}
@@ -79,6 +79,7 @@ function validate(value){
  keys(value.view,Object.keys(viewDefaults),'view');const view={};for(const [k,v]of Object.entries(viewDefaults)){if(!(k in value.view))throw Error('Missing view setting: '+k);if(k==='projection'?!['side','iso'].includes(value.view[k]):typeof value.view[k]!=='boolean')throw Error('Invalid view setting: '+k);view[k]=value.view[k];}
  const now=new Date().toISOString(),out={schema,id:value.id,name:title(value.name),params,view,solverConfig:validateConfig(value.solverConfig),createdAt:value.createdAt||now,updatedAt:value.updatedAt||now};
  for(const k of ['createdAt','updatedAt'])if(typeof out[k]!=='string'||!/^\d{4}-\d\d-\d\dT/.test(out[k])||!Number.isFinite(Date.parse(out[k])))throw Error('Invalid '+k+'.');
+ if('terrainConfig' in value)out.terrainConfig=KinefoldTerrainProfiles.validate(value.terrainConfig);
  if('contactConfig' in value)out.contactConfig=validateContact(value.contactConfig);
  if('caseConfig' in value)out.caseConfig=validateCase(value.caseConfig);
  if('motorConfig' in value)out.motorConfig=validateMotor(value.motorConfig);
@@ -93,7 +94,7 @@ function decode(value){
  if(value?.schema===Kinefold.schema){keys(value,['schema','name','params','view'],'legacy design');keys(value.params,Object.keys(Kinefold.defaults),'legacy parameter');const d=Kinefold.unpack(value),p=baseline();return {project:validate({...p,name:d.name,params:d.params,view:{...viewDefaults,...d.view},solverConfig:{...solverDefaults,inputRiseMm:['m2','m3','m5','m6'].some(k=>d.params[k]>0)?10:0}}),migrated:true,notice:'Legacy mechanism migrated with unchanged geometry and the new vertical-chassis input profile. Review and save the profile.'};}
  return {project:validate(value),migrated:false};
 }
-const content=p=>JSON.stringify([p.name,p.params,p.view,p.solverConfig,p.legacySolverConfig||null,p.contactConfig||null,p.caseConfig||null,p.motorConfig||null,p.energyConfig||null,p.torqueTargetConfig||null]);
+const content=p=>JSON.stringify([p.name,p.params,p.view,p.solverConfig,p.legacySolverConfig||null,p.contactConfig||null,p.caseConfig||null,p.motorConfig||null,p.energyConfig||null,p.torqueTargetConfig||null,p.terrainConfig||null]);
 function createStore(storage){
  let library=[],error='',notice='',libraryBlocked=false,persistedLibraryRaw=null;
  try{const currentRaw=storage.getItem(libraryKey),raw=currentRaw||storage.getItem('kinefold-library-v2');persistedLibraryRaw=currentRaw;if(raw){const data=JSON.parse(raw);keys(data,['schema','designs'],'library');if(!['kinefold/library-v3','kinefold/library-v2'].includes(data.schema)||!Array.isArray(data.designs)||data.designs.length>200)throw Error('Invalid library format.');library=data.designs.map(p=>decode(p).project);if(data.schema==='kinefold/library-v2')notice='Saved designs migrated to vertical-chassis profiles. Original v2 library data remains untouched; prior profiles are retained with each migrated design.';if(new Set(library.map(p=>p.id)).size!==library.length)throw Error('Duplicate design identifiers.');}}
