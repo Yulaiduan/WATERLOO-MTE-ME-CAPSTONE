@@ -98,6 +98,11 @@ manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses
 
 ## Developer checks
 
+The [small worked workflow](workflow-example.md) shows one mechanism, three
+fixed motor/gearbox choices and one terrain in both engines, with saved terrain
+GIFs and a compact summary. `python workflow_example.py --output .preview/my-new-example`
+reproduces the bounded18-run example; only one combination retains raw frames.
+
 The [nonideal motor/heave study](nonideal-study.md) adds explicit gear-input
 inertia, constant Coulomb/cogging and viscous example controls, exact separate
 friction-work traces, and72actual paired finite-link runs across jumping,

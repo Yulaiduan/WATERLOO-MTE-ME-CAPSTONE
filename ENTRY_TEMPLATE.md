@@ -5316,3 +5316,44 @@ Canonical robot physics is NOT APPLICABLE to this isolated member app. Main45kgc
 Read nonideal-study.md andmotor-model.md for the editable assumptions, exactenergyaccounts, numerical limits and72-run outcomes.
 Use nonideal_study.py witha newly generated config andnewapp-local outputfolder forfreshpairedcases; motorfield edits alone donot enablethe capturedactuatorcontroller inordinarydynamicruns.
 Keep cogging insideconstantCoulomb for thisowner-requestedapproximation, preservelegacycaptures/sourceguards andfailedcases, anduseStart Kinefold.cmd at4191 afterrestart.
+
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — Small comparison workflow and saved terrain animations
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member app and reproducible example/media tools.
+- **Associated Issue/Task:** Owner requested saved terrain animations and best motor/gearbox choices for jumping, landing and terrain, then narrowed scope to a simple workflow/example with limited search and saved data. Based on fetched main183f860. Two explicitly authorized GPT-6.1Sol workers owned the bounded example runner and saved-frame media exporter; parent owned architecture, actual runs, source checks, Plotly previews, media audit, Notion, documentation and publication. No Computer skill or GUI automation.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/encode_terrain_animation.py`
+- `users/andy-zhang/experimental-apps/kinefold/export_terrain_animation.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-terrain-animation.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_workflow_example.py`
+- `users/andy-zhang/experimental-apps/kinefold/workflow-example.md`
+- `users/andy-zhang/experimental-apps/kinefold/workflow_example.py`
+
+- **API/Interface Changes:** Add standalone workflow_example.py with three fixed source pair IDs, at most18 executions, exact shared requests, conservative two-engine task ranking, editable tie bands and failure/unknown exclusions. Summary/settings/CSV retain all requests; raw frames remain only for one worked combination's six cases. Add standalone saved-capture SVG/Sharp/Pillow GIF tools with strict pair/clock validation, actual last-left frame selection, fixed common camera, actual terrain offsets and existing spring/transmission geometry. Outputs stay app-local; existing files are refused; private frame caches are automatically removed. New workflow/report links and context. No new UI/server API, dependency installation, catalogue change, existing physics law, live profile write, canonical asset, shared interface or enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS six focused comparison tests and15 animation clock/snapshot/selection assertions; JS/Python syntax, whitespace and33 local documentation links. Exactly18 actual finite-link executions (three candidates ×three cases ×two engines), all numerically resolved under unchanged guards; nine pairs have equal settings except engine, all source hashes match, six worked raw captures match summary requests. Conservative jump heights A/B/C=.443/.786/.898m; A bottoms out from2m, B/C both arrest, C has greater first-arrest clearance. Terrain RMS1.676/1.679/1.698mm is an explicit practical tie within editable.1mm band; all complete the601-sample common window without saturation. None meets2m jump target. Source ratings checked only against four exact manufacturer pages (6384/80100/AB90G10/AEP90G20), no catalogue-wide search. Four exported actual paired GIFs (three previous illustrative terrains plus worked80100AB90G10) each have91 selected frames,1120×970 dimensions,4.5s physical duration/5s encoded playback including labelled.5s reading pause, valid loop/duration/frame count and SHA256; midpoint PNGs and Plotly workflow/results visually inspected. All own temporary frame/input caches removed; no physics rerun during media export. One compact3.13MB archive has CRC/SHA validation,96KB summary, exact settings and only one combination's raw frames. Native Notion attachments/report completed. Actual app-root launcher reuse/stop/start from unrelated cwd passes4191 readiness; profile library unchanged. Fetched-base/staged/exact-push workspace checks apply before publication. No live browser pointer, hardware, thermal, GPU or full-body stability pass claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app. Shared example uses45kg chassis /55kg gross,1kg rods/.5kg wheel per corner, alpha20, full65deg,2m targets/50mm clearance. Source peak torque/gear limits combine with estimated rotorJ, assumed gear-inputJ.0001, shaft Coulomb/cogging.05Nm, viscous.0008Nms,6000rpm no-load envelope, reverse efficiency.9 and5kW/5kJ limits. Listed forward efficiency plus explicit drag may overlap; continuous motor/thermal ratings remain unknown. Gearboxes have19mm input bores while motors have different shafts, requiring adapter/mount review. C is only a conditional leader among three; practical tie bands are engineering choices, not statistical/numerical uncertainty bounds. Rigid-impact landing energy is not verified tire/structure absorption. Existing model/source guards and failed cases remain intact. Raw/GIF/PNG artifacts are ignored app files/native Notion attachments, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read workflow-example.md for the short workflow, three exact choices, assumptions and example outcomes.
+Use workflow_example.py with a fresh app-local folder for another bounded run, and encode_terrain_animation.py with paired saved terrain captures to export actual GIFs without rerunning physics.
+Keep future examples small, preserve conditional ranking/ties/source guards, and use Start Kinefold.cmd at4191 after shutdown.

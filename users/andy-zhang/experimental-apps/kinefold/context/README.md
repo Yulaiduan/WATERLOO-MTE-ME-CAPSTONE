@@ -1,5 +1,27 @@
 # Kinefold context
 
+## Latest — 2026-10-30 small workflow example and saved terrain GIFs
+
+Owner narrowed the followup to a simple worked workflow and limited search/data.
+Based on main183f860, two authorized GPT-6.1Sol workers owned a bounded three-choice
+runner and saved-frame GIF export. Existing model/UI source is unchanged.
+Read [workflow example](../workflow-example.md). The choices are6384+AB90G10,
+80100+AB90G10 and80100+AEP90G20, with45kg chassis/55kg gross, alpha20deg,
+2m targets,50mm clearance, constant Coulomb/cogging and viscous drag.
+There are18 actual runs /9 exact pairs: conservative jump rises.443/.786/.898m;
+the first choice bottoms out from2m and the other two arrest. Terrain RMS
+1.676/1.679/1.698mm is a practical tie within an editable0.1mm band.
+The20:1 choice leads jump/first-arrest clearance among these three; none reaches
+the2m jump target. These are conditional examples, not hardware optima.
+Four paired GIFs (three prior N20 terrains plus the worked80100+AB90G10) use
+91 frames /4.5s, a labelled0.5s end pause, one camera and+x left/+z up.
+Source clock/settings and geometry are validated. Sharp/Pillow export uses no
+GUI or new physics and removes its temporary caches. Summary retains all18
+requests; raw frames remain only for one combination's six captures, in a3.13MB
+ZIP. Six comparison tests and15 animation assertions pass. PNG/GIF/data stay
+in ignored app folders and native Notion attachments. Capture/source guards
+remain intact; no live profile writes or catalogue-wide scan occurred.
+
 ## Latest — 2026-10-30 nonideal motor and heave study
 
 Based on main1ab279e. Owner requested constant Coulomb/cogging drag plus viscous
