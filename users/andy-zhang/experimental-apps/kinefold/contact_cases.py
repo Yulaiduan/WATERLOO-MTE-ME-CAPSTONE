@@ -41,8 +41,9 @@ class ContactGeometry(Model):
         p, c = dict(params), dict(config)
         if p['m1'] <= 0 or p['m6'] <= 0:
             raise ValueError('Terrain contact requires positive explicit m1 and m6; no mass is substituted.')
-        if any(p[k] != 0 for k in ('m2', 'm3', 'm5')):
-            raise ValueError('Terrain contact supports massless links/idler only: m2=m3=m5=0.')
+        if p['m5'] != 0 or (p['m2']==0)!=(p['m3']==0):
+            raise ValueError('Terrain contact requires m5=0 and either both links massless or both link masses positive; no substitute mass is added.')
+        self.finite_links=p['m2']>0 and p['m3']>0
         if c['inertiaModel'] != 'uniform-rods-discs' or any(c[k] != 0 for k in ('I2', 'I3', 'I5', 'I6')):
             raise ValueError('Terrain contact requires uniform wheel-disc inertia and zero custom wheel/link inertia.')
         if abs(p['L2'] - p['L3']) > 1e-10 or abs(p['ra'] / p['rb'] - 2) > 1e-12:
@@ -76,7 +77,20 @@ class ContactGeometry(Model):
             for q in self.candidates(self.lo,self.hi):
                 self.geometry(q)
         self.force, self.Mw = self.loads()
-        self.I = {'2':0., '3':0., '5':0., '6':.5*p['m6']*(p['rw']/1000)**2}
+        self.I = {'2':p['m2']*(p['L2']/1000)**2/12, '3':p['m3']*(p['L3']/1000)**2/12, '5':0., '6':.5*p['m6']*(p['rw']/1000)**2}
+        self.total_mass=sum(p[k] for k in ('m1','m2','m3','m6'))
+
+    def mass_terms(self,q):
+        from finite_contact_model import mass_terms
+        key=(q,self.Jref)
+        if getattr(self,'_mass_terms_key',None)!=key:
+            self._mass_terms_value=mass_terms(self,q);self._mass_terms_key=key
+        return self._mass_terms_value
+
+    def grounded_gravity(self,q):
+        """dUg/dq with a stationary wheel centre, N m; all finite masses."""
+        terms=self.mass_terms(q)
+        return self.p['g']*(terms['B']-terms['A']*self.sites(q)['6'][1][1])
 
     def distance(self,q):
         return 2*self.p['L2']/1000*math.cos(q-self.mean)
@@ -97,7 +111,7 @@ class ContactGeometry(Model):
 
 
 def validate_contact_request(payload):
-    if not isinstance(payload,dict) or not {'engine','params','runConfig','contactConfig'}<=set(payload) or set(payload)-{'engine','params','runConfig','contactConfig','caseConfig','motorConfig','terrainConfig'}:
+    if not isinstance(payload,dict) or not {'engine','params','runConfig','contactConfig'}<=set(payload) or set(payload)-{'engine','params','runConfig','contactConfig','caseConfig','motorConfig','terrainConfig','actuatorConfig'}:
         raise ValueError('Contact request requires exactly engine, params, runConfig and contactConfig.')
     if payload['engine'] not in ('pymunk','analytical'):
         raise ValueError('Contact engine must be analytical or pymunk.')
@@ -118,6 +132,10 @@ def validate_contact_request(payload):
     model.terrain_config=validate_terrain(payload['terrainConfig']) if 'terrainConfig' in payload else None
     model.motor_config_present='motorConfig' in payload
     model.Jref=model.c['hipRotorInertiaKgM2']+model.motor.reflected_inertia
+    model.actuator_config=None
+    if 'actuatorConfig' in payload:
+        from actuation_limits import validate_actuator_config
+        model.actuator_config=validate_actuator_config(payload.get('actuatorConfig'))
     if case['kind'] in ('jump','landing') and model.axis[1]*model.jacobian((model.lo+model.hi)/2)<=0:
         raise ValueError('Jump/landing require tc to be the geometrically compressed endpoint; this straight-path branch reverses that convention.')
     if case['kind']=='landing' and case['brakeStrategy']=='energy-sized' and abs(model.axis[0])>1e-10:
@@ -148,6 +166,18 @@ def initial_motion(m,case,q):
 
 
 def world(v):return [-v[0]*1000,0,v[1]*1000]
+
+
+class COMObservation:
+    """Step-resolved all-body COM rise over the first genuine jump flight."""
+    def __init__(self):self.takeoff=None;self.apex=None
+    def step(self,t,z,vz,active):
+        if self.takeoff is not None and self.apex is None and vz<=0:self.apex=dict(t=t,z=z,vz=vz)
+    def capture_takeoff(self,t,z,vz):
+        if self.takeoff is None:self.takeoff=dict(t=t,z=z,vz=vz)
+    def result(self):
+        return dict(jumpComRiseMm=(self.apex['z']-self.takeoff['z'])*1000 if self.apex and self.takeoff else None,
+            takeoffCOM=self.takeoff,apexCOM=self.apex,jumpComRiseMethod='observed first-flight COM velocity sign crossing; step-resolved, no ballistic extrapolation')
 
 
 def terrain_spec(m,case):
@@ -182,7 +212,7 @@ def terrain_spec(m,case):
 
 
 def model_identity(m,contact,case):
-    return hashlib.sha256(json.dumps(dict(params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'terrainConfig':m.terrain_config} if getattr(m,'terrain_config',None) is not None else {}),**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(dict(params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'terrainConfig':m.terrain_config} if getattr(m,'terrain_config',None) is not None else {}),**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {}),**({'actuatorConfig':m.actuator_config} if getattr(m,'actuator_config',None) is not None else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
 def usable_compression(m,q,case):
@@ -202,6 +232,7 @@ def usable_compression(m,q,case):
 
 
 def energy_estimate(m,case):
+    if m.finite_links:return dict(averageTorqueNm=None,applicable=False,meaning='Legacy chassis-only energy estimate is not applicable to finite links; use all-body dynamic target sizing and the full energy ledger.')
     q,h,x,z=initial_conditions(m,case);qc=m.hi
     if case['kind']=='jump':
         work=m.motor.joint_command(case['jumpTorqueNm'])*(m.hi-m.lo)
@@ -229,9 +260,14 @@ class CaseController:
     def __init__(self,m,case):
         self.m,self.case=m,case;self.contacted=False;self.extended=False
         self.energy=energy_estimate(m,case)
+        self.actuator=None
+        if getattr(m,'actuator_config',None):
+            from actuation_limits import ActuatorController
+            self.actuator=ActuatorController(m,case,m.actuator_config)
         if case['kind']=='landing' and case['brakeStrategy']=='energy-sized' and self.energy.get('averageTorqueNm') is None:
             raise ValueError('Energy-sized braking has no usable compression stroke before the entered underside threshold; adjust the case or use an entered torque.')
-    def torques(self,q,qd,contacted=False):
+    def torques(self,q,qd,contacted=False,*,time=0.,state=None):
+        if self.actuator:return self.actuator.command(q,qd,contacted,time=time,state=state)
         self.contacted=self.contacted or contacted;m,c=self.m,self.case
         hold=brake=0.;motor=m.motor.joint_command(m.c['hipTorqueNm']);phase='terrain'
         if c['kind']=='jump':
@@ -241,9 +277,10 @@ class CaseController:
             if not self.contacted:
                 # Relative acceleration zero under free fall, even on tilted guides:
                 # wheel extra load projected through inverse reduced mass matrix.
-                ax,az=m.axis;M=m.p['m1']+m.p['m6'];mw=m.p['m6']
+                ax,az=m.axis;M=m.total_mass;mw=m.p['m6']
                 fx,fz=m.force
                 fhold=-(ax*fx+az*fz-mw*az*fz/M)
+                if m.finite_links:fhold=-(ax*fx+az*fz-m.mass_terms(q)['H']*fz/M)
                 hold=fhold*m.jacobian(q)-m.spring(q)['torque']+m.c['dampingNms']*qd-m.motor.motor_state(q,qd,0)['jointPassiveNm']
                 motor=hold;phase='landing-hold'
             else:
@@ -260,8 +297,12 @@ def energy_fields(m,q,h,vh,sd,omega):
     chassis=.5*p['m1']*vh*vh
     wheel=.5*p['m6']*((ax*sd)**2+(vh+az*sd)**2)+.5*m.I['6']*omega*omega
     qd=sd/m.jacobian(q);ms=m.motor.motor_state(q,qd,0)
-    return dict(chassisKineticJ=chassis,wheelKineticJ=wheel,rotorKineticJ=.5*m.motor.reflected_inertia*qd*qd,legacyJointRotorKineticJ=.5*m.c['hipRotorInertiaKgM2']*qd*qd,coggingPotentialJ=ms['coggingPotentialJ'],springEnergyJ=m.spring(q)['energy'],
-        gravityEnergyJ=p['g']*(p['m1']*h+p['m6']*(h+az*s)))
+    links={}
+    for key,rate in (('2',1.),('3',m.k3)):
+        v=m.sites(q)[key][1]
+        links[key]=.5*p['m'+key]*((v[0]*qd)**2+(vh+v[1]*qd)**2)+.5*m.I[key]*(rate*qd)**2
+    return dict(chassisKineticJ=chassis,wheelKineticJ=wheel,linkKineticJ=sum(links.values()),upperLinkKineticJ=links['2'],lowerLinkKineticJ=links['3'],rotorKineticJ=.5*m.motor.reflected_inertia*qd*qd,legacyJointRotorKineticJ=.5*m.c['hipRotorInertiaKgM2']*qd*qd,coggingPotentialJ=ms['coggingPotentialJ'],springEnergyJ=m.spring(q)['energy'],
+        gravityEnergyJ=p['g']*(p['m1']*h+p['m6']*(h+az*s)+sum(p['m'+key]*(h+m.sites(q)[key][0][1]) for key in ('2','3'))))
 
 
 def contact_work_state(m, row):
@@ -333,6 +374,7 @@ def case_metrics(rows,events,m,case):
 
 
 def stopping_demand(m,q,qd,vh,case=None):
+    if m.finite_links:return None
     if abs(m.axis[0])>1e-10:return None
     target=usable_compression(m,q,case or CASE_DEFAULTS)
     remain=target-q
@@ -387,5 +429,7 @@ def check_motor_step(m,qd,dt):
     slope=n*n*(c['coulombFrictionNm']/c['frictionVelocityScaleRadS']+c['viscousFrictionNms'])
     mu=m.p['m6']-(m.p['m6']*m.axis[1])**2/(m.p['m1']+m.p['m6'])
     inertia=m.Jref+mu*m.jacobian_min**2
+    if m.finite_links:
+        inertia=min((lambda a:a['C']-a['B']**2/a['A'])(m.mass_terms(m.lo+(m.hi-m.lo)*i/32)) for i in range(33))
     if slope>0 and dt*slope/inertia>.5:
         raise ValueError(f'Motor friction is underresolved; reduce dt below {(.5*inertia/slope):.8g} s for the regularized friction slope.')

@@ -78,7 +78,7 @@
     }
     function compareHardware(c){return {name:c.name,hardware:A.fromCombination(c,{motorNoLoadRpm:c.motorNoLoadRpm??Number($('[data-example-rpm]').value),efficiency:c.efficiency??Number($('[data-example-efficiency]').value),gearboxInputInertiaKgM2:c.gearboxInputInertiaKgM2??($('[data-omit-inertia]').checked?0:null),torqueModel:$('[data-torque-model]').value})};}
     function render(){
-      if(closed)return;refreshProfile();if(host.hidden)return;
+      if(closed)return;refreshProfile();if(host.hidden||host.closest('[hidden]'))return;
       const error=$('[data-actuator-error]'),out=$('[data-actuator-results]');
       try{
         const h=readHardware();
@@ -127,5 +127,5 @@
   }
   const cloneLosses=v=>JSON.parse(JSON.stringify(v));
   root.KinefoldActuatorCalculatorUI={mount};
-  if(typeof document!=='undefined'){const host=document.getElementById('actuator');if(host&&root.KinefoldStudio&&root.KinefoldActuatorCatalog)mount(host);}
+  if(typeof document!=='undefined'){const host=document.getElementById('actuator-quick')||document.getElementById('actuator');if(host&&root.KinefoldStudio&&root.KinefoldActuatorCatalog)root.KinefoldQuickActuator=mount(host);}
 })(globalThis);

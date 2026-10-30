@@ -39,7 +39,10 @@ manual snapshot, while the live profile library remains local.
   assumption applies. See [parametric presets](parametric-presets.md).
 - **05 System flow:** selectable nodes show the chosen component values, their
   equations and the calculations, charts and files they produce.
-- **06 Actuator calculator:** independent read-only profile geometry/mass screen
+- **06 Actuator studies:** automatic exact motor/gearbox comparison across landing,
+  jump and terrain, with independent analytical/native finite-link runs and editable
+  assumptions. See [automatic comparison](automatic-comparison.md). The separate
+  inertia quick calculator remains an independent read-only profile geometry/mass screen
   with searchable Pure Motor Rev2 and SO Gearbox Index choices, reflected inertia,
   acceleration/time/speed, low/medium/high editable drag and an optimistic jump
   estimate. No motor choices or calculator assumptions are applied to simulations.
@@ -227,10 +230,12 @@ This mode has an actual circular wheel, frictional collisions and a translating
 world square mesh. Wheel spin and height come from the engine; corners and150 mm
 gaps can be bridged. The original height-driven/K=0 bench remains available.
 
-The exact two-body model supports massless equal links/2:1 guide on a nonsingular
-straight path, with positive chassis/wheel masses and uniform wheel-disc inertia.
-Unsupported curved paths, extra link/custom wheel inertia and prescribed contact
-loads fail explicitly. No substitute masses are added. Contact mode runs in both independent engines with exact saved-profile comparison;
+Actual contact supports either massless links or two positive uniform rods along
+an equal-link/2:1 nonsingular straight path, with positive chassis/wheel masses
+and uniform wheel-disc inertia. Finite Pymunk has chassis/two rods/wheel with
+three pivots and ideal belt coupling; analytical dynamics independently use all
+COM Jacobians. Mixed zero/positive rods, compound mass, custom inertias, curved
+paths and prescribed contact loads fail explicitly. No substitute masses are added. Contact mode runs in both independent engines with exact saved-profile comparison;
 the original prescribed-height benchmark remains a separate interaction model. Browser/native playback uses actual
 world mesh/body transforms, backdriven pulley indices and moving belt markers.
 Read [terrain-contact.md](terrain-contact.md) for equations, limits and actual

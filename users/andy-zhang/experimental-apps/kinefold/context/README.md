@@ -1225,3 +1225,42 @@ before delivery. No UI screenshot claim is made. Actual app-root Stop/Start/reus
 from unrelated cwd and11 exact served assets/actuator route are checked at4191.
 Live layout/pointer review remains unverified. Use Start Kinefold.cmd and refresh
 the app to load the selected V4.5. Canonical robot/hardware physics is NOT APPLICABLE.
+
+
+## 2026-10-30 — Automatic V4.5 actuator comparison and finite-link contact
+
+Based on main96c7f56. Three authorized GPT-6.1 Sol workers owned separate
+backend, finite-physics and UI files; parent integrated/audited/replayed cases,
+fixed native bottom-out detection, added interval acceleration, graded target,
+regen final-step cap, source-speed checks and recoverable latest-job pointer.
+No Computer skill, GUI/browser automation or live physical profile write.
+
+Tab06 now has Automatic comparison and the retained Inertia quick calculator.
+Captured V4.5 defaults: 2m wheel-bottom drop, 2m COM jump above takeoff, 50mm
+minimum underbody clearance and separate50mm underside offset; all editable.
+Four native bodies/3 pivots/GearJoint/hip stops independently cross-check exact
+analytical finite-link mass/COM equations. Old massless branch stays intact;
+mixed rod masses, nonzero compound/custom inertias and curved paths stay blocked.
+New actuation captures actual delivered torque after speed/current/power/regen
+caps with N² motor/gear inertia and editable drag/controllers. Inputs never apply
+to Studio motor settings. Source assumptions and limits remain explicit.
+
+HTTP job a52d2ac28caf4bc6968814610af1be29 screened2198pairs and completed12cases
+(two pairs x3cases x2engines),228s,dt.000125/3s/50Hz. Original assessments/records
+are backed up; final review replayed two native landings after missed stop-event
+fix and recomputed all metrics from preserved actual rows. Both80100/AB90-G10
+and80100/AEP90-G10 fail landing at compression stop and jump(0.886/0.884m and
+0.867/0.865m), pass entered short terrain thresholds; no all-target winner.
+Other catalog rows are screens, not dynamic passes. Max source speed violation
+fails a case; pointwise impact acceleration is unresolved, output-interval
+acceleration is labelled. Native signed combined constraint/numerical accounting
+is not physical absorption. Complete equations/assumptions/results/checks are in
+[automatic-comparison.md](../automatic-comparison.md).
+
+Parent final7finite,21actuator/source/job,88comparisonUI checks pass, plus affected
+catalog/quickcalc/Plotly/energy/project checks. Worker43legacycontact groups pass.
+Static finite weights match Jon V4; airborne all-bodyCOM and alpha20/refinement
+are checked. Existing broad whole-source HTML provenance mismatch is unchanged.
+40PlotlyPNG/full-dataZIP are ignored app exports and native Notion attachments.
+No live UI or hardware acceptance is claimed. App-root Start/Stop launchers and
+HTTP guard/assets are verified at4191. Library SHA remainsb580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511.

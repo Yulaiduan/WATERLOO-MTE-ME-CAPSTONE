@@ -26,6 +26,7 @@ import webbrowser
 
 from viewer_service import ViewerService
 from profile_service import ProfileService, MAX_BYTES as PROFILE_MAX_BYTES
+from comparison_service import ComparisonService
 
 ROOT = Path(__file__).resolve().parent
 URL = "http://127.0.0.1:4191/"
@@ -39,7 +40,8 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "preset-store.js", "preset-analysis.js", "preset-workbench.js", "preset-workbench.css", "preset-flow.js",
           "terrain-catalog.json", "terrain-profiles.js", "terrain-profiles.css", "terrain-ui.js",
           "motor-gearbox-catalog.json", "motor-gearbox-catalog.js", "motor-gearbox-catalog.css",
-          "actuator-calculator.js", "actuator-calculator-ui.js", "actuator-calculator.css"}
+          "actuator-calculator.js", "actuator-calculator-ui.js", "actuator-calculator.css",
+          "automatic-comparison.js", "automatic-comparison.css", "actuator-workspace.js"}
 
 
 VENDOR_ROUTE = "/vendor/plotly-basic-4.1.2.min.js"
@@ -70,7 +72,7 @@ def reject_nonfinite(value):
 
 def run_dynamics(request):
     """Integrate one bounded request in this app's installed physics environment."""
-    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "motorConfig", "study", "torqueTargetConfig", "terrainConfig"}):
+    if not isinstance(request, dict) or (not {"engine", "params", "runConfig"} <= set(request) or set(request) - {"engine", "params", "runConfig", "contactConfig", "caseConfig", "motorConfig", "study", "torqueTargetConfig", "terrainConfig", "actuatorConfig"}):
         return {"error": "Expected engine, params, runConfig and optional contactConfig/caseConfig only."}, 400
     if not isinstance(request["engine"], str) or request["engine"] not in {"analytical", "pymunk"}:
         return {"error": "Choose analytical or pymunk."}, 400
@@ -80,6 +82,8 @@ def run_dynamics(request):
     if contact is not None and (not isinstance(contact, dict) or contact.get("mode") not in {"prescribed-height", "terrain-contact"}):
         return {"error": "Choose a known interaction mode."}, 400
     contact_mode = bool(contact and contact.get("mode") == "terrain-contact")
+    if "actuatorConfig" in request and not contact_mode:
+        return {"error": "Bounded comparison actuation requires actual terrain-contact mode."}, 400
     study = request.get("study")
     if study is not None and (study not in ("minimum-landing-torque", "target-case-torque") or not contact_mode):
         return {"error": "Landing assessment requires actual contact and the known minimum-torque study."}, 400
@@ -131,6 +135,7 @@ def is_ours(value):
 def serve():
     viewer = ViewerService(ROOT)
     profiles = ProfileService(ROOT)
+    comparisons = ComparisonService(ROOT, shared_lock=DYNAMICS_LOCK)
     token = secrets.token_urlsafe(32)
 
     class Handler(SimpleHTTPRequestHandler):
@@ -180,7 +185,7 @@ def serve():
                 self.send_error(404)
 
         def do_POST(self):
-            if self.path in {"/api/dynamics", "/api/contact-study", "/api/viewer", "/api/profiles"}:
+            if self.path in {"/api/dynamics", "/api/contact-study", "/api/viewer", "/api/profiles", "/api/actuator-comparison"}:
                 if self.headers.get("Origin") != URL.rstrip("/") or self.headers.get("X-Kinefold-Request") != "coupled-dynamics":
                     payload = b'{"error":"Requests must come from this Kinefold page."}'
                     self.send_response(403)
@@ -204,6 +209,9 @@ def serve():
                         request = json.loads(raw, parse_constant=reject_nonfinite)
                         if self.path in {"/api/dynamics", "/api/contact-study"}:
                             result, status = run_dynamics(request)
+                        elif self.path == "/api/actuator-comparison":
+                            result = comparisons.handle(request)
+                            status = 200
                         elif self.path == "/api/viewer":
                             result, status = viewer.handle(request)
                         else:
@@ -237,6 +245,7 @@ def serve():
         try:
             server.serve_forever(poll_interval=.15)
         finally:
+            comparisons.close()
             viewer.close()
 
 

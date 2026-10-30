@@ -5103,3 +5103,61 @@ Refresh the app to load the newly savedV4.5, use tab06 for calculator-only candi
 Read actuator-calculator.md and app context for source missing-rpm/estimated-inertia assumptions, finite-link mode limits, alpha/COM energy conventions and the existing whole-source provenance mismatch, then rerun focused affected checks and ordinary workspace publication gates for extensions.
 
 ---
+
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — Automatic V4.5 motor/gearbox comparison with finite-link contact
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member workspace.
+- **Associated Issue/Task:** Owner requested automatic V4.5 motor/gearbox comparison across2m landing,2m COM jump and terrain,50mm minimum clearance, finite links and editable missing inputs. Based on fetched main96c7f56. Three authorized GPT-6.1 Sol workers used isolated checkouts; parent architecture/integration/review/publication. No Computer skill, browser/native UI automation or live physical-profile overwrite.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuation_limits.py`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-workspace.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator_comparison.py`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.css`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.js`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.md`
+- `users/andy-zhang/experimental-apps/kinefold/comparison_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/finite_contact_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/finite_pymunk_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify-automatic-comparison.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_actuator_comparison.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_finite_contact.py`
+
+- **API/Interface Changes:** Additive guarded POST/api/actuator-comparison with defaults/load/save/start/status/cancel/results/detail/export; one app-venv owned subprocess, shared dynamics lock, strict bounded files/jobs, cancel/shutdown/orphan handling and recoverable latest-result pointer. Captured project/catalog/assumptions/budget/source hashes are separate from live Studio. Tab06 automatic/quick views, exact catalog pool, explicit defaults/nullable assumptions, bounded50row tables, categorized actual Plotly comparisons, raw/equation/metric details and app-folder exports. Finite branch uses exact generalized mass/COM equations versus native four bodies/3pivots/GearJoint/hip stops; original two-body branch preserved. Positive uniform rods supported together,m5/custom/curved restrictions explicit. Optional contact-only actuatorConfig captures bounded torque/speed/current/power/regen, N²inertia, outputdrag and common hold/brake/recovery/ride feedback; no project-v3 migration or automatic motor apply. Actual whole-bodyCOM takeoff/apex replaces chassis-sign shortcut for finite jumps. Native stop events use actual angular constraint impulse after reversal. Grade-following height target, source backdrive overspeed failure, output-interval acceleration and final-step regen bound added. Builder/state andsourceapps unchanged; no canonical assets/shared interface/dependency/enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS final7finite-contact groups (27.6s),21actuator/source/job groups,88comparison DOM/VM/API/Plotly assertions. Worker43legacy contact/case/analytical/work/motor groups pass. Parent affected suites PASS6152quickcalculator,1389catalog,3789dynamicPlotly,530contact-work,712EnergyUI,4490energyworkspace,48presetUI,34project/library and14equilibriumPlotly assertions/groups as labelled. Finite kinetic/Jacobian/gravity, JonV4static finite-weight holding, alpha0/20 freefallCOM/stopmomentum, wheelspin and dtrefinement tested. A real guarded HTTP job screens2198exactpairs(2041resolved/157unknownpeak) and runs12actualcases(two pairs,three cases,two engines),228s atdt.000125/3s/50Hz. Earlier largerjob cancelled withpartialdata retained; paired cases now scheduled early. Final review recomputes all12metrics from preservedactualrows and replays2native landings after correcting a missed-stop falsepass; originalpayloads/results backedup andreviewhashes recorded. Both80100+AB90-G10 and80100+AEP90-G10 fail2mlanding atphysicalcompressionstop andjump(.886/.884m and.867/.865m), pass enteredshortterrain thresholds; no globalwinner orallcatalogdynamicpass. Native signed combinedimpulse/bias/splitting ledger isnotphysicalabsorption; dtrefinementresiduals remain~2–3J, nativepenetration reduces.464→.073mm(alpha0)/.470→.076mm(alpha20). Unchanged1mmpenetrationguard. Missingcurrent remainsnull; acceleration isexplicitoutputintervalderivative ratherthan fakezero. Source missing counts14speed/11continuous/10Kt,145gearJ/14eta;estimatedrotorJ andassumedpower/regen/drag/efficiency visible.40PlotlyPNG+fullJSON/profile/auditZIP rendered/integrity/visualchecked; clippedoverviewfooter repaired. HTTPdefault/origin/badfields/servedasset checks andapp-rootstop/start/reuse/restart fromunrelatedcwd verified4191. ProfilelibrarySHA staysb580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511. Syntax/compile/whitespace/relative-links andnormalfetched-base/staged/workspace gates apply beforepublication. No liveUI/pointer/GPU/hardware reviewclaimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. The pre-existing broad node verify.cjs whole JonHTMLhash mismatch remains unchanged andnotclaimedpassed; source mathematical blocks retain their recordedhash. No provenance/assertion/guard was weakened. Initially missing acceleration samples correctly produced unknown; final calculation explicitly derives output-interval values from actualvelocity with a regression. Initial native sign-based stopevent detection missed a realbottomout when the impulse reversedrate; finalnative constraint-impulse regression andactualreruns remove that falsepass. Raw runs/logs/PNGs remain ignored, sourceapps andliveprofiles preserved.
+
+## 4. Compute Saving Handoff State
+
+Kinefold tab06 now captures V4.5 and exact motor/SO pairs, screens all selected combinations and performs bounded paired finite-link landing/jump/terrain tests with editable missing-data assumptions.
+Refresh at4191, openActuatorstudies anduseOpenlateststoredresult for joba52d2ac28caf4bc6968814610af1be29; Start Kinefold.cmd restarts aftershutdown andcomparison settings/exports remain inappfolders.
+Read automatic-comparison.md andappcontext for exactdata gaps, physicalstop dominance, all-bodyCOM energy, originalspring, parameterlimits andactualvalidation; obtain measured motor/gear/controller/regen/thermal data beforehardwareselection.
