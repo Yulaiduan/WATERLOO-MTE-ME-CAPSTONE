@@ -130,15 +130,36 @@ def initial_conditions(m,case):
     if case['kind']=='jump':q=m.hi
     elif case['kind']=='landing':q=m.hi+case['landingOpenFraction']*(m.lo-m.hi)
     C=m.sites(q)['6'][0];z=m.p['rw']/1000
+    config=getattr(m,'terrain_config',None)
+    if case['kind']=='terrain-stability' and config and config['schema']=='kinefold/terrain-v2':
+        z*=math.sqrt(1+(config['gradePercent']/100)**2)
     if case['kind']=='landing':z+=case['landingDropMm']/1000
     return q,z-C[1],C[0],z
+
+
+def initial_motion(m,case,q):
+    """SI supported-grade initial velocity; preserves legacy flat initialization."""
+    qd=m.c['initialVelocityDegS']*R if case['kind']=='terrain-stability' else 0.
+    prime=m.sites(q)['6'][1];vx=prime[0]*qd;vz=0.
+    config=getattr(m,'terrain_config',None)
+    if case['kind']=='terrain-stability' and config and config['schema']=='kinefold/terrain-v2':
+        vz=config['gradePercent']/100*(m.c['inputSpeedMmS']/1000-vx)
+    return dict(qd=qd,guideVelocity=m.jacobian(q)*qd,chassisVelocity=vz-prime[1]*qd,wheelVelocity=(vx,vz))
 
 
 def world(v):return [-v[0]*1000,0,v[1]*1000]
 
 
 def terrain_spec(m,case):
-    if getattr(m,'terrain_config',None) is not None and case['kind']=='terrain-stability':return periodic_spec(m,case,initial_conditions(m,case))
+    if getattr(m,'terrain_config',None) is not None and case['kind']=='terrain-stability':
+        initial=initial_conditions(m,case);spec=periodic_spec(m,case,initial)
+        if m.terrain_config['schema']=='kinefold/terrain-v2':
+            motion=initial_motion(m,case,initial[0])
+            spec['terrain']['initialConditions']=dict(wheelCentreZMm=initial[3]*1000,
+                chassisZMm=initial[1]*1000,wheelVelocitySourceMS=list(motion['wheelVelocity']),
+                chassisVelocityMS=motion['chassisVelocity'],hipRateRadS=motion['qd'],wheelSpinRadS=0.,
+                assumption='Circle tangent to inclined baseline; initial velocity follows conveyor grade at entered hip rate. Free wheel starts at zero spin; friction spin-up remains physical.')
+        return spec
     p,c=m.p,m.c;r=p['rw']/1000;q,h,x,z=initial_conditions(m,case)
     speed=c['inputSpeedMmS']/1000 if case['kind']=='terrain-stability' else 0.
     height=c['inputHeightMm']/1000 if case['kind']=='terrain-stability' else 0.

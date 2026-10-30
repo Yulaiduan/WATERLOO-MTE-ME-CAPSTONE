@@ -5002,3 +5002,50 @@ Open either dynamic tab, select Terrain stability and explicitly apply a surface
 Read the app README/context and offline source metadata before extending terrain fidelity, preserve unresolved snow fields and source/model distinctions, and rerun focused geometry/contact/API checks plus normal workspace publication gates.
 
 ---
+
+## Entry: 2026-10-29 — Andy Zhang — Seeded terrain cells and physical longitudinal grade
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated experimental contact/input workspace.
+- **Associated Issue/Task:** Owner requested randomized periodic cells and slope. Started from fetched main1a05f43. GPT-6.1 Sol development worker; parent architecture, independent mechanics audit and integration. No computer-use/browser/native UI automation or GUI window, per explicit owner constraint. Existing source-sheet snapshot/catalog retained.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-flow.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-workbench.js`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/terrain_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-profiles.js`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify_terrain_variation.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify-terrain-profiles.cjs`
+
+- **API/Interface Changes:** Strict optional terrain-v2 adds seed/variationPercent/gradePercent to existing project-v3 terrain snapshots. Legacyv1 behavior/fields remain unchanged until deliberate Apply. Stateless uint32 seed/cell/channel variations preserve duration-independent terrain prefixes; per-cell shape/amplitude and signed longitudinal grade feed the same actual contour in both engines. Full inclined supporting tails, circle-tangent initial height, conveyor-compatible initial normal velocity and actual ground-work/gravity accounting retain fixed-x/pitch chassis constraints and independent mounting alpha. Three-cell Plotly surface/baseline and detrended previews, source-max action, capture/preset/flow/glossary/run summaries and explicit preview/mesh statistic windows. Native camera ignores distant slope tails. No changes to canonical models, shared interfaces, dependencies, source catalog/reference apps, agent rules or physical guard thresholds.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Parent PASS377,736 independent checks over216configs and30safe initialstances: JS/Python parity, negative cells, seed repeat/diversity, prefix invariance, exact PWL detrended RMS, legacy nodes, signed grade, circular clearance and relative normal/guide velocities. Previous12,802 source/v1 assertions pass. Parent reran5 Python variation/7 terrain groups;52 DOM assertions/35 BASIC Plotly mounts;33 project groups/55 preset assertions. Worker PASS270 parity cases,8 contact/9 jump-landing groups,48 preset UI/712 energy UI/3770 dynamic Plotly/48 comparison/666 contact-drawing assertions, syntax/compile/LF. Six2.6s actual flat/up/down coarse fixtures complete within90s/16MiB; separate tilted-downhill max heave difference9.495mm atdt0.0005 reduces3.196mm at0.00025, with final ledger residuals0.228J/2.230J, not tight conservation. Pure-incline6.5s tests retain finite final-force behavior. Parent4 actual same-origin HTTP runs use copied savedalpha0 design, grade±15%, seed481/20%, nominal RMS15mm and explicit600mm/300mm-s numerical fixture overrides; all complete131rows/2.6s atdt0.00025/50Hz, same captured hashes and exact contours. Max paired heave discrepancy0.000550/0.000767mm, penetration<=0.004144mm,1.21–1.28MB responses,12.32–12.39s analytical/2.33–2.41s Pymunk. Four served assets exact; read-only tests preserve current library SHA256 b681d0f2f86f1d487a3700dd9efd8696215ced3ed276b5594a454b61ff13d458. Two scientific Plotly profile PNGs/JSON/ZIP verified and visually checked in ignored exports; no UI screenshot claim. App-local launcher restart/reuse/exact-asset, syntax/whitespace/docs links and fetched-base/staged/require-passed/workspace publication checks apply before push. Live layout/pointer/console review remains UNVERIFIED under owner no-computer-use constraint; no hardware, all-terrain traversability, full vehicle climb or exact cross-engine equivalence claim.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member-app contribution. Source grades are synthesized maximum/test envelopes, seeded shape distributions are illustrative and cross-slope/soil/snow/water/corridor behavior remains outside this2D fixture.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now captures reproducible cell variation and signed longitudinal grade in terrain-v2, using actual matching incline/contact geometry in both engines while preserving legacy flat profiles.
+Open either dynamic tab's Terrain stability surface controls, preview the seed/variation/grade and explicitly Apply; existing app-root Start/Stop launchers retain4191 and saved libraries are not rewritten by validation.
+Read the updated app README/context for incline initialization, vertical-slide reactions, detrended-statistic windows and retained refinement discrepancies, then use focused terrain/contact checks and normal workspace publication gates for extensions.
+
+---

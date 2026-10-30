@@ -1,9 +1,9 @@
 """Build bounded periodic experimental terrain from a versioned sheet snapshot.
 
 Imported by contact engines/profile validation; no physics engine dependency.
-Inputs: terrain-v1 JSON in mm, source ID/revision, severity, obstacle/RMS mode.
+Inputs: terrain-v1/v2 JSON in mm, source ID/revision, seed, variation and grade%.
 Outputs: exact piecewise-linear contour/statistics, SI moving collision segments.
-Limitations: rigid 2D flat-average-grade proxy; no soil, snow, grade or roll model.
+Limitations: rigid 2D longitudinal grade proxy; no soil, snow or roll model.
 """
 import bisect
 import json
@@ -13,12 +13,14 @@ from pathlib import Path
 CATALOG = json.loads(Path(__file__).with_name('terrain-catalog.json').read_text(encoding='utf-8'))
 SEGMENTS = 96
 KEYS = {'schema','catalogRevision','profileId','severity','representation','periodMm','heightMm','rmsMm'}
+V2_KEYS = KEYS | {'seed','variationPercent','gradePercent'}
 
 
 def validate_terrain(value):
-    if not isinstance(value, dict) or set(value) != KEYS:
+    v2=isinstance(value,dict) and value.get('schema')=='kinefold/terrain-v2'
+    if not isinstance(value, dict) or set(value) != (V2_KEYS if v2 else KEYS):
         raise ValueError('terrainConfig requires exactly ' + ', '.join(sorted(KEYS)))
-    if value['schema'] != 'kinefold/terrain-v1' or value['catalogRevision'] != CATALOG['revision']:
+    if value['schema'] not in ('kinefold/terrain-v1','kinefold/terrain-v2') or value['catalogRevision'] != CATALOG['revision']:
         raise ValueError('Unknown terrain schema/catalog revision; retain its matching catalog.')
     if value['profileId'] not in {p['id'] for p in CATALOG['profiles']} or value['severity'] not in ('typical','difficult','extreme') or value['representation'] not in ('obstacles','roughness'):
         raise ValueError('Choose a known terrain, severity and representation.')
@@ -29,11 +31,18 @@ def validate_terrain(value):
             raise ValueError(key+' must be finite within '+str((lo,hi)))
     required='heightMm' if value['representation']=='obstacles' else 'rmsMm'
     if value[required] is None: raise ValueError('Source '+required+' is unresolved for this terrain/severity.')
+    if v2:
+        if type(value['seed']) not in (int,float) or not math.isfinite(value['seed']) or not 0<=value['seed']<=0xffffffff or value['seed']!=int(value['seed']):
+            raise ValueError('Terrain seed must be a uint32 integer.')
+        for key,lo,hi in [('variationPercent',0.,50.),('gradePercent',-100.,100.)]:
+            if type(value[key]) not in (int,float) or not math.isfinite(value[key]) or not lo<=value[key]<=hi:
+                raise ValueError(key+' is outside its finite terrain range.')
     return dict(value)
 
 
-def contour(value):
+def contour(value,cycle=0):
     c=validate_terrain(value);rough=c['representation']=='roughness'
+    if c['schema']=='kinefold/terrain-v2':return random_contour(c,cycle)
     ys=[]
     for i in range(SEGMENTS+1):
         p=i/SEGMENTS
@@ -52,7 +61,9 @@ def contour(value):
 
 def periodic_spec(m, case, initial):
     """Use the same connected top contour in both independent contact engines."""
-    c=m.c;config=validate_terrain(m.terrain_config);wave=contour(config)
+    c=m.c;config=validate_terrain(m.terrain_config)
+    if config['schema']=='kinefold/terrain-v2':return varied_spec(m,case,initial)
+    wave=contour(config)
     q,h,x,z=initial;r=m.p['rw']/1000;speed=c['inputSpeedMmS']/1000
     period=config['periodMm']/1000
     # A full radius lead is conservative for every positive feature, including
@@ -104,3 +115,105 @@ def circle_contacts(spec,time,x,z,r):
         key=(round(px,12),round(pz,12))
         if key not in seen:out.append((gap,n,(px+offset,pz)));seen.add(key)
     return out
+
+
+def random_unit(seed,cycle,channel):
+    """Stateless uint32 mixer; signed cycle maps to two's-complement uint32."""
+    mask=0xffffffff
+    x=(int(seed)^((cycle&mask)*0x9e3779b1&mask)^(channel*0x85ebca77&mask))&mask
+    x^=x>>16;x=x*0x7feb352d&mask;x^=x>>15;x=x*0x846ca68b&mask;x^=x>>16
+    return x/4294967296.
+
+
+def moments(points):
+    """Exact spatial mean/mean-removed RMS for piecewise-linear ordinates."""
+    width=points[-1][0]-points[0][0];mean=second=0.
+    for (x,a),(y,b) in zip(points,points[1:]):
+        w=(y-x)/width;mean+=(a+b)/2*w;second+=(a*a+a*b+b*b)/3*w
+    return mean,math.sqrt(max(0,second-mean*mean))
+
+
+def random_contour(c,cycle):
+    if type(cycle) is not int or not -2147483648<=cycle<=2147483647:raise ValueError('Cycle index must be a signed int32.')
+    base={k:v for k,v in c.items() if k in KEYS};base['schema']='kinefold/terrain-v1'
+    old=contour(base);variation=c['variationPercent']/100;period=c['periodMm']
+    if variation==0:
+        heights=[p[1] for p in old['pointsMm']];center=.5;width=1. if c['representation']=='roughness' else .5;asymmetry=.5;amplitude=1.
+    else:
+        rand=lambda channel:2*random_unit(c['seed'],cycle,channel)-1
+        rough=c['representation']=='roughness';guard=2/SEGMENTS
+        width=min(1-2*guard,(1-variation*(.4+.2*rand(2))) if rough else .5*(1+variation*.4*rand(2)))
+        center=max(width/2+guard,min(1-width/2-guard,.5+.16*variation*rand(1)))
+        asymmetry=.5+.25*variation*rand(3);amplitude=1+variation*rand(4)
+        heights=[]
+        for i in range(SEGMENTS+1):
+            t=(i/SEGMENTS-center+width/2)/width
+            if t<=0 or t>=1:heights.append(0.);continue
+            u=t/(2*asymmetry) if t<=asymmetry else .5+(t-asymmetry)/(2*(1-asymmetry))
+            heights.append(.5*(1-math.cos(2*math.pi*u)))
+        unit_points=[[i*period/SEGMENTS,y] for i,y in enumerate(heights)]
+        scale=(c['rmsMm']/moments(unit_points)[1] if rough else c['heightMm']/max(heights))*amplitude
+        heights=[y*scale for y in heights]
+    rough_points=[[i*period/SEGMENTS,y] for i,y in enumerate(heights)]
+    grade=c['gradePercent']/100
+    baseline=[[x,grade*(cycle*period+x)] for x,_ in rough_points]
+    points=[[x,y+baseline[i][1]] for i,(x,y) in enumerate(rough_points)]
+    mean,rms=moments(rough_points)
+    return dict(pointsMm=points,roughnessPointsMm=rough_points,baselinePointsMm=baseline,
+        peakMm=max(heights),meanMm=mean,rmsMm=rms,periodMm=period,segmentsPerPeriod=SEGMENTS,
+        maxLocalGradePercent=max(abs(b[1]-a[1])/(b[0]-a[0])*100 for a,b in zip(points,points[1:])),
+        gradePercent=c['gradePercent'],gradeDegrees=math.degrees(math.atan(grade)),cycleIndex=cycle,
+        seed=c['seed'],variationPercent=c['variationPercent'],shape=dict(centerFraction=center,widthFraction=width,peakFraction=asymmetry,amplitudeFactor=amplitude))
+
+
+def sequence(value,count=3,start_cycle=0):
+    c=validate_terrain(value)
+    if type(count) is not int or not 1<=count<=52:raise ValueError('Sequence count must be 1–52 cells.')
+    if type(start_cycle) is not int or not -2147483648<=start_cycle<=2147483647-count+1:raise ValueError('Sequence start must keep all cycle indices within int32.')
+    cells=[contour(c,i) for i in range(start_cycle,start_cycle+count)];points=[];rough=[];baseline=[]
+    for n,cell in enumerate(cells):
+        cycle=start_cycle+n
+        for i,(x,y) in enumerate(cell['pointsMm']):
+            if n and i==0:continue
+            absolute=cycle*c['periodMm']+x;points.append([absolute,y])
+            rough.append([absolute,cell.get('roughnessPointsMm',cell['pointsMm'])[i][1]])
+            baseline.append([absolute,cell['baselinePointsMm'][i][1] if 'baselinePointsMm' in cell else 0.])
+    mean,rms=moments(rough)
+    return dict(pointsMm=points,roughnessPointsMm=rough,baselinePointsMm=baseline,cells=cells,cellCount=count,startCycle=start_cycle,spanMm=count*c['periodMm'],
+        peakMm=max(p[1] for p in rough),meanMm=mean,rmsMm=rms,detrendedRmsMm=rms,
+        minHeightMm=min(p[1] for p in points),maxHeightMm=max(p[1] for p in points),
+        gradePercent=c.get('gradePercent',0.),gradeDegrees=math.degrees(math.atan(c.get('gradePercent',0)/100)),
+        seed=c.get('seed'),variationPercent=c.get('variationPercent',0.),periodMm=c['periodMm'])
+
+
+def varied_spec(m,case,initial):
+    c=m.c;config=validate_terrain(m.terrain_config);q,h,x,z=initial
+    r=m.p['rw']/1000;speed=c['inputSpeedMmS']/1000;period=config['periodMm']/1000;grade=config['gradePercent']/100
+    front=x-r-speed*c['inputDelayS'];count=math.ceil((speed*c['duration']+4*r)/period)+2
+    if count*SEGMENTS>5000:raise ValueError('Periodic terrain exceeds 5000 segments; increase period or shorten the run.')
+    realized=sequence(config,count);points=[]
+    for n,cell in enumerate(realized['cells']):
+        for d,height in cell['roughnessPointsMm'][:-1]:
+            u=front-n*period-d/1000;points.append((u,-grade*(u-x)+height/1000))
+    last=front-count*period;points.append((last,-grade*(last-x)));points.reverse()
+    extent=abs(x)+speed*c['duration']+count*period+10.
+    points=[(-extent,-grade*(-extent-x))]+points+[(extent,-grade*(extent-x))]
+    segments=list(zip(points,points[1:]));xs=[p[0] for p in points]
+    stats={key:realized[key] for key in ('peakMm','meanMm','rmsMm','detrendedRmsMm','gradePercent','gradeDegrees','seed','variationPercent','periodMm')}
+    stats.update(cellCount=count,startCycle=0,spanMm=count*config['periodMm'],statisticsWindow='Complete generated roughness cells, excluding straight supporting tails and initial lead; not the wheel-sampled path window.')
+    stats['cells']=[{key:cell[key] for key in ('cycleIndex','peakMm','meanMm','rmsMm','maxLocalGradePercent','shape')} for cell in realized['cells']]
+    public=dict(polygonsMm=[],baseSegmentMm=[[-u*1000,0,-grade*(u-x)*1000] for u in (-extent,extent)],
+        contourMm=[[-u*1000,0,height*1000] for u,height in points],translationVelocityMmS=[-speed*1000,0,0],
+        cornerRadiusMm=0,firstContactClearanceMm=r*1000,initialPossibleContactTimeS=c['inputDelayS'],
+        heightMm=realized['peakMm'],periodMm=config['periodMm'],profile=config,statistics=stats,
+        gradePercent=config['gradePercent'],gradeDegrees=realized['gradeDegrees'],referenceWheelWorldXMm=-x*1000,
+        seed=config['seed'],variationPercent=config['variationPercent'],coordinates='Kinefold +x left / +z up, mm',
+        meaning='Seeded rigid 2D terrain with signed longitudinal grade. Positive grade rises toward world +x; cross-slope/soil/snow/water/corridor not simulated.')
+    return dict(boxes=[],base=[points[0],points[-1]],speed=speed,height=realized['peakMm']/1000,
+        segments=segments,contour=points,xs=xs,terrain=public,grade=grade,referenceWheelSourceX=x)
+
+
+def raised_contact(spec,time,point):
+    """A roughness contact above its inclined baseline, preserving v1 meaning."""
+    baseline=-spec.get('grade',0)*(point[0]-spec['speed']*time-spec.get('referenceWheelSourceX',0))
+    return point[1]>baseline+1e-7

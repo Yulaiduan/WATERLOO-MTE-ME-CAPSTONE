@@ -348,15 +348,21 @@ and extreme obstacle/RMS estimates, source row, evidence status, confidence and
 context. These are synthesized engineering envelopes, not measured biome averages.
 The compact source record is [terrain-catalog.json](terrain-catalog.json).
 
-Choose a surface, severity and representation; inspect the Plotly preview, then
-apply it to the shared input. **Apply surface · keep speed & duration** preserves
+Choose a surface, severity and representation, then edit the **seed**, **cell
+variation** and **signed longitudinal grade**. New selections start with seed481,
+20% synthetic variation and the selected sheet grade maximum as an explicit test
+envelope, not an average route grade. Positive grade rises forward toward +x;
+negative is downhill. The degree readout uses `atan(gradePercent/100)`.
+**Use sheet grade maximum** copies that reference explicitly. Inspect the Plotly
+surface/baseline and grade-removed roughness previews, then apply the shared input.
+**Apply surface · keep speed & duration** preserves
 the entered run timing. **Apply 6 s per repeat / 6.5 s preview** explicitly sets
 speed to repeat distance divided by six seconds, delay to 0.5 s and duration to
 6.5 s. This is a demonstration speed, not a sheet recommendation. The initial
 circular-rim lead consumes travel, so a complete repeat need not pass the wheel
 in that window. Selection alone does not save, change the mechanism or run a solver.
 
-The two representations are separate tests:
+The two representations have separate nominal metrics:
 
 - **Obstacle height & spacing:** one smooth bump occupies the middle half of a
   repeat, reaching the source obstacle height. Generated RMS is reported separately.
@@ -365,11 +371,19 @@ The two representations are separate tests:
   can exceed the discrete obstacle estimate. Reusing obstacle spacing as roughness
   wavelength is an explicit simplification; the sheet supplies no roughness spectrum.
 
-For phase `p = (distance mod period) / period`, the obstacle shape is
+For legacy regular cells, phase `p = (distance mod period) / period` gives
+an obstacle shape
 `H/2 × [1 − cos(4π(p − 1/4))]` for `1/4 < p < 3/4`, and zero elsewhere.
 The roughness template is `1 − cos(2πp)`. Each repeat uses 96 connected linear
 segments. Its mean and second moment are integrated exactly over those segments
 before normalization, rather than assuming the samples are an exact sine wave.
+Seeded terrain-v2 cells vary center, width, asymmetry and amplitude with a
+stateless uint32 mixer keyed by seed/cell/channel. The same seed and settings
+reproduce the same cells in both engines; changing run duration preserves the
+surface prefix. A 0% variation restores the regular shapes. Nonzero variation
+can exceed nominal source height/RMS; realized peak and grade-removed RMS are
+reported separately. Randomized cells have flat roughness seams; the grade
+continues across them rather than resetting at every repeat.
 Both engines collide with that same top contour; it translates toward −x while
 the wheel can roll, slip or separate. Browser and native desktop playback use the
 returned contour and terrain transform. Old square-contact geometry is retained
@@ -381,15 +395,34 @@ spacing and corridor values remain unresolved. Snow obstacle heights are retaine
 but applying snow requires an entered repeat distance; its RMS representation is
 blocked. A snow period shown in a report illustration is not a sourced value.
 
-Source grade is percent, converted to degrees with `atan(percent/100)`. Grade,
-cross-slope, corridor and surface/soft-ground notes are context only. These periodic
-rigid 2D shapes have zero average grade and do not model soil deformation, sinkage,
+Terrain-v2 applies the signed longitudinal grade to the actual connected contact
+surface, including its supporting tails. In world coordinates the baseline is
+`z = (gradePercent/100) × (x + speed × time − initialWheelX)`; input speed is
+horizontal speed. The kinematic ground translates horizontally toward −x, so
+uphill ground rises beneath the fixed-x chassis. Gravity remains world-down and
+is applied once; terrain work uses the actual impulse and ground velocity.
+Mounting pitch α remains an independent mechanism parameter.
+
+The initial wheel is tangent to the baseline: its centre starts at
+`r_w × sqrt(1 + grade²)` above the baseline datum at the centre's horizontal
+position. Its initial velocity follows the moving incline at the entered hip
+rate, avoiding a false initial normal impact; wheel spin starts at zero and
+friction spins it up. Roughness delay does not delay the existing incline.
+The chassis still uses a fixed-x/fixed-pitch vertical slide. Its horizontal guide
+reactions mean ordinary freely translating vehicle normal-load formulas do not
+apply; this is not a longitudinal propulsion or four-leg climbing model.
+
+Source cross-slope, corridor and surface/soft-ground notes remain context. These
+rigid 2D shapes do not model soil deformation, sinkage,
 snow depth, water, rolling resistance or surface-specific friction. Existing
 friction, mechanism, spring, motor and masses are preserved. Severe inputs can
 reach travel/clearance/penetration limits; those stops remain visible outcomes.
 
-An optional strict `kinefold/terrain-v1` block in project-v3 freezes source revision,
-profile ID, severity, representation, period, obstacle height and RMS. It travels
+The optional strict `kinefold/terrain-v2` block in project-v3 freezes source revision,
+profile ID, severity, representation, period, nominal obstacle height/RMS, seed,
+variationPercent and gradePercent. Legacy `terrain-v1` remains readable with its
+exact regular flat behavior and is not silently migrated; deliberate Apply creates
+v2. The captured configuration travels
 with independent input presets, captured comparisons, exports and viewer requests.
 **Save current input as preset** uses the existing app-folder preset library.
 Jump/landing retain this block but use their stationary flat floor; the prescribed

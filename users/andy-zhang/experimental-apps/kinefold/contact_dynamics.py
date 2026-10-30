@@ -16,7 +16,8 @@ import sys
 from torque_targets import TargetObservation
 from contact_cases import check_motor_step
 from dynamic_model import Model, R, mul, validate, finite
-from terrain_profiles import circle_contacts
+from terrain_profiles import circle_contacts, raised_contact
+from contact_cases import initial_motion
 
 
 from contact_cases import (ContactGeometry, validate_contact_request, resolve_case, initial_conditions, terrain_spec,
@@ -49,12 +50,13 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     chassis=pymunk.Body(p['m1'],math.inf)
     chassis.position=(0,hinitial)
     qd0=c['initialVelocityDegS']*R if case['kind']=='terrain-stability' else 0.
-    chassis.velocity=(0,-m.sites(m.q0)['6'][1][1]*qd0)
+    motion=initial_motion(m,case,m.q0)
+    chassis.velocity=(0,motion['chassisVelocity'])
     wheel=pymunk.Body(p['m6'],m.I['6']);wheel.position=(xinitial,zinitial)
     wheel.angle=(m.K*(p['theta2']-p['te'])-p['alpha'])*R
-    # qdot is independent relative-guide motion. Initially wheel z velocity=0;
-    # guide tangent sets the horizontal wheel component without locking spin.
-    wheel.velocity=(m.sites(m.q0)['6'][1][0]*qd0,0)
+    # qdot is independent guide motion. Legacy flat initialization uses wheel vz=0;
+    # v2 follows the conveyor incline normal velocity. Spin remains unlocked.
+    wheel.velocity=motion['wheelVelocity']
     ground=pymunk.Body(body_type=pymunk.Body.KINEMATIC)
     spec=terrain_spec(m,case);speed=spec['speed'];ground.velocity=(speed,0)
     space.add(chassis,wheel,ground)
@@ -293,7 +295,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         totalJ[0]+=sum(j[0] for j in impulse);totalJ[1]+=sum(j[1] for j in impulse)
         totalN+=sum(normal_impulses);totalT+=sum(tangent_impulses);sample_points.extend(points);sample_slips.extend(slips)
         max_residual=max(max_residual,residual);max_penetration=max(max_penetration,max(0,-separation()))
-        if first_raised is None and any(pt[2]>1e-4 for pt in points):
+        if first_raised is None and any(raised_contact(spec,t,(-pt[0]/1000,pt[2]/1000)) for pt in points):
             first_raised=t;events.append(dict(t=t,type='first-raised-terrain-contact'))
         if not all(math.isfinite(v) for v in (*chassis.position,*chassis.velocity,*wheel.position,*wheel.velocity,wheel.angle,wheel.angular_velocity)):
             raise ValueError('Pymunk contact diverged; reduce dt and inspect inputs.')
@@ -330,7 +332,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
                 snapshot=dict(params=p,solverConfig=c,contactConfig=cc),designHash=model_identity(m,cc,case),rows=rows,frames=frames,events=events,
                 diagnostics=diagnostics,terrain=terrain,
                 scope=dict(mode='terrain-contact',quarterModel=True,fixture='floating-chassis',coordinates='+x left / +z up / mm',
-                           chassis='real m1 body, vertical only, fixed horizontal position/pitch',input=('moving periodic segmented terrain' if m.terrain_config else 'moving sharp terrain') if case['kind']=='terrain-stability' else 'stationary flat floor; actual unilateral wheel contact'),
+                           chassis='real m1 body, vertical only, fixed horizontal position/pitch',input=('moving seeded inclined terrain' if m.terrain_config and m.terrain_config['schema']=='kinefold/terrain-v2' else 'moving periodic segmented terrain' if m.terrain_config else 'moving sharp terrain') if case['kind']=='terrain-stability' else 'stationary flat floor; actual unilateral wheel contact'),
                 warnings=['Experimental two-body quarter model; no tire compliance, rigid chassis collision shape, link mass or hardware validation; entered underside point-clearance stops are assessed.',
                           'Wheel spin is free; ideal backdriven belts reconstruct indices without added inertia or motor lock.',
                           'Gravity acts once on each actual massive body. No prescribed wheel height or forced gap following.',
@@ -347,7 +349,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     if 'terrainConfig' in payload:
         result['terrainConfig']=m.terrain_config
         result['snapshot']['terrainConfig']=m.terrain_config
-        if case['kind']=='terrain-stability':result['warnings'].append('Source terrain is a synthesized design envelope represented by a rigid periodic 2D profile. Grade, cross-slope, corridor, soil/snow/water behavior and surface-specific friction are not simulated.')
+        if case['kind']=='terrain-stability':result['warnings'].append('Source terrain is a synthesized design envelope represented by a rigid periodic 2D profile. Longitudinal grade is simulated only for terrain-v2. Cross-slope, corridor, soil/snow/water behavior and surface-specific friction are not simulated. The chassis follows a vertical slide, not free vehicle translation; guide reactions alter ordinary incline normal-load formulas.')
     if 'caseConfig' in payload:result['snapshot']['caseConfig']=case
     if 'motorConfig' in payload:
         result['snapshot']['motorConfig']=m.motor.config

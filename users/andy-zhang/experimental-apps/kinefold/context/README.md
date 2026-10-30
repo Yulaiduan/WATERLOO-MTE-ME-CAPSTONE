@@ -1100,3 +1100,59 @@ remains unverified. Actual app-local Start/Stop/restart/reuse is checked at4191;
 use the existing Start Kinefold.cmd after shutdown. Canonical physics is NOT
 APPLICABLE to this isolated experimental workspace. Publication uses normal
 workspace/log checks and hooks; no shared model, dependency or rule changes.
+
+## 2026-10-29 — seeded cell variation and longitudinal grade
+
+Based on main `1a05f43`. Owner requested variation between periodic cells and
+physical slope. GPT-6.1 Sol worker implemented app source/tests in the existing
+isolated checkout; parent reviewed, integrated and independently checked the
+geometry/initial mechanics. No computer-use, browser/native UI automation or GUI
+window is used for this task, as the owner requested. Source catalog is unchanged.
+
+Strict optional terrain-v2 adds seed(uint32), variationPercent0–50 and signed
+gradePercent−100–100. Existing v1 remains flat/regular and is not silently migrated.
+New selections preview seed481/20% variation and the sheet maximum grade as a
+declared test envelope. Explicit Apply captures values in input presets and both
+engine snapshots. Cell center/width/asymmetry/amplitude use a stateless uint32
+mixer keyed by seed/cell/channel; duration does not change earlier cells. A 0%
+variation preserves legacy nodes. Three-cell surface/baseline and grade-removed
+roughness plots show actual peak/RMS; generated-mesh statistics identify their
+complete-cell window, excluding supporting tails/lead. Random peaks may exceed
+nominal source estimates. Cross-slope and deformable ground remain unmodeled.
+
+Positive grade rises toward world+x. The full contact chain/tails are inclined;
+horizontal terrain translation raises/lowers ground under the fixed-x chassis.
+Gravity is still world-down once, and terrain work uses actual ground velocity.
+Mounting α is unchanged. Shared initial stance uses r*sqrt(1+grade²), preserving
+circular-rim clearance, and a grade-compatible initial normal velocity at the
+entered hip rate. Spin starts at zero. Horizontal rail reactions make free-vehicle
+normal-load/climbing formulas inapplicable. Native camera bounds exclude far
+slope tails. Jump/landing and the prescribed bench ignore retained terrain-v2.
+
+Parent PASS377,736 independent checks across216configs/30initialstances, exact
+JS/Python seeded sequences, negative cells, duration prefix, legacy nodes and
+piecewise-linear detrended RMS; old12,802 source/v1 checks remain passing. Parent
+reran5 variation/7 terrain Python groups,52 terrain DOM assertions/35 Plotly mounts,
+33 project groups and55 preset assertions. Worker additionally passed270 parity
+cases, old8 contact/9 case groups and energy/preset/comparison/drawing regressions.
+
+Fresh HTTP same-capture±15% grade, seed481/20%, RMS15mm, explicit600mm repeat,
+300mm/s,2.6s/dt0.00025/50Hz produces131rows in all4 runs. Both exact generated
+contours and design hashes match; max chassis discrepancy0.000550mm uphill and
+0.000767mm downhill for the savedα0 fixture. Max penetration<=0.004144mm,
+responses1.21–1.28MB, walltimes12.32–12.39s analytical/2.33–2.41s Pymunk.
+Read-only checks preserve live library SHA256
+b681d0f2f86f1d487a3700dd9efd8696215ced3ed276b5594a454b61ff13d458.
+These period/speed values are numerical fixture overrides, not sheet recommendations.
+
+Separateα20/downhill worker cases retain coarse dt0.0005 max heave difference
+9.495mm, reducing to3.196mm at0.00025; final energy residuals0.228J/2.230J are
+reported rather than treated as physical absorption or tight conservation.
+Both engines complete the fixtures. Pure-incline6.5s final-force checks retain
+the prior no-epsilon-contact-step regression. No force/penetration guard was weakened.
+
+Scientific Plotly PNG examples and16-surface grade-removed overview are saved in
+ignored exports and visually verified. Live UI layout/pointer review is unverified
+under the no-computer-use constraint. App-local Start/Stop/restart/reuse, exact
+served-asset checks and ordinary workspace/log publication gates apply at4191;
+restart using Start Kinefold.cmd. Canonical robot/hardware physics is NOT APPLICABLE.

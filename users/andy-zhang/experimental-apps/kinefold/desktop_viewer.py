@@ -68,6 +68,19 @@ def contact_mesh(result, frame):
     return polygons, base
 
 
+def visible_terrain_heights(result,xlo,xhi):
+    """World-mm heights traversing the fixed camera; exclude distant slope tails."""
+    points=sorted((p[0],p[2]) for p in result['terrain']['contourMm'])
+    offsets=[f['terrainOffsetMm'][0] for f in result['frames']]
+    lo=xlo-max(offsets);hi=xhi-min(offsets)
+    heights=[z for x,z in points if lo<=x<=hi]
+    xs=[p[0] for p in points]
+    for x in (lo,hi):
+        i=max(0,min(len(points)-2,bisect.bisect_right(xs,x)-1));a,b=points[i],points[i+1]
+        u=max(0,min(1,(x-a[0])/(b[0]-a[0])));heights.append(a[1]+u*(b[1]-a[1]))
+    return heights
+
+
 def index_endpoint(point, radius, angle_degrees):
     """World x/z rim endpoint; returned angles start at −x, positive toward +z."""
     angle = math.radians(angle_degrees)
@@ -315,6 +328,8 @@ class PlaybackWindow:
             terrain_z = [point[2] for polygon in self.result['terrain']['polygonsMm'] for point in polygon]
             terrain_z += [point[2] for point in self.result['terrain']['baseSegmentMm']]
             terrain_z += [point[2] for point in self.result['terrain'].get('contourMm',[])]
+            if self.result.get('terrainConfig',{}).get('schema')=='kinefold/terrain-v2':
+                terrain_z=visible_terrain_heights(self.result,self.bounds[0],self.bounds[1])
             self.bounds = (self.bounds[0], self.bounds[1], min(self.bounds[2], min(terrain_z) - 50),
                            max(self.bounds[3], max(terrain_z) + 50))
             contact_mesh(self.result, self.frames[0])
