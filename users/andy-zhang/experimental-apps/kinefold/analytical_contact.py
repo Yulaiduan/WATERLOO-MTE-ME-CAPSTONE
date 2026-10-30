@@ -151,6 +151,15 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         stop_constraints=[]
         if u[1]<=sl+1e-9:stop_constraints.append([(0.,1.,0.),0.])
         if u[1]>=sh-1e-9:stop_constraints.append([(0.,-1.,0.),0.])
+        # Keep the existing 1e-9 m activation band. A coupled floor impulse can
+        # engage a stop inside that band before geometric boundary crossing;
+        # classification must follow the actual solved impulse, not q rounding.
+        stop_momentum={}
+        def vertical_momentum_now():
+            if m.finite_links:
+                a=m.mass_terms(m.inverse(max(sl,min(sh,u[1]))))
+                return a['A']*v[0]+a['H']*v[1]
+            return mt*v[0]+mw*az*v[1]
         for _ in range(max(10,int(c['iterations']))):
             for con in contacts:
                 gap,n,pt,jn,jt,ln,lt=con;wn=product(jn,inverse(jn));target=max(0,gap/dt)
@@ -160,8 +169,24 @@ def simulate_contact(payload, *, stop_at_assessment=False):
             # impulse can otherwise reopen a previously resolved stop velocity.
             for con in stop_constraints:
                 js,old=con;ws=product(js,inverse(js));new=max(0.,old-product(js,v)/ws)
-                before=kinetic(v);dv=inverse([a*(new-old) for a in js]);v[:]=[a+b for a,b in zip(v,dv)]
+                before=kinetic(v);momentum_before=vertical_momentum_now();dv=inverse([a*(new-old) for a in js]);v[:]=[a+b for a,b in zip(v,dv)]
                 stoploss+=before-kinetic(v);con[1]=new
+                if new-old>1e-12:stop_momentum[js]=(momentum_before,vertical_momentum_now())
+        for js,impulse in stop_constraints:
+            # Same 1e-12 Ns meaningful-impulse cutoff used by wheel contact.
+            # No velocity/force clamp or change to the constraint solve occurs.
+            if impulse<=1e-12:continue
+            endpoint=sl if js[1]>0 else sh
+            atq=m.lo if abs(endpoint-m.distance(m.lo))<1e-12 else m.hi
+            typ='compression-stop' if atq==m.hi else 'extension-stop'
+            if not any(e['type']==typ for e in events):
+                momentum_before,momentum_after=stop_momentum.get(js,(vertical_momentum_now(),vertical_momentum_now()))
+                events.append(dict(t=t,type=typ,detection='Accumulated unilateral PGS stop impulse',
+                    guideStopImpulseNs=impulse,angularStopImpulseNms=abs(m.jacobian(atq))*impulse,
+                    guideStopGapMm=js[1]*(u[1]-endpoint)*1000,guideStopActivationToleranceMm=1e-6,
+                    dissipatedEnergyJ=max(0.,stoploss-stop_loss_before),coupledStopKineticWorkJ=stoploss-stop_loss_before,
+                    verticalMomentumBeforeKgMS=momentum_before,verticalMomentumAfterKgMS=momentum_after))
+            if atq==m.lo:ctl.extended=True
         active=False
         for gap,n,pt,jn,jt,ln,lt in contacts:
             if ln>1e-12:

@@ -26,9 +26,35 @@ class ScenarioChecks(unittest.TestCase):
         for key,value in [('landingDropMm',5001),('landingOpenFraction',0),('energyMethod',1),('undersideOffsetMm',-1)]:
             bad={**request,'caseConfig':{**request['caseConfig'],key:value}}
             with self.subTest(key=key),self.assertRaises(ValueError):resolve_case(bad)
+        for opening in (-1,1.000001,float('nan'),float('inf'),None,True):
+            with self.subTest(opening=opening),self.assertRaises(ValueError):
+                resolve_case({'caseConfig':{**CASE_DEFAULTS,'landingOpenFraction':opening}})
         tilted=self.request('landing',{'alpha':15},brakeStrategy='energy-sized')
         with self.assertRaisesRegex(ValueError,'vertical guide'):validate_contact_request(tilted)
         tilted['caseConfig']['brakeStrategy']='entered';validate_contact_request(tilted)
+    def test_fully_open_landing_preserves_full_stroke_and_actual_startup(self):
+        from analytical_contact import simulate_contact as analytical
+        self.assertEqual(CASE_DEFAULTS['landingOpenFraction'],2/3)
+        for finite_links in (False,True):
+            for alpha in (0,20):
+                req=self.request('landing',{'alpha':alpha,'m2':1 if finite_links else 0,
+                    'm3':1 if finite_links else 0,'m6':.5 if finite_links else 1.5},
+                    landingOpenFraction=1,landingDropMm=2000,landingBrakeTorqueNm=300,landingBrakeLimitNm=1000)
+                req['runConfig'].update(dt=.000125,duration=.85,outputHz=50)
+                m=validate_contact_request(req);q,h,_,z=initial_conditions(m,req['caseConfig'])
+                self.assertAlmostEqual(q,m.lo,delta=1e-14)
+                self.assertAlmostEqual((m.hi-q)/R,65,delta=1e-12)
+                for engine,sim in (('analytical',analytical),('pymunk',simulate_contact)):
+                    with self.subTest(finite_links=finite_links,alpha=alpha,engine=engine):
+                        req['engine']=engine;s=sim(req,stop_at_assessment=True)
+                        self.assertAlmostEqual(s['rows'][0]['theta2'],req['params']['te'],delta=1e-10)
+                        before=[row for row in s['rows'] if row['t']<=.5]
+                        self.assertLess(max(abs(row['theta2']-req['params']['te']) for row in before),1e-7)
+                        self.assertLess(max(abs(row['wheelZMm']-(z-.5*m.p['g']*row['t']**2)*1000) for row in before),.4)
+                        self.assertIsNotNone(s['caseMetrics']['impactTimeS'])
+                        self.assertGreater(max(row['theta2'] for row in s['rows']),req['params']['te']+.1)
+                        self.assertNotEqual(s['diagnostics']['termination'],'contact-penetration-limit')
+                        self.assertEqual(s['caseConfig']['landingOpenFraction'],1)
     def test_ballistic_hold_impact_and_reported_torque(self):
         req=self.request('landing');result=simulate_contact(req);m=validate_contact_request(req)
         q,h,x,z=initial_conditions(m,req['caseConfig']);g=m.p['g']
@@ -118,6 +144,43 @@ class ScenarioChecks(unittest.TestCase):
         self.assertEqual(result['evaluations'],8);self.assertEqual(len(result['trials']),8)
         req['caseConfig']['landingBrakeLimitNm']=0;result=minimum_required_torque(req,simulate_contact,iterations=3)
         self.assertFalse(result['feasible']);self.assertIsNone(result['torqueNm'])
+
+    def test_native_groove_endpoint_impulse_cannot_count_as_motor_arrest(self):
+        import json
+        from pathlib import Path
+        profile=json.loads((Path(__file__).resolve().parent/'saved-configurations/vsl-v45-nominal-alpha0.json').read_text())
+        p={**profile['params'],'theta2':100,'m1':11.25,'m2':0,'m3':0,'m6':.5,
+            'springK':profile['params']['springK']*11.25/8.75,
+            'p0':profile['params']['p0']*11.25/8.75}
+        request=dict(engine='pymunk',params=p,
+            runConfig={**profile['solverConfig'],'duration':1.5,'dt':.000125,'outputHz':1000,
+                'hipTorqueNm':0,'inputRiseMm':0,'iterations':160},
+            contactConfig=dict(mode='terrain-contact',drive='free',friction=.8,restitution=0),
+            caseConfig={**CASE_DEFAULTS,'kind':'landing','landingDropMm':1000,'landingOpenFraction':1,
+                'landingBrakeTorqueNm':97.22754764455685,'landingBrakeLimitNm':1000})
+        # Old free-relative-velocity sign detection missed the real native
+        # groove stop in this 2026-10-30 table fixture and falsely passed it.
+        result=simulate_contact(request,stop_at_assessment=True)
+        self.assertFalse(result['caseMetrics']['landingSuccess'])
+        self.assertEqual(result['caseMetrics']['outcome'],'bottom-out-before-arrest')
+        stop=next(e for e in result['events'] if e['type']=='compression-stop')
+        self.assertEqual(stop['detection'],'Native groove endpoint axial impulse')
+        self.assertGreater(stop['nativeGuideStopImpulseNs'],.1)
+        self.assertAlmostEqual(stop['nativeGuideStopImpulseNs'],stop['nativeGrooveImpulseNs'],delta=1e-9)
+        self.assertFalse(stop['rotorImpulseRemoved'])
+        arrest=result['caseMetrics']['firstArrestTimeS']
+        self.assertTrue(arrest is None or stop['t']<=arrest)
+        # Interior braking, including scalar rotor coupling near the initially
+        # fully-open endpoint, must not be relabelled as compression-stop work.
+        for alpha,rotor_inertia in ((0,0),(20,0),(0,.04),(20,.04)):
+            request['params']={**p,'alpha':alpha}
+            request['caseConfig']['landingBrakeTorqueNm']=300
+            request['runConfig'].update(outputHz=50,hipRotorInertiaKgM2=rotor_inertia)
+            with self.subTest(alpha=alpha,rotor_inertia=rotor_inertia):
+                normal=simulate_contact(request,stop_at_assessment=True)
+                self.assertTrue(normal['caseMetrics']['landingSuccess'])
+                self.assertFalse(any(e['type']=='compression-stop' for e in normal['events']))
+                self.assertLess(normal['caseMetrics']['maxCompressionDeg'],160)
 
 
 if __name__=='__main__':unittest.main(verbosity=2)

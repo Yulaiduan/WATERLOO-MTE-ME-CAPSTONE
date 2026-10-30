@@ -1293,3 +1293,38 @@ preset checks pass; the earlier broad JonHTML provenance mismatch remains open.
 Scientific previews3PNG/3GIF and captured-dataZIP are ignored app exports and
 native Notion attachments. See automatic-comparison.md for usage, exact API,
 limitations and numerical results; use app-root Start/Stop Kinefold.cmd at4191.
+
+## 2026-10-30 — Supplied landing table audit
+
+Owner requested45kg chassis,1/1.5m wheel-bottom falls,alpha0/20 andfull65deg in
+bothactual engines. App nowaccepts landingOpenFraction1 (fullte100→tc165) while
+preserving2/3defaults. OneGPT-6.1Sol worker owned range/UItests and two stop-event
+fixes; parent owned study/inverse-load runner, static-oracle tests, actualruns,
+report/Plotly/media/integration/publication. No Computer skill/GUI automation.
+
+Read table-landing-study.md for all inputs/results. Masslessrods, explicit.5kg
+wheel,friction.8,ideal jointmotor;45kgchassis means11.25kgpercorner pluswheel.
+Springoff versus V4k/p0scaled(11.25/8.75)*cos(alpha),unchangedroute,noextra softstop.
+Assisted localupperpassing torqueA/P:1a96.24/96.62,1b144.78/144.78,2a97.008/97.253,
+2b145.92/145.92Nm. ABtightstrand atprinted97/146Nm:1a5.721/5.774,1b7.714/7.796,
+2a3.221/3.221,2b4.200/4.201kN. These are1msmassless-link inverse-dynamics estimates,
+not physical beltshock peaks. Springoffprintedcommandsallbottomout. Rounded97
+fails2a atzeroreserve; unrounded97.28162256passesboth atdt.0001. Whole-numbercommon
+commands97/145/98/146assisted and137/185/140/189off passboth atdt.0001.
+
+Study exposedanalyticalPGS andplainnativegroove stopimpulsesmissedbyoldposition/
+velocitysign events, creatingfalsemotor-onlyarrest. Nowclassify actualstopimpulse;
+native rotorwheelkick removedbeforegrooveprojection,finite native stop retained.
+Force laws/constraints/tolerances unchanged. Initialfailedcaptures retainedignored;
+final240-run evidence usesfixedclassifications.29analytical/case/finite and34native/
+case/motor/work groups,35projects,115energy,185698alpha and3study groups pass.
+Fouractualstaticruns matchJonAB spanswithin.1N andbodymomentumwithin.001N;10um
+poseholding boundacknowledgesnativecoldcontactslop. Priorwhole-sourcehashfailure
+unchanged/unclaimed. Case1bdt.00025→.0001 reducesgcompresidual6.17→2.46JA,
+8.93→3.56JP;zerostopreservebracketprecision isnotphysicalaccuracy.
+
+18PlotlyPNG,primary/fine/coarserawdata,sources and16portableprofileJSON remain
+ignoredappfolders andnativeNotionattachments. Noactiveprofile write;librarySHA
+b580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511 unchanged.
+Newenginehashes invalidate unrun generation fromoldercomparison captures bydesign;
+exactstoredframes remainhistoricalevidence. Createa freshstudy fornewcomputations.

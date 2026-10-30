@@ -70,6 +70,42 @@ class AnalyticalContactChecks(unittest.TestCase):
         request['caseConfig'].update(landingBrakeTorqueNm=100,undersideOffsetMm=None);r=simulate_contact(request)
         self.assertTrue(r['caseMetrics']['landingSuccess'])
         self.assertIsNone(r['caseMetrics']['minimumUndersideClearanceMm'])
+    def test_coupled_pgs_compression_impulse_cannot_count_as_motor_arrest(self):
+        # Retained 2026-10-30 table fixture: old event logic falsely passed
+        # 97 Nm at q=164.9999897 after the coupled floor/stop impulse arrested A.
+        profile=json.loads((ROOT/'saved-configurations/vsl-v45-nominal-alpha0.json').read_text())
+        p={**profile['params'],'theta2':100,'m1':11.25,'m2':0,'m3':0,'m6':.5,
+            'springK':profile['params']['springK']*11.25/8.75,
+            'p0':profile['params']['p0']*11.25/8.75}
+        request=dict(engine='analytical',params=p,
+            runConfig={**profile['solverConfig'],'duration':1.5,'dt':.000125,'outputHz':1000,
+                'hipTorqueNm':0,'inputRiseMm':0,'iterations':160},
+            contactConfig=dict(mode='terrain-contact',drive='free',friction=.8,restitution=0),
+            caseConfig={**CASE_DEFAULTS,'kind':'landing','landingDropMm':1000,'landingOpenFraction':1,
+                'landingBrakeTorqueNm':97,'landingBrakeLimitNm':1000})
+        result=simulate_contact(request,stop_at_assessment=True)
+        self.assertFalse(result['caseMetrics']['landingSuccess'])
+        self.assertEqual(result['caseMetrics']['outcome'],'bottom-out-before-arrest')
+        stop=next(e for e in result['events'] if e['type']=='compression-stop')
+        self.assertEqual(stop['detection'],'Accumulated unilateral PGS stop impulse')
+        self.assertGreater(stop['guideStopImpulseNs'],.1)
+        self.assertGreater(stop['angularStopImpulseNms'],0)
+        self.assertAlmostEqual(stop['t'],.681875,delta=1e-9)
+        self.assertAlmostEqual(stop['verticalMomentumBeforeKgMS'],stop['verticalMomentumAfterKgMS'],delta=1e-10)
+        self.assertLessEqual(stop['guideStopGapMm'],stop['guideStopActivationToleranceMm'])
+        arrest=result['caseMetrics']['firstArrestTimeS']
+        self.assertTrue(arrest is None or stop['t']<=arrest)
+        # A real motor arrest comfortably inside the stroke stays a pass;
+        # finite-link/tilted geometry must not turn ordinary braking into a stop.
+        for alpha,link_mass in ((0,0),(20,0),(20,1)):
+            request['params']={**p,'alpha':alpha,'m2':link_mass,'m3':link_mass}
+            request['caseConfig']['landingBrakeTorqueNm']=300
+            request['runConfig']['outputHz']=50
+            with self.subTest(alpha=alpha,link_mass=link_mass):
+                normal=simulate_contact(request,stop_at_assessment=True)
+                self.assertTrue(normal['caseMetrics']['landingSuccess'])
+                self.assertFalse(any(e['type']=='compression-stop' for e in normal['events']))
+                self.assertLess(normal['caseMetrics']['maxCompressionDeg'],160)
     def test_landing_event_and_energy_refinement(self):
         residuals=[];impacts=[]
         for dt in (.001,.0005,.00025):

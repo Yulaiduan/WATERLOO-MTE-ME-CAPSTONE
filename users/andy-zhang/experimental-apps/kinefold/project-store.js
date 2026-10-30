@@ -41,7 +41,7 @@ function validateCase(value){
  keys(value,Object.keys(caseDefaults),'case configuration');
  for(const key of Object.keys(caseDefaults))if(!(key in value))throw Error('Missing case setting: '+key);
  if(!['terrain-stability','jump','landing'].includes(value.kind)||!['entered','energy-sized'].includes(value.brakeStrategy)||typeof value.energyMethod!=='boolean')throw Error('Choose a known case and braking strategy.');
- for(const [key,[lo,hi]]of Object.entries({jumpTorqueNm:[0,10000],landingDropMm:[0,5000],landingOpenFraction:[.01,.99],landingBrakeTorqueNm:[0,10000],landingBrakeLimitNm:[0,10000]}))if(!Number.isFinite(value[key])||value[key]<lo||value[key]>hi)throw Error(key+' must be between '+lo+' and '+hi+'.');
+ for(const [key,[lo,hi]]of Object.entries({jumpTorqueNm:[0,10000],landingDropMm:[0,5000],landingOpenFraction:[.01,1],landingBrakeTorqueNm:[0,10000],landingBrakeLimitNm:[0,10000]}))if(!Number.isFinite(value[key])||value[key]<lo||value[key]>hi)throw Error(key+' must be between '+lo+' and '+hi+'.');
  if(value.undersideOffsetMm!==null&&(!Number.isFinite(value.undersideOffsetMm)||value.undersideOffsetMm<0||value.undersideOffsetMm>5000))throw Error('Underside offset must be blank (unassessed) or 0–5000 mm below hip A.');
  return {...value};
 }

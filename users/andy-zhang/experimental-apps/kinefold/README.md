@@ -98,6 +98,14 @@ manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses
 
 ## Developer checks
 
+The [45kg / full65deg landing-table study](table-landing-study.md) records actual
+paired1/1.5m alpha0/20 cases, torque brackets, AB interval-load reconstruction,
+spring assumptions and energy/refinement results. Landing opening1 is now
+accepted and labelled fully open; the existing2/3 default is preserved.
+`python table_landing_study.py --output .preview/my-table-study` reproduces the
+bounded comparison in the app environment. `python verify_table_landing_study.py`
+checks reconstruction against retained Jon V4 statics and actual momentum balance.
+
 Saved actuator playback: `node verify-comparison-replay.cjs` checks the shared
 clock, strict saved-frame selection, fixed camera and read-only mounts.
 `node verify-replay-integration.cjs --bundle PATH --bundle PATH --bundle PATH`

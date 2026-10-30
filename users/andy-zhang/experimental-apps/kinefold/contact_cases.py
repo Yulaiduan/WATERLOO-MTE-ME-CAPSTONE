@@ -27,7 +27,7 @@ def resolve_case(payload):
     if c['brakeStrategy'] not in ('entered','energy-sized'):raise ValueError('Unknown brakeStrategy.')
     for k in ('jumpTorqueNm','landingDropMm','landingBrakeTorqueNm','landingBrakeLimitNm'):
         if not finite(c[k]) or not 0<=c[k]<=(5000 if k=='landingDropMm' else 10000):raise ValueError(k+' exceeds the allowed finite case range.')
-    if not finite(c['landingOpenFraction']) or not .01<=c['landingOpenFraction']<=.99:raise ValueError('landingOpenFraction must be within [.01,.99].')
+    if not finite(c['landingOpenFraction']) or not .01<=c['landingOpenFraction']<=1:raise ValueError('landingOpenFraction must be within [.01,1]; 1 starts fully open at te.')
     if c['undersideOffsetMm'] is not None and (not finite(c['undersideOffsetMm']) or not 0<=c['undersideOffsetMm']<=5000):raise ValueError('undersideOffsetMm must be null or nonnegative finite.')
     if type(c['energyMethod']) is not bool:raise ValueError('energyMethod must be boolean.')
     return c

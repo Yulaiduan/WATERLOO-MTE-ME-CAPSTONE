@@ -5211,3 +5211,50 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Exi
 Open tab06 Automatic comparison, load the latest stored result, filter saved motor/gearbox and select a row to replay Landing/Jump/Terrain with one exact shared clock/camera in the pair or read-only tabs02/03.
 Missing cases run only on explicit request from frozen study settings, persist separately, resume monitoring afterrefresh and never apply toStudio; Start Kinefold.cmd restarts4191 independently ofCodex.
 Read automatic-comparison.md andappcontext for API/limitations/tests, use212player/48integration/16backend checks for followup and retain the known broad provenance failure separately from the passing focused suites.
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — Actual full-stroke landing table comparison
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member app and reproducible study.
+- **Associated Issue/Task:** Owner requested actual analytical/Pymunk45kgchassis,1/1.5m wheel-bottom drops,alpha0/20 andfull65deg braking, with motor/belt comparison against suppliedtable. Based on fetchedmain9fca28d; one authorizedGPT-6.1Sol worker used isolatedtable-braking checkout for requiredfullopen input support and discoveredstop classifications; parent architecture/study/math-oracle/audit/media/documentation/publication. No Computer skill/GUIautomation or liveprofilewrite.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/table-landing-study.md`
+- `users/andy-zhang/experimental-apps/kinefold/table_landing_study.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_table_landing_study.py`
+
+- **API/Interface Changes:** Case landingOpenFraction upperbound becomes1 in Python/JS/UI,1labelledfullyopen; default2/3 andlower.01preserved, project-v3 remainsbackcompatible. Analytical stop events nowfollow actual existingcoupledPGS impulse; native grooveendpoint events use actualaxial guideimpulse with scalarrotor wheelkickremoved, retainingfinitehip-stop branch. Additive eventimpulse/detection metadata. Forces/integration constraints/tolerances unchanged; actualstop-assistedarrest isfailed ratherthan falsemotor-onlypass. Newbounded table_landing_study.py captures exactpairs, springoff/explicitV4assist, guardedsourcecache, step-event torque brackets verifiedatfulloutput, intervalmasslessABinverse-dynamics, JSON/CSV. Newstudytests compare retainedJonABstatics andbodymomentum; detailedappreportlinks assumptions/results. NativeABload isreconstructed, notan elasticstrand sensor. No canonical/sharedinterface/enforcement/dependency changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS worker29analytical/case/finite and34contact/case/motor/workgroups,including bothactualfalsepasses andample-stroke/tilt/rotornegatives; parent35project/library,115standaloneenergy,185698tiltedenergy and712EnergyUI assertions/groups.3study groups PASS: exact4tablecases/2engines/full65/11.25kg, explicitscaledassist,4actualstaticA/Palpha0/20 holdingruns matchingretainedJonABtightstrand within.1N andbodymomentum within.001N,10umworldholding bound. Finalretained evidence240actualengine executions incl16printed-commandruns,localbrackettrials/fulloutputchecks,16finewholeNmcommands,4coarsechecks,2unrounded97.28162256checks. Finalgcomp upperpassingA/P Nm:1a96.24/96.62,1b144.78/144.78,2a97.008/97.253,2b145.92/145.92. PrintedcommandsABkN:5.721/5.774,7.714/7.796,3.221/3.221,4.200/4.201;these1msminimumtightstrand estimates exclude reportedimpact/stop intervals. Springoffprintedcommandsallbottomout; all16fine rounded-upcommoncommandrunsarrest underunchanged1mmguards. Case1bgcompresidualdt.00025→.0001:6.171→2.457JA,8.932→3.560JP; residualsnotphysicalabsorption. Initial11minstudy exposedanalyticalfalse97Nmarrest thennative97.22755falsearrest; finalreview reranallaffectedenginecasesafteractualimpulsedetectionfixes, preservingoldcapturesignored. Initialnew.0001degstaticposeassertfailednative~.00048degcoldslop; independentforce/momentumchecks passed andnewposecheckuses10umphysicaldrift. ExistingbroadwholeJonHTMLhashfailure unchanged/unclaimed.18offlinePlotlyPNGandfullsource/data/profileZIPs rendered,dimensions/CRC/SHA/visualchecked; nativeNotionuploads/report.16portableprofiles round-tripcheckedbeforepublication. App-rootlauncherstop/start/reuse/restart fromunrelatedcwd andactualguardedHTTPtwoenginefullyopenholds/servedcontrolbytes checked4191. ProfilelibrarySHAb580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511 unchanged. Compilation/syntax/whitespace/localdocslinks andnormalfetched-base/staged/exact-push workspacegates apply. No livepointer/GPU/hardware acceptanceclaimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app. Table doesnotprovidewheel/rod masses,springtuning,friction,pulleys/preload; useexplicitmasslessrods,.5kgwheel,mu.8,V4geometry andoff/angle-scaledV4assistwithoutaddedsoftstop. Table45kgchassis isnotV4.5gross45kg. Brackets atzerostopreserve arenotglobalminima/physicalaccuracy; finaltests showrounded97fails2a whileunrounded97.2816passesbothatdt.0001. Source/assertion/provenance and1mmguards notweakened;rawruns/PNGsstayignoredappfolders,notDownloads.
+
+Initial portable export validation rejected UUID-only IDs; all16 were corrected to the existing design-prefix contract, round-tripped through project decode, and repackaged before attaching the final archive. No live profile was written.
+
+## 4. Compute Saving Handoff State
+
+The supplied4landingcases now haveactualpairedtorque/belt/energy evidence andfullopening1canbereplayed throughordinarydynamiccontrols withoutchangingthe2/3default.
+Read table-landing-study.md andrun table_landing_study.py withanewapp-localoutputfolder forfreshcases; sourceguards rejectstalecomputations whileexactcachedframesremainhistoricalevidence.
+Retainbothstop-impulseregressions, distinguishminimumtightstrandintervals fromphysicalbeltshock andmotorworkfromnumericalconstraintaccounts, anduseStart Kinefold.cmd at4191 forrestart.

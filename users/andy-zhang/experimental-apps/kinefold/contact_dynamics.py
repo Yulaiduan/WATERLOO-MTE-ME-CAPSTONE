@@ -288,9 +288,22 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
             M=p['m1']+p['m6'];vz=(p['m1']*chassis.velocity.y+p['m6']*wheel.velocity.y)/M
             chassis.velocity=(0,vz);wheel.velocity=(0,vz);controller.extended=True
             events.append(dict(t=t,type='extension-stop'))
-        free_sd=(wheel_free-chassis_free).dot(pymunk.Vec2d(*m.axis))
-        atlo=spos2<=bounds[0]+1e-6 and free_sd<0
-        athi=spos2>=bounds[1]-1e-6 and free_sd>0
+        guideJ=p['m6']*(wheel.velocity-wheel_free)-contactJ
+        grooveJ=guideJ
+        if rotor is not None:
+            # The scalar rotor also kicks the wheel along the guide. Remove
+            # its exact signed native impulse before identifying a groove stop.
+            # NativeRotor._pre uses this same post-position-update Jacobian.
+            grooveJ=guideJ+pymunk.Vec2d(*m.axis)*(rotor.accumulated_impulse/m.jacobian(q2))
+        axial_stop_impulse=grooveJ.dot(pymunk.Vec2d(*m.axis))
+        if not linkage:
+            # Interior groove impulses are perpendicular to the guide; only
+            # an endpoint generates an axial impulse. Solving can reverse the
+            # relative velocity, so its sign cannot decide whether a stop acted.
+            # Keep the existing 1e-6 m endpoint band and native 1e-10 impulse
+            # significance cutoff; no change to the constraint solve or motion.
+            atlo=spos2<=bounds[0]+1e-6 and axial_stop_impulse>1e-10
+            athi=spos2>=bounds[1]-1e-6 and axial_stop_impulse< -1e-10
         if linkage:
             # The solved stop impulse can already reverse qdot. Detect the
             # actual native angular constraint impulse, not the post-impact
@@ -310,6 +323,9 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
             if not any(e['type']==which for e in events):
                 event=dict(t=t,type=which)
                 if linkage:event.update(detection='Native hip-stop impulse',nativeHipStopImpulseNms=abs(linkage.stop.impulse))
+                else:event.update(detection='Native groove endpoint axial impulse',
+                    nativeGuideStopImpulseNs=abs(axial_stop_impulse),nativeGuideAxialImpulseNs=axial_stop_impulse,
+                    nativeGrooveImpulseNs=guide.impulse,rotorImpulseRemoved=rotor is not None)
                 events.append(event)
             if which=='extension-stop' and case['kind']=='jump':controller.extended=True
         active=bool(points)
