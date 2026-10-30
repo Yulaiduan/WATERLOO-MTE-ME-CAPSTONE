@@ -41,7 +41,8 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "terrain-catalog.json", "terrain-profiles.js", "terrain-profiles.css", "terrain-ui.js",
           "motor-gearbox-catalog.json", "motor-gearbox-catalog.js", "motor-gearbox-catalog.css",
           "actuator-calculator.js", "actuator-calculator-ui.js", "actuator-calculator.css",
-          "automatic-comparison.js", "automatic-comparison.css", "actuator-workspace.js"}
+          "automatic-comparison.js", "automatic-comparison.css", "actuator-workspace.js",
+          "comparison-replay.js", "comparison-replay.css", "comparison-replay-bridge.js"}
 
 
 VENDOR_ROUTE = "/vendor/plotly-basic-4.1.2.min.js"

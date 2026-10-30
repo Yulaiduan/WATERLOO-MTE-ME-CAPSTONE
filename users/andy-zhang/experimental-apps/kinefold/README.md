@@ -41,7 +41,11 @@ manual snapshot, while the live profile library remains local.
   equations and the calculations, charts and files they produce.
 - **06 Actuator studies:** automatic exact motor/gearbox comparison across landing,
   jump and terrain, with independent analytical/native finite-link runs and editable
-  assumptions. See [automatic comparison](automatic-comparison.md). The separate
+  assumptions. Filter the saved results by motor and exact gearbox, select a row,
+  then choose Landing, Jump or Terrain in its replay panel. The paired animation
+  uses one clock and camera; open the same capture in tabs 02/03 without applying
+  it to the live design. Missing pairs have an explicit **Run captured case in
+  both engines** action. See [automatic comparison](automatic-comparison.md). The separate
   inertia quick calculator remains an independent read-only profile geometry/mass screen
   with searchable Pure Motor Rev2 and SO Gearbox Index choices, reflected inertia,
   acceleration/time/speed, low/medium/high editable drag and an optimistic jump
@@ -93,6 +97,15 @@ Remote spring housing is schematic. Cable stretch, friction, strength, contact,
 manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses.
 
 ## Developer checks
+
+Saved actuator playback: `node verify-comparison-replay.cjs` checks the shared
+clock, strict saved-frame selection, fixed camera and read-only mounts.
+`node verify-replay-integration.cjs --bundle PATH --bundle PATH --bundle PATH`
+accepts landing, jump and terrain API response JSONs and verifies actual drawings,
+case/tab handoff, Plotly results, refresh recovery and cancellation in a DOM fixture.
+`python verify_comparison_replay.py --real` uses the app environment to check
+the service lifecycle and run all three cases through both engines in temporary
+captures. These are reproducible numerical/DOM checks, not a live pointer review.
 
 `node verify-energy.cjs`, `node verify-energy-workspace.cjs` and
 `node verify-energy-ui.cjs` check retained landing values, jump/landing energy

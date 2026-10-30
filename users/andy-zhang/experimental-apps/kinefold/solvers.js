@@ -164,6 +164,7 @@ async function download(id,csv) {
   try { await KinefoldStudio.saveArtifact(`${name}-${id}.${csv?'csv':'json'}`,content,csv?'text/csv':'application/json'); }
   catch(error) { status(id,'Run export failed: '+error.message,'error'); }
 }
+globalThis.KinefoldLiveDynamics=Object.freeze({pauseAll(){for(const id of engines)stop(id);}});
 for(const id of engines)dynamicShell(id);
 KinefoldEnergyUI.mount('energy',$('energy'));
 window.addEventListener('kinefold-design-change',event=>changed(event.detail));

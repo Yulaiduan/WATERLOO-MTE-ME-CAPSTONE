@@ -5161,3 +5161,53 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. The
 Kinefold tab06 now captures V4.5 and exact motor/SO pairs, screens all selected combinations and performs bounded paired finite-link landing/jump/terrain tests with editable missing-data assumptions.
 Refresh at4191, openActuatorstudies anduseOpenlateststoredresult for joba52d2ac28caf4bc6968814610af1be29; Start Kinefold.cmd restarts aftershutdown andcomparison settings/exports remain inappfolders.
 Read automatic-comparison.md andappcontext for exactdata gaps, physicalstop dominance, all-bodyCOM energy, originalspring, parameterlimits andactualvalidation; obtain measured motor/gear/controller/regen/thermal data beforehardwareselection.
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — Saved motor/gearbox paired case replay
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member app.
+- **Associated Issue/Task:** Owner requested selecting an exact saved motor/gearbox combination and replaying landing, jump and terrain in analytical/Pymunk with captured settings and synchronized animations, tested in both engines. Based on fetched main b5a84ce. Two authorized GPT-6.1 Sol workers used isolated app checkouts; parent architecture/integration/audit/publication. No Computer skill or browser/native UI automation.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.css`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.js`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.md`
+- `users/andy-zhang/experimental-apps/kinefold/comparison-replay-bridge.js`
+- `users/andy-zhang/experimental-apps/kinefold/comparison-replay.css`
+- `users/andy-zhang/experimental-apps/kinefold/comparison-replay.js`
+- `users/andy-zhang/experimental-apps/kinefold/comparison_replay_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/comparison_replay_worker.py`
+- `users/andy-zhang/experimental-apps/kinefold/comparison_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-automatic-comparison.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-comparison-replay.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-replay-integration.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_comparison_replay.py`
+
+- **API/Interface Changes:** Additive guarded POST /api/actuator-comparison actions replay/run-replay/replay-status/replay-result/replay-cancel; kinefold/comparison-replay-v1 contains exact matched captured payloads, rows/frames, assessments, geometry/source/settings identity. Bounded owned app-venv child with shared dynamics lock and separate replay cache, atomic index/status, cancel/shutdown/orphan handling; no arbitrary config/path input or original-study/latest/profile writes. Unrun default generation requires captured generator source hashes; exact saved frames remain available without runtime. Saved-motor/exact-gearbox/token filters select captured rows. Shared immutable controller uses actual last-sample frames, fixed union camera, honest end/held states and one play/pause/scrub/speed clock across paired tab06 and read-only tab02/03 mirrors; actual spring/terrain/wheel geometry reused. Add KinefoldLiveDynamics.pauseAll only for playback lifecycle; live controls/settings preserved. Captured charts remain offline Plotly; extra replay assessments are separate from immutable original table. Source hashes, strict bounds, assertions and all physics implementations unchanged.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS verify_comparison_replay.py --real:16groups including all3actualcases x2engines, malformed/mismatched payload rejection, source drift guard, cache persistence, lock/cancel/deadline/shutdown/orphan and running-job recovery. PASS212sharedplayer assertions with actual saved landing/jump/terrain bundles;48integration assertions for actual drawings, synchronizedclock/tab/scrub, Plotly, stale-response protection, missing-case compute, refresh monitoring, retainedCancel after monitorerror and zeroStudio writes;115automaticcomparisonUI assertions. Affected earlier parent checks pass3789dynamicPlotly,712EnergyUI,34project/library,48presetUI and21comparisonbackend groups. Real guarded HTTP additionally ran untested Flipsky6384 170KV Battle Hardened/HTG90-G20 for3cases x2engines,151rows/frames each with identical non-engine payloads. FinalHTTP after app-rootlauncher start/reuse/stop/restart checks6cachedpairs (two candidates x3cases), exact6servedassets, originalactuatorroute and403foreignorigin. Originala52d2ac28caf4bc6968814610af1be29 latestpointer and librarySHAb580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511 unchanged. Scientific3PNG/3GIF rendered fromactualframes, batchraster/GIFframes/ZIPCRC and visualchecks; native Notionuploads complete. Syntax/compile/whitespace and fetched-base/staged workspace gates apply beforepublication. Browserpointer/layout, native desktopclock synchronization, GPU andhardware notclaimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Existing broad node verify.cjs whole-JonHTML provenance mismatch remains unchanged and is not claimed passed; no check was weakened. Physical case failures remain failures in replay; successful plumbing does not certify the2m targets. Raw runs/media/logs stay ignored under app folders, not Downloads; no canonical asset, shared interface, dependency or enforcement change.
+
+## 4. Compute Saving Handoff State
+
+Open tab06 Automatic comparison, load the latest stored result, filter saved motor/gearbox and select a row to replay Landing/Jump/Terrain with one exact shared clock/camera in the pair or read-only tabs02/03.
+Missing cases run only on explicit request from frozen study settings, persist separately, resume monitoring afterrefresh and never apply toStudio; Start Kinefold.cmd restarts4191 independently ofCodex.
+Read automatic-comparison.md andappcontext for API/limitations/tests, use212player/48integration/16backend checks for followup and retain the known broad provenance failure separately from the passing focused suites.

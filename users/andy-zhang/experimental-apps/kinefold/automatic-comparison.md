@@ -237,3 +237,58 @@ start/reuse/restart from another cwd and unchanged profile-library hash are
 checked. The known pre-existing broad Jon HTML whole-file hash mismatch remains
 separate; no source hash or assertion is weakened to hide it. Canonical robot
 physics is not applicable to this isolated member workspace.
+
+## Saved motor/gearbox replay — 2026-10-30
+
+Open tab06 **Automatic comparison → Open latest stored result**, filter by saved
+motor and exact gearbox SKU, and select a row. Its Landing, Jump and Terrain
+buttons load a recorded analytical/Pymunk pair. **Play**, pause, speed and scrub
+control one clock across both animations. **Open in Analytical tab** and **Open in
+Pymunk tab** show that same read-only capture in tabs02/03; **View both together**
+returns to the pair. **Return to live design** restores the existing live controls.
+Neither action changes the active mechanism, motor, case or profile library.
+
+Every view uses actual recorded frames, wheel indices, moving terrain and spring
+stroke from the captured case. One fixed camera encloses both complete trajectories.
+At clock t, each engine displays its last recorded frame with timestamp <= t;
+there is no interpolation across contact/stop events. The displayed actual sample
+time can precede the common clock. Different end times are labelled explicitly,
+with a finished engine holding its final recorded frame. Status badges describe
+the physical case assessment, not whether playback succeeded. The native desktop
+viewer remains a separate live-design workflow; this shared clock controls the
+browser replay views.
+
+For an unrun row/case, **Run captured case in both engines** runs just that pair
+using its frozen study inputs. Existing saved payloads are authoritative. When
+neither payload exists, generation requires the captured default-generator source
+hashes to match; an incompatible source change requires a new study. Source/runtime
+identity and warnings are retained. Cached exact frames remain replayable without
+the physics environment. Replay calculations are stored separately from the
+original comparison; its immutable table and export remain the original batch.
+Additional actual assessments and plots appear in the captured replay. Reopening
+a running case resumes monitoring its existing owned worker. Monitoring errors
+keep cancellation reachable, and stale responses cannot replace a newer case.
+
+The guarded comparison endpoint adds `replay`, `run-replay`, `replay-status`,
+`replay-result` and `replay-cancel`. Selection accepts only the original safe
+job ID, exact captured candidate ID and `landing|jump|terrain`; clients cannot
+submit replacement physical settings. `kinefold/comparison-replay-v1` contains
+the frozen project/candidate, matched payloads, actual frames/rows, assessments,
+settings hash and source identity. New jobs live in ignored
+`.preview/actuator-replays/`, share the dynamics lock, run an owned app-venv child
+with a bounded timeout, and preserve cancellation/failure/orphan states. They
+never update the original study's latest pointer or active Studio library.
+
+Validation:16 service/validation groups pass with `--real`, including six actual
+temporary runs (three cases × two engines), source guards, settings identity,
+lock/cancel/timeout/shutdown/orphan handling and persisted reuse.212 shared-player
+and48 handoff/DOM/API/Plotly assertions pass with three real captured bundles;
+115 automatic-comparison UI assertions pass. Both animations render actual
+mechanisms, tab switching preserves the clock, scrubbing is exact, terrain moves
+and the free wheel spins. A previously unrun Flipsky6384 170KV Battle Hardened /
+HTG90-G20 pair also completed all three cases through guarded HTTP, with151
+rows/frames per engine and identical non-engine payload settings. Reopening uses
+its persisted cache. Original study a52d2ac28caf4bc6968814610af1be29 and profile
+library SHA b580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511
+remain unchanged. PNG/GIF previews are rendered from actual saved frames, not
+UI screenshots. Live pointer/layout review and hardware fidelity are unverified.

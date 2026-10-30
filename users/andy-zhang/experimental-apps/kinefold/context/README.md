@@ -1264,3 +1264,32 @@ are checked. Existing broad whole-source HTML provenance mismatch is unchanged.
 40PlotlyPNG/full-dataZIP are ignored app exports and native Notion attachments.
 No live UI or hardware acceptance is claimed. App-root Start/Stop launchers and
 HTTP guard/assets are verified at4191. Library SHA remainsb580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511.
+
+## 2026-10-30 — Exact saved actuator case playback
+
+Based on mainb5a84ce. Two authorized GPT-6.1 Sol workers built isolated replay
+service/player files; parent integrated the saved row selector, read-only02/03
+mirrors, recovery/source guards and actual HTTP validation. No Computer skill or
+browser/native UI automation. Tab06 filters saved motors/exact gearboxes, then
+opens Landing/Jump/Terrain with one shared clock/camera. Missing pairs run only
+on explicit request using captured settings. The immutable original batch/table
+is preserved; supplemental replay assessments/frames have separate storage.
+Native desktop viewer is still a separate live-design path.
+
+Entry modules: comparison-replay.js (actual last-sample player and pure SVG),
+comparison-replay-bridge.js (pair/solver-tab handoff and Plotly),
+comparison_replay_service.py and comparison_replay_worker.py (owned bounded job,
+guarded endpoint, exact payload/source identity, persisted cache). Saved settings
+are cloned/frozen, no Studio setters are used, live controls are preserved.
+Refresh resumes the existing owned case; monitor failure retains Cancel.
+Generator source drift blocks unrun-case regeneration, not exact cached playback.
+
+Final16backend groups with --real run six temporary actual engine cases;212player,
+48integration and115automaticUI assertions pass. Three additional cases for
+Flipsky6384 170KV Battle Hardened/HTG90-G20 completed through guarded4191HTTP,
+151rows/frames per engine, exact matching settings. Original full studylatest
+and libraryhash above remain unchanged. Affected dynamicPlotly/energy/project/
+preset checks pass; the earlier broad JonHTML provenance mismatch remains open.
+Scientific previews3PNG/3GIF and captured-dataZIP are ignored app exports and
+native Notion attachments. See automatic-comparison.md for usage, exact API,
+limitations and numerical results; use app-root Start/Stop Kinefold.cmd at4191.

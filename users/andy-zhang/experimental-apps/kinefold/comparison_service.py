@@ -16,6 +16,7 @@ import uuid
 
 from actuator_comparison import (ASSUMPTIONS,BUDGET,canonical,digest,
     validate_assumptions,validate_budget)
+from comparison_replay_service import ComparisonReplayService
 
 MAX_JSON=16*1024*1024
 TERMINAL={'complete','failed','cancelled','timed-out'}
@@ -43,6 +44,8 @@ class ComparisonService:
         self.python=Path(python_executable).resolve() if python_executable else self.root/'.venv'/('Scripts/python.exe' if __import__('os').name=='nt' else 'bin/python')
         self.shared_lock=shared_lock;self.lock=threading.RLock();self.current=None;self.process=None
         self.closed=False;self._lock_owned=False
+        self.replays=ComparisonReplayService(self.root,self.python,shared_lock,
+            main_busy=lambda:self.process is not None and self.process.poll() is None)
         # No PID is trusted after restart. Captures survive, but an old running
         # label cannot imply that a new server owns or can terminate its worker.
         if self.jobs.exists():
@@ -59,7 +62,7 @@ class ComparisonService:
 
     @property
     def busy(self):
-        with self.lock:return self.process is not None and self.process.poll() is None
+        with self.lock:return (self.process is not None and self.process.poll() is None) or self.replays.busy
 
     def _job_path(self,job_id):
         if not isinstance(job_id,str) or len(job_id)!=32 or any(c not in '0123456789abcdef' for c in job_id):raise ValueError('Invalid comparison job ID.')
@@ -152,6 +155,8 @@ class ComparisonService:
         if not isinstance(payload,dict) or not isinstance(payload.get('action'),str):raise ValueError('Comparison action required.')
         action=payload['action']
         with self.lock:
+            if action in ('replay','run-replay','replay-status','replay-cancel','replay-result'):
+                return self.replays.handle(payload)
             if action in ('defaults','load'):
                 if set(payload)!={'action'}:raise ValueError('Unexpected settings-load fields.')
                 settings=dict(assumptions=dict(ASSUMPTIONS),budget=dict(BUDGET)) if action=='defaults' else self._settings()
@@ -193,6 +198,7 @@ class ComparisonService:
     def close(self):
         with self.lock:
             self.closed=True
+            self.replays.close()
             if self.process is not None and self.process.poll() is None:
                 self.process.terminate()
                 directory,job=self._job(self.current);job.update(state='cancelled',message='Server shutdown stopped its owned worker.');atomic_write(directory/'status.json',job)
