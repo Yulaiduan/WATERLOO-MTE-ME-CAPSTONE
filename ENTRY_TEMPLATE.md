@@ -5049,3 +5049,57 @@ Open either dynamic tab's Terrain stability surface controls, preview the seed/v
 Read the updated app README/context for incline initialization, vertical-slide reactions, detrended-statistic windows and retained refinement discrepancies, then use focused terrain/contact checks and normal workspace publication gates for extensions.
 
 ---
+
+## Entry: 2026-10-29 — Andy Zhang — Motor/SO catalog, V4.5 and independent actuator calculator
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app component/analytical workspace.
+- **Associated Issue/Task:** Owner requested another agent to build Pure Motor Rev2/SO Gearbox Index selection/search/comparison, a V4.5 profile with 1 kg per link and 0.5 kg wheel, and a separate simple acceleration/jump calculator with preliminary Coulomb/viscous cases. Based on fetched main ad62f91. Two explicitly authorized GPT-6.1 Sol workers used separate checkouts; parent handled architecture/review/integration/source audits/profile/docs/publication. No Computer skill, browser/native UI automation or GUI window was used. Private ChatGPT source URL unreadable; no source-chat equation claim.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.css`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/motor-gearbox-catalog.css`
+- `users/andy-zhang/experimental-apps/kinefold/motor-gearbox-catalog.js`
+- `users/andy-zhang/experimental-apps/kinefold/motor-gearbox-catalog.json`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/vsl-v45-nominal-alpha0.json`
+- `users/andy-zhang/experimental-apps/kinefold/verify-actuator-calculator.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-motor-gearbox-catalog.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+
+- **API/Interface Changes:** Additive actuator tab06 with conventions last07; new offline actuator-catalog-v1 with14motors/157SOlistings, immutable exact-SKU combinations, searchable selector/four pins/explicit app-folder exports. Rotor J name-joins assumed Rev2 six-component model; source blanks/nulls, scenarios and provenance retained. New pure actuator-calculator-v1 calculate/geometry/inertia/energy-domain integration/Plotly specifications and read-only Studio UI. Motor-to-hip gearing reflects N² inertia once, source input gear J converted1e-4, source caps distinct from missing motor rpm. Independent editable6000rpm/unknown-efficiency0.9/unknown gear-J omission examples and1/3/8% output Coulomb+viscous sensitivity at10rad/s are disclosed; no physical motorConfig or simulation coupling. All-body gravity/alpha/variable inertia included; conditional COM jump excludes rotor/internal/horizontal kinetic energy and has no unilateral liftoff/traction/stop claim. Add Projects.v45(), portable independently identified V4.5 profile and studio reference action: m1=8.75,m2=m3=1,m5=0,m6=.5; original geometry/spring/alpha retained, prescribed-height10mmC2transitions. Existing actual-contact/old Energy-tab massless-link guards remain. No project-v3 schema, canonical model, shared interface, dependency, external source app, agent rule or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Parent PASS4,190 independent field/source/annular-component assertions across all171records/84components,3,081 independent retained-point/finite-difference/closed-form checks over240fixtures and198poses (max inertia error1.56e-10kgm², Jprime3.56e-10). New retained suites PASS1,389catalog/source/SI/DOM and6,152calculator analytical/DOM assertions/57BASICscatter mounts, includingN²/rods/constant+viscous ramps, varyingJ, tilted all-body gravity, energy ledger/rotor exclusion/stall/caps and no physical setter. Existing34project groups/55preset/712EnergyUI/48presetUI/3,770dynamicPlotly/185,698alphaEnergy assertions pass; two exact tab-route expectations updated for additive actuator route. Copied10mm-height/1s prescribed runs in both engines reach travel-limit around0.708s with16rows under unchanged spring; no duration-completion/retuned-support claim. Same actual HTTP API fixtures pass and preserve post-install library hash.11served assets match disk; actuator panel/route/catalog counts correct. App-local Start/Stop/start/reuse from unrelatedcwd checked4191. Owner-requested live profile update archives previous working, adds/selects portableV4.5 and preserves four existing namedrecords via optimistic revision224→227; beforeSHA b681d0f2f86f1d487a3700dd9efd8696215ced3ed276b5594a454b61ff13d458, after b580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511. Scientific Plotly2overviews+all10calculator PNGs/fullJSON/profile/auditZIP integrity checked and overview visually reviewed; clipped energy label repaired. No UI screenshot/visual pointer/console or hardware review claimed. Syntax/compile/LF/whitespace/relative-links plus fetched-base/staged/require-passed/workspace gates apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. `node verify.cjs` retains a pre-existing whole Jon-source HTML hash mismatch: expected37767388cfd20ae6fe7a03fd932a75f13660f773db5c875b6d902f3a35208cff, actual9fa3528cd5ddd5c6b036fa00480d55aae6efe2b4d711bd91a2715fa94e0fc677; source is unchanged from fetchedmain. Retained mathematical blocks still exactly match expected901bd62627bf5d3709f8a3fc9aabded2a646d86b4988d6df52ef19d69d5fa7d6 and are present verbatim in reference-v4.js. No hash/assertion/source was changed to hide it; this contribution does not claim every old suite passes. Initial local audit helpers had an unused import, an incorrect duration-completion expectation for the heavier unsprung profile and string-vs-number range comparison; these test-helper errors were corrected against actual model/source contracts. Worker viscous time-quadrature error led to a real rest-start/Gauss time-integration improvement and convergent closed-form checks. Raw evidence stays ignored; no hardware ratings, compatible mounting, full contact-link simulation or achieved jump is certified.
+
+## 4. Compute Saving Handoff State
+
+Kinefold now offers a source-traceable14motor/157SOcatalog and independent actuator tab with immutable comparisons, N²inertia, three editable loss cases, all-body acceleration/stroke and conditional jump plots.
+Refresh the app to load the newly savedV4.5, use tab06 for calculator-only candidates, and restart with the existing app-root Start Kinefold.cmd at4191 after shutdown; original V4/contact designs and the previous working snapshot remain available.
+Read actuator-calculator.md and app context for source missing-rpm/estimated-inertia assumptions, finite-link mode limits, alpha/COM energy conventions and the existing whole-source provenance mismatch, then rerun focused affected checks and ordinary workspace publication gates for extensions.
+
+---

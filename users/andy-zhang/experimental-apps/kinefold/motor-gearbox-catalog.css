@@ -1,0 +1,38 @@
+/* Independent catalog layout; no app navigation or simulation state. */
+.actuator-catalog { color: var(--ink, #283c35); font-size: 13px; }
+.actuator-catalog .ac-status { font-weight: 650; }
+.actuator-catalog .ac-notice { padding: 11px 13px; background: var(--sage-pale, #edf2e8); border-radius: 8px; line-height: 1.55; }
+.actuator-catalog .ac-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 16px; }
+.actuator-catalog .ac-picker { min-width: 0; }
+.actuator-catalog .ac-field { display: flex; flex-direction: column; gap: 5px; margin: 9px 0; }
+.actuator-catalog .ac-field > span { font-size: 12px; font-weight: 650; }
+.actuator-catalog input, .actuator-catalog select { box-sizing: border-box; width: 100%; border: 1px solid var(--line, #c6cdbf); border-radius: 6px; padding: 8px; background: var(--paper, #fffdf7); color: inherit; font: inherit; }
+.actuator-catalog select[size] { min-height: 153px; padding: 3px; }
+.actuator-catalog option { padding: 6px 4px; }
+.actuator-catalog .ac-filters { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.actuator-catalog .ac-selection { margin-top: 16px; border: 1px solid var(--line, #c6cdbf); border-radius: 9px; padding: 13px; }
+.actuator-catalog h4 { margin: 0 0 12px; font-size: 14px; }
+.actuator-catalog .ac-metrics { display: grid; grid-template-columns: minmax(150px, .9fr) minmax(0, 1.2fr); gap: 7px 16px; margin: 0; line-height: 1.45; }
+.actuator-catalog dt { color: var(--muted, #637167); }
+.actuator-catalog dd { margin: 0; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.actuator-catalog details { margin-top: 13px; line-height: 1.6; }
+.actuator-catalog summary { cursor: pointer; font-weight: 600; }
+.actuator-catalog .ac-links { display: flex; flex-wrap: wrap; gap: 8px 16px; }
+.actuator-catalog a { color: var(--accent, #476b4d); text-underline-offset: 3px; }
+.actuator-catalog .ac-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 13px 0; }
+.actuator-catalog button { border: 1px solid var(--line, #c6cdbf); padding: 8px 11px; border-radius: 6px; background: var(--paper, #fffdf7); color: inherit; cursor: pointer; font: inherit; }
+.actuator-catalog button:hover { background: var(--sage-pale, #edf2e8); }
+.actuator-catalog button:focus-visible, .actuator-catalog input:focus-visible, .actuator-catalog select:focus-visible { outline: 2px solid var(--accent, #476b4d); outline-offset: 2px; }
+.actuator-catalog button:disabled { opacity: .5; cursor: default; }
+.actuator-catalog .ac-muted { color: var(--muted, #637167); line-height: 1.5; }
+.actuator-catalog .ac-table-scroll { overflow-x: auto; }
+.actuator-catalog table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.actuator-catalog th, .actuator-catalog td { padding: 9px; border-bottom: 1px solid var(--line, #c6cdbf); text-align: left; vertical-align: top; }
+.actuator-catalog th { font-size: 11px; font-weight: 650; }
+.actuator-catalog td:first-child { min-width: 180px; }
+@media (max-width: 700px) {
+  .actuator-catalog .ac-columns { grid-template-columns: minmax(0, 1fr); }
+  .actuator-catalog .ac-metrics { grid-template-columns: minmax(0, 1fr); gap: 3px; }
+  .actuator-catalog dd { margin-bottom: 8px; }
+  .actuator-catalog .ac-filters { grid-template-columns: 1fr 1fr; }
+}

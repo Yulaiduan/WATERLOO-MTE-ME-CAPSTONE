@@ -1156,3 +1156,72 @@ ignored exports and visually verified. Live UI layout/pointer review is unverifi
 under the no-computer-use constraint. App-local Start/Stop/restart/reuse, exact
 served-asset checks and ordinary workspace/log publication gates apply at4191;
 restart using Start Kinefold.cmd. Canonical robot/hardware physics is NOT APPLICABLE.
+
+## 2026-10-29 — Rev2/SO catalog, V4.5 and independent actuator calculator
+
+Based on main `ad62f91`. The owner explicitly requested another agent, a searchable
+Pure Motor Rev2/SO Gearbox Index catalog, V4.5 link/wheel masses and a separate
+acceleration/jump information calculator. Two GPT-6.1 Sol workers owned isolated
+new source/test files; parent owned architecture, integration, profile, independent
+source/mechanics audits, documentation and publication. No computer skill,
+browser/native UI automation or GUI window was used. The private ChatGPT URL was
+unreadable; no transcription or source-chat equation claim is made.
+
+Offline catalog snapshots14 motors/157 exact SO listings from the supplied sheet,
+with name-joined Rev2 annular-component estimated rotor inertias and scenario
+bounds. All motor speed cells are missing;14 gearbox efficiencies unresolved;
+only12 source input inertias exist. Blank remains null. The standalone tab06
+supports search/filter, exact-SKU choices, four pinned comparisons, app-folder JSON
+exports, reflected inertias, acceleration/speed/stroke times, three editable loss
+scenarios, nine base Plotly charts plus pinned comparison and conditional COM
+jump height. Conventions remains last as tab07. Candidate settings never apply to
+simulation motorConfig. Complete equations/source limitations are in
+[actuator-calculator.md](../actuator-calculator.md).
+
+V4.5 keeps original V4 geometry/alpha0/spring and8.75kg chassis, sets m2=m3=1kg,
+m6=0.5kg,m5=0, total11.25kg per corner. New tracked portable profile and studio
+template preserve V4. Prescribed-height input has explicit10mm C2 transitions;
+actual-contact massless-link and old Energy-tab guards remain unchanged. Existing
+spring is not retuned. Copied10mm-height/1s tests in both prescribed engines end
+at travel limit around0.708s with16rows, rather than claiming duration completion.
+The parent also ran both through the actual HTTP APIs. The existing four named
+designs remain byte-identical as records; the prior working copy was archived as
+a new named design, V4.5 saved and selected through optimistic revisions224→227.
+Library before SHA256 b681d0f2f86f1d487a3700dd9efd8696215ced3ed276b5594a454b61ff13d458;
+after b580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511.
+Subsequent read-only API tests preserve the new library exactly. Portable V4.5
+travels through Git; machine-local ignored libraries are not silently synchronized.
+
+Calculator assumptions: gearbox output drives hip1:1, uniform rods, independent
+wheel spin; source rotor J is estimated. Unsourced6000rpm example and missing
+efficiency0.9/gear inertia0 omission are explicit editable examples. Low/medium/high
+output Coulomb are1/3/8% of usable peak; viscous drag reaches the same fraction at
+10rad/s. Constant detent resistance is a worst-case cogging envelope, not actual
+conservative periodic cogging. Fixed-hip balance is ideal external assistance;
+jump uses all-body gravity and retained spring. N² inertia is reflected once.
+The COM apex above takeoff excludes rotor/internal/horizontal energy and assumes
+full-stroke release without unilateral liftoff/traction/stop assessment.
+
+Parent PASS4,190 independent catalog/source/component checks and3,081 mechanics
+checks over240 fixtures/198 closed-form poses. Source-value mapping covers all
+171 records and84 annular components; generalized inertia finite-difference error
+<=1.56e-10kg m², J-prime error<=3.56e-10. Worker/new retained suites PASS1,389
+catalog assertions and6,152 calculator assertions/57 BASIC chart mounts. Existing
+34 project groups,55 preset,712 Energy UI,48 preset UI/20 chart mounts,3,770
+dynamic Plotly and185,698 alpha-energy assertions pass. Tab-route expectations
+in two retained UI suites were updated for the additive actuator route.
+
+The broad legacy `node verify.cjs` stops on a pre-existing whole-source-HTML hash
+mismatch: unchanged source Jon V4 HTML now hashes9fa3528c... instead of recorded
+37767388.... Its retained mathematical blocks still exactly hash the recorded
+901bd626... and are present verbatim in reference-v4.js. No source/provenance or
+test assertion was weakened to hide this existing mismatch. The new independent
+mechanics checks and focused affected suites pass; this is not an all-suite pass.
+
+Two overview and all10 actual calculator Plotly PNGs plus full configuration/data,
+source/math/API evidence and portable profile are in ignored app exports. The
+overview and jump plots were visually checked; a clipped energy label was fixed
+before delivery. No UI screenshot claim is made. Actual app-root Stop/Start/reuse
+from unrelated cwd and11 exact served assets/actuator route are checked at4191.
+Live layout/pointer review remains unverified. Use Start Kinefold.cmd and refresh
+the app to load the selected V4.5. Canonical robot/hardware physics is NOT APPLICABLE.

@@ -89,6 +89,15 @@ function validate(value){
  return out;
 }
 function baseline(){const now=new Date().toISOString();return {schema,id:id(),name:'V4 baseline / 150 mm square',params:{...Kinefold.defaults},view:{...viewDefaults},solverConfig:{...solverDefaults},createdAt:now,updatedAt:now};}
+function v45(){
+ const value=baseline();value.name='V4.5 / 1 kg links · 0.5 kg wheel';
+ value.params={...value.params,m2:1,m3:1,m5:0,m6:.5,theta2:135};
+ // Moving masses require a finite prescribed-height transition. Actual-contact
+ // engines retain their massless-link guard; this template changes no solver.
+ value.solverConfig={...value.solverConfig,inputRiseMm:10};
+ value.contactConfig={...contactDefaults,mode:'prescribed-height'};
+ return validate(value);
+}
 function decode(value){
  if(value?.schema==='kinefold/project-v2'){keys(value,['schema','id','name','params','view','solverConfig','createdAt','updatedAt'],'legacy project');const old=validateConfig(value.solverConfig,true),finite=['m2','m3','m5','m6'].some(k=>value.params?.[k]>0);return {project:validate({...value,schema,solverConfig:{...solverDefaults,inputRiseMm:finite?10:0},legacySolverConfig:old}),migrated:true,notice:'Fixed-hip project migrated to vertical-chassis dynamics. Geometry is unchanged; the previous profile is retained read-only. '+(finite?'A declared 10 mm finite transition was selected for the moving-mass design.':'The exact 150 mm square baseline uses zero added rotor inertia and damping.')};}
  if(value?.schema===Kinefold.schema){keys(value,['schema','name','params','view'],'legacy design');keys(value.params,Object.keys(Kinefold.defaults),'legacy parameter');const d=Kinefold.unpack(value),p=baseline();return {project:validate({...p,name:d.name,params:d.params,view:{...viewDefaults,...d.view},solverConfig:{...solverDefaults,inputRiseMm:['m2','m3','m5','m6'].some(k=>d.params[k]>0)?10:0}}),migrated:true,notice:'Legacy mechanism migrated with unchanged geometry and the new vertical-chassis input profile. Review and save the profile.'};}
@@ -139,5 +148,5 @@ function createDiskStore(storage,request=async payload=>{
   async saveArtifact(filename,value,mime='application/json'){await ready;const content=typeof value==='string'?value:JSON.stringify(value,null,2)+'\n';const result=await request({action:'export',name:filename,content,mime});return result.path;}
  };return store;
 }
-return {torqueTargetDefaults,validateTorqueTargets,schema,viewDefaults,solverDefaults,contactDefaults,caseDefaults,motorDefaults,validateMotor,energyDefaults,validateEnergy,validateCase,validateContact,validateConfig,validate,baseline,decode,clone,content,createStore,createDiskStore,id,title};
+return {torqueTargetDefaults,validateTorqueTargets,schema,viewDefaults,solverDefaults,contactDefaults,caseDefaults,motorDefaults,validateMotor,energyDefaults,validateEnergy,validateCase,validateContact,validateConfig,validate,baseline,v45,decode,clone,content,createStore,createDiskStore,id,title};
 })();

@@ -37,7 +37,9 @@ ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
           "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",
           "dynamic-analysis.js", "dynamic-results.js", "dynamic-results.css", "contact-ui.js", "contact-render.js", "case-ui.js", "plotly-runtime.js", "plotly.css", "studio.css", "motor-ui.js", "energy-analysis.js", "energy-ui.js", "energy-workspace.css",
           "preset-store.js", "preset-analysis.js", "preset-workbench.js", "preset-workbench.css", "preset-flow.js",
-          "terrain-catalog.json", "terrain-profiles.js", "terrain-profiles.css", "terrain-ui.js"}
+          "terrain-catalog.json", "terrain-profiles.js", "terrain-profiles.css", "terrain-ui.js",
+          "motor-gearbox-catalog.json", "motor-gearbox-catalog.js", "motor-gearbox-catalog.css",
+          "actuator-calculator.js", "actuator-calculator-ui.js", "actuator-calculator.css"}
 
 
 VENDOR_ROUTE = "/vendor/plotly-basic-4.1.2.min.js"

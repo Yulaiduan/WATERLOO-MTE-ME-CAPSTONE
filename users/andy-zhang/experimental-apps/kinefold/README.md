@@ -14,7 +14,7 @@ stops only this app. Failures are readable in the launcher and `.preview/server.
 No login/boot automation is installed. Node.js is needed only for developer checks.
 
 Portable [saved configurations](saved-configurations/README.md) include the
-alpha-zero VSL V4 nominal profile and the explicitly unsupported October 24
+alpha-zero VSL V4 and V4.5 nominal profiles and the explicitly unsupported October 24
 working draft. Import a JSON file through the existing app controls; this is a
 manual snapshot, while the live profile library remains local.
 
@@ -39,7 +39,12 @@ manual snapshot, while the live profile library remains local.
   assumption applies. See [parametric presets](parametric-presets.md).
 - **05 System flow:** selectable nodes show the chosen component values, their
   equations and the calculations, charts and files they produce.
-- **06 Conventions & variables (last):** expandable frame, topology, signs,
+- **06 Actuator calculator:** independent read-only profile geometry/mass screen
+  with searchable Pure Motor Rev2 and SO Gearbox Index choices, reflected inertia,
+  acceleration/time/speed, low/medium/high editable drag and an optimistic jump
+  estimate. No motor choices or calculator assumptions are applied to simulations.
+  See [equations, V4.5 and source limitations](actuator-calculator.md).
+- **07 Conventions & variables (last):** expandable frame, topology, signs,
   spring/loading laws, dynamics assumptions and searchable variable definitions.
   The front-left frame is +x forward, +y left, +z up; +x faces left and +z up
   in side view, with positive +y moments counterclockwise.

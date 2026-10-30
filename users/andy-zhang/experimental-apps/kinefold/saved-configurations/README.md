@@ -28,6 +28,24 @@ mass/model requirements explicitly before running it; no substitute wheel
 mass, changed link masses or input transition was chosen during preservation.
 These tracked snapshots are manual handoffs, not automatic library syncing.
 
+## V4.5 finite-mass reference · 2026-10-29
+
+[VSL V4.5 nominal, alpha zero](vsl-v45-nominal-alpha0.json) is a new independent
+profile: 1 kg upper link (`m2`), 1 kg lower link (`m3`) and 0.5 kg wheel (`m6`).
+It retains V4's 8.75 kg corner chassis, zero knee compound mass, 300/300 mm links,
+200 mm wheel radius, alpha zero and original spring geometry/stiffness/preload.
+The spring is not retuned for these added masses. Total per-corner mass is
+11.25 kg. The studio's **V4.5 · finite-mass reference** template opens the same
+mechanical design under a new identity, without replacing old named designs.
+
+The template selects prescribed-height mode with explicit 10 mm C2 transitions
+on the 150 mm square input, because finite masses cannot undergo imposed
+instantaneous height jumps. Actual terrain-contact engines retain their
+massless-link restriction; V4.5 is not a supported contact fixture. The separate
+[actuator calculator](../actuator-calculator.md) includes the link/wheel masses
+in its inertia and optimistic grounded-wheel launch calculations. The older
+Energy tab retains its chassis-only, massless-link guard.
+
 ## Verification and limits
 
 Both snapshots parse as finite JSON, exactly match their captured source
