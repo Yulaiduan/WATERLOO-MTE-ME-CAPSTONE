@@ -1,5 +1,33 @@
 # Kinefold context
 
+## Latest — 2026-10-30 ODrive, hip belt and terrain speed
+
+Read [terrain-speed study](../terrain-speed-study.md). Based on mainaca73a1;
+three authorized GPT-6.1Sol workers owned Python belt mechanics, JS consumers
+and bounded runner; parent integrated/audited, ran physics, exported media and
+handled reporting/publication. Optional hipBeltRatioB1..3 multiplies base gearbox
+ratio; missingB preserves legacy shape/default1. Torque/speed/Coulomb scaleN,
+input-equivalent inertia/viscous scaleN²; gearbox caps stay beforebelt. The extra
+belt is ideal/noaddedJ, distinct from existing carrier belts and spring geometry.
+
+ODriveM8325s100KV +AB90G10 +B2=20:1:128.8Nm rest motoring,147.6Nm backdrive
+braking under assumed efficiencies. RotorJ estimated,.0001 gearJ assumed;
+constant Coulomb/cogging.05Nm,viscous.0008Nms. Source6.64Nmpeak3s/3.32continuous;
+4800rpm ideal48V envelope. Matched Flipsky uses samegear/B2 with6240rpm envelope.
+20actualruns +6half-step ODrive checks: all numericallyresolved. Same1.8m strip
+and.6–1.8m weightedmetrics, no contactloss/saturation/stops in these mildcases.
+ODrive RMS1.688→1.879mm vsFlipsky1.698→2.605mm at.4→3m/s; lower estimated
+reflectedJ is consistent with better heave here, not a global optimum. ODrive
+jump.502/.499m misses2m target;2m landingarrests at568/561mm minclearance,
+with substantial rigidimpact loss. Half-step classifications unchanged, landing
+engine clearancegap8mm remains. No hardware impact/full-body stability claim.
+
+Four actual paired1×GIFs plus3PlotlyPNGs and compactdataZIP are app-local ignored
+exports/native Notion attachments. Source/config guards and13enginepairs pass;
+live HTTP B2results matchcaptures. Actual capturedcase replay/mirror DOMchecks
+pass; no GUI automation. Legacy/live profilelibrary unchanged. Use newrunner
+settings/freshapp-localfolders; Start Kinefold.cmd retains4191 afterrestart.
+
 ## Latest — 2026-10-30 small workflow example and saved terrain GIFs
 
 Owner narrowed the followup to a simple worked workflow and limited search/data.

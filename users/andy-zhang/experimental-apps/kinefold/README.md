@@ -3,6 +3,11 @@
 Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver workspace;
 no canonical robot or hardware acceptance is implied.
 
+The [ODrive and terrain-speed example](terrain-speed-study.md) adds an editable
+gearbox-output-to-hip belt ratio1..3. Both engines use gearbox ratio × belt ratio
+for torque, speed, inertia and drag. Its bounded comparison covers.4/1/2/3m/s
+over the same terrain strip; exact settings, limitations and results are recorded.
+
 Double-click **[Start Kinefold.cmd](Start%20Kinefold.cmd)** and wait for Ready,
 then open <http://127.0.0.1:4191/>. The builder/static server requires installed
 Python 3.10+; there is no npm install or build. Run **[Setup Kinefold.cmd](Setup%20Kinefold.cmd)** once (Python 3.12+)

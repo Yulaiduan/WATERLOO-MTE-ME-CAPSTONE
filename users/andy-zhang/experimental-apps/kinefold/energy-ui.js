@@ -50,7 +50,7 @@ globalThis.KinefoldEnergyUI=(()=>{
   function command(p,mode){
     const c={...P.caseDefaults,...p.caseConfig},e=energy(p),t={...P.torqueTargetDefaults,...p.torqueTargetConfig},m={...P.motorDefaults,...p.motorConfig};
     const z=mode==='jump'?A.jumpEstimate(p,t.jumpHeightMm):A.landingEstimate(p,e.dropHeightMm,e.targetClearanceMm),joint=mode==='jump'?z.jointNm:z.requiredJointNm;
-    const physicalRatio=m.enabled?m.gearRatio:1,basis=m.enabled&&m.commandBasis==='motor'?'motor':'joint',value=basis==='motor'?joint/physicalRatio:joint;
+    const physicalRatio=m.enabled?KinefoldProjects.totalMotorRatio(m):1,basis=m.enabled&&m.commandBasis==='motor'?'motor':'joint',value=basis==='motor'?joint/physicalRatio:joint;
     const candidate={...p,caseConfig:{...c,kind:mode,brakeStrategy:'entered'}},reasons=[];
     if(!KinefoldContactUI.isContact(p))reasons.push('Select terrain-contact interaction in the dynamic tab before copying a jump/landing command.');
     reasons.push(...KinefoldContactUI.guards(candidate));

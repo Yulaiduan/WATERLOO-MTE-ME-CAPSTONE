@@ -7,7 +7,8 @@ globalThis.KinefoldMotorUI = (() => {
   'use strict';
   const S=KinefoldStudio,P=KinefoldProjects;
   const fields=[
-    ['gearRatio','Motor → hip reduction N','ω motor / ω hip',1e-6,1e4],
+    ['gearRatio','Motor to gearbox output reduction','motor / gearbox output speed',1e-6,1e4],
+    ['hipBeltRatio','Gearbox output to hip belt reduction B','gearbox output / hip speed',1,3],
     ['rotorInertiaKgM2','Rotor inertia J motor','kg·m²',0,1000],
     ['gearboxInputInertiaKgM2','Gearbox train inertia · input equivalent','kg·m²',0,1000],
     ['coggingAmplitudeNm','Cogging amplitude · motor shaft','N·m',0,10000],
@@ -31,9 +32,9 @@ globalThis.KinefoldMotorUI = (() => {
   function balanceCommand(project,staticJointTorque){
     const c={...P.motorDefaults,...project.motorConfig};
     if(!c.enabled)return staticJointTorque;
-    const phase=(c.coggingPeriodsPerRev*c.gearRatio*project.params.theta2+c.coggingPhaseDeg)*Math.PI/180;
-    const joint=staticJointTorque-c.gearRatio*c.coggingAmplitudeNm*Math.sin(phase);
-    return c.commandBasis==='motor'?joint/c.gearRatio:joint;
+    const N=P.totalMotorRatio(c),phase=(c.coggingPeriodsPerRev*N*project.params.theta2+c.coggingPhaseDeg)*Math.PI/180;
+    const joint=staticJointTorque-N*c.coggingAmplitudeNm*Math.sin(phase);
+    return c.commandBasis==='motor'?joint/N:joint;
   }
   function mount(id,root){
     const panel=document.createElement('details');panel.className='motor-panel contact-mode-panel';panel.dataset.motorPanel=id;
@@ -49,11 +50,11 @@ globalThis.KinefoldMotorUI = (() => {
     panel.querySelector('[data-motor-remove]').onclick=()=>S.setMotorConfig(null);
   }
   function update(project){
-    const c={...P.motorDefaults,...project.motorConfig},where=basis(project),N=c.enabled?c.gearRatio:1,J=c.enabled?N*N*(c.rotorInertiaKgM2+c.gearboxInputInertiaKgM2):0;
+    const c={...P.motorDefaults,...project.motorConfig},where=basis(project),N=c.enabled?P.totalMotorRatio(c):1,J=c.enabled?N*N*(c.rotorInertiaKgM2+c.gearboxInputInertiaKgM2):0;
     for(const panel of document.querySelectorAll('[data-motor-panel]')){
       for(const input of panel.querySelectorAll('[data-motor-key]')){const key=input.dataset.motorKey;if(input.type==='checkbox')input.checked=c[key];else input.value=c[key];input.disabled=key!=='enabled'&&!c.enabled;}
       panel.querySelector('[data-motor-summary]').textContent=c.enabled?`N ${fmt(N)} · J reflected ${fmt(J)} kg·m²`:'Ideal / disabled';
-      panel.querySelector('[data-motor-conversion]').textContent=`Commands: ${where}. ωm = ${fmt(N)} q̇; τjoint = ${fmt(N)} τshaft; reflected drive inertia N²(Jmotor + Jgear,input) = ${fmt(J)} kg·m²; periodic cogging amplitude ${fmt(c.enabled?N*c.coggingAmplitudeNm:0)} N·m; joint Coulomb resistance ${fmt(c.enabled?N*c.coulombFrictionNm:0)} N·m; joint viscous ${fmt(c.enabled?N*N*c.viscousFrictionNms:0)} N·m·s/rad. Gearbox input inertia is reflected once; legacy additional hip inertia adds joint-side. Ideal rigid reduction; losses come from entered friction.`;
+      panel.querySelector('[data-motor-conversion]').textContent=`Reduction: ${fmt(c.gearRatio)} gearbox × ${fmt(c.hipBeltRatio)} belt = ${fmt(N)} total. Commands: ${where}. ωm = ${fmt(N)} q̇; τjoint = ${fmt(N)} τshaft; reflected drive inertia N²(Jmotor + Jgear,input) = ${fmt(J)} kg·m²; periodic cogging amplitude ${fmt(c.enabled?N*c.coggingAmplitudeNm:0)} N·m; joint Coulomb resistance ${fmt(c.enabled?N*c.coulombFrictionNm:0)} N·m; joint viscous ${fmt(c.enabled?N*N*c.viscousFrictionNms:0)} N·m·s/rad. Gearbox input inertia is reflected once; legacy additional hip inertia adds joint-side. Ideal rigid belt stage, with no added belt inertia or loss. Two gearbox-output turns per hip turn means B=2; this is separate from the mechanism carrier belts. Losses come from entered friction.`;
       panel.querySelector('[data-motor-remove]').disabled=!project.motorConfig;
       const workspace=panel.closest('[role=tabpanel]'),label=workspace.querySelector('[data-run-key="hipTorqueNm"]').closest('label').querySelector('span');
       label.textContent=`Constant ${where} torque · N·m`;

@@ -52,7 +52,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     P.validateCase(c);P.validateMotor(savedMotor);
     // Candidate reduction changes conservative cogging phase; never mutate dynamics.
     // Disabled saved passives stay zero. No catalog inertia/loss guesses are made.
-    const motor=screening?{...savedMotor,enabled:true,gearRatio:screening.ratio,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
+    const motor=screening?{...savedMotor,enabled:true,gearRatio:screening.ratio,hipBeltRatio:1,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
     const availableJointNm=screening?screening.effectiveJointNm:e.torqueLimitNm;
     const errors=Kinefold.validate(p);if(errors.length)throw Error(errors.join(' '));
     if(!(p.m1>0&&p.g>0))throw Error('This drop-height energy screen requires positive chassis mass m₁ and gravity g.');
@@ -71,7 +71,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const travel=(end-q0)*R;if(!(travel>1e-10))throw Error('No usable compression travel remains.');
     if(p.springEnabled){const span=V.VSLSpring.interval(ref,q0,end),z=V.VSLSpring.geometry(ref,90);if(!span.valid||!z.valid)throw Error(span.reason||z.reason);if(ref.p0+ref.springK*(span.min-z.payout)<-1e-8)throw Error('The cable becomes slack during the braking stroke; slack recovery is outside this energy screen.');}
     const spring=q=>{if(!p.springEnabled)return 0;const z=V.VSLSpring.state(ref,q);if(!z.valid||!Number.isFinite(z.energy))throw Error(z.reason||'Invalid spring energy.');return z.energy;};
-    const N=motor.enabled?motor.gearRatio:1,cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*N*q*R+motor.coggingPhaseDeg*R):0;
+    const N=motor.enabled?KinefoldProjects.totalMotorRatio(motor):1,cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*N*q*R+motor.coggingPhaseDeg*R):0;
     const gravityCompressionJ=p.m1*p.g*(height(q0)-height(end))/1000;
     const springReleasedJ=spring(q0)-spring(end),coggingReleasedJ=cog(q0)-cog(end);
     const fixedWorkJ=gravityCompressionJ+springReleasedJ+coggingReleasedJ,weight=p.m1*p.g,dropJ=weight*e.dropHeightMm/1000;
@@ -106,7 +106,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const stanceRiseMm=V.VSL.state(ref,p.tc).Pg[1]-V.VSL.state(ref,p.te).Pg[1];
     if(!(travel>0&&stanceRiseMm>0))throw Error('The extension endpoint must raise the chassis on the supported branch.');
     const spring=q=>{if(!p.springEnabled)return 0;const z=V.VSLSpring.state(ref,q);if(!z.valid)throw Error(z.reason);return z.energy;};
-    const N=motor.enabled?motor.gearRatio:1,cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*N*q*R+motor.coggingPhaseDeg*R):0;
+    const N=motor.enabled?KinefoldProjects.totalMotorRatio(motor):1,cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*N*q*R+motor.coggingPhaseDeg*R):0;
     const stanceGravityJ=p.m1*p.g*stanceRiseMm/1000,flightEnergyJ=(p.m1+p.m6)*p.g*targetHeightMm/1000;
     const springReleaseJ=spring(p.tc)-spring(p.te),coggingReleaseJ=cog(p.tc)-cog(p.te);
     const jointNm=Math.max(0,(stanceGravityJ+flightEnergyJ-springReleaseJ-coggingReleaseJ)/travel);
@@ -126,12 +126,12 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     P.validateTorqueTargets(target);
     const savedMotor=P.validateMotor({...P.motorDefaults,...project.motorConfig}),screen=resolveScreen(e.screening);
     P.validateCase(c);
-    const motor=screen?{...savedMotor,enabled:true,gearRatio:screen.ratio,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
+    const motor=screen?{...savedMotor,enabled:true,gearRatio:screen.ratio,hipBeltRatio:1,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
     const analysisProject={...project,motorConfig:motor};
     let result;
     if(kind==='landing')result=calculate(project);
     else{
-      const j=jumpEstimate(analysisProject,target.jumpHeightMm),N=motor.enabled?motor.gearRatio:1,available=screen?screen.effectiveJointNm:e.torqueLimitNm;
+      const j=jumpEstimate(analysisProject,target.jumpHeightMm),N=motor.enabled?KinefoldProjects.totalMotorRatio(motor):1,available=screen?screen.effectiveJointNm:e.torqueLimitNm;
       if(screen){screen.motorPass=j.shaftNm<=screen.peakShaftNm+1e-10;screen.gearboxPass=!screen.gearboxAssessed?null:screen.momentaryNm===null||j.jointNm<=screen.momentaryNm+1e-10;screen.savedPassiveMotorEnabled=savedMotor.enabled;}
       result={...j,config:e,requiredJointNm:j.jointNm,requiredShaftNm:j.shaftNm,gearRatio:N,availableJointNm:available,availableShaftNm:available/N,screening:screen,
         qStartDeg:p.tc,qEndDeg:p.te,angularTravelDeg:p.tc-p.te,massKg:p.m1,gravityMS2:p.g,flightMassKg:p.m1+p.m6,wheelMassKg:p.m6,
@@ -161,7 +161,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     return {...result,kind,selectedHeightMm:kind==='jump'?target.jumpHeightMm:e.dropHeightMm,initialKineticBudgetJ:initialK,
       startHipHeightMm:h0,endHipHeightMm:height(end),initialClearanceMm:c.undersideOffsetMm===null?null:h0-c.undersideOffsetMm,endClearanceMm:c.undersideOffsetMm===null?null:height(end)-c.undersideOffsetMm,
       targetTakeoffSpeedMS:kind==='jump'?Math.sqrt(2*p.g*target.jumpHeightMm/1000):null,
-      generalizedJointCommandNm:-result.requiredJointNm,physicalGearRatio:savedMotor.enabled?savedMotor.gearRatio:1,
+      generalizedJointCommandNm:-result.requiredJointNm,physicalGearRatio:savedMotor.enabled?KinefoldProjects.totalMotorRatio(savedMotor):1,
       curve,stroke,plotRange:{heightMinMm:min,heightMaxMm:max,samples:count},minKineticBudgetJ,sampledNegativeInteriorCount:negative.length,
       pathWarning:negative.length?(kind==='jump'?'Negative interior kinetic budget: the endpoint torque cannot traverse this sampled stroke from rest under the stated ideal assumptions.':'Negative interior kinetic budget: the assumed fixed-height-wheel stroke cannot reach this endpoint; earlier arrest/reversal may occur.'):'No negative budget at the sampled poses. This sampling does not establish contact, takeoff, peak loads or path feasibility.',
       endpointKineticBudgetJ:stroke.at(-1).kineticBudgetJ,unclippedMotorWorkJ:result.workJ,

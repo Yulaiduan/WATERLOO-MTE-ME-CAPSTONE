@@ -10,7 +10,7 @@
   const fmt=(n,d=3)=>Number.isFinite(n)?n.toLocaleString('en-CA',{maximumFractionDigits:d}):'—';
   const hardwareFields=[
     ['motorPeakNm','Motor peak shaft torque','N·m',0],['motorNoLoadRpm','Illustrative motor no-load / speed cap','rpm',1],
-    ['ratio','Selected reduction N = motor / hip speed','',.000001],['efficiency','Torque transfer factor η','0–1',.000001],
+    ['ratio','Selected gearbox reduction','motor / gearbox output speed',.000001],['hipBeltRatio','Gearbox output to hip belt reduction B','1 to 3',1],['efficiency','Torque transfer factor η','0–1',.000001],
     ['rotorInertiaKgM2','Estimated motor rotor inertia Jₘ','kg·m²',0],['gearboxInputInertiaKgM2','Gearbox input-equivalent inertia Jg,in','kg·m²',0],
     ['gearboxOutputInertiaKgM2','Additional output inertia · outside source gearbox','kg·m²',0],
     ['gearboxPeakNm','Gearbox momentary output torque cap','N·m',0],['gearboxInputMaxRpm','Gearbox maximum input speed','rpm',0],['gearboxOutputMaxRpm','Gearbox maximum output speed','rpm',0]
@@ -39,15 +39,15 @@
       <details class="actuator-equations"><summary>Equations, definitions &amp; model boundaries</summary>
         <dl><dt>Coordinate and linkage</dt><dd>q = θ₂ in radians, increasing toward compression. Extension progresses s = q_c − q. Upper / lower link masses are profile m₂ / m₃ (r1 / r2 leg links), lengths L₂ / L₃. The saved mounting α rotates all positions and Jacobians; +x is screen-left and +z is up.</dd>
         <dt>Joint-side inertia</dt><dd>Jleg(q) = Σ[mᵢ‖∂rᵢ/∂q‖² + Iᵢ(∂θᵢ/∂q)²]. Uniform rod I = mL²/12. Compound pulley disc I = ½m₅ max(r_d,r_e)². A freely spinning wheel has no enforced spin-vs-fold rate; its translation still contributes.</dd>
-        <dt>Motor and gearbox inertia</dt><dd>N = motor speed / hip q speed assumes the gearbox output drives the hip directly, with no additional external reduction. It is separate from the leg’s r_a/r_b belt constraint. Jtotal = Jleg + N²Jmotor + N²Jgear,input + Jadditional,output. Efficiency never scales inertia. Source input-equivalent gearbox inertia represents the train, so its N² output referral must not be added a second time.</dd>
+        <dt>Motor and gearbox inertia</dt><dd>Total N = motor speed / hip q speed = selected gearbox ratio × extra hip belt B (1 to 3). B=2 means two gearbox-output turns per hip turn. This ideal extra stage is separate from the leg’s r_a/r_b belt constraint. Jtotal = Jleg + N²Jmotor + N²Jgear,input + Jadditional,output. Additional output inertia is at the hip; efficiency never scales inertia. Source input-equivalent gearbox inertia represents the train and is reflected once.</dd>
         <dt>Acceleration</dt><dd>J s̈ + ½(dJ/ds)ṡ² = τdrive − τC − bṡ − dU/ds. The finite-stroke integration uses E = ½Jṡ² and dE/ds = τdrive − τloss − dU/ds. A zero-speed scan and time-trajectory sampled peak are different quantities; peaks are finite samples. Acceleration-versus-speed also includes the ½J′ term, so it need not follow the assumed motor torque line.</dd>
         <dt>Hip versus relative knee</dt><dd>Hip speed is q̇. Lower-link absolute speed is (1−r_a/r_b)q̇; relative-knee speed is −(r_a/r_b)q̇. Accelerations have the same constant multipliers. At the V4 2:1 belt ratio, the lower absolute rate is −q̇ and the relative-knee rate is −2q̇.</dd>
-        <dt>Illustrative motor envelope</dt><dd>τdrive = min[η N τmotor,peak max(0,1−N ṡ/ω₀), τgear,peak]. The constant-torque option omits the linear factor. Both are demonstration curves, not fitted BLDC voltage/current/thermal models. Known gear input/output rpm caps stop the calculation before extrapolation. Unknown caps remain unassessed.</dd>
+        <dt>Illustrative motor envelope</dt><dd>τdrive = min[η N τmotor,peak max(0,1−N ṡ/ω₀), B τgear,peak]. The constant-torque option omits the linear factor. Both are demonstration curves, not fitted BLDC voltage/current/thermal models. The extra belt multiplies the source gearbox torque cap by B and divides its output-speed cap by B. Known gear input/output rpm caps stop the calculation before extrapolation. Unknown caps remain unassessed.</dd>
         <dt>Gravity compensation</dt><dd>Exact balance is an explicitly ideal external assistance that cancels the selected fixture’s gravity; compensation work is reported. Profile mode uses the saved spring’s exact potential and all body COM gravity. Changing masses or α does not retune the spring.</dd>
         <dt>Conditional jump</dt><dd>The wheel centre stays at r_w on a horizontal floor and may slide in x; chassis x and pitch stay fixed. Grounded-wheel inertia includes m₁(∂h/∂q)² and both links. From the endpoint velocity, vCOM,z = Σmᵢvᵢ,z / Σmᵢ and ΔhCOM = vCOM,z²/(2g). This is above the takeoff COM, not the initial chassis height. Rotor/internal/horizontal kinetic energy is not magically converted into vertical COM energy.</dd>
         <dt>Unassessed</dt><dd>No unilateral ground reaction, liftoff event, traction, wheel rolling impulse, stop collision, compliance, controller, battery, thermal duration or structural rating is solved. A completed stroke and a peak rating do not establish a safe jump. Jump screening requires a straight, monotonic nonsingular guide.</dd></dl></details>`;
     const $=s=>host.querySelector(s),fieldHost=$('[data-hardware-fields]');
-    fieldHost.innerHTML=hardwareFields.map(([k,label,unit,min])=>`<label>${esc(label)} <span>${esc(unit)}</span><input data-hardware="${k}" type="number" min="${min}" ${k==='efficiency'?'max="1"':''} step="any" aria-label="${esc(label)}"></label>`).join('');
+    fieldHost.innerHTML=hardwareFields.map(([k,label,unit,min])=>`<label>${esc(label)} <span>${esc(unit)}</span><input data-hardware="${k}" type="number" min="${min}" ${k==='efficiency'?'max="1"':k==='hipBeltRatio'?'max="3"':''} step="any" aria-label="${esc(label)}"></label>`).join('');
     for(const node of host.querySelectorAll('[data-hardware]'))fields.set(node.dataset.hardware,node);
     fields.get('ratio').readOnly=true;fields.get('ratio').setAttribute('aria-readonly','true');
     function notes(){
@@ -59,6 +59,7 @@
       if(selection.gearboxInputInertiaKgM2===null)n.push($('[data-omit-inertia]').checked?'Unknown gearbox inertia explicitly omitted (optimistic 0).':'Gearbox inertia unresolved; enter an explicit estimate to calculate.');
       if(selection.gearPeakOutputNm===null)n.push('Gearbox momentary output torque is unresolved; capability remains unassessed.');
       if(Number(fields.get('ratio').value)!==selection.gearRatio)n.push('Reduction override is hypothetical; it does not identify a new catalog SKU.');
+      n.push('Extra hip belt is ideal and lossless, with no added inertia. Total N = '+fields.get('ratio').value+' gearbox x '+fields.get('hipBeltRatio').value+' belt. Gearbox caps apply before this belt. Additional output inertia is entered at the hip.');
       n.push('Profile chassis mass stays fixed across candidates; catalog motor/gearbox masses are not added. Include their installed mass in the chassis budget.');
       n.push('Peak motor torque is a transient rating; no continuous duty/thermal assessment.');return n;
     }
@@ -76,7 +77,7 @@
     function renderLosses(){
       $('[data-loss-fields]').innerHTML='<div class="actuator-loss-grid">'+losses.map((l,i)=>`<fieldset><legend>${esc(l.name)}</legend><label>Constant opposing torque τC <span>N·m at output</span><input data-loss="${i}" data-key="coulombNm" type="number" min="0" step="any" value="${l.coulombNm}"></label><label>Viscous coefficient b <span>N·m·s/rad at output</span><input data-loss="${i}" data-key="viscousNms" type="number" min="0" step="any" value="${l.viscousNms}"></label></fieldset>`).join('')+'</div>';
     }
-    function compareHardware(c){return {name:c.name,hardware:A.fromCombination(c,{motorNoLoadRpm:c.motorNoLoadRpm??Number($('[data-example-rpm]').value),efficiency:c.efficiency??Number($('[data-example-efficiency]').value),gearboxInputInertiaKgM2:c.gearboxInputInertiaKgM2??($('[data-omit-inertia]').checked?0:null),torqueModel:$('[data-torque-model]').value})};}
+    function compareHardware(c){return {name:c.name,hardware:A.fromCombination(c,{motorNoLoadRpm:c.motorNoLoadRpm??Number($('[data-example-rpm]').value),efficiency:c.efficiency??Number($('[data-example-efficiency]').value),gearboxInputInertiaKgM2:c.gearboxInputInertiaKgM2??($('[data-omit-inertia]').checked?0:null),torqueModel:$('[data-torque-model]').value,hipBeltRatio:Number(fields.get('hipBeltRatio').value)})};}
     function render(){
       if(closed)return;refreshProfile();if(host.hidden||host.closest('[hidden]'))return;
       const error=$('[data-actuator-error]'),out=$('[data-actuator-results]');

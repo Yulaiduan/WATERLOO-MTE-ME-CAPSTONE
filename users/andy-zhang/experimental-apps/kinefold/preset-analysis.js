@@ -37,7 +37,7 @@ globalThis.KinefoldPresetAnalysis=(()=>{
     return {movingLegKgM2,legacyJointKgM2:solver.hipRotorInertiaKgM2,legInertiaKgM2:movingLegKgM2+solver.hipRotorInertiaKgM2,legInertiaDerivativeKgM2PerRad:derivativeKgM2PerRad,angularRates:rates,bodyInertias};
   }
   function point(project,thetaDeg,jointSpeedRadS,jointAccelerationRadS2){
-    const p=project.params,c=project.solverConfig,m=project.motorConfig,N=m.gearRatio;
+    const p=project.params,c=project.solverConfig,m=project.motorConfig,N=KinefoldProjects.totalMotorRatio(m);
     const staticState=KinefoldV4.VSLStatic.solve(Kinefold.reference(p),thetaDeg,false);if(!staticState.valid||!Number.isFinite(staticState.tau2))throw Error(staticState.reason||'Static demand unavailable at '+thetaDeg+'°.');
     const inertia=fixedHipInertia(p,c,thetaDeg),shaftSpeedRadS=N*jointSpeedRadS;
     const coggingJointNm=N*m.coggingAmplitudeNm*Math.sin(m.coggingPeriodsPerRev*N*thetaDeg*R+m.coggingPhaseDeg*R);
@@ -45,7 +45,7 @@ globalThis.KinefoldPresetAnalysis=(()=>{
     // friction has the opposite sign. Cogging is a conservative applied torque.
     const coulombJointNm=N*m.coulombFrictionNm*Math.tanh(shaftSpeedRadS/m.frictionVelocityScaleRadS),viscousJointNm=N*m.viscousFrictionNms*shaftSpeedRadS,legacyDampingNm=c.dampingNms*jointSpeedRadS;
     const legAccelerationNm=inertia.legInertiaKgM2*jointAccelerationRadS2,rotorAccelerationNm=N*N*(m.rotorInertiaKgM2+(m.gearboxInputInertiaKgM2??0))*jointAccelerationRadS2,coriolisNm=.5*inertia.legInertiaDerivativeKgM2PerRad*jointSpeedRadS**2;
-    const gearboxOutputTorqueNm=staticState.tau2+legAccelerationNm+coriolisNm+legacyDampingNm,base=gearboxOutputTorqueNm+rotorAccelerationNm+coulombJointNm+viscousJointNm,amplitude=N*m.coggingAmplitudeNm,jointTorqueNm=base-coggingJointNm;
+    const jointLoadNm=staticState.tau2+legAccelerationNm+coriolisNm+legacyDampingNm,gearboxOutputTorqueNm=jointLoadNm/(m.hipBeltRatio??1),base=jointLoadNm+rotorAccelerationNm+coulombJointNm+viscousJointNm,amplitude=N*m.coggingAmplitudeNm,jointTorqueNm=base-coggingJointNm;
     return {thetaDeg,jointSpeedRadS,shaftSpeedRadS,shaftRpm:shaftSpeedRadS*60/(2*Math.PI),staticJointNm:staticState.tau2,legInertiaKgM2:inertia.legInertiaKgM2,legInertiaDerivativeKgM2PerRad:inertia.legInertiaDerivativeKgM2PerRad,legAccelerationNm,rotorAccelerationNm,coriolisNm,coggingJointNm,coulombJointNm,viscousJointNm,legacyDampingNm,gearboxOutputTorqueNm,jointTorqueNm,shaftTorqueNm:jointTorqueNm/N,conservativeMinJointNm:base-amplitude,conservativeMaxJointNm:base+amplitude,conservativeMinShaftNm:(base-amplitude)/N,conservativeMaxShaftNm:(base+amplitude)/N};
   }
   function assessment(required,value){return {required:Number.isFinite(required)?required:null,value:value??null,status:!Number.isFinite(required)||!Number.isFinite(value)?'unassessed':required<=value+1e-10?'within-independent-bound':'exceeds-independent-bound'};}
@@ -76,7 +76,7 @@ globalThis.KinefoldPresetAnalysis=(()=>{
     return {landing:attempt(()=>KinefoldEnergyAnalysis.landingEstimate(p,e.dropHeightMm,e.targetClearanceMm)),jump:attempt(()=>KinefoldEnergyAnalysis.jumpEstimate(p,t.jumpHeightMm)),meaning:'Existing work/endpoint estimates; no trajectory, impact torque peak, motor losses or hardware survival certificate.',caseKind:c.kind};
   }
   function analyze(project,record,sweep){
-    const capture=captured(project,record),p=capture.project,a=capture.actuator,s=validateSweep(sweep),N=p.motorConfig.gearRatio;
+    const capture=captured(project,record),p=capture.project,a=capture.actuator,s=validateSweep(sweep),N=KinefoldProjects.totalMotorRatio(p.motorConfig);
     const x=Array.from({length:s.samples},(_,i)=>p.params.te+(p.params.tc-p.params.te)*i/(s.samples-1)),y=Array.from({length:s.samples},(_,i)=>s.maxJointSpeedRadS*(2*i/(s.samples-1)-1)),rows=[],staticRows=x.map(thetaDeg=>point(p,thetaDeg,0,0));
     const z=y.map(speed=>x.map(theta=>{const r=point(p,theta,speed,s.jointAccelerationRadS2);rows.push(r);return r.shaftTorqueNm;}));
     const ranges={};for(const k of ['jointTorqueNm','shaftTorqueNm','shaftSpeedRadS','shaftRpm','gearboxOutputTorqueNm'])ranges[k]=seriesRange(rows,k);
@@ -89,8 +89,8 @@ globalThis.KinefoldPresetAnalysis=(()=>{
   }
   function summarizeRun(result,project,record){
     const {project:p,actuator:a}=captured(project,record);if(!result||!Array.isArray(result.rows)||!result.rows.length)throw Error('Dynamic result contains no actual sampled rows.');
-    const N=p.motorConfig.gearRatio,rows=result.rows.map(r=>({...r,jointTorqueNm:Number.isFinite(r.jointElectromagneticNm)?r.jointElectromagneticNm:r.motorTorqueNm,shaftTorqueNm:Number.isFinite(r.shaftCommandNm)?r.shaftCommandNm:Number.isFinite(r.jointElectromagneticNm)?r.jointElectromagneticNm/N:Number.isFinite(r.motorTorqueNm)?r.motorTorqueNm/N:null,shaftSpeedRadS:Number.isFinite(r.motorVelocityRadS)?r.motorVelocityRadS:Number.isFinite(r.velocityDegS)?r.velocityDegS*R*N:null}));
-    for(const r of rows){r.shaftRpm=Number.isFinite(r.shaftSpeedRadS)?r.shaftSpeedRadS*60/(2*Math.PI):null;r.gearboxOutputTorqueNm=result.scope?.mode!=='terrain-contact'&&!r.eventSide&&[r.jointTorqueNm,r.jointCoggingNm,r.jointFrictionNm,r.accelerationDegS2].every(Number.isFinite)?r.jointTorqueNm+r.jointCoggingNm+r.jointFrictionNm-N*N*(p.motorConfig.rotorInertiaKgM2+(p.motorConfig.gearboxInputInertiaKgM2??0))*r.accelerationDegS2*R:null;}
+    const N=KinefoldProjects.totalMotorRatio(p.motorConfig),rows=result.rows.map(r=>({...r,jointTorqueNm:Number.isFinite(r.jointElectromagneticNm)?r.jointElectromagneticNm:r.motorTorqueNm,shaftTorqueNm:Number.isFinite(r.shaftCommandNm)?r.shaftCommandNm:Number.isFinite(r.jointElectromagneticNm)?r.jointElectromagneticNm/N:Number.isFinite(r.motorTorqueNm)?r.motorTorqueNm/N:null,shaftSpeedRadS:Number.isFinite(r.motorVelocityRadS)?r.motorVelocityRadS:Number.isFinite(r.velocityDegS)?r.velocityDegS*R*N:null}));
+    for(const r of rows){r.shaftRpm=Number.isFinite(r.shaftSpeedRadS)?r.shaftSpeedRadS*60/(2*Math.PI):null;r.gearboxOutputTorqueNm=result.scope?.mode!=='terrain-contact'&&!r.eventSide&&[r.jointTorqueNm,r.jointCoggingNm,r.jointFrictionNm,r.accelerationDegS2].every(Number.isFinite)?(r.jointTorqueNm+r.jointCoggingNm+r.jointFrictionNm-N*N*(p.motorConfig.rotorInertiaKgM2+(p.motorConfig.gearboxInputInertiaKgM2??0))*r.accelerationDegS2*R)/(p.motorConfig.hipBeltRatio??1):null;}
     const ranges={};for(const k of ['t','theta2','velocityDegS','jointTorqueNm','shaftTorqueNm','shaftSpeedRadS','shaftRpm','gearboxOutputTorqueNm','energyJ','kineticJ','potentialJ','rotorKineticJ','motorDissipatedJ','motorFrictionLossJ','motorLossPowerW','jointCoggingNm','jointFrictionNm','chassisZMm'])ranges[k]=seriesRange(rows,k);
     const ratings=ratingsFor(ranges,a),warnings=[];
     if(ranges.gearboxOutputTorqueNm.count!==rows.length){const reason='Transmitted gearbox output is unavailable at rows without finite actual angular acceleration/passive torques or at contact/impulse/event rows. Electromagnetic command is not substituted for output load.';warnings.push(reason);for(const k of ['gearboxContinuousNm','gearboxPeakNm'])ratings[k]={...ratings[k],status:'unassessed',reason};}

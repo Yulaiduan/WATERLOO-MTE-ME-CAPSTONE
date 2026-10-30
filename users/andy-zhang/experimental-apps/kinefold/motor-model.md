@@ -11,7 +11,14 @@ The freely backdriven wheel-drive shaft remains independent of the hip motor.
 
 ## Units and command basis
 
-`gearRatio = N = ω_motor/ω_hip` is positive, with direct drive N=1. Ideal rigid
+`gearRatio = N_g = ω_motor/ω_gearbox,out` is positive. The optional
+`hipBeltRatio = B = ω_gearbox,out/ω_hip` ranges from1 to3; an omitted field
+retains B=1 without rewriting the historical snapshot. Total reduction is
+`N = N_g B`. A10:1 gearbox followed by a2:1 belt therefore gives20:1 overall.
+The separate belt is an ideal rigid, lossless stage with no added hardware
+inertia; pulley sizes, routing, compliance, strength and losses remain unknown.
+It does not change the mechanism's three carrier belts, spring route or geometry.
+Ideal rigid
 gearing gives electromagnetic joint torque Nτ_motor and reflected rotor inertia
 N²(J_motor + J_gear,input). The optional `gearboxInputInertiaKgM2` is the entire
 gear train's input-equivalent inertia, reflected once. Existing
@@ -20,6 +27,12 @@ existing `dampingNms` is **additional joint-side** viscous damping. Neither is
 scaled again by the new gear ratio. Automatic candidate captures now store gear
 input inertia in the motor block and only external output inertia in the legacy
 joint field, preserving combined inertia without double counting.
+Source gearbox output torque and speed limits apply **before** the added belt:
+`τ_gearbox,out = τ_hip/B` and `ω_gearbox,out = B ω_hip`. Thus source gearbox
+torque limits multiply by B at the hip, while its output-speed limit is checked
+at B times hip speed. Motor input-speed limits use total N. The captured bounded
+actuator stores the base gearbox `ratio` plus the same optional `hipBeltRatio`.
+Legacy captures remain valid with B=1; old results retain their original settings.
 Motor translational mass is not added to the
 chassis or wheel; supported corner mass remains the builder's explicit input.
 

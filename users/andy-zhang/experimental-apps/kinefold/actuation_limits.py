@@ -10,7 +10,7 @@ constant Coulomb detent is a worst-case dissipative proxy, not periodic cogging.
 import math
 
 
-ACTUATOR_DEFAULTS = dict(schema='kinefold/actuator-limits-v1',ratio=1.,peakShaftNm=1.,
+ACTUATOR_DEFAULTS = dict(schema='kinefold/actuator-limits-v1',ratio=1.,hipBeltRatio=1.,peakShaftNm=1.,
     continuousShaftNm=None,peakDurationS=2.,noLoadRpm=6000.,baseSpeedFraction=.5,
     forwardEfficiency=.9,reverseEfficiency=.9,gearboxPeakNm=10000.,gearboxContinuousNm=None,
     maxInputRpm=None,maxOutputRpm=None,torqueConstantNmPerA=None,peakPhaseCurrentA=None,
@@ -22,7 +22,7 @@ ACTUATOR_DEFAULTS = dict(schema='kinefold/actuator-limits-v1',ratio=1.,peakShaft
 
 def validate_actuator_config(raw=None):
     if raw is None:return None
-    if not isinstance(raw,dict) or set(raw)!=set(ACTUATOR_DEFAULTS):
+    if not isinstance(raw,dict) or not set(ACTUATOR_DEFAULTS)-{'hipBeltRatio'} <= set(raw) <= set(ACTUATOR_DEFAULTS):
         raise ValueError('actuatorConfig requires exactly '+', '.join(ACTUATOR_DEFAULTS))
     c=dict(raw)
     if c['schema']!=ACTUATOR_DEFAULTS['schema'] or type(c['regenAcceptance']) is not bool:
@@ -36,6 +36,7 @@ def validate_actuator_config(raw=None):
             raise ValueError('Actuator '+key+' must be finite/nonnegative or documented null.')
     if not 1e-6<=c['ratio']<=10000 or c['peakShaftNm']<=0 or c['noLoadRpm']<=0:
         raise ValueError('Actuator ratio, peak shaft torque and no-load speed must be positive.')
+    if not 1<=c.get('hipBeltRatio',1)<=3:raise ValueError('hipBeltRatio must be within [1,3].')
     for key in ('forwardEfficiency','reverseEfficiency'):
         if not .01<=c[key]<=1:raise ValueError(key+' must be in [.01,1].')
     if not .01<=c['baseSpeedFraction']<1:raise ValueError('baseSpeedFraction must be in [.01,1).')
@@ -49,7 +50,8 @@ def torque_limit(config,qd,requested_joint_nm,*,peak_elapsed_s=0.,regen_used_j=0
     eta_reverse*joint/N. At rest use conservative forward conversion. Mechanical
     shaft power is only an electrical-power proxy (no copper-loss motor model).
     """
-    c=config;n=c['ratio'];speed=abs(qd*n);rpm=speed*30/math.pi
+    c=config;belt=c.get('hipBeltRatio',1);n=c['ratio']*belt;speed=abs(qd*n);rpm=speed*30/math.pi
+    gearbox_rpm=abs(qd)*belt*30/math.pi
     braking=requested_joint_nm*qd<0
     eta=c['reverseEfficiency'] if braking else c['forwardEfficiency']
     conversion=n/eta if braking else n*eta
@@ -64,7 +66,7 @@ def torque_limit(config,qd,requested_joint_nm,*,peak_elapsed_s=0.,regen_used_j=0
     speed_factor=max(0.,min(1.,(c['noLoadRpm']-rpm)/(c['noLoadRpm']-base)))
     shaft_available=shaft_peak*speed_factor
     if c['maxInputRpm'] is not None and rpm>c['maxInputRpm']:shaft_available=0.
-    if c['maxOutputRpm'] is not None and rpm/n>c['maxOutputRpm']:shaft_available=0.
+    if c['maxOutputRpm'] is not None and gearbox_rpm>c['maxOutputRpm']:shaft_available=0.
     power=c['brakingPowerW'] if braking else c['motoringPowerW']
     if braking:
         power=min(power,c['regenPowerW'])
@@ -72,9 +74,9 @@ def torque_limit(config,qd,requested_joint_nm,*,peak_elapsed_s=0.,regen_used_j=0
         elif dt_s>0:power=min(power,max(0.,c['regenEnergyJ']-regen_used_j)/dt_s)
     if speed>1e-12:shaft_available=min(shaft_available,power/speed)
     elif braking:shaft_available=0.
-    joint_available=min(c['gearboxPeakNm'],shaft_available*conversion)
+    joint_available=min(c['gearboxPeakNm']*belt,shaft_available*conversion)
     if peak_elapsed_s>=c['peakDurationS'] and c['gearboxContinuousNm'] is not None:
-        joint_available=min(joint_available,c['gearboxContinuousNm'])
+        joint_available=min(joint_available,c['gearboxContinuousNm']*belt)
     actual=math.copysign(min(abs(requested_joint_nm),joint_available),requested_joint_nm)
     shaft=actual/conversion
     joint_power=actual*qd;shaft_power=shaft*n*qd
@@ -86,6 +88,7 @@ def torque_limit(config,qd,requested_joint_nm,*,peak_elapsed_s=0.,regen_used_j=0
         shaftMechanicalPowerW=shaft_power,jointMechanicalPowerW=joint_power,
         gearboxLossPowerW=loss,regenPowerW=max(0.,-shaft_power),
         phaseCurrentA=abs(shaft)/kt if kt else None,shaftRpm=rpm,
+        gearboxOutputRpm=gearbox_rpm,gearboxOutputTorqueNm=actual/belt,totalReduction=n,
         peakTimeUsedS=peak_elapsed_s,regenEnergyUsedJ=regen_used_j)
 
 

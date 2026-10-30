@@ -28,8 +28,14 @@ outputs as selectable nodes; it describes the active study, not a new solver.
 
 ## Inertia, friction and gearing
 
-Let q be hip angle in radians and N = motor speed / hip speed. The existing
-rigid ideal transmission gives:
+Let q be hip angle in radians and N = motor speed / hip speed.
+
+The optional saved `hipBeltRatio` B=1..3 multiplies the base `gearRatio`, so
+`N = gearRatio × B`. Legacy omitted B means1 without rewriting the snapshot.
+Source gearbox output caps apply before the added ideal belt; additional output
+inertia remains hip-side. See the [motor model](motor-model.md) for conversions.
+
+The rigid ideal transmission gives:
 
 ```text
 omega_motor = N qdot

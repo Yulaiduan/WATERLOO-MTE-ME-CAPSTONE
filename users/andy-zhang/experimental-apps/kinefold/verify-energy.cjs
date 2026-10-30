@@ -58,4 +58,5 @@ near(physicalGuidance.gearRatio,10);near(physicalGuidance.requiredJointNm,(171.6
 ok(physicalGuidance.screening===null&&physicalGuidance.config.dropHeightMm===2000,'dynamic-case estimate uses actual motor and requested case height, not candidate');
 ok(JSON.stringify(candidateCog)===candidateCogOriginal,'dynamic guidance keeps saved candidate and physical motor intact');
 for(const patch of [{motorId:'unknown'},{gearboxId:'unknown'},{peakShaftNm:-1},{customRatio:0},{customMomentaryNm:-1},{extra:true}]){const bad=clone(selected);Object.assign(bad.energyConfig.screening,clone(patch));assert.throws(()=>P.validate(bad));checks++;}
+const beltedEnergy=clone(geared);beltedEnergy.motorConfig.coggingAmplitudeNm=0;const unbeltedEnergy=A.calculate(beltedEnergy);beltedEnergy.motorConfig.hipBeltRatio=2;const be=A.calculate(beltedEnergy);near(be.requiredJointNm,unbeltedEnergy.requiredJointNm);near(be.requiredShaftNm,unbeltedEnergy.requiredShaftNm/2);near(be.gearRatio,20);const beltJump=clone(jump);beltJump.motorConfig.hipBeltRatio=2;near(A.jumpEstimate(beltJump,100).shaftNm,A.jumpEstimate(jump,100).shaftNm/2);
 console.log('PASS '+checks+' standalone energy assertions');

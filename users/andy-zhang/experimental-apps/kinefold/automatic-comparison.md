@@ -98,6 +98,10 @@ braking:  tauShaft = etaReverse*tauJoint/N
 tauDrag,joint = tauC*tanh(N*qdot/epsilon) + b*qdot
 ```
 
+Total `N = ratio × hipBeltRatio`, with base gearbox ratio and optional B=1..3
+captured separately. Missing B=1 preserves legacy captures. Source gearbox output
+torque/speed limits apply before the ideal extra belt; the belt contributes no
+assumed mass/inertia/loss. See the [ODrive and speed example](terrain-speed-study.md).
 The input-equivalent gearbox inertia already represents its internal train.
 An additional output inertia means external hardware, not a second copy of that
 same train. Efficiency does not scale inertia. Housing/motor mass is reported

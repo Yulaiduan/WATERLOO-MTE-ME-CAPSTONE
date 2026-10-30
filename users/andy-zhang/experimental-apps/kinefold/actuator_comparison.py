@@ -19,7 +19,7 @@ import time
 from actuation_limits import ACTUATOR_DEFAULTS, torque_limit
 
 ROOT=Path(__file__).resolve().parent
-ASSUMPTIONS=dict(dropHeightMm=2000.,jumpHeightMm=2000.,minClearanceMm=50.,undersideOffsetMm=50.,
+ASSUMPTIONS=dict(hipBeltRatio=1.,dropHeightMm=2000.,jumpHeightMm=2000.,minClearanceMm=50.,undersideOffsetMm=50.,
     stopReserveDeg=1.,landingOpenFraction=2/3,dcBusV=48.,peakPhaseCurrentA=None,
     continuousPhaseCurrentA=None,noLoadRpm=6000.,baseSpeedFraction=.5,
     peakDurationS=2.,motoringPowerW=5000.,brakingPowerW=5000.,regenPowerW=5000.,
@@ -59,6 +59,7 @@ def validate_assumptions(raw=None):
     if not .0001<=a['dynamicDt']<=.002 or not .05<=a['dynamicDurationS']<=8 or not 5<=a['dynamicOutputHz']<=100:raise ValueError('Dynamic timing outside bounded range.')
     if a['dynamicDurationS']/a['dynamicDt']>80000:raise ValueError('Dynamic request exceeds step budget.')
     if not 0<=a['stopReserveDeg']<=10 or a['noLoadRpm']<=0 or a['lossReferenceRadS']<=0 or a['frictionSmoothingRadS']<=0:raise ValueError('Invalid reserve/speed assumption.')
+    if not 1<=a['hipBeltRatio']<=3:raise ValueError('hipBeltRatio must be within [1,3].')
     if a['terrainMinContactFraction']>1:raise ValueError('Contact fraction must be within [0,1].')
     return a
 
@@ -100,7 +101,7 @@ def candidate_hardware(m,g,a):
     flags=[]
     peak=m.get('peakTorqueNm')
     if peak is None or peak<=0:raise ValueError('Missing positive source peak torque.')
-    n=g['ratio'];eta=g.get('efficiency')
+    base_n=g['ratio'];belt=a.get('hipBeltRatio',1.);n=base_n*belt;eta=g.get('efficiency')
     if eta is None:eta=a['unknownEfficiency'];flags.append('Forward efficiency assumed')
     key={'low':'rotorInertiaLowKgM2','nominal':'rotorInertiaKgM2','high':'rotorInertiaHighKgM2'}[a['rotorInertiaScenario']]
     jm=m.get(key)
@@ -108,7 +109,8 @@ def candidate_hardware(m,g,a):
     flags.append('Rotor inertia is Rev2 estimated geometry, not measured')
     jg=g.get('inputInertiaKgM2');jo=a['additionalOutputInertiaKgM2']
     if jg is None:jg=a['unknownGearboxInputInertiaKgM2'];flags.append('Missing gearbox input inertia explicitly substituted')
-    flags.append('Additional external output hardware inertia explicitly entered; gearbox input-equivalent J already covers its train')
+    flags.append('Additional external hip-side hardware inertia explicitly entered; gearbox input-equivalent J already covers its train')
+    if belt!=1:flags.append('Extra hip belt assumed ideal rigid/lossless with no added mass or inertia')
     rpm=m.get('noLoadRpm')
     if rpm is None:rpm=a['noLoadRpm'];flags.append('No-load speed assumed at entered DC bus voltage')
     kt=m.get('torqueConstantNmPerA') or m.get('convertedKtNmPerA')
@@ -118,7 +120,7 @@ def candidate_hardware(m,g,a):
     if m.get('continuousTorqueNm') is None:flags.append('Continuous motor torque unknown; thermal pass unavailable')
     flags.extend(['Reverse efficiency assumed','Power/regen/peak-duration limits are editable assumptions',
                   'Torque-speed plateau/linear rolloff is an approximation','Mechanical mounting compatibility unverified'])
-    cfg={**ACTUATOR_DEFAULTS,'ratio':n,'peakShaftNm':peak,'continuousShaftNm':m.get('continuousTorqueNm'),
+    cfg={**ACTUATOR_DEFAULTS,'ratio':base_n,'hipBeltRatio':belt,'peakShaftNm':peak,'continuousShaftNm':m.get('continuousTorqueNm'),
         'noLoadRpm':rpm,'forwardEfficiency':eta,'reverseEfficiency':a['reverseEfficiency'],
         'gearboxPeakNm':g.get('peakOutputNm') or g.get('continuousOutputNm') or 10000.,
         'gearboxContinuousNm':g.get('continuousOutputNm'),
@@ -129,7 +131,7 @@ def candidate_hardware(m,g,a):
               'minClearanceMm','undersideOffsetMm','rideKpNPerM','rideKdNsPerM',
               'recoveryKpNPerM','recoveryKdNsPerM','holdKpNmPerRad','holdKdNms'):cfg[k]=a[k]
     if g.get('peakOutputNm') is None and g.get('continuousOutputNm') is None:flags.append('Gearbox torque rating missing; no hardware pass')
-    usable=min(peak*n*eta,cfg['gearboxPeakNm'])
+    usable=min(peak*n*eta,cfg['gearboxPeakNm']*belt)
     fraction=a[{'low':'lossLowFraction','medium':'lossMediumFraction','high':'lossHighFraction'}[a['lossScenario']]]
     fc=fraction*usable;b=fc/a['lossReferenceRadS']
     return dict(actuatorConfig=cfg,rotorInertiaKgM2=jm,gearboxInputInertiaKgM2=jg,
@@ -208,7 +210,7 @@ def fast_screen(geometry,hardware,a):
     for left,right in zip(rev,rev[1:]):
         dq=left['q']-right['q'];J=left['J']+Jref;speed=math.sqrt(max(0.,2*E/max(J,1e-12)))
         cap=torque_limit(c,-speed,-1e8,peak_elapsed_s=elapsed)['actuatorAvailableNm']
-        drag=fc*math.tanh(speed/max(a['frictionSmoothingRadS']/c['ratio'],1e-9))+b*speed
+        drag=fc*math.tanh(speed/max(a['frictionSmoothingRadS']/(c['ratio']*c.get('hipBeltRatio',1)),1e-9))+b*speed
         Enew=E+cap*dq-(right['ug']-left['ug'])-(right['us']-left['us'])-drag*dq
         if Enew<=0:stalled=True;E=0.;break
         vs=math.sqrt(2*Enew/max(right['J']+Jref,1e-12));elapsed+=2*dq/max(speed+vs,1e-12)
@@ -273,7 +275,7 @@ def rank_candidates(rows):
         comparable=[r for r in rows if hard_group(r)==best and r.get('massKg') is not None and 'hardware' in r]
         def objective(r):
             hw=r['hardware'];c=hw['actuatorConfig']
-            return (r['massKg'],hw['reflectedInertiaKgM2'],-min(c['gearboxPeakNm'],c['peakShaftNm']*c['ratio']*c['forwardEfficiency']))
+            return (r['massKg'],hw['reflectedInertiaKgM2'],-torque_limit(c,0.,1e8)['actuatorAvailableNm'])
         objectives=[objective(r) for r in comparable]
         for i,row in enumerate(comparable):
             this=objectives[i]
@@ -301,8 +303,8 @@ def contact_payload(project,hardware,a,kind,engine):
     c=copy.deepcopy(project['solverConfig']);c.update(inputRiseMm=0.,dt=a['dynamicDt'],
         duration=a['dynamicDurationS'],outputHz=a['dynamicOutputHz'],initialVelocityDegS=0.,hipTorqueNm=0.)
     c['hipRotorInertiaKgM2']+=hardware['gearboxOutputInertiaKgM2']
-    n=hardware['actuatorConfig']['ratio']
-    motor={**DEFAULTS,'enabled':True,'gearRatio':n,'rotorInertiaKgM2':hardware['rotorInertiaKgM2'],
+    base_n=hardware['actuatorConfig']['ratio'];belt=hardware['actuatorConfig'].get('hipBeltRatio',1);n=base_n*belt
+    motor={**DEFAULTS,'enabled':True,'gearRatio':base_n,'hipBeltRatio':belt,'rotorInertiaKgM2':hardware['rotorInertiaKgM2'],
         'gearboxInputInertiaKgM2':hardware['gearboxInputInertiaKgM2'],
         'coulombFrictionNm':hardware['outputCoulombNm']/n,
         'viscousFrictionNms':hardware['outputViscousNms']/n**2,

@@ -138,7 +138,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     return result.rows.map((row, i) => {
       const pose = KinefoldV4.VSL.state(ref, row.theta2), frame = result.frames[i], contact=result.scope?.mode==='terrain-contact';
       const driveRate=contact?ratios.qdc*ratios.qfe*(row.wheelAngularVelocityDegS-k6*row.velocityDegS):0;
-      const structuralRotor=!contact||result.engine==='analytical'||!(config.hipRotorInertiaKgM2+(result.motorConfig?.enabled?result.motorConfig.gearRatio**2*(result.motorConfig.rotorInertiaKgM2+(result.motorConfig.gearboxInputInertiaKgM2??0)):0));
+      const structuralRotor=!contact||result.engine==='analytical'||!(config.hipRotorInertiaKgM2+(result.motorConfig?.enabled?KinefoldProjects.totalMotorRatio(result.motorConfig)**2*(result.motorConfig.rotorInertiaKgM2+(result.motorConfig.gearboxInputInertiaKgM2??0)):0));
       const integralFields=contact?integralRow(result,row):{};
       return {...row,...integralFields, chassisDisplacementMm: row.chassisZMm - first.chassisZMm,
         wheelDisplacementXMm: row.CxMm - first.CxMm,

@@ -425,7 +425,7 @@ def check_motor_step(m,qd,dt):
     """Bound explicit regularized-friction decay and resolve cogging phase."""
     m.motor.check_step(qd,dt)
     if not m.motor.enabled:return
-    c=m.motor.config;n=c['gearRatio']
+    c=m.motor.config;n=m.motor.total_ratio
     slope=n*n*(c['coulombFrictionNm']/c['frictionVelocityScaleRadS']+c['viscousFrictionNms'])
     mu=m.p['m6']-(m.p['m6']*m.axis[1])**2/(m.p['m1']+m.p['m6'])
     inertia=m.Jref+mu*m.jacobian_min**2

@@ -60,9 +60,12 @@ tau_drive = efficiency × N × tau_motor
 J qdd + 0.5 J_prime qdot² = tau_drive - tau_loss - dU/dq
 ```
 
-The selected gearbox output is assumed to drive the hip directly, with no
-additional external reduction. The leg's pulley ratios define internal link
-motion separately from this motor-to-hip ratio.
+The selected gearbox has base reduction `ratio`; editable `hipBeltRatio` B=1..3
+adds an ideal gearbox-output-to-hip stage. Total N=`ratio × B`; omitted B=1
+retains direct gearbox-to-hip drive. Source gearbox torque/speed limits apply
+before that belt. Additional output inertia is entered at the hip. The leg's
+pulley ratios define internal link motion separately. The belt has no invented
+mass, inertia, compliance or routing; see the [ODrive example](terrain-speed-study.md).
 Efficiency does not multiply inertia. An input-equivalent gearbox inertia is
 reflected once, not counted again as independent output inertia. Source gearbox
 `kg cm²` converts to `kg m²` with a factor of `1e-4`. Missing gearbox inertia must

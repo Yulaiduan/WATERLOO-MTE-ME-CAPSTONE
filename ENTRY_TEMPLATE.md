@@ -5357,3 +5357,69 @@ Canonical robot physics is NOT APPLICABLE to this isolated member app. Shared ex
 Read workflow-example.md for the short workflow, three exact choices, assumptions and example outcomes.
 Use workflow_example.py with a fresh app-local folder for another bounded run, and encode_terrain_animation.py with paired saved terrain captures to export actual GIFs without rerunning physics.
 Keep future examples small, preserve conditional ranking/ties/source guards, and use Start Kinefold.cmd at4191 after shutdown.
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — Hip belt reduction, ODrive and faster terrain
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member app, motor transmission and bounded paired study.
+- **Associated Issue/Task:** Owner requested terrain stability at higher speeds, plus ODrive8325 and a configurable additional gearbox-output-to-hip belt reduction (example2:1, editable1..3). Based on fetched mainaca73a1. Three explicitly authorized GPT-6.1Sol workers owned Python belt integration, JS consumers and bounded runner in separate worktrees; parent owned architecture/integration, actual execution, source/metric audit, Plotly/GIF/Notion, documentation and publication. No Computer skill or GUI automation.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuation_limits.py`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuator_comparison.py`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.js`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.md`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/export_terrain_animation.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/motor-model.md`
+- `users/andy-zhang/experimental-apps/kinefold/motor-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/motor_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/parametric-presets.md`
+- `users/andy-zhang/experimental-apps/kinefold/preset-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-flow.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-workbench.js`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-actuator-calculator.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-automatic-comparison.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-motor-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-speed-study.md`
+- `users/andy-zhang/experimental-apps/kinefold/terrain_speed_study.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_hip_belt.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_terrain_speed_study.py`
+
+- **API/Interface Changes:** Add optional motorConfig.hipBeltRatio and actuatorConfig.hipBeltRatio1..3, omitted1 preserving historical key shape. Base gearRatio/actuator ratio remains gearbox alone; Ntotal=Ngear*B applies once to speed/torque/Coulomb and Ntotal² to input-equivalent inertia/viscous drag. Source gearbox torque/speed caps apply before added ideal belt; hip-side extra inertia stays unscaled. UI controls/presets/energy/conventions/calculator/source captures and animation footer use totalN. Add standalone strict20-run maximum speed runner, exact spatial-input guards, time-weighted metrics, resumable source/config checks and ODrive-only raw capture retention. Six filtered refinements are separate. No geometry/spring/carrier belt change, schema-version bump, live profile rewrite, catalogue change, shared component, canonical asset, dependency or enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS four new belt tests including actual finite analytical/Pymunk equivalence, six new study tests including exact spatial contour/phase,48 existing motor/contact/comparison/preset tests with one optional skip,6162 calculator/DOM assertions,118 automatic-study,119 energy,103 preset analysis,18 motor UI,35 project scenario groups,55 preset and15 animation assertions. Actual B2 landing/jump/terrain bundles pass212 replay plus48 handoff/mirror/clock/Plotly DOM assertions. All26 executed cases (20base +6half-step) numerically resolved;13 pairs have exactly equal requests exceptengine; captured metrics/source SHA checks pass; live4191 HTTP B2engines reproduce saved3m/s rows within1e-9. Four saved GIFs pass source SHA/count/dimensions/duration/loop checks (91/37/19/13frames,1120x970,physical4.5/1.8/.9/.6s plus.5s endpause), three Plotly PNGs visually inspected after correcting header/footer overlap, no retained frame caches.62 local documentation links, Python/JS syntax and whitespace checks pass. Compact5.35MB ZIP and eight native Notion attachments completed. Initial local audit incorrectly expected warning array empty; existing model-limit notes are retained and numerical/completion checks pass. Initial replay command used wrong filename, then omitted required bundles; corrected actual-capture commands pass. One one-line media audit invocation had an escaped-newline SyntaxError; replacement audit script passes. Durable launcher reuse/stop/start from unrelated cwd and HTTP readiness pass; live profile SHA unchanged. Fetched-base/staged/exact-push workspace gates apply before publication. No live pointer/browser, hardware, full-body stability, tire/impact strength, thermal or GPU pass claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app. Same45kg chassis/55kg gross,alpha20deg,1kg links/.5kg wheel,65deg travel,50mm clearance and mild seeded15mm-RMS/600mm terrain. ODrive+AB90G10+B2 has128.8Nm rest motoring,147.6Nm reverse-efficiency braking; estimated rotorJ/assumed gearJ and drag remain editable. ODrive RMS1.688→1.879mm vsFlipsky1.698→2.605mm at.4→3m/s; no observed contact loss/saturation/stops. ODrive jump.502/.499m misses2m; both2m drops arrest above minimum but rigid contact removes substantial impact energy, not verified real absorption. Half-step classifications unchanged; landing engine clearance gap8.2mm remains, numerical ledger residuals reduce. Exact equations/assumptions/results are in terrain-speed-study.md. All raw/PNG/GIF exports remain ignored in app/Notion, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read terrain-speed-study.md and motor-model.md for the two-stage ratio semantics, exact assumptions, bounded results and remaining hardware unknowns.
+Use terrain_speed_study.py with a generated editable config and fresh app-local output folder, preserving source guards and failed outcomes; captured Actuator studies support B1..3 without changing old snapshots.
+Keep subsequent comparisons small, distinguish quarter-heave tracking and rigid first-arrest results from hardware survival, and restart4191 with the project-local Start Kinefold.cmd.

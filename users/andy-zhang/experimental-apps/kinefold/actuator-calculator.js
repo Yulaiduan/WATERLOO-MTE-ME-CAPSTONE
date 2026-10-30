@@ -21,26 +21,26 @@
     return p;
   }
   function hardware(input){
-    const h=clone(input||{});
+    const h=clone(input||{});h.hipBeltRatio=h.hipBeltRatio??1;finite(h.hipBeltRatio,'Hip belt ratio',1,3);h.totalRatio=h.ratio*h.hipBeltRatio;
     for(const k of ['motorPeakNm','motorNoLoadRpm','ratio','efficiency','rotorInertiaKgM2','gearboxInputInertiaKgM2','gearboxOutputInertiaKgM2'])finite(h[k],k,['motorNoLoadRpm','ratio','efficiency'].includes(k)?1e-12:0);
     if(h.efficiency>1)throw Error('Torque transfer efficiency cannot exceed 1.');
     if(h.ratio>1e4||h.motorNoLoadRpm>1e7)throw Error('Reduction or speed exceeds this screening range.');
     for(const k of ['gearboxPeakNm','gearboxInputMaxRpm','gearboxOutputMaxRpm'])if(h[k]!==null&&h[k]!==undefined)finite(h[k],k,0);
     h.torqueModel=h.torqueModel||'linear';if(!['linear','constant'].includes(h.torqueModel))throw Error('Unknown illustrative torque-speed model.');
-    const caps=[h.motorNoLoadRpm*TAU/60/h.ratio];
-    if(Number.isFinite(h.gearboxInputMaxRpm))caps.push(h.gearboxInputMaxRpm*TAU/60/h.ratio);
-    if(Number.isFinite(h.gearboxOutputMaxRpm))caps.push(h.gearboxOutputMaxRpm*TAU/60);
+    const caps=[h.motorNoLoadRpm*TAU/60/h.totalRatio];
+    if(Number.isFinite(h.gearboxInputMaxRpm))caps.push(h.gearboxInputMaxRpm*TAU/60/h.totalRatio);
+    if(Number.isFinite(h.gearboxOutputMaxRpm))caps.push(h.gearboxOutputMaxRpm*TAU/60/h.hipBeltRatio);
     h.jointSpeedCapRadS=Math.min(...caps);
-    h.motorReflectedKgM2=h.ratio*h.ratio*h.rotorInertiaKgM2;
-    h.gearboxReflectedKgM2=h.ratio*h.ratio*h.gearboxInputInertiaKgM2+h.gearboxOutputInertiaKgM2;
-    h.unlimitedJointPeakNm=h.efficiency*h.ratio*h.motorPeakNm;
-    h.jointPeakNm=Number.isFinite(h.gearboxPeakNm)?Math.min(h.unlimitedJointPeakNm,h.gearboxPeakNm):h.unlimitedJointPeakNm;
+    h.motorReflectedKgM2=h.totalRatio*h.totalRatio*h.rotorInertiaKgM2;
+    h.gearboxReflectedKgM2=h.totalRatio*h.totalRatio*h.gearboxInputInertiaKgM2+h.gearboxOutputInertiaKgM2;
+    h.unlimitedJointPeakNm=h.efficiency*h.totalRatio*h.motorPeakNm;
+    h.jointPeakNm=Number.isFinite(h.gearboxPeakNm)?Math.min(h.unlimitedJointPeakNm,h.gearboxPeakNm*h.hipBeltRatio):h.unlimitedJointPeakNm;
     h.gearboxTorqueAssessed=Number.isFinite(h.gearboxPeakNm);
     return h;
   }
   function fromCombination(c,overrides={}){
     if(!c)throw Error('Choose a motor and gearbox combination.');
-    return {...overrides,motorPeakNm:c.peakMotorTorqueNm,motorNoLoadRpm:c.motorNoLoadRpm,ratio:c.gearRatio,efficiency:c.efficiency,
+    return {...overrides,motorPeakNm:c.peakMotorTorqueNm,motorNoLoadRpm:c.motorNoLoadRpm,ratio:c.gearRatio,hipBeltRatio:1,efficiency:c.efficiency,
       rotorInertiaKgM2:c.rotorInertiaKgM2,gearboxInputInertiaKgM2:c.gearboxInputInertiaKgM2,
       // Input-equivalent gearbox inertia already includes its rotating train.
       // Zero here means no additional independently specified output inertia.
@@ -71,15 +71,15 @@
     const z=geometry(p,q,fixture),parts={},derivative={};
     for(const [key,x]of Object.entries(z.sites)){parts[key]=x.mass*dot(x.site[1],x.site[1])+x.bodyInertia*x.rate*x.rate;derivative[key]=2*x.mass*dot(x.site[1],x.site[2]);}
     const leg=Object.values(parts).reduce((a,b)=>a+b,0),dJ=Object.values(derivative).reduce((a,b)=>a+b,0);
-    const motor=h.ratio*h.ratio*h.rotorInertiaKgM2,gear=h.ratio*h.ratio*h.gearboxInputInertiaKgM2+h.gearboxOutputInertiaKgM2;
+    const motor=h.totalRatio*h.totalRatio*h.rotorInertiaKgM2,gear=h.totalRatio*h.totalRatio*h.gearboxInputInertiaKgM2+h.gearboxOutputInertiaKgM2;
     return {...z,parts,legKgM2:leg,motorKgM2:motor,gearboxKgM2:gear,totalKgM2:leg+motor+gear,derivativeKgM2Rad:dJ,
       reflectedFraction:(motor+gear)/(leg+motor+gear),reflectedToLegRatio:leg>0?(motor+gear)/leg:null};
   }
   function torque(h,speed){
-    const rpm=Math.abs(speed)*h.ratio*60/TAU;
+    const rpm=Math.abs(speed)*h.totalRatio*60/TAU;
     const fraction=h.torqueModel==='constant'?1:Math.max(0,1-rpm/h.motorNoLoadRpm);
-    const uncapped=h.efficiency*h.ratio*h.motorPeakNm*fraction;
-    return Math.min(uncapped,Number.isFinite(h.gearboxPeakNm)?h.gearboxPeakNm:Infinity);
+    const uncapped=h.efficiency*h.totalRatio*h.motorPeakNm*fraction;
+    return Math.min(uncapped,Number.isFinite(h.gearboxPeakNm)?h.gearboxPeakNm*h.hipBeltRatio:Infinity);
   }
   function defaultLosses(h){return [1,3,8].map((percent,i)=>({id:['low','medium','high'][i],name:['Low','Medium','High'][i],
     coulombNm:h.jointPeakNm*percent/100,viscousNms:h.jointPeakNm*percent/100/10,referenceSpeedRadS:10,percent,
@@ -128,7 +128,7 @@
     const row=()=>{const z=at(s),u=U(s),omega=Math.sqrt(2*Math.max(0,state[0])/z.totalKgM2),drive=torque(h,omega),drag=lossTorque(f,omega),jprime=dir*z.derivativeKgM2Rad;
       const acceleration=(drive-drag-dir*u.appliedDerivativeNm-.5*jprime*omega*omega)/z.totalKgM2;
       const wheel=z.sites.wheel.site,com=z.com;
-      return {sRad:s,qDeg:(q0+dir*s)/RAD,timeS:time,speedRadS:omega,speedDegS:omega/RAD,motorRpm:omega*h.ratio*60/TAU,
+      return {sRad:s,qDeg:(q0+dir*s)/RAD,timeS:time,speedRadS:omega,speedDegS:omega/RAD,motorRpm:omega*h.totalRatio*60/TAU,
         accelerationRadS2:acceleration,hipAccelerationRadS2:dir*acceleration,driveNm:drive,lossNm:drag,potentialResistingNm:dir*u.appliedDerivativeNm,
         hipVelocityRadS:dir*omega,lowerAbsoluteVelocityRadS:z.lowerRate*dir*omega,relativeKneeVelocityRadS:(z.lowerRate-1)*dir*omega,
         lowerAbsoluteAccelerationRadS2:z.lowerRate*dir*acceleration,relativeKneeAccelerationRadS2:(z.lowerRate-1)*dir*acceleration,
@@ -179,7 +179,7 @@
   function accelerationCurve(p,h,loss,qDeg=p.theta2,options={}){
     const z=inertia(p,qDeg*RAD,h,'fixed-hip'),u=potential(p,qDeg*RAD,'fixed-hip',options.balance||'ideal-balance'),dir=-1;
     return Array.from({length:121},(_,i)=>{const speed=h.jointSpeedCapRadS*i/120,drive=torque(h,speed),drag=lossTorque(loss,speed);
-      return {speedRadS:speed,motorRpm:speed*h.ratio*60/TAU,driveNm:drive,lossNm:drag,accelerationRadS2:(drive-drag-dir*u.appliedDerivativeNm-.5*dir*z.derivativeKgM2Rad*speed*speed)/z.totalKgM2};});
+      return {speedRadS:speed,motorRpm:speed*h.totalRatio*60/TAU,driveNm:drive,lossNm:drag,accelerationRadS2:(drive-drag-dir*u.appliedDerivativeNm-.5*dir*z.derivativeKgM2Rad*speed*speed)/z.totalKgM2};});
   }
   function idealRatioSweep(p,h,qDeg=p.theta2){
     const z=inertia(p,qDeg*RAD,h),J=z.legKgM2+h.gearboxOutputInertiaKgM2,j=h.rotorInertiaKgM2+h.gearboxInputInertiaKgM2;
@@ -203,7 +203,7 @@
     for(const candidate of (options.candidates||[]).slice(0,16)){
       try{const ch=hardware(candidate.hardware||candidate),loss=losses[Math.min(1,losses.length-1)],z=inertia(p,p.theta2*RAD,ch);
         const free=integrateStroke(p,ch,loss,{balance:fixedBalance,steps:240});let jump=null;try{jump=estimateJump(p,ch,loss,{balance:jumpBalance,steps:240});}catch{}
-        compare.push({name:candidate.name||ch.name||'Candidate',ratio:ch.ratio,peakJointNm:ch.jointPeakNm,totalInertiaKgM2:z.totalKgM2,motorInertiaKgM2:z.motorKgM2,gearboxInertiaKgM2:z.gearboxKgM2,initialAccelerationRadS2:free.initialAccelerationRadS2,strokeTimeS:free.complete?free.strokeTimeS:null,terminalSpeedRadS:free.end.speedRadS,jumpHeightM:jump?.estimatedJumpHeightM??null,status:free.status,hardware:ch});
+        compare.push({name:candidate.name||ch.name||'Candidate',ratio:ch.totalRatio,peakJointNm:ch.jointPeakNm,totalInertiaKgM2:z.totalKgM2,motorInertiaKgM2:z.motorKgM2,gearboxInertiaKgM2:z.gearboxKgM2,initialAccelerationRadS2:free.initialAccelerationRadS2,strokeTimeS:free.complete?free.strokeTimeS:null,terminalSpeedRadS:free.end.speedRadS,jumpHeightM:jump?.estimatedJumpHeightM??null,status:free.status,hardware:ch});
       }catch(e){compare.push({name:candidate.name||'Candidate',error:e.message});}
     }
     return {schema:'kinefold/actuator-calculator-v1',profile:{id:project.id||null,name:project.name||'Mechanism snapshot',params:p},hardware:h,
