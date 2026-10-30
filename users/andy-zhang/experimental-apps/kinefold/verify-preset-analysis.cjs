@@ -32,6 +32,13 @@ const independentTorque=gravityNm+independentJ*3+49*.003*3+.5*sample.legInertiaD
 near(sample.jointTorqueNm,independentTorque,1e-8);near(sample.shaftTorqueNm,independentTorque/N,1e-8);near(sample.conservativeMaxJointNm-sample.conservativeMinJointNm,2*N*.12);ok(Math.abs(sample.jointTorqueNm-(independentTorque+2*sample.coggingJointNm))>.01,'cogging compensation sign negative control');
 const independentOutput=gravityNm+independentJ*3+.5*sample.legInertiaDerivativeKgM2PerRad*4+.18;near(sample.gearboxOutputTorqueNm,independentOutput,1e-8);ok(Math.abs(sample.gearboxOutputTorqueNm-sample.jointTorqueNm)>.1,'motor EM equivalent is not gearbox output');near(rr.ratings.gearboxPeakNm.required,rr.ranges.gearboxOutputTorqueNm.maxAbs);near(rr.charts.static[1].y[5],rr.staticRows[5].jointTorqueNm/N);
 const reverse=rr.rows.find(r=>r.thetaDeg===sample.thetaDeg&&r.jointSpeedRadS===-2);near(reverse.coulombJointNm,-sample.coulombJointNm);near(reverse.viscousJointNm,-sample.viscousJointNm);near(reverse.coriolisNm,sample.coriolisNm);near(reverse.coggingJointNm,sample.coggingJointNm);
+const gearProject=realm(rich.project);gearProject.motorConfig.gearboxInputInertiaKgM2=.0004;
+const gearActuator=realm(rich.actuator);gearActuator.values.motorConfig.gearboxInputInertiaKgM2=.0004;
+const gearAnalysis=A.analyze(gearProject,gearActuator,sweep),gearPoint=gearAnalysis.rows.find(r=>r.thetaDeg===sample.thetaDeg&&r.jointSpeedRadS===2);
+near(gearPoint.rotorAccelerationNm-sample.rotorAccelerationNm,49*.0004*3);
+near(gearPoint.jointTorqueNm-sample.jointTorqueNm,49*.0004*3);
+near(gearPoint.gearboxOutputTorqueNm,sample.gearboxOutputTorqueNm);
+near(gearAnalysis.inertia.gearboxReflectedJointKgM2,49*.0004);
 const custom=fixture(p=>{p.params.m2=1;p.solverConfig.inertiaModel='custom';p.solverConfig.I2=.21;p.solverConfig.I3=.13;p.solverConfig.I5=.07;p.solverConfig.I6=.04;Object.assign(p.params,{ra:48,rb:20,rc:30,rd:40,re:18,rf:30});p.solverConfig.hipRotorInertiaKgM2=.09;});
 const cj=A.fixedHipInertia(custom.project.params,custom.project.solverConfig,130),k3=1-48/20,k5=1-30/40,K=1-48/20+(48/20-30/40)*18/30;
 near(cj.legInertiaKgM2,.25*(custom.project.params.L2/1000)**2+.21+.13*k3*k3+.07*k5*k5+.04*K*K+.09);

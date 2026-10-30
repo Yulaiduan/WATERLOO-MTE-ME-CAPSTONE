@@ -300,9 +300,10 @@ def contact_payload(project,hardware,a,kind,engine):
     from motor_model import DEFAULTS
     c=copy.deepcopy(project['solverConfig']);c.update(inputRiseMm=0.,dt=a['dynamicDt'],
         duration=a['dynamicDurationS'],outputHz=a['dynamicOutputHz'],initialVelocityDegS=0.,hipTorqueNm=0.)
-    c['hipRotorInertiaKgM2']+=hardware['gearboxInputInertiaKgM2']*hardware['actuatorConfig']['ratio']**2+hardware['gearboxOutputInertiaKgM2']
+    c['hipRotorInertiaKgM2']+=hardware['gearboxOutputInertiaKgM2']
     n=hardware['actuatorConfig']['ratio']
     motor={**DEFAULTS,'enabled':True,'gearRatio':n,'rotorInertiaKgM2':hardware['rotorInertiaKgM2'],
+        'gearboxInputInertiaKgM2':hardware['gearboxInputInertiaKgM2'],
         'coulombFrictionNm':hardware['outputCoulombNm']/n,
         'viscousFrictionNms':hardware['outputViscousNms']/n**2,
         'frictionVelocityScaleRadS':a['frictionSmoothingRadS']}

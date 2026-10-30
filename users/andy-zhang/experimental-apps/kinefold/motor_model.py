@@ -10,11 +10,11 @@ Zero defaults are compatibility settings, not measured hardware properties.
 import math
 
 
-DEFAULTS = dict(enabled=False, gearRatio=1, rotorInertiaKgM2=0,
+DEFAULTS = dict(enabled=False, gearRatio=1, rotorInertiaKgM2=0, gearboxInputInertiaKgM2=0,
                 coggingAmplitudeNm=0, coggingPeriodsPerRev=1, coggingPhaseDeg=0,
                 coulombFrictionNm=0, viscousFrictionNms=0,
                 frictionVelocityScaleRadS=.01, commandBasis='joint')
-BOUNDS = dict(gearRatio=(1e-6, 1e4), rotorInertiaKgM2=(0, 1000),
+BOUNDS = dict(gearRatio=(1e-6, 1e4), rotorInertiaKgM2=(0, 1000), gearboxInputInertiaKgM2=(0, 1000),
               coggingAmplitudeNm=(0, 10000), coggingPeriodsPerRev=(1, 10000),
               coggingPhaseDeg=(-360, 360), coulombFrictionNm=(0, 10000),
               viscousFrictionNms=(0, 10000), frictionVelocityScaleRadS=(1e-6, 1000))
@@ -23,20 +23,23 @@ BOUNDS = dict(gearRatio=(1e-6, 1e4), rotorInertiaKgM2=(0, 1000),
 class Motor:
     @classmethod
     def resolve(cls, config=None):
-        if config is not None and (not isinstance(config, dict) or set(config) != set(DEFAULTS)):
+        allowed = set(DEFAULTS)
+        legacy = allowed - {'gearboxInputInertiaKgM2'}
+        if config is not None and (not isinstance(config, dict) or set(config) not in (allowed, legacy)):
             raise ValueError('motorConfig must contain exactly the documented motor keys.')
         c = dict(DEFAULTS if config is None else config)
         if type(c['enabled']) is not bool or c['commandBasis'] not in ('joint', 'motor'):
             raise ValueError('Motor enabled must be boolean and commandBasis joint or motor.')
         for key, (lo, hi) in BOUNDS.items():
-            x = c[key]
+            x = c.get(key, 0)
             if isinstance(x, bool) or not isinstance(x, (int, float)) or not math.isfinite(x) or not lo <= x <= hi:
                 raise ValueError(f'Motor {key} must be finite within [{lo}, {hi}].')
         if int(c['coggingPeriodsPerRev']) != c['coggingPeriodsPerRev']:
             raise ValueError('Motor coggingPeriodsPerRev must be an integer.')
         obj = cls()
         obj.config, obj.enabled = c, c['enabled']
-        obj.reflected_inertia = c['gearRatio'] ** 2 * c['rotorInertiaKgM2'] if obj.enabled else 0
+        # Preserve a legacy capture's original keys; zero is compatibility, not data.
+        obj.reflected_inertia = c['gearRatio'] ** 2 * (c['rotorInertiaKgM2'] + c.get('gearboxInputInertiaKgM2', 0)) if obj.enabled else 0
         return obj
 
     def joint_command(self, value):

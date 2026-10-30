@@ -25,12 +25,12 @@ function validateEnergy(value){
   out.screening={...v};
  }return out;
 }
-const motorDefaults={enabled:false,gearRatio:1,rotorInertiaKgM2:0,coggingAmplitudeNm:0,coggingPeriodsPerRev:1,coggingPhaseDeg:0,coulombFrictionNm:0,viscousFrictionNms:0,frictionVelocityScaleRadS:.01,commandBasis:'joint'};
+const motorDefaults={enabled:false,gearRatio:1,rotorInertiaKgM2:0,gearboxInputInertiaKgM2:0,coggingAmplitudeNm:0,coggingPeriodsPerRev:1,coggingPhaseDeg:0,coulombFrictionNm:0,viscousFrictionNms:0,frictionVelocityScaleRadS:.01,commandBasis:'joint'};
 function validateMotor(value){
  keys(value,Object.keys(motorDefaults),'motor configuration');
- for(const key of Object.keys(motorDefaults))if(!(key in value))throw Error('Missing motor setting: '+key);
+ for(const key of Object.keys(motorDefaults))if(key!=='gearboxInputInertiaKgM2'&&!(key in value))throw Error('Missing motor setting: '+key);
  if(typeof value.enabled!=='boolean'||!['joint','motor'].includes(value.commandBasis))throw Error('Choose motor enable state and joint/motor command basis.');
- const limits={gearRatio:[1e-6,1e4],rotorInertiaKgM2:[0,1000],coggingAmplitudeNm:[0,10000],coggingPeriodsPerRev:[1,10000],coggingPhaseDeg:[-360,360],coulombFrictionNm:[0,10000],viscousFrictionNms:[0,10000],frictionVelocityScaleRadS:[1e-6,1000]};
+ const limits={gearRatio:[1e-6,1e4],rotorInertiaKgM2:[0,1000],...(Object.hasOwn(value,'gearboxInputInertiaKgM2')?{gearboxInputInertiaKgM2:[0,1000]}:{}),coggingAmplitudeNm:[0,10000],coggingPeriodsPerRev:[1,10000],coggingPhaseDeg:[-360,360],coulombFrictionNm:[0,10000],viscousFrictionNms:[0,10000],frictionVelocityScaleRadS:[1e-6,1000]};
  for(const [key,[lo,hi]]of Object.entries(limits))if(!Number.isFinite(value[key])||value[key]<lo||value[key]>hi)throw Error(key+' must be finite between '+lo+' and '+hi+'.');
  if(!Number.isInteger(value.coggingPeriodsPerRev))throw Error('Cogging periods must be a whole number.');
  return {...value};

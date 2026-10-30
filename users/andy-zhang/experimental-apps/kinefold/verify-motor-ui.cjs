@@ -16,4 +16,16 @@ for(const basis of ['joint','motor']){
  ok(A.snapshotKey(p)!==A.snapshotKey(base),'motor model makes results stale');
 }
 ok(U.balanceCommand({...base,motorConfig:{...P.motorDefaults,coggingAmplitudeNm:10,gearRatio:50,commandBasis:'motor'}},required)===required,'disabled retained values have no conversion effect');
+const saved={...base,motorConfig:{...P.motorDefaults,enabled:true,gearRatio:20,rotorInertiaKgM2:.0008,gearboxInputInertiaKgM2:.0001,coggingAmplitudeNm:.3}};
+const original=JSON.stringify(saved);
+for(const name of ['low','medium','high']){
+ const c=U.withLossPreset(saved,name);
+ ok(c.gearRatio===20&&c.rotorInertiaKgM2===.0008&&c.gearboxInputInertiaKgM2===.0001,'loss example preserves drive inertia/gearing');
+ ok(c.coggingAmplitudeNm===0&&c.coulombFrictionNm>0&&c.viscousFrictionNms>0&&c.frictionVelocityScaleRadS===10,'constant resistance lumps cogging without double-count');
+ P.validateMotor(c);
+}
+ok(JSON.stringify(saved)===original,'presets do not mutate captured project');
+const legacy={...saved.motorConfig};delete legacy.gearboxInputInertiaKgM2;
+ok(!Object.hasOwn(P.validateMotor(P.clone(legacy)),'gearboxInputInertiaKgM2'),'legacy motor capture shape retained');
+for(const value of [NaN,true,-1])assert.throws(()=>P.validateMotor({...saved.motorConfig,gearboxInputInertiaKgM2:value}));
 console.log('PASS '+checks+' motor UI conversion assertions');

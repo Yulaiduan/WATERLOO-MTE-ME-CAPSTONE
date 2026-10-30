@@ -68,8 +68,8 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['motor','motor-speed','Motor shaft speed','rad/s',series(['motorVelocityRadS','Shaft angular speed'])],
     ['motor','motor-command','Motor and joint electromagnetic torque','N·m',series(['shaftCommandNm','Motor shaft command'],['jointElectromagneticNm','Joint electromagnetic command'])],
     ['motor','motor-passive','Joint-side cogging and friction','N·m',series(['jointCoggingNm','Conservative cogging'],['jointFrictionNm','Motor friction'],['jointPassiveNm','Total motor passive torque'])],
-    ['motor','motor-energy','Rotor kinetic and detent potential energy','J',series(['rotorKineticJ','Motor rotor kinetic'],['legacyJointRotorKineticJ','Additional joint inertia kinetic'],['coggingPotentialJ','Cogging potential'])],
-    ['motor','motor-loss','Motor dissipated energy','J',series(['motorDissipatedJ','Motor losses'])],
+    ['motor','motor-energy','Drive inertia kinetic and detent potential energy','J',series(['rotorKineticJ','Motor + gearbox input inertia kinetic'],['legacyJointRotorKineticJ','Additional joint inertia kinetic'],['coggingPotentialJ','Cogging potential'])],
+    ['motor','motor-loss','Motor dissipated energy','J',series(['motorDissipatedJ','Total motor losses'],['motorCoulombDissipatedJ','Coulomb / lumped cogging loss'],['motorViscousDissipatedJ','Viscous loss'])],
     ['motor','motor-constraint','Rotor kinematic constraint residual','rad/s',series(['rotorConstraintVelocityErrorRadS','Rotor speed residual'])]
     ,['motor','motor-position-residual','Rotor joint-angle constraint residual','rad',series(['rotorConstraintPositionResidualRad','Native rotor − ideal q'])]
     ,['motor','motor-numerical-work','Native rotor constraint work · numerical','J',series(['rotorConstraintImpulseWorkJ','Signed native constraint impulse work'],['coupledConstraintKineticLossJ','Signed coupled free-to-solved KE change'])]
@@ -81,13 +81,13 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['Fs', 'Spring tension', 'N'],
     ['inputReactionN', 'Wheel-input reaction', 'N'],
     ['workEnergyResidualJ', 'Work–energy residual', 'J'],
-    ['rotorKineticJ','Motor rotor energy','J'],['shaftCommandNm','Motor shaft command','N·m'],
+    ['rotorKineticJ','Motor + gear inertia energy','J'],['shaftCommandNm','Motor shaft command','N·m'],
   ];
   const contactComparisonFields = [
     ['chassisDisplacementMm','Chassis displacement','mm'],['chassisVelocityMmS','Chassis speed','mm/s'],
     ['theta2','Hip angle','°'],['wheelAngularVelocityDegS','Wheel spin','°/s'],['Fs','Spring tension','N'],
     ['contactNormalForceN','Contact normal · interval mean','N'],['motorTorqueNm','Motor torque','N·m'],
-    ['rotorKineticJ','Motor rotor energy','J'],['shaftCommandNm','Motor shaft command','N·m'],['motorDissipatedJ','Motor dissipated energy','J'],
+    ['rotorKineticJ','Motor + gear inertia energy','J'],['shaftCommandNm','Motor shaft command','N·m'],['motorDissipatedJ','Motor dissipated energy','J'],
     ['chassisKineticJ','Chassis kinetic energy','J'],['springStoredJ','Spring stored from run start','J'],['motorRemovedJ','Motor removed from run start','J'],['gravityReleasedJ','Gravity released from run start','J'],['externalWorkJ','Additional load work','J'],['contactSpringStoredJ','Spring stored since each engine contact','J'],['contactMotorRemovedJ','Motor removed since each engine contact','J'],['motorWorkJ','Motor work','J'],['energyBalanceResidualJ','Energy-ledger residual','J'],
   ];
   function stable(value) {
@@ -138,7 +138,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     return result.rows.map((row, i) => {
       const pose = KinefoldV4.VSL.state(ref, row.theta2), frame = result.frames[i], contact=result.scope?.mode==='terrain-contact';
       const driveRate=contact?ratios.qdc*ratios.qfe*(row.wheelAngularVelocityDegS-k6*row.velocityDegS):0;
-      const structuralRotor=!contact||result.engine==='analytical'||!(config.hipRotorInertiaKgM2+(result.motorConfig?.enabled?result.motorConfig.gearRatio**2*result.motorConfig.rotorInertiaKgM2:0));
+      const structuralRotor=!contact||result.engine==='analytical'||!(config.hipRotorInertiaKgM2+(result.motorConfig?.enabled?result.motorConfig.gearRatio**2*(result.motorConfig.rotorInertiaKgM2+(result.motorConfig.gearboxInputInertiaKgM2??0)):0));
       const integralFields=contact?integralRow(result,row):{};
       return {...row,...integralFields, chassisDisplacementMm: row.chassisZMm - first.chassisZMm,
         wheelDisplacementXMm: row.CxMm - first.CxMm,

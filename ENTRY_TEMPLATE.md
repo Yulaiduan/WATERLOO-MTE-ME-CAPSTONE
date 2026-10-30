@@ -5258,3 +5258,61 @@ Initial portable export validation rejected UUID-only IDs; all16 were corrected 
 The supplied4landingcases now haveactualpairedtorque/belt/energy evidence andfullopening1canbereplayed throughordinarydynamiccontrols withoutchangingthe2/3default.
 Read table-landing-study.md andrun table_landing_study.py withanewapp-localoutputfolder forfreshcases; sourceguards rejectstalecomputations whileexactcachedframesremainhistoricalevidence.
 Retainbothstop-impulseregressions, distinguishminimumtightstrandintervals fromphysicalbeltshock andmotorworkfromnumericalconstraintaccounts, anduseStart Kinefold.cmd at4191 forrestart.
+
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — Constant motor drag, explicit gearbox inertia and heave studies
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member app.
+- **Associated Issue/Task:** Owner requested Coulomb plus viscous friction, reflected motor/gear inertia, jumping with losses and hardware-limited ideal-controller terrain comparisons. Owner clarified cogging belongs in constant angle-independent Coulomb resistance. Based on fetched main1ab279e; two explicitly authorized GPT-6.1Sol workers owned core/UI/persistence and runner, parent architecture/actual-runs/audit/Plotly/Notion/docs/publication. No Computer skill or GUI automation.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuator_comparison.py`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/motor-model.md`
+- `users/andy-zhang/experimental-apps/kinefold/motor-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/motor_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/nonideal-study.md`
+- `users/andy-zhang/experimental-apps/kinefold/nonideal_study.py`
+- `users/andy-zhang/experimental-apps/kinefold/preset-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-flow.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-workbench.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-motor-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_actuator_comparison.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_motor_bench.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_motor_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_nonideal_study.py`
+
+- **API/Interface Changes:** Optional motorConfig.gearboxInputInertiaKgM2 adds input-equivalent gear moment to N² drive inertia; legacy10-key snapshots preserve shape. Automatic candidate captures move gearJ out of hipRotor, retaining total and leaving only external outputJ there. Saved presets/validation/screens/flow and dynamic conversion UI accept the optional field. Explicit low/medium/high loss buttons preserve N/J, enable motor, lump cogging into constant Coulomb, set periodic amplitude0, keep legacy detent advanced. Add exact per-step motorCoulombDissipatedJ/motorViscousDissipatedJ to both contact engines' rows/event states and Plotly traces; sum to unchanged total without ledger double count. Sample diagnostics refresh actual state/nativeomega while preserving bounded shaft conversion. New strict nonideal_study.py writes exact captured pairs/source guards/configurable matrices and JSON/CSV, verify_nonideal_study.py tests signs/reflection/metric windows/actual pair. New report/model/context document assumptions and failed cases. No canonical/shared interfaces, enforcement, dependencies or source-app changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS parent63engine/motor/work/actuator/case/finite tests (one existing optional skip),6newstudytests with actual pair,16saved-replay tests with all3cases through bothactualengines,9preset persistence tests;35project,55presetJS,96presetanalysis,14motorUI,48dynamicpresentation,116replayDOM assertions;49presetUI assertions/20BASIC mounts after fixing old4-unknown-field fixture to exact5-field/zero assertions plus negativeunknown-gearJ guard. Worker additionally26persistence/profile tests. Initial presetUI assertion failed because new explicit gearJ made unknown list5; no safety/physics assertion weakened. Retained72runs:52main,8jump/landing refinement,2terrain refinement,4fastterrain,4highgain,2highgain refinement. All36pairs match exact settings except engine and allsource SHA256; losscomponent sum error<3.13e-13J. Main16terrainwindows complete;20:1jump reference1.347/1.347m to losses0.902/0.898m; all3ratios losses arrest2m beforestop under rigidmodel. Halfdt20:1jump0.900/0.898m; landing residual1.095→.547JA,1.848→.928JP; roughRMS1.698→1.698mm and residualhalves. Highgain40:1 reachesstop inbothfineruns, coarse nativepenetrationfailure kept; coarse reference native20/40 constraints unresolved,20refine resolves. These failures are reported, not counted as stable passes.13offlinePlotlyPNGs dimension/visualchecked (initial footer clipping corrected),5data/source ZIPs CRC/SHAchecked, nativeNotionattachments. ActualguardedHTTPA/P each31frames withnewgearJ.37 andlosscomponents, servedUIbytes, launcherstop/start/reuse/restart fromunrelatedcwd pass4191. ProfilelibrarySHAb580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511 unchanged. Python/JSsyntax, newlocaldoclinks, whitespace, fetched-base/staged/exact-push workspace gates required beforepublication. Known prior whole-JonHTMLprovenance failure unchanged/unclaimed; no livepointer/GPU/hardware acceptance claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app. Main45kgchassis plus1/1/.5kg legs means55kg gross, not originalV4.5gross45kg. Explicitunmeasured17Nm/6000rpm/250Nm/5kW/5kJ/Jmotor.000825/Jgear.0001/Fc.05/b.0008;constant cogging lump,periodic0,eta1toisolatedrag,smoothing.5retained versus10UIexamples. V4support scaleschassismass*cosalpha withoutnewsoftstop/exactgcomp. Continuousratings null: peakduration doesnot inventcontinuouscap. Finitegain noiselesscontroller isnot mathematicallyperfect/optimal; gainsame acrossratios is sensitivityonly. Rigidimpact/coupled work isnot independenttireabsorption or motorfrictioncredit. Artifacts ignoredinapp/Notion,neverDownloads/Git; no liveprofilewrites.
+
+## 4. Compute Saving Handoff State
+
+Read nonideal-study.md andmotor-model.md for the editable assumptions, exactenergyaccounts, numerical limits and72-run outcomes.
+Use nonideal_study.py witha newly generated config andnewapp-local outputfolder forfreshpairedcases; motorfield edits alone donot enablethe capturedactuatorcontroller inordinarydynamicruns.
+Keep cogging insideconstantCoulomb for thisowner-requestedapproximation, preservelegacycaptures/sourceguards andfailedcases, anduseStart Kinefold.cmd at4191 afterrestart.

@@ -98,6 +98,15 @@ manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses
 
 ## Developer checks
 
+The [nonideal motor/heave study](nonideal-study.md) adds explicit gear-input
+inertia, constant Coulomb/cogging and viscous example controls, exact separate
+friction-work traces, and72actual paired finite-link runs across jumping,
+landing and terrain. It documents editable assumptions, height variance versus
+tracking error, hardware-limited high-gain cases and timestep refinement.
+`python nonideal_study.py --write-config .preview/my-loss-settings.json` creates
+an editable study configuration; `python verify_nonideal_study.py --real`
+checks the new metric contracts and executes a short actual engine pair.
+
 The [45kg / full65deg landing-table study](table-landing-study.md) records actual
 paired1/1.5m alpha0/20 cases, torque brackets, AB interval-load reconstruction,
 spring assumptions and energy/refinement results. Landing opening1 is now

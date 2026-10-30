@@ -34,6 +34,21 @@ class MotorContactChecks(unittest.TestCase):
         req=self.request(coggingAmplitudeNm=.3,coggingPhaseDeg=40,gearRatio=5)
         m=validate_contact_request(req);ctl=CaseController(m,req['caseConfig']);tor=ctl.torques(m.q0,0)
         self.assertAlmostEqual(tor['motorTorqueNm']+tor['jointPassiveNm'],0,delta=1e-12)
+
+    def test_gearbox_inertia_matches_equivalent_legacy_both_engines(self):
+        req=self.request(gearRatio=4,rotorInertiaKgM2=.002,gearboxInputInertiaKgM2=.001)
+        req['runConfig']['duration']=.2
+        equivalent=copy.deepcopy(req);equivalent['motorConfig'].pop('gearboxInputInertiaKgM2')
+        equivalent['motorConfig']['rotorInertiaKgM2']=.003
+        for solver in (analytical,pymunk):
+            a,b=solver(req),solver(equivalent)
+            self.assertEqual(a['motorConfig'],req['motorConfig'])
+            self.assertEqual(b['motorConfig'],equivalent['motorConfig'])
+            self.assertNotIn('gearboxInputInertiaKgM2',b['snapshot']['motorConfig'])
+            self.assertGreater(max(x['rotorKineticJ'] for x in a['rows']),.001)
+            for x,y in zip(a['rows'],b['rows']):
+                self.assertAlmostEqual(x['chassisZMm'],y['chassisZMm'],delta=1e-9)
+                self.assertAlmostEqual(x['rotorKineticJ'],y['rotorKineticJ'],delta=1e-9)
     def test_conservative_cogging_and_loss(self):
         req=self.request(gearRatio=4,coggingAmplitudeNm=.2,coggingPeriodsPerRev=3,coulombFrictionNm=.1,viscousFrictionNms=.02)
         m=validate_contact_request(req);q=m.q0;eps=1e-6
@@ -68,6 +83,33 @@ class MotorContactChecks(unittest.TestCase):
                 self.assertGreater(r['rows'][-1]['motorDissipationJ'],0)
                 self.assertLess(r['diagnostics']['maxTravelStopDriftMm'],1)
                 self.assertGreater(max(x['rotorKineticJ'] for x in r['rows']),.001)
+
+    def test_separate_loss_integrals_actual_state_and_bounded_shaft(self):
+        from actuation_limits import ACTUATOR_DEFAULTS
+        for finite in (False,True):
+            for limited in (False,True):
+                req=self.request('jump',rotorInertiaKgM2=.002,gearboxInputInertiaKgM2=.001,
+                    gearRatio=4,coulombFrictionNm=.05,viscousFrictionNms=.002,frictionVelocityScaleRadS=10)
+                req['runConfig']['duration']=.4;req['caseConfig']['jumpTorqueNm']=100
+                if finite:req['params'].update(m2=1,m3=1)
+                if limited:req['actuatorConfig']={**ACTUATOR_DEFAULTS,'ratio':4,'peakShaftNm':25}
+                for solver in (analytical,pymunk):
+                    r=solver(req);rows=r['rows']
+                    self.assertGreater(rows[-1]['motorCoulombDissipatedJ'],0)
+                    self.assertGreater(rows[-1]['motorViscousDissipatedJ'],0)
+                    for key in ('motorCoulombDissipatedJ','motorViscousDissipatedJ'):
+                        self.assertTrue(all(b[key]>=a[key] for a,b in zip(rows,rows[1:])))
+                    for row in rows+[e['state'] for e in r['events'] if 'state' in e]:
+                        self.assertAlmostEqual(row['motorCoulombDissipatedJ']+row['motorViscousDissipatedJ'],row['motorDissipatedJ'],delta=1e-10)
+                    for row in rows:
+                        speed=row['motorVelocityRadS']
+                        self.assertAlmostEqual(row['viscousLossPowerW'],.002*speed*speed,delta=1e-9)
+                        self.assertAlmostEqual(row['coulombLossPowerW'],.05*math.tanh(speed/10)*speed,delta=1e-9)
+                        self.assertAlmostEqual(row['rotorKineticJ'],.5*.003*speed*speed,delta=1e-8)
+                        if limited:
+                            n=4;eta=.9
+                            expected=row['motorTorqueNm']*eta/n if row['actuatorMode']=='braking' else row['motorTorqueNm']/(n*eta)
+                            self.assertAlmostEqual(row['shaftCommandNm'],expected,delta=1e-9)
 
     def test_actual_native_rotor_motor_work(self):
         from contact_cases import energy_estimate

@@ -1,5 +1,40 @@
 # Kinefold context
 
+## Latest — 2026-10-30 nonideal motor and heave study
+
+Based on main1ab279e. Owner requested constant Coulomb/cogging drag plus viscous
+losses, explicit motor/gear inertia and jumping/terrain comparisons. Two authorized
+GPT-6.1Sol workers owned core/UI/persistence and a standalone study runner;
+parent owned architecture, actual study runs, audit, Plotly/Notion and publication.
+No Computer skill, GUI automation, source-app or canonical component changes.
+
+Read [nonideal study](../nonideal-study.md) and [motor model](../motor-model.md).
+Optional motorConfig.gearboxInputInertiaKgM2 reflects once with motorJ through N²;
+legacy10-key snapshots preserve their shape. New loss Apply buttons explicitly
+lump cogging into constant Coulomb, set periodic amplitude0, preserve gear/J,
+and offer low/medium/high shaft placeholders. Every actual-contact row/event
+now carries exact Coulomb/viscous integrals, summing to unchanged aggregate loss.
+Motor sample diagnostics use actual current/native state; bounded shaft conversion
+is retained. The old rotorKineticJ name now explicitly includes gear train energy.
+
+Retained72runs use45kg chassis plus four1/1/.5kg leg assemblies =55kg gross,
+alpha20, full65deg,2m targets and50mm clearance. At20:1, jump about1.35m reference
+versus0.90m with driveJ+drag; both arrest2m with driveJ+drag, much energy removed
+by rigid collision, not friction/motor alone. Mild seeded terrain RMS about1.70mm;
+grade case1.79mm tracking error versus intentional raw uphill rise. High-gain
+40:1 reaches stops; coarse native is incomplete, finer both physical-limit cases.
+Do not call finite-gain exact-state feedback mathematically perfect/optimal or
+the quarter heave model full-body stability. Unknown thermal/continuous ratings
+remain unassessed. Capture source/config guards and actual failed cases retained.
+
+13PlotlyPNG and five data/source ZIPs remain ignored under app exports and are
+attached natively in Andy's Codex Studies. Final72-run source/config-pair checks
+pass; maximum Coulomb+viscous minus aggregate error3.13e-13J. Short actual HTTP
+engine pairs and durable launcher stop/start/reuse/restart pass at4191; live
+profile SHA b580c793d96ce2c3fa912490e1d11f8a3fff11854dd7a065d462cc61482fb511 unchanged.
+Focused engine, preset, replay and UI tests are recorded in the contribution log;
+known prior whole-JonHTML provenance test failure is not claimed fixed.
+
 Andy Zhang with Codex, 2026-10-22. Started from main `5e52a12`.
 Experimental app; no canonical robot or hardware acceptance.
 

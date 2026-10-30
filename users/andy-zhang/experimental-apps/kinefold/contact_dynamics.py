@@ -111,7 +111,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     actuator_work=0.;max_residual=0.;max_penetration=0.;max_N=0.;max_T=0.;first_raised=None
     penetration_limit_mm=1.
     max_rotor_position=max_rotor_velocity=0.;max_stop_drift=0.
-    motor_loss=0.;coupled_loss=0.;motor_work=0.;stop_dissipation=0.;damping_work=0.;contact_dissipation=0.;terrain_work=0.;external_work=0.;had_contact=False;arrested=False;previous_vh=chassis.velocity.y
+    motor_loss=0.;motor_coulomb_loss=0.;motor_viscous_loss=0.;coupled_loss=0.;motor_work=0.;stop_dissipation=0.;damping_work=0.;contact_dissipation=0.;terrain_work=0.;external_work=0.;had_contact=False;arrested=False;previous_vh=chassis.velocity.y
     control=controller.torques(m.q0,qd0,time=0.,state=dict(h=hinitial,vh=motion['chassisVelocity'],contacted=False));last_contact=False
     def state():
         if linkage:return linkage.state()
@@ -187,12 +187,15 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
                  slipMmS=frame['slipMmS'],gapMm=gapmm,penetrationMm=penetration,guideResidualMm=residual,
                  guideForceN=(spring['torque']+control['motorTorqueNm']+control['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=actuator_work,terrainWorkJ=None,inputWorkJ=None)
         row.update(energy_fields(m,q,chassis.position.y,chassis.velocity.y,(wheel.velocity-chassis.velocity).dot(pymunk.Vec2d(*m.axis)),wheel.angular_velocity))
-        row.update(control,motorDissipatedJ=motor_loss,motorDissipationJ=motor_loss,motorFrictionLossJ=motor_loss,motorWorkJ=motor_work,stopDissipationJ=stop_dissipation,dampingWorkJ=damping_work,externalWorkJ=external_work,contactDissipationJ=contact_dissipation,terrainWorkJ=terrain_work,demandTorqueNm=stopping_demand(m,q,qd,chassis.velocity.y,case))
+        row.update(control,motorDissipatedJ=motor_loss,motorCoulombDissipatedJ=motor_coulomb_loss,motorViscousDissipatedJ=motor_viscous_loss,motorDissipationJ=motor_loss,motorFrictionLossJ=motor_loss,motorWorkJ=motor_work,stopDissipationJ=stop_dissipation,dampingWorkJ=damping_work,externalWorkJ=external_work,contactDissipationJ=contact_dissipation,terrainWorkJ=terrain_work,demandTorqueNm=stopping_demand(m,q,qd,chassis.velocity.y,case))
         row.update(ee)
         bodies=(chassis,linkage.upper,linkage.lower,wheel) if linkage else (chassis,wheel)
         row.update(comZMm=sum(b.mass*b.position.y for b in bodies)/m.total_mass*1000,
             comVelocityZMmS=sum(b.mass*b.velocity.y for b in bodies)/m.total_mass*1000)
-        if not controller.actuator:row.update(m.motor.motor_state(rotor.angle if rotor else q,rotor.omega if rotor else qd,control['motorTorqueNm']))
+        # Sample actual native rotor state, not the previous step's held controller diagnostics.
+        sample_motor=m.motor.motor_state(rotor.angle if rotor else q,rotor.omega if rotor else qd,control['motorTorqueNm'])
+        if controller.actuator:sample_motor.pop('shaftCommandNm')  # keep bounded transmission conversion
+        row.update(sample_motor)
         if rotor is not None:row.update(legacyJointRotorKineticJ=.5*c['hipRotorInertiaKgM2']*rotor.omega**2,idealMotorVelocityRadS=m.motor.config['gearRatio']*qd,rotorConstraintPositionResidualRad=rotor.position_residual,rotorConstraintVelocityResidualRadS=rotor.velocity_residual)
         row['chassisClearanceMm']=A[2]-case['undersideOffsetMm']-floor_under_hip(spec,t)*1000 if case['undersideOffsetMm'] is not None else None
         row['energyBalanceResidualJ']=row['energyJ']-(rows[0]['energyJ'] if rows else row['energyJ'])-motor_work-damping_work-terrain_work-external_work+motor_loss+stop_dissipation+contact_dissipation
@@ -218,6 +221,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         if rotor is not None:
             actual_motor=m.motor.motor_state(rotor.angle,rotor.omega,control['motorTorqueNm'])
             actual_motor.pop('rotorKineticJ');actual_motor.pop('coggingPotentialJ')
+            if controller.actuator:actual_motor.pop('shaftCommandNm')
             control.update(actual_motor)
         sd=(wheel.velocity-chassis.velocity).dot(pymunk.Vec2d(*m.axis));spos=m.distance(q)
         bounds=sorted((m.distance(m.lo),m.distance(m.hi)))
@@ -268,6 +272,8 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         motor_work+=control['motorTorqueNm']*((rotor.angle if rotor is not None else q2)-motor_angle_before)
         damping_work-=c['dampingNms']*.5*(qd*qd+qd2*qd2)*step
         motor_loss+=control['motorLossPowerW']*step
+        motor_coulomb_loss+=control['coulombLossPowerW']*step
+        motor_viscous_loss+=control['viscousLossPowerW']*step
         contactJ=pymunk.Vec2d(sum(j[0] for j in impulse),sum(j[1] for j in impulse))
         terrain_increment=contactJ.dot(ground.velocity)
         contact_work=contactJ.dot((wheel_free+wheel.velocity)*.5)+wheel.moment*(wheel.angular_velocity-omega_free)*(wheel.angular_velocity+omega_free)*.5
@@ -342,7 +348,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
                 ee=actual_energy(q2)
                 event['state']=dict(t=t,theta2=q2/R,chassisVelocityMmS=chassis.velocity.y*1000,wheelVelocityZMmS=wheel.velocity.y*1000,
                     kineticJ=sum(ee[k] for k in ('chassisKineticJ','wheelKineticJ','rotorKineticJ','legacyJointRotorKineticJ','linkKineticJ')),motorTorqueNm=control['motorTorqueNm'],
-                    motorWorkJ=motor_work,dampingWorkJ=damping_work,motorDissipatedJ=motor_loss,terrainWorkJ=terrain_work,externalWorkJ=external_work,
+                    motorWorkJ=motor_work,dampingWorkJ=damping_work,motorDissipatedJ=motor_loss,motorCoulombDissipatedJ=motor_coulomb_loss,motorViscousDissipatedJ=motor_viscous_loss,terrainWorkJ=terrain_work,externalWorkJ=external_work,
                     contactDissipationJ=None if rotor or linkage else contact_dissipation,stopDissipationJ=None if rotor or linkage else stop_dissipation,
                     coupledConstraintKineticLossJ=coupled_loss if rotor or linkage else None,positionStabilizationJ=None,**ee)
                 impulse_ledger=coupled_loss if rotor or linkage else stop_dissipation+contact_dissipation

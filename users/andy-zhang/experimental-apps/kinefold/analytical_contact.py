@@ -48,6 +48,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     sl,sh=sorted((m.distance(m.lo),m.distance(m.hi)))
     t=0.;steps=0;rows=[];frames=[];events=[];next_sample=1/c['outputHz'];sample_t=0.
     sumJ=[0.,0.];sumN=sumT=0.;points=[];slips=[];work=stoploss=stabilization=dampingwork=terrainwork=contactloss=motorloss=externalwork=0.;maxpen=0.;contacted=False;previous_contact=False
+    motorcoulombloss=motorviscousloss=0.
     termination='duration';first_raised=None;maxnf=0.;maxtf=0.;tor=ctl.torques(q,qd,time=0.,state=dict(h=h,vh=v[0],contacted=False))
     penetration_limit_mm=1.;prepen=postpen=maxpre=maxpost=0.;max_stop_position_error=0.
     def geometry(time):
@@ -74,8 +75,11 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         frame=dict(t=t,theta2=q/R,A=A,B=translate(m.sites(q)['5'][0]),C=C,actualA=A,actualC=C,chassisZMm=A[2],wheelZMm=C[2],wheelAngle=u[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,
             bodyPositionsMm={'1':A,'6':C},bodyAnglesDeg={'1':0.,'6':u[2]/R},indexAnglesDeg={'a':0,'b':p['phi0']+(180-q/R)*(m.ab-1),'c':theta4,'d':theta5,'e':theta5,'f':theta6},terrainOffsetMm=world((speed*t,0)),terrainPolygonsMm=[[world((a+speed*t,b)) for a,b in box] for box in boxes],contactPointsMm=list(points),contactNormalForceN=nf,contactTangentialForceN=tf,slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,constraintPositionErrorMm=0.,constraintAngleErrorDeg=0.)
         if p['springEnabled']:frame.update(D=translate(mul(m.rotate(spring['D']),.001)),Q=translate(mul(m.rotate(spring['Q']),.001)))
-        row=dict(t=t,theta2=q/R,velocityDegS=qd/R,accelerationDegS2=None,Fs=spring['force'],tauStatic=None,tauApplied=tor['motorTorqueNm']+tor['jointFrictionNm']-c['dampingNms']*qd,kineticJ=ke,potentialJ=pe,energyJ=ke+pe,CxMm=C[0],CzMm=C[2],chassisZMm=A[2],chassisVelocityMmS=v[0]*1000,chassisAccelerationMmS2=None,wheelZMm=C[2],wheelVelocityXMmS=-ax*v[1]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,wheelAngle=u[2]/R,wheelAngularVelocityDegS=v[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,requestedInputMm=None,appliedInputMm=None,inputVelocityMmS=None,inputAccelerationMmS2=None,inputReactionN=None,contactNormalForceN=nf,contactTangentialForceN=tf,contactForceXN=-sumJ[0]/elapsed if elapsed else 0.,contactForceZN=sumJ[1]/elapsed if elapsed else 0.,contactNormalImpulseNs=sumN,contactTangentialImpulseNs=sumT,contactCount=len(points),slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,guideForceN=(spring['torque']+tor['motorTorqueNm']+tor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=work+dampingwork,motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,motorDissipationJ=motorloss,motorFrictionLossJ=motorloss,contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,terrainWorkJ=terrainwork,inputWorkJ=terrainwork,externalWorkJ=externalwork,stoppingDemandTorqueNm=stopping_demand(m,q,qd,v[0],case),**e,**tor)
-        if not ctl.actuator:row.update(m.motor.motor_state(q,qd,tor['motorTorqueNm']))
+        row=dict(t=t,theta2=q/R,velocityDegS=qd/R,accelerationDegS2=None,Fs=spring['force'],tauStatic=None,tauApplied=tor['motorTorqueNm']+tor['jointFrictionNm']-c['dampingNms']*qd,kineticJ=ke,potentialJ=pe,energyJ=ke+pe,CxMm=C[0],CzMm=C[2],chassisZMm=A[2],chassisVelocityMmS=v[0]*1000,chassisAccelerationMmS2=None,wheelZMm=C[2],wheelVelocityXMmS=-ax*v[1]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,wheelAngle=u[2]/R,wheelAngularVelocityDegS=v[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,requestedInputMm=None,appliedInputMm=None,inputVelocityMmS=None,inputAccelerationMmS2=None,inputReactionN=None,contactNormalForceN=nf,contactTangentialForceN=tf,contactForceXN=-sumJ[0]/elapsed if elapsed else 0.,contactForceZN=sumJ[1]/elapsed if elapsed else 0.,contactNormalImpulseNs=sumN,contactTangentialImpulseNs=sumT,contactCount=len(points),slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,guideForceN=(spring['torque']+tor['motorTorqueNm']+tor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=work+dampingwork,motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,motorCoulombDissipatedJ=motorcoulombloss,motorViscousDissipatedJ=motorviscousloss,motorDissipationJ=motorloss,motorFrictionLossJ=motorloss,contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,terrainWorkJ=terrainwork,inputWorkJ=terrainwork,externalWorkJ=externalwork,stoppingDemandTorqueNm=stopping_demand(m,q,qd,v[0],case),**e,**tor)
+        # Refresh state diagnostics at this sample; integrated losses still use the held step torque.
+        sample_motor=m.motor.motor_state(q,qd,tor['motorTorqueNm'])
+        if ctl.actuator:sample_motor.pop('shaftCommandNm')  # bounded transmission efficiency is already resolved
+        row.update(sample_motor)
         row.update(comZMm=(u[0]+sum(p['m'+k]*m.sites(q)[k][0][1] for k in ('2','3','6'))/m.total_mass)*1000,
             comVelocityZMmS=(v[0]+m.mass_terms(q)['B']/m.total_mass*qd)*1000)
         ground_under_hip=surface_height(terrain,t)
@@ -141,6 +145,8 @@ def simulate_contact(payload, *, stop_at_assessment=False):
                 if atq==m.lo:ctl.extended=True
         dampingwork-=c['dampingNms']*qd*qd*dt
         motorloss+=tor['motorLossPowerW']*dt
+        motorcoulombloss+=tor['coulombLossPowerW']*dt
+        motorviscousloss+=tor['viscousLossPowerW']*dt
         contacts=[]
         for gap,n,pt in geometry(t):
             jn=jac(n);normal_speed=product(jn,v)-n[0]*speed
@@ -231,7 +237,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
                 ee=energy_fields(m,q,u[0],v[0],v[1],v[2])
                 event['state']=dict(t=t,theta2=q/R,chassisVelocityMmS=v[0]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,
                     kineticJ=sum(ee[k] for k in ('chassisKineticJ','wheelKineticJ','rotorKineticJ','legacyJointRotorKineticJ','linkKineticJ')),motorTorqueNm=tor['motorTorqueNm'],
-                    motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,terrainWorkJ=terrainwork,externalWorkJ=externalwork,
+                    motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,motorCoulombDissipatedJ=motorcoulombloss,motorViscousDissipatedJ=motorviscousloss,terrainWorkJ=terrainwork,externalWorkJ=externalwork,
                     contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,**ee)
                 event['state']['energyBalanceResidualJ']=event['state']['kineticJ']+sum(ee[k] for k in ('springEnergyJ','gravityEnergyJ','coggingPotentialJ'))-rows[0]['energyJ']-work-dampingwork-terrainwork-externalwork+motorloss+stoploss+contactloss-stabilization
 

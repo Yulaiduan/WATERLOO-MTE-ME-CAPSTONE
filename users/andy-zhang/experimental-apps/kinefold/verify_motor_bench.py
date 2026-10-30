@@ -51,6 +51,19 @@ class Checks(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'underresolved'):
             motor.check_step(10, .001)
 
+    def test_gearbox_input_inertia_and_legacy_capture(self):
+        config={**DEFAULTS,'enabled':True,'gearRatio':20,'rotorInertiaKgM2':.0008,'gearboxInputInertiaKgM2':.0001}
+        motor=Motor.resolve(config)
+        self.assertAlmostEqual(motor.reflected_inertia,400*.0009)
+        self.assertAlmostEqual(motor.motor_state(1,2,0)['rotorKineticJ'],.5*400*.0009*4)
+        legacy=dict(config);legacy.pop('gearboxInputInertiaKgM2')
+        resolved=Motor.resolve(legacy)
+        self.assertEqual(resolved.config,legacy)
+        self.assertNotIn('gearboxInputInertiaKgM2',resolved.config)
+        self.assertAlmostEqual(resolved.reflected_inertia,400*.0008)
+        for value in (-1, True, float('nan')):
+            with self.assertRaises(ValueError):Motor.resolve({**config,'gearboxInputInertiaKgM2':value})
+
     def test_friction_sign_dissipation_and_disabled(self):
         motor = Motor.resolve({**DEFAULTS, 'enabled': True, 'gearRatio': 10, 'coulombFrictionNm': .2, 'viscousFrictionNms': .03})
         for v in (-3, -.01, 0, .01, 3):
@@ -87,7 +100,7 @@ class Checks(unittest.TestCase):
         print('motor finite-rise max heave difference mm:', error, 'ledger J:', [r['diagnostics']['maxWorkEnergyResidualJ'] for r in results])
 
     def test_guards_and_legacy_ideal(self):
-        for field in ('rotorInertiaKgM2', 'coulombFrictionNm', 'viscousFrictionNms'):
+        for field in ('rotorInertiaKgM2', 'gearboxInputInertiaKgM2', 'coulombFrictionNm', 'viscousFrictionNms'):
             with self.assertRaisesRegex(ValueError, 'Exact square'):
                 Model(self.p, defaults(), {**DEFAULTS, 'enabled': True, field: .01})
         with self.assertRaises(ValueError):

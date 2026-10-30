@@ -22,7 +22,7 @@ from motor_model import Motor
 
 SCHEMA = 'kinefold/preset-library-v1'
 BUNDLE_SCHEMA = 'kinefold/preset-bundle-v1'
-UNKNOWN_KEYS = ('rotorInertiaKgM2', 'coggingAmplitudeNm', 'coulombFrictionNm', 'viscousFrictionNms')
+UNKNOWN_KEYS = ('rotorInertiaKgM2', 'gearboxInputInertiaKgM2', 'coggingAmplitudeNm', 'coulombFrictionNm', 'viscousFrictionNms')
 RATING_KEYS = ('peakShaftNm', 'maxShaftRpm', 'gearboxContinuousNm', 'gearboxPeakNm')
 OPTIONAL = ('contactConfig', 'caseConfig', 'energyConfig', 'torqueTargetConfig', 'terrainConfig')
 # A validation shell only; never saved, composed, or substituted for user inputs.

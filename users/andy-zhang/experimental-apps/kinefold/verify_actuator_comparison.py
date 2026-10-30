@@ -86,6 +86,13 @@ class SourceAndScreen(unittest.TestCase):
         self.assertAlmostEqual(g['inputInertiaKgM2'],g['inputInertiaKgCm2']*1e-4)
         self.assertAlmostEqual(hw['reflectedInertiaKgM2'],g['ratio']**2*(m['rotorInertiaKgM2']+g['inputInertiaKgM2']))
         self.assertEqual(hw['gearboxOutputInertiaKgM2'],0)
+        project=copy.deepcopy(self.project);project['solverConfig']['hipRotorInertiaKgM2']=.017
+        payload=ac.contact_payload(project,hw,ac.ASSUMPTIONS,'terrain','analytical')
+        self.assertAlmostEqual(payload['motorConfig']['gearboxInputInertiaKgM2'],g['inputInertiaKgM2'])
+        self.assertAlmostEqual(payload['runConfig']['hipRotorInertiaKgM2'],.017)
+        from motor_model import Motor
+        total=Motor.resolve(payload['motorConfig']).reflected_inertia+payload['runConfig']['hipRotorInertiaKgM2']
+        self.assertAlmostEqual(total,.017+hw['reflectedInertiaKgM2'])
     def test_landing_drop_energy_and_saved_geometry(self):
         row=next(r for r in self.rows if 'hardware' in r)
         low=ac.fast_screen(self.geometry,row['hardware'],{**ac.ASSUMPTIONS,'dropHeightMm':1000})
