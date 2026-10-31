@@ -5521,3 +5521,37 @@ Canonical robot physics is NOT APPLICABLE to this member workspace documentation
 Read the high-variance follow-up in gear-response-study.md for exact inputs, measured leg lag and its coupled-contact interpretation.
 Repeat with the existing gear_response_study.py filtered to gear-10/floating-terrain/3mps and RMS60 in fresh app-local folders, retaining the source/config guards and optional half-step check.
 Use the native Notion data attachment for reference CSV/analysis scripts, preserve live profiles and keep the reviewed25fps clock separate from the superseded30fps export.
+
+---
+
+## Entry: 2026-10-31 — Andy Zhang — Alpha-zero exaggerated inertia and drag demonstration
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app study documentation and context.
+- **Associated Issue/Task:** Owner requested alpha0 and very high inertia/friction to make wheel lift-off visible. Use existing physics at fetched main8adb893, same ODrive N20 and high-variance terrain, compare normal0deg versus explicitly exaggerated J/drag and refine the exaggerated pair. No new delegation, Computer skill, GUI or app runtime change.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/gear-response-study.md`
+
+- **API/Interface Changes:** None. Record exact artificial assumptions, actual paired responses, stop/saturation failure, timestep check and labelled slow-replay provenance. Ignored presentation wrapper changes only labels/gap readout and inserts an actual peak timestamp; base app renderer and geometry untouched. Analysis/config/raw/reference/PNG/GIF/ZIP remain ignored app-local artifacts/native Notion; no source physics/UI/controller edits, dependencies, live profile write, canonical assets, shared interfaces or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS six actual runs: normal alpha0 A/P, exaggerated A/P and half-step exaggerated A/P, all numerically resolved through.6s. Exact pair requests, source SHA, stored raw metrics and free-wheel/floating flags pass; normal/stress input diff restricted to the three explicit J/drag fields and refinement dt. Offline finite-wheel tangency reference exists throughout original travel, residual<1e-7mm. Plotly comparison and actual.330s peak PNG visually inspected.17-frame paired GIF passes source SHA,1120x970,loop/2900ms,0.25x labelled replay with.6s physics/2.4s viewing plus.5s pause; peak source timestamps match both exact.330s rows, no interpolation/caches. Presentation wrapper,executed-renderer and encoder hashes retained; final encoder parameterizes installed Sharp via CLI, earlier export superseded.29-file2,251,295-byte data archive passes CRC/SHA; excludes superseded media and credentials. Four native Notion attachments/report completed. Python/JS syntax,local doc links,whitespace and profile SHA05f8ecb695ac7a6de5935592e38413ef95f8c77138a14e81fd5d5fe305431904 unchanged pass. One diagnostic print hit Windows cp1252 UnicodeEncodeError and was rerun with ASCII logging; captures unaffected. Fetched-base/staged/exact-push scoped checks apply before publication. Headless case/media only; existing launcher unchanged and no localhost server created/started/delivered. No new regression tests for documentation-only publication; no hardware/thermal/impact/full-body/GPU/canonical validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace documentation. Artificial gear-inputJ.0001→.01 gives total reflectedJ.2364→4.1964 (17.75x);constant shaft Coulomb/cogging.05→.5 (10x),viscous.0008→.016 (20x). Same rotorJ,gearing,motor caps,controller,60mm RMS/600mm/3mps terrain; alpha0 support scaling reevaluated under existing approximate spring law. Normal gap49.31/57.04mm; exaggerated313.26/313.33mm and chassis RMS106.73/106.19mm,stop.30660/.30700s,77.5/83% limited in.2–.6s. Half-step gap312.65/312.94mm,RMS106.26/106.14mm,stop.30676/.30675s; native constraint residual.144→.072mm,penetration.828→.548mm. Extreme launch/stop/saturation failure remains explicit, not called pure delay or actual ODrive performance. Source guards unchanged; no pinned wheel/chassis, dynamics retuning or hidden stop removal. Artifacts stay app-local/Notion, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read the alpha-zero exaggerated response section in gear-response-study.md for the exact inputs, launch/stop interpretation and refined paired results.
+Repeat using existing gear_response_study.py with alpha0 and the three explicit shared J/drag values in fresh app-local folders, preserving all limits and failure flags.
+Use the native Notion archive for actual peak-state/0.25x replay scripts, pass installed Sharp explicitly and preserve live profiles and source/capture hashes.

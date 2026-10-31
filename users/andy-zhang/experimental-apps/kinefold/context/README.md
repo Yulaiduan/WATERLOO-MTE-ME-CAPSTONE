@@ -1,5 +1,23 @@
 # Kinefold context
 
+## Latest — 2026-10-31 alpha-zero exaggerated lift-off
+
+See [alpha-zero example](../gear-response-study.md#alpha-zero-exaggerated-response--2026-10-31).
+Owner requested alpha0 and very high inertia/friction for visibility. Existing
+physics at8adb893; six actual runs: normal0° pair, exaggerated pair and half-step
+exaggerated pair. Same ODrive N20,terrain60mm RMS/600mm/3mps and controller.
+Gear-input J.0001→.01 gives reflected driveJ.2364→4.1964 (17.75×),shaft constant
+Coulomb/cogging.05→.5 (10×),viscous.0008→.016 (20×); motor ratings unchanged.
+These are artificial demonstration values, not catalogue ratings. Normal gap
+49/57mm; exaggerated313/313mm,chassis147mm high,compressionstop≈.307s and
+motor saturation≈78–83% of the.2–.6s window. Half-step retains≈313mm lift-off.
+It is a launch/stop/saturation failure illustration, not pure motor lag. No
+wheel/chassis pinning, source physics/renderer edits or live profile writes.
+Final Plotly comparison,actual.330s peakPNG,0.25×GIF (17frames,2900ms including
+500ms pause),exact config/raw/reference/scripts ZIP stay ignored app-local /
+native Notion. Presentation-only wrapper keeps real poses and records hashes;
+use explicit Sharp CLI path, fresh output prefixes and preserve failure flags.
+
 ## Latest — 2026-10-30 high-variance leg-lag example
 
 Owner asked for a rougher run. See [follow-up results](../gear-response-study.md#high-variance-follow-up--2026-10-30).

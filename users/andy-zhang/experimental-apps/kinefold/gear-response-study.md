@@ -250,6 +250,57 @@ Use25fps for the reviewed GIF:16frames,.6s physical time plus.5s final pause,
 plot footer/legend overlap was corrected before attachment. No GUI, hardware,
 thermal, impact-strength or full-body stability validation is implied.
 
+## Alpha-zero exaggerated response — 2026-10-31
+
+Owner requested alpha0 and much greater inertia/friction to make lift-off
+visible. Keep the same ODrive N20,60mm nominal terrain RMS,600mm period,3m/s,
+seed481,25% cycle variation,masses and controller. Run a fresh normal alpha0
+pair and an explicitly exaggerated pair, plus a half-step exaggerated pair:
+six actual runs, all numerically resolved. Neither chassis nor wheel is pinned.
+
+| Assumption | Normal | Exaggerated demonstration |
+| --- | ---: | ---: |
+| Gearbox input-equivalent J | .0001 kg m² | .01 kg m² |
+| Total reflected drive J at hip | .236436 kg m² | 4.196436 kg m² (17.75×) |
+| Shaft Coulomb/cogging | .05 Nm | .5 Nm (10×) |
+| Shaft viscous coefficient | .0008 Nm s/rad | .016 Nm s/rad (20×) |
+
+Motor rotor J,gear ratio/B2 and motor torque limits are unchanged. These large
+gear-inertia/drag substitutions are artificial teaching inputs, not ODrive or
+AB90 specifications. The source routed-spring model and its existing alpha
+support scaling are reevaluated at0° for both normal and exaggerated runs.
+
+Normal alpha0 already has49.31/57.04mm maximum wheel gap (A/P), chassis RMS
+3.330/3.412mm,loaded intervals59/58%,no motor clipping or end-stop event. The
+exaggerated case reaches313.26/313.33mm gap at t=.330s; chassis RMS is
+106.73/106.19mm and peak height error147.00/146.68mm. It hits the compression
+stop at.30660/.30700s and is torque limited77.5/83.0% of the.2–.6s window.
+Loaded intervals are only1/1% in that window. This is an extreme failure
+illustration: the incoming bump kicks the chassis upward, and the leg cannot
+recover the required pose; the stop and saturation are retained, not hidden.
+It is not a clean pure-delay experiment or a realistic motor prediction.
+
+Half-step dt.000125 gives312.65/312.94mm peak gap, chassis RMS106.26/106.14mm
+and compression stop.30676/.30675s. The large lift-off survives refinement;
+individual stop-interval torques/contact fractions still depend on discrete
+constraint resolution. Source hashes, exact paired settings, recomputed metrics,
+free-wheel flags and offline circle/contour reference residuals pass. No guards
+were relaxed. Native maximum position residual reduces.144→.072mm with dt;
+maximum native penetration reduces.828→.548mm. No hardware certification.
+
+An actual peak-gap PNG at.330s and a0.25× slow replay make the separation clear.
+All poses remain actual saved states; the presentation wrapper changes only
+labels/gap readout and adds the real peak timestamp. The17-frame GIF represents
+.6s physics as2.4s playback plus a labelled.5s final pause=2900ms, with cumulative
+10ms clock rounding. Original engine captures and app renderer are unchanged;
+wrapper/executed-renderer/encoder hashes are retained. One Plotly normal/stress
+comparison, peak PNG,GIF and compact exact-data/scripts ZIP are app-local and
+native Notion attachments. The final encoder takes an installed Sharp path as
+an explicit CLI argument; an earlier media export is superseded. No GUI or live
+profile edits were used. Repeat with alphaDeg0 in the previous high-variance
+config, then the three exaggerated shared values above, using fresh output
+folders and the existing gear-10/floating-terrain/3mps filter.
+
 Restart at <http://127.0.0.1:4191/?tab=analytical> with
 [Start Kinefold.cmd](Start%20Kinefold.cmd); stop with
 [Stop Kinefold.cmd](Stop%20Kinefold.cmd). The launcher is verified from an unrelated
