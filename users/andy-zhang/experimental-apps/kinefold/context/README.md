@@ -1,5 +1,30 @@
 # Kinefold context
 
+## Latest — 2026-10-31 ODrive8325 /1.5m-drop ratio
+
+Read [conditional gearing recommendation](../8325-drop15-study.md). Owner asked
+for a good8325/gearbox ratio at1.5m; source59e658a,normal J/drag restored,alpha0,
+V4.5 masses45kg chassis/55gross,full65° start and50mm clearance. Algebraic157-row
+catalogue screen then five choices/ten actual landing runs plus N32 half-step /
+3600rpm pairs=14actualruns,all resolved/pass. Recommend HTG90-G20 ×1.6 hipbelt
+=32:1 as a prototype starting point,not a global hardware optimum. Endpoint
+budget206.403J,63° usable after2°reserve,187.715Nm average;10% work-reserve
+thresholdN31.097. N32 has13.19% reserve without impact/friction credit,Jref.6053,
+206.1Nm forward/212.5Nm no-loss brake/236.1Nm assumedηreverse.9 brake,150rpm
+assumed no-load hip speed.36% less J /25% more speed than40. N30 only6.12%
+workreserve. HTG/AEP N32 clearance/peak-speed metrics tie under assumed J/reverseη;
+HTG sourceη97% andnominal112Nm favor it,but actual mass/J/mounting unknown.
+
+Critical: rigid touchdown removes≈85% of202J quarter-model KE,then motor≈30J.
+N20 passes the rigid model despite insufficient endpoint capacity. Do not call
+the723mm modeled clearance a real survival margin. Tire/compliance/shock torque,
+controller voltage/current/regen and measured gearboxJ remain missing. Fully
+open100° pose and compressionstop165° (305mm underside clearance) are explicit;
+different landing opening needs recalculation. Selected raw N32 captures only,
+two Plotly PNGs and compact settings/audit/scripts ZIP stay app-local ignored /
+native Notion. No app law/UI or live profile change. Follow source/runner guards
+and fresh output paths for repeats; this recommendation does not optimize terrain.
+
 ## Latest — 2026-10-31 alpha-zero exaggerated lift-off
 
 See [alpha-zero example](../gear-response-study.md#alpha-zero-exaggerated-response--2026-10-31).

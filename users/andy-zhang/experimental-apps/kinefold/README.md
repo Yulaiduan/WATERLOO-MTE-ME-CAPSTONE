@@ -3,6 +3,11 @@
 Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver workspace;
 no canonical robot or hardware acceptance is implied.
 
+The [8325 /1.5m-drop gearing study](8325-drop15-study.md) recommends a conditional
+32:1 starting ratio (HTG90-G20 ×1.6 hip belt),using normal losses,conservative
+endpoint work and14actual paired runs. It also quantifies the rigid-impact
+energy loss that prevents claiming verified hardware drop survival.
+
 The [gearbox response example](gear-response-study.md) compares three ODrive
 reductions with real free-wheel terrain contact, floating ride motion and a
 separate pinned-chassis force diagnostic. It records 25/100 mm height-command

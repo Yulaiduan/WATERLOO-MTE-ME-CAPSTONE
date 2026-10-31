@@ -5555,3 +5555,38 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace docu
 Read the alpha-zero exaggerated response section in gear-response-study.md for the exact inputs, launch/stop interpretation and refined paired results.
 Repeat using existing gear_response_study.py with alpha0 and the three explicit shared J/drag values in fresh app-local folders, preserving all limits and failure flags.
 Use the native Notion archive for actual peak-state/0.25x replay scripts, pass installed Sharp explicitly and preserve live profiles and source/capture hashes.
+
+---
+
+## Entry: 2026-10-31 — Andy Zhang — 8325 gearing for a 1.5m drop
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app study documentation and context.
+- **Associated Issue/Task:** Owner requested a good ODrive8325/gearbox combination for a 1.5m drop. Bounded comparison using existing source at fetched main59e658a, alpha0, V4.5 masses, normal estimated inertia/drag and explicit full-open braking stroke; no new delegation, Computer skill, GUI or runtime change.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/8325-drop15-study.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+
+- **API/Interface Changes:** None. Record conditional HTG90-G20 ×1.6 hip-belt recommendation, source ratings, exact assumptions, conservative endpoint-work selection, actual paired landing results and material rigid-impact qualification. Ignored runner/audit/Plotly/package scripts, settings, selected raw captures and PNG/ZIP remain app-local/native Notion. No app physics, UI, controller, dependency, live profile, canonical asset, shared interface or enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS 14 new actual landing executions: five choices ×two engines, selected32:1 half-step pair and lower assumed3600rpm envelope pair; all numerically resolved/model-pass. Algebraic catalogue screen reads157rows, eight source rows eligible for32:1 with known caps/efficiency; only five choices simulated. Current source/runner hashes, seven exact engine pairs, six retained selected raw captures, metrics and free-wheel/no-pin flags checked. Selected nominal minimum clearance722.739/722.825mm; half-step722.835/723.090mm and lower-speed719.060/718.374mm. Half-step energy residual.414→.206J analytical/.949→.475J native. Two final Plotly PNGs visually inspected; tight footer/title edge corrected in v3. Notion rejected two fetched-reference media replacements and returned no-match warnings for original upload references; final media were safely prepended in one toggle, with earlier attachments explicitly labelled and unrelated content preserved. Final21-file4,598,484-byte ZIP passes CRC/SHA, includes only selected N32 raw, excludes superseded QA media and credentials; Python syntax and57local links pass. Six native Notion uploads completed; three final attachments and three labelled earlier versions remain in the report. Primary manufacturer motor/gear ratings checked; an older source-page click timed out and direct exact URL succeeded. One documentation patch failed on hunk ordering and was reapplied in source order. Live profile SHA05f8ecb695ac7a6de5935592e38413ef95f8c77138a14e81fd5d5fe305431904 unchanged; whitespace clean. Fetched-base, staged and exact-push workspace checks apply before publication. Headless case/media only; existing launcher unchanged, no localhost server created/started/delivered. No new tests needed for documentation-only publication; no hardware, thermal, impact-strength, full-body, GPU or canonical validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to isolated member workspace documentation. Same45kg chassis/55gross, alpha0, full100→165deg stroke with2deg reserve leaves63deg usable;50mm minimum clearance does not extend the mechanical stop. Exact endpoint budget206.403J gives187.715Nm average and N31.097 for the declared10% work reserve. Selected32:1 has13.19% reserve with no impact/friction/reverse-loss credit; estimated Jref.6053kgm² and assumed150rpm no-load hip speed,36% less J/25% more speed than40. Both models remove approximately85% of quarter-model KE at rigid touchdown, leaving only about30J for motor braking; N20 passes the rigid model despite inadequate endpoint capacity. Endpoint work is necessary, not a finite torque-speed/compliant-impact survival proof; actual723mm clearance is not hardware margin. Gear J/mass, actual drive envelope/regen, compliance, mounting and shock limits remain missing. No terrain/jump optimum or live saved-design overwrite; artifacts remain in Capstone/Notion, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read 8325-drop15-study.md for the bounded recommendation, full-open stroke assumption, endpoint criterion and critical85% rigid-impact loss.
+Use the native Notion archive for the frozen runner, exact settings/hashes, all14compact results and only the selected32:1 raw captures; repeat in fresh app-local output with the same source guard.
+Treat32:1 as a conditional prototype starting ratio, preserve live profiles and obtain measured compliance/drive/gear data before claiming real1.5m-drop survival or changing the landing opening.
