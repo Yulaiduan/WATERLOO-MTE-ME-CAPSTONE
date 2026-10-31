@@ -41,6 +41,10 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['forces','contact-slip','Actual tangential slip · gaps when airborne','mm/s',series(['slipMmS','Contact slip'])],
     ['forces','contact-separation','Terrain separation & penetration','mm',series(['gapMm','Signed gap'],['penetrationMm','Penetration'])],
     ['forces','contact-guide-force','Equivalent guide actuation force','N',series(['guideForceN','Guide force'])],
+    ['forces','chassis-pin-force','Pinned chassis · signed fixture force','N',series(['pinForceZN','Fixture on chassis · +z'],['pinForceDeltaZN','Change from first finite interval'])],
+    ['forces','chassis-support-force','Pinned chassis · suspension support','N',series(['chassisSupportForceZN','Leg support on chassis · +z'])],
+    ['energy','chassis-pin-position','Pinned chassis · position error','mm',series(['pinPositionErrorMm','Deviation from fixed hip height'])],
+    ['energy','chassis-pin-work','Pinned chassis · fixture work','J',series(['pinWorkJ','Fixed pin work'])],
     ['energy','contact-energy','Mechanical energy','J',series(['kineticJ','Kinetic'],['potentialJ','Potential'],['energyJ','Total'])],
     ['energy','contact-actuator-work','Cumulative hip actuation & damping work','J',series(['actuatorDampingWorkJ','Hip/damping work'])],
     ['motion','case-clearance','Chassis underside clearance · when assessed','mm',series(['chassisClearanceMm','Underside clearance'])],
@@ -52,6 +56,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['energy','case-ledger','Engine energy-ledger residual · refine dt','J',series(['energyBalanceResidualJ','Unresolved ledger residual'],['positionStabilizationJ','Analytical position-projection energy'])],
     ['energy','case-contact-loss','Contact / stop impulse losses','J',series(['contactDissipationJ','Contact impulse loss'],['stopDissipationJ','Travel-stop loss'])],
   ].map(([group,id,title,unit,keys])=>({group,id,title,unit,series:keys}));
+  for(const item of contactManifest)if(item.id.startsWith('chassis-pin')||item.id==='chassis-support-force')item.note='Pinned chassis diagnostic only; absent legacy/floating samples remain unavailable. Pin force is the interval-mean fixture force on the chassis, positive +z. Positive supplies missing support; negative holds down excess suspension force. Delta uses the first finite interval, not an invented static t=0 force. The fixed fixture does no work; this is not a chassis response-time measurement.';
   // Conservative differences and per-step accumulators share one engine catalog.
   // Filled output paths illustrate area, never replace the authoritative work.
   const integralManifest = [
@@ -87,6 +92,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['chassisDisplacementMm','Chassis displacement','mm'],['chassisVelocityMmS','Chassis speed','mm/s'],
     ['theta2','Hip angle','°'],['wheelAngularVelocityDegS','Wheel spin','°/s'],['Fs','Spring tension','N'],
     ['contactNormalForceN','Contact normal · interval mean','N'],['motorTorqueNm','Motor torque','N·m'],
+    ['pinForceZN','Fixture on chassis · +z interval mean','N'],['pinForceDeltaZN','Fixture force change from baseline','N'],
     ['rotorKineticJ','Motor + gear inertia energy','J'],['shaftCommandNm','Motor shaft command','N·m'],['motorDissipatedJ','Motor dissipated energy','J'],
     ['chassisKineticJ','Chassis kinetic energy','J'],['springStoredJ','Spring stored from run start','J'],['motorRemovedJ','Motor removed from run start','J'],['gravityReleasedJ','Gravity released from run start','J'],['externalWorkJ','Additional load work','J'],['contactSpringStoredJ','Spring stored since each engine contact','J'],['contactMotorRemovedJ','Motor removed since each engine contact','J'],['motorWorkJ','Motor work','J'],['energyBalanceResidualJ','Energy-ledger residual','J'],
   ];

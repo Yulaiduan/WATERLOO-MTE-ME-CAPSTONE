@@ -3,6 +3,11 @@
 Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver workspace;
 no canonical robot or hardware acceptance is implied.
 
+The [gearbox response example](gear-response-study.md) compares three ODrive
+reductions with real free-wheel terrain contact, floating ride motion and a
+separate pinned-chassis force diagnostic. It records 25/100 mm height-command
+response, speed/contact limits, exact settings and paired-engine results.
+
 The [ODrive and terrain-speed example](terrain-speed-study.md) adds an editable
 gearbox-output-to-hip belt ratio1..3. Both engines use gearbox ratio × belt ratio
 for torque, speed, inertia and drag. Its bounded comparison covers.4/1/2/3m/s

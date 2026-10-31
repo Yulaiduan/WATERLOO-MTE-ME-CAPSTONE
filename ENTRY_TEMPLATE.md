@@ -5423,3 +5423,67 @@ Canonical robot physics is NOT APPLICABLE to this isolated member app. Same45kg 
 Read terrain-speed-study.md and motor-model.md for the two-stage ratio semantics, exact assumptions, bounded results and remaining hardware unknowns.
 Use terrain_speed_study.py with a generated editable config and fresh app-local output folder, preserving source guards and failed outcomes; captured Actuator studies support B1..3 without changing old snapshots.
 Keep subsequent comparisons small, distinguish quarter-heave tracking and rigid first-arrest results from hardware survival, and restart4191 with the project-local Start Kinefold.cmd.
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — Chassis-pin diagnostic and gearbox response tradeoff
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member app, actual-contact fixtures and bounded response example.
+- **Associated Issue/Task:** Owner requested floating/pinned-chassis diagnostics without binding the wheel to terrain, plus response metrics for a few gearbox designs to compare torque and speed. Based on fetched main c623463. Three explicitly authorized GPT-6.1 Sol workers owned backend constrained contact, UI/persistence and the bounded runner in separate worktrees; parent owned integration, actual runs/audit, Plotly/GIF, Notion, documentation and publication. No Computer skill or GUI automation.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuation_limits.py`
+- `users/andy-zhang/experimental-apps/kinefold/actuator_comparison.py`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.js`
+- `users/andy-zhang/experimental-apps/kinefold/comparison_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/export_terrain_animation.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/gear-response-study.md`
+- `users/andy-zhang/experimental-apps/kinefold/gear_response_study.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-automatic-comparison.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-pinned-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-projects.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_gear_response_study.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_pinned_contact.py`
+
+- **API/Interface Changes:** Optional runConfig.fixture=pinned-chassis is restricted to actual-contact terrain stability; floating remains default. Analytical uses a constrained inverse throughout contact, Pymunk a world chassis PivotJoint; wheel spin/slip/separation remain physical. Add interval-average signed pin force, delta/support, independent total-momentum impulse components, position error and zero ideal work; t0 and floating fields remain unavailable. Transactional UI/persistence rejects unsupported combinations. Optional actuatorConfig rideTargetStepMm/time changes only the floating terrain controller reference, preserving legacy snapshot key shapes; stationary actual floor accepts speed0, bench does not. All-case automatic jobs reject pinned diagnostics. Fix near-rest holding dropout using the existing shaft-speed cutoff for braking quadrant selection, retaining conservative holding torque and all regen/power/contact guards. Add standalone bounded three-design runner, exact source/config/spatial guards, weighted metrics and limited raw retention; GIF renderer labels pinned force. No new dependency, catalogue, live profile write, canonical asset, shared interface or enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS10 focused actual-contact Python tests,8 bounded-runner tests,22 pinned UI assertions,121 automatic-study,4090 dynamic Plotly,116 replay,35 project scenario groups,55 preset,48 presentation,666 contact drawing and15 animation assertions; worker existing suites also passed with one optional skip (overlapping counts not summed). Final50 fresh executions:36base +4half-step pin/small-step +4half-step speed thresholds +6large-step; all numerically resolved.25 exact engine pairs, current source hashes, stored raw metrics, wheelTerrainBound=false, pin momentum budgets/zero ideal work and body drift pass. Six live4191 HTTP cases (pinned/step/floating ×both engines) exactly reproduce saved requests/metrics, retained rows within1e-9. Half-step keeps N10pass/N20fail at4m/s. Earlier42 preliminary runs exposed near-rest holding dropout and are superseded/excluded from final media/archive; realistic finite-link/hardware flat-pin regression now has |pin|<.02N. Initial test fixture duration below existing minimum and underpowered pre-step controller were corrected without relaxing guards; explicit synthetic speed grid fixed an obsolete9m/s expectation; command-edge comparison uses1e-12 time tolerance. Six Plotly PNGs visually inspected; three actual paired GIFs pass source SHA/dimensions/framecount/loop/duration (13/41/7frames,1120x970,physical.6/2/.3s plus labelled.5s final pause), no retained frame caches.29-file6,657,696-byte data ZIP passes CRC/SHA, includes only selected N20 raw examples;55 local doc links, JS/Python syntax and whitespace pass. Ten native Notion uploads and report completed. Actual app-root launcher stop/start/reuse from unrelated cwd passes4191 HTTP readiness; observed profile SHA05f8ecb695ac7a6de5935592e38413ef95f8c77138a14e81fd5d5fe305431904 preserved, including outside user edits. Fetched-base/staged/exact-push workspace checks apply before publication. No live pointer/browser, hardware, thermal, tire-impact, full-body stability, GPU or canonical physics pass claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member app. Same45kg chassis/55gross,1kg rods/.5kg wheel,alpha20deg,65deg travel,50mm clearance; captured approximate V4 spring support is retained. ODrive+G5/G10/G20+B2 gives totalN10/20/40,peak64.4/128.8/244.4Nm,reflectedJ.0591/.2364/.9457. Common gains:100mm rise118/108/113ms,settle344/347/598ms; small25mm step is not torque limited. Highest passing tested terrain speed4/3/1m/s under editable RMS/contact/reserve/clearance criteria, not certified maxima. Loaded-contact fraction uses saved positive-compressive-impulse intervals; at6m/s N20 separates about20mm despite low body RMS. Estimated rotor/gear inertia, constant Coulomb/cogging and viscous placeholders, ideal extra belt, approximate speed envelope and unretuned gains remain assumptions; no hardware ranking or four-wheel stability proof. Pin force is interval-average signed fixture force, not a floating trajectory prediction or hardware peak. Raw/PNG/GIF/ZIP remain ignored app-local/native Notion attachments, never Git or Downloads.
+
+Two initial normal commit attempts stopped before validation because the hook's
+`python3` resolved to the Windows Store alias (adding the installed `python.exe`
+directory to PATH did not supply a `python3` executable). Retrying uses the hook's
+supported `CAMEL_PYTHON` override pointing to installed Python 3.13; hooks and all
+checks remain enabled.
+
+## 4. Compute Saving Handoff State
+
+Read gear-response-study.md for the signed chassis fixture, height-command metrics, actual speed/contact criteria and complete assumptions.
+Use gear_response_study.py with generated editable settings and fresh app-local output; keep wheel contact unilateral, guard source/config resumes and retain only a small worked raw example.
+Use Start Kinefold.cmd at4191 after shutdown, preserve live user profiles and separate pinned force diagnostics from floating ride response and hardware claims.

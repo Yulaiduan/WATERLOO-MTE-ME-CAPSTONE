@@ -17,12 +17,13 @@ ACTUATOR_DEFAULTS = dict(schema='kinefold/actuator-limits-v1',ratio=1.,hipBeltRa
     continuousPhaseCurrentA=None,dcBusV=48.,motoringPowerW=5000.,brakingPowerW=5000.,
     regenPowerW=5000.,regenEnergyJ=5000.,regenAcceptance=True,
     minClearanceMm=50.,undersideOffsetMm=50.,rideKpNPerM=5000.,rideKdNsPerM=350.,
-    recoveryKpNPerM=3000.,recoveryKdNsPerM=300.,holdKpNmPerRad=120.,holdKdNms=15.)
+    recoveryKpNPerM=3000.,recoveryKdNsPerM=300.,holdKpNmPerRad=120.,holdKdNms=15.,
+    rideTargetStepMm=0.,rideTargetStepTimeS=.1)
 
 
 def validate_actuator_config(raw=None):
     if raw is None:return None
-    if not isinstance(raw,dict) or not set(ACTUATOR_DEFAULTS)-{'hipBeltRatio'} <= set(raw) <= set(ACTUATOR_DEFAULTS):
+    if not isinstance(raw,dict) or not set(ACTUATOR_DEFAULTS)-{'hipBeltRatio','rideTargetStepMm','rideTargetStepTimeS'} <= set(raw) <= set(ACTUATOR_DEFAULTS):
         raise ValueError('actuatorConfig requires exactly '+', '.join(ACTUATOR_DEFAULTS))
     c=dict(raw)
     if c['schema']!=ACTUATOR_DEFAULTS['schema'] or type(c['regenAcceptance']) is not bool:
@@ -37,6 +38,8 @@ def validate_actuator_config(raw=None):
     if not 1e-6<=c['ratio']<=10000 or c['peakShaftNm']<=0 or c['noLoadRpm']<=0:
         raise ValueError('Actuator ratio, peak shaft torque and no-load speed must be positive.')
     if not 1<=c.get('hipBeltRatio',1)<=3:raise ValueError('hipBeltRatio must be within [1,3].')
+    if c.get('rideTargetStepMm',0)>500 or c.get('rideTargetStepTimeS',.1)>30:
+        raise ValueError('Ride target step requires 0..500 mm and 0..30 seconds.')
     for key in ('forwardEfficiency','reverseEfficiency'):
         if not .01<=c[key]<=1:raise ValueError(key+' must be in [.01,1].')
     if not .01<=c['baseSpeedFraction']<1:raise ValueError('baseSpeedFraction must be in [.01,1).')
@@ -52,7 +55,10 @@ def torque_limit(config,qd,requested_joint_nm,*,peak_elapsed_s=0.,regen_used_j=0
     """
     c=config;belt=c.get('hipBeltRatio',1);n=c['ratio']*belt;speed=abs(qd*n);rpm=speed*30/math.pi
     gearbox_rpm=abs(qd)*belt*30/math.pi
-    braking=requested_joint_nm*qd<0
+    # The power division below already treats shaft speeds <=1e-12 rad/s as
+    # numerical rest. Use that same boundary for quadrant selection: tiny
+    # signed contact-solver roundoff must not disable a static holding torque.
+    braking=requested_joint_nm*qd<0 and speed>1e-12
     eta=c['reverseEfficiency'] if braking else c['forwardEfficiency']
     conversion=n/eta if braking else n*eta
     shaft_peak=c['peakShaftNm']
@@ -73,7 +79,6 @@ def torque_limit(config,qd,requested_joint_nm,*,peak_elapsed_s=0.,regen_used_j=0
         if not c['regenAcceptance'] or regen_used_j>=c['regenEnergyJ']:power=0.
         elif dt_s>0:power=min(power,max(0.,c['regenEnergyJ']-regen_used_j)/dt_s)
     if speed>1e-12:shaft_available=min(shaft_available,power/speed)
-    elif braking:shaft_available=0.
     joint_available=min(c['gearboxPeakNm']*belt,shaft_available*conversion)
     if peak_elapsed_s>=c['peakDurationS'] and c['gearboxContinuousNm'] is not None:
         joint_available=min(joint_available,c['gearboxContinuousNm']*belt)
@@ -105,8 +110,16 @@ class ActuatorController:
         self.target_h+=m.p['rw']/1000*(math.sqrt(1+self.grade*self.grade)-1)
         self.target_v=self.grade*m.c['inputSpeedMmS']/1000
 
+    def target_height(self,time):
+        c=self.config;target_h=self.target_h+self.target_v*time
+        # Desired-height step only: bodies and wheel contact remain dynamic.
+        # Velocity target has no impulsive derivative kick at this command edge.
+        if self.case['kind']=='terrain-stability' and time>=c.get('rideTargetStepTimeS',.1)-1e-12:
+            target_h+=c.get('rideTargetStepMm',0)/1000
+        return target_h
+
     def command(self,q,qd,contacted=False,*,time=0.,state=None):
-        m=self.m;c=self.config;state=state or {};target_h=self.target_h+self.target_v*time
+        m=self.m;c=self.config;state=state or {};target_h=self.target_height(time)
         h=state.get('h',target_h);vh=state.get('vh',0.)
         if self.last_time is not None and time>self.last_time and self.previous:
             dt=time-self.last_time

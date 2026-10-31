@@ -27,7 +27,7 @@ ASSUMPTIONS=dict(hipBeltRatio=1.,dropHeightMm=2000.,jumpHeightMm=2000.,minCleara
     unknownGearboxInputInertiaKgM2=0.,additionalOutputInertiaKgM2=0.,
     rotorInertiaScenario='nominal',lossScenario='medium',lossLowFraction=.01,
     lossMediumFraction=.03,lossHighFraction=.08,lossReferenceRadS=10.,
-    frictionSmoothingRadS=10.,rideKpNPerM=5000.,rideKdNsPerM=350.,
+    frictionSmoothingRadS=10.,rideKpNPerM=5000.,rideKdNsPerM=350.,rideTargetStepMm=0.,rideTargetStepTimeS=.1,
     recoveryKpNPerM=3000.,recoveryKdNsPerM=300.,holdKpNmPerRad=120.,holdKdNms=15.,
     dynamicDt=.000125,dynamicDurationS=3.,dynamicOutputHz=50.,
     terrainMaxRmsErrorMm=100.,terrainMaxBodyAccelMS2=100.,terrainMinContactFraction=.5,
@@ -60,6 +60,7 @@ def validate_assumptions(raw=None):
     if a['dynamicDurationS']/a['dynamicDt']>80000:raise ValueError('Dynamic request exceeds step budget.')
     if not 0<=a['stopReserveDeg']<=10 or a['noLoadRpm']<=0 or a['lossReferenceRadS']<=0 or a['frictionSmoothingRadS']<=0:raise ValueError('Invalid reserve/speed assumption.')
     if not 1<=a['hipBeltRatio']<=3:raise ValueError('hipBeltRatio must be within [1,3].')
+    if a['rideTargetStepMm']>500 or a['rideTargetStepTimeS']>30:raise ValueError('Ride target step requires 0..500 mm and 0..30 seconds.')
     if a['terrainMinContactFraction']>1:raise ValueError('Contact fraction must be within [0,1].')
     return a
 
@@ -128,7 +129,7 @@ def candidate_hardware(m,g,a):
         'maxOutputRpm':None,'torqueConstantNmPerA':kt}
     for k in ('peakPhaseCurrentA','continuousPhaseCurrentA','dcBusV','baseSpeedFraction','peakDurationS',
               'motoringPowerW','brakingPowerW','regenPowerW','regenEnergyJ','regenAcceptance',
-              'minClearanceMm','undersideOffsetMm','rideKpNPerM','rideKdNsPerM',
+              'minClearanceMm','undersideOffsetMm','rideKpNPerM','rideKdNsPerM','rideTargetStepMm','rideTargetStepTimeS',
               'recoveryKpNPerM','recoveryKdNsPerM','holdKpNmPerRad','holdKdNms'):cfg[k]=a[k]
     if g.get('peakOutputNm') is None and g.get('continuousOutputNm') is None:flags.append('Gearbox torque rating missing; no hardware pass')
     usable=min(peak*n*eta,cfg['gearboxPeakNm']*belt)
@@ -405,6 +406,8 @@ def atomic_json(path,value):
 
 
 def run_comparison(request,output,*,progress=None,simulators=None):
+    if (request.get('project') or {}).get('solverConfig',{}).get('fixture')=='pinned-chassis':
+        raise ValueError('All-case actuator comparison requires a floating chassis; use the separate pinned terrain diagnostic for pin-force measurements.')
     output=Path(output);output.mkdir(parents=True,exist_ok=True)
     a=validate_assumptions(request.get('assumptions'));budget=validate_budget(request.get('budget'))
     project=copy.deepcopy(request.get('project') or json.loads((ROOT/'saved-configurations/vsl-v45-nominal-alpha0.json').read_text(encoding='utf-8')))

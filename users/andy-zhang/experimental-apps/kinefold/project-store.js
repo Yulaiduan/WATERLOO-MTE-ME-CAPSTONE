@@ -60,15 +60,20 @@ function title(v){if(typeof v!=='string'||!v.trim()||v.length>80||/[\u0000-\u001
 function validateConfig(v,legacy=false){const defaults=legacy?legacyDefaults:solverDefaults;
  keys(v,Object.keys(defaults),'solver configuration');const out={};
  for(const [k,fallback]of Object.entries(defaults)){if(!(k in v))throw Error('Missing solver setting: '+k);if(typeof v[k]!==typeof fallback||(typeof fallback==='number'&&!Number.isFinite(v[k])))throw Error(k+' must be a finite '+typeof fallback+'.');out[k]=v[k];}
- if(out.fixture!==defaults.fixture)throw Error('Unknown dynamic fixture.');
+ if(legacy?out.fixture!==defaults.fixture:!['floating-chassis','pinned-chassis'].includes(out.fixture))throw Error('Unknown dynamic fixture.');
  if(!['uniform-rods-discs','custom'].includes(out.inertiaModel))throw Error('Choose a known inertia model.');
  const limits={duration:[.05,30],dt:[.0001,.01],outputHz:[1,1000],initialVelocityDegS:[-720,720],hipTorqueNm:[-10000,10000],dampingNms:[0,10000],hipRotorInertiaKgM2:[0,1000],I2:[0,1000],I3:[0,1000],I5:[0,1000],I6:[0,1000],iterations:[10,500]};
  for(const [k,[lo,hi]]of Object.entries(limits))if(out[k]<lo||out[k]>hi)throw Error(k+' must be between '+lo+' and '+hi+'.');
- if(!legacy){const inputLimits={inputHeightMm:[0,1000],inputPlateauMm:[.1,10000],inputGapMm:[.1,10000],inputSpeedMmS:[.1,10000],inputRiseMm:[0,1000],inputDelayS:[0,30]};for(const [key,[lo,hi]]of Object.entries(inputLimits))if(out[key]<lo||out[key]>hi)throw Error(key+' must be between '+lo+' and '+hi+'.');if(2*out.inputRiseMm>out.inputPlateauMm)throw Error('Rise distance must fit twice inside the plateau.');const period=(out.inputPlateauMm+out.inputGapMm)/out.inputSpeedMmS;if(4*Math.ceil(Math.max(0,out.duration-out.inputDelayS)/period)>10000)throw Error('Run exceeds 10000 input transition boundaries; reduce speed or duration.');}
+ if(!legacy){const inputLimits={inputHeightMm:[0,1000],inputPlateauMm:[.1,10000],inputGapMm:[.1,10000],inputSpeedMmS:[0,10000],inputRiseMm:[0,1000],inputDelayS:[0,30]};for(const [key,[lo,hi]]of Object.entries(inputLimits))if(out[key]<lo||out[key]>hi)throw Error(key+' must be between '+lo+' and '+hi+'.');if(2*out.inputRiseMm>out.inputPlateauMm)throw Error('Rise distance must fit twice inside the plateau.');const period=(out.inputPlateauMm+out.inputGapMm)/out.inputSpeedMmS;if(4*Math.ceil(Math.max(0,out.duration-out.inputDelayS)/period)>10000)throw Error('Run exceeds 10000 input transition boundaries; reduce speed or duration.');}
  if(!Number.isInteger(out.iterations))throw Error('iterations must be a whole number.');
  if(Math.ceil(out.duration/out.dt)>100000)throw Error('Run exceeds 100000 integration steps.');
  if(out.outputHz>1/out.dt)throw Error('Output rate exceeds the integration rate.');
  return out;
+}
+function validateFixture(value){
+ if(value.solverConfig.inputSpeedMmS===0&&value.contactConfig?.mode!=='terrain-contact')throw Error('Zero terrain speed requires actual wheel contact; the prescribed-height bench needs positive input speed.');
+ if(value.solverConfig.fixture==='pinned-chassis'&&(value.contactConfig?.mode!=='terrain-contact'||(value.caseConfig?.kind||'terrain-stability')!=='terrain-stability'))throw Error('Pinned chassis requires actual terrain contact and the terrain-stability case. Select floating chassis before changing interaction or case; the wheel is never pinned to terrain.');
+ return value;
 }
 function validate(value){
  keys(value,['schema','id','name','params','view','solverConfig','createdAt','updatedAt','legacySolverConfig','contactConfig','caseConfig','motorConfig','energyConfig','torqueTargetConfig','terrainConfig'],'project');if(value.schema!==schema)throw Error('Unsupported project schema.');
@@ -87,7 +92,7 @@ function validate(value){
  if('torqueTargetConfig' in value)out.torqueTargetConfig=validateTorqueTargets(value.torqueTargetConfig);
  if('energyConfig' in value)out.energyConfig=validateEnergy(value.energyConfig);
  if('legacySolverConfig' in value)out.legacySolverConfig=validateConfig(value.legacySolverConfig,true);
- return out;
+ validateFixture(out);return out;
 }
 function baseline(){const now=new Date().toISOString();return {schema,id:id(),name:'V4 baseline / 150 mm square',params:{...Kinefold.defaults},view:{...viewDefaults},solverConfig:{...solverDefaults},createdAt:now,updatedAt:now};}
 function v45(){
@@ -149,5 +154,5 @@ function createDiskStore(storage,request=async payload=>{
   async saveArtifact(filename,value,mime='application/json'){await ready;const content=typeof value==='string'?value:JSON.stringify(value,null,2)+'\n';const result=await request({action:'export',name:filename,content,mime});return result.path;}
  };return store;
 }
-return {torqueTargetDefaults,validateTorqueTargets,schema,viewDefaults,solverDefaults,contactDefaults,caseDefaults,motorDefaults,totalMotorRatio,validateMotor,energyDefaults,validateEnergy,validateCase,validateContact,validateConfig,validate,baseline,v45,decode,clone,content,createStore,createDiskStore,id,title};
+return {torqueTargetDefaults,validateTorqueTargets,schema,viewDefaults,solverDefaults,contactDefaults,caseDefaults,motorDefaults,totalMotorRatio,validateMotor,energyDefaults,validateEnergy,validateCase,validateContact,validateConfig,validateFixture,validate,baseline,v45,decode,clone,content,createStore,createDiskStore,id,title};
 })();

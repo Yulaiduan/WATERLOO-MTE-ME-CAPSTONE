@@ -22,7 +22,7 @@ BOUNDS = {'duration': (.05, 30), 'dt': (.0001, .01), 'outputHz': (1, 1000),
           'I2': (0, 1000), 'I3': (0, 1000), 'I5': (0, 1000), 'I6': (0, 1000),
           'iterations': (10, 500), 'inputHeightMm': (0, 1000),
           'inputPlateauMm': (.1, 10000), 'inputGapMm': (.1, 10000),
-          'inputSpeedMmS': (.1, 10000), 'inputRiseMm': (0, 1000),
+          'inputSpeedMmS': (0, 10000), 'inputRiseMm': (0, 1000),
           'inputDelayS': (0, 30)}
 
 
@@ -68,7 +68,7 @@ def validate(params, config):
             raise ValueError(f'{a}/{b} pulley pitch circles overlap or touch.')
     if set(config) != set(defaults()):
         raise ValueError('runConfig must contain exactly the documented solver configuration keys.')
-    if config['fixture'] != 'floating-chassis' or config['inertiaModel'] not in ('uniform-rods-discs', 'custom'):
+    if config['fixture'] not in ('floating-chassis','pinned-chassis') or config['inertiaModel'] not in ('uniform-rods-discs', 'custom'):
         raise ValueError('Unknown fixture or inertia model.')
     for key, (lo, hi) in BOUNDS.items():
         if not finite(config[key]) or not lo <= config[key] <= hi:
@@ -81,7 +81,7 @@ def validate(params, config):
         raise ValueError('outputHz must not exceed 1/dt.')
     if 2 * config['inputRiseMm'] > config['inputPlateauMm']:
         raise ValueError('Two input rises must fit inside the nominal square high interval.')
-    period = (config['inputPlateauMm'] + config['inputGapMm']) / config['inputSpeedMmS']
+    period = (config['inputPlateauMm'] + config['inputGapMm']) / config['inputSpeedMmS'] if config['inputSpeedMmS'] else math.inf
     if 4 * math.ceil(max(0, config['duration'] - config['inputDelayS']) / period) > 10000:
         raise ValueError('Run exceeds 10000 input transition boundaries; reduce input speed or duration.')
 
@@ -101,6 +101,10 @@ def dot(a, b):
 class Model:
     def __init__(self, params, config, motorConfig=None):
         validate(params, config)
+        if config['fixture']!='floating-chassis':
+            raise ValueError('Pinned chassis requires actual terrain-contact terrain-stability mode; the prescribed-height bench is unsupported.')
+        if config['inputSpeedMmS']<=0:
+            raise ValueError('The prescribed-height bench requires positive input speed; stationary ground is supported in actual contact mode.')
         self.motor = Motor.resolve(motorConfig)
         self.motor_config_supplied = motorConfig is not None
         self.p, self.c = dict(params), dict(config)

@@ -32,8 +32,12 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     ax,az=m.axis;r=p['rw']/1000;mw=p['m6'];mt=p['m1']+mw;I=m.I['6']
     def product(a,b):return sum(x*y for x,y in zip(a,b))
     def mass_at(q):
-        if m.finite_links:return m.mass_terms(q)['inverse']
+        if m.finite_links:
+            terms=m.mass_terms(q)
+            if m.pinned:return ((0.,0.,0.),(0.,1/terms['D'],0.),(0.,0.,1/I))
+            return terms['inverse']
         ms=mw+m.Jref/m.jacobian(q)**2;det=mt*ms-(mw*az)**2
+        if m.pinned:return ((0.,0.,0.),(0.,1/ms,0.),(0.,0.,1/I))
         return ((ms/det,-mw*az/det,0),(-mw*az/det,mt/det,0),(0,0,1/I))
     inv=mass_at(m.q0)
     def inverse(v):return [product(row,v) for row in inv]
@@ -45,10 +49,18 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     qd=c['initialVelocityDegS']*R if case['kind']=='terrain-stability' else 0.
     motion=initial_motion(m,case,q)
     v=[motion['chassisVelocity'],motion['guideVelocity'],0.] if m.terrain_config and m.terrain_config['schema']=='kinefold/terrain-v2' and case['kind']=='terrain-stability' else [-az*m.jacobian(q)*qd,m.jacobian(q)*qd,0.]
+    if m.pinned:v[0]=0.
+    pin_height=h
+    def total_vertical_momentum():
+        qq=m.inverse(max(sl,min(sh,u[1])))
+        if m.finite_links:
+            terms=m.mass_terms(qq);return terms['A']*v[0]+terms['H']*v[1]
+        return mt*v[0]+mw*az*v[1]
     sl,sh=sorted((m.distance(m.lo),m.distance(m.hi)))
     t=0.;steps=0;rows=[];frames=[];events=[];next_sample=1/c['outputHz'];sample_t=0.
     sumJ=[0.,0.];sumN=sumT=0.;points=[];slips=[];work=stoploss=stabilization=dampingwork=terrainwork=contactloss=motorloss=externalwork=0.;maxpen=0.;contacted=False;previous_contact=False
     motorcoulombloss=motorviscousloss=0.
+    pin_baseline=None;sample_momentum=total_vertical_momentum()
     termination='duration';first_raised=None;maxnf=0.;maxtf=0.;tor=ctl.torques(q,qd,time=0.,state=dict(h=h,vh=v[0],contacted=False))
     penetration_limit_mm=1.;prepen=postpen=maxpre=maxpost=0.;max_stop_position_error=0.
     def geometry(time):
@@ -66,7 +78,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         return out
     def jac(n,spin=False):return (n[1],ax*n[0]+az*n[1],r if spin else 0.)
     def append():
-        nonlocal sample_t,sumN,sumT,maxnf,maxtf
+        nonlocal sample_t,sumN,sumT,maxnf,maxtf,pin_baseline,sample_momentum
         q=m.inverse(u[1]);qd=v[1]/m.jacobian(q);spring=m.spring(q);e=energy_fields(m,q,u[0],v[0],v[1],v[2]);ke=e['chassisKineticJ']+e['wheelKineticJ']+e['rotorKineticJ']+e['legacyJointRotorKineticJ']+e['linkKineticJ'];pe=e['springEnergyJ']+e['gravityEnergyJ']+e['coggingPotentialJ']
         gap=min(g[0] for g in geometry(t))*1000;elapsed=t-sample_t;nf=sumN/elapsed if elapsed else 0.;tf=sumT/elapsed if elapsed else 0.;maxnf=max(maxnf,nf);maxtf=max(maxtf,tf)
         A=world((0,u[0]));C=world((ax*u[1],u[0]+az*u[1]));translate=lambda a:world((a[0],a[1]+u[0]))
@@ -80,6 +92,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         sample_motor=m.motor.motor_state(q,qd,tor['motorTorqueNm'])
         if ctl.actuator:sample_motor.pop('shaftCommandNm')  # bounded transmission efficiency is already resolved
         row.update(sample_motor)
+        if ctl.actuator:row['rideTargetHeightMm']=ctl.actuator.target_height(t)*1000
         row.update(comZMm=(u[0]+sum(p['m'+k]*m.sites(q)[k][0][1] for k in ('2','3','6'))/m.total_mass)*1000,
             comVelocityZMmS=(v[0]+m.mass_terms(q)['B']/m.total_mass*qd)*1000)
         ground_under_hip=surface_height(terrain,t)
@@ -89,6 +102,20 @@ def simulate_contact(payload, *, stop_at_assessment=False):
             preProjectionPenetrationMm=prepen,postProjectionPenetrationMm=postpen,
             energyBalanceResidualJ=ke+pe-(rows[0]['energyJ'] if rows else ke+pe)-work-dampingwork-terrainwork-externalwork+motorloss+stoploss+contactloss-stabilization)
         frame.update(chassisClearanceMm=clearance,motionPhase=phase,controllerPhase=tor['controllerPhase'])
+        momentum=total_vertical_momentum();pin=None;pin_impulse=None
+        if m.pinned and elapsed>0:
+            pin_impulse=momentum-sample_momentum+(m.total_mass*p['g']-m.force[1])*elapsed-sumJ[1]
+            pin=pin_impulse/elapsed
+            if pin_baseline is None:pin_baseline=pin
+        row.update(pinForceZN=pin,pinForceDeltaZN=pin-pin_baseline if pin is not None else None,
+            chassisSupportForceZN=p['m1']*p['g']-pin if pin is not None else None,
+            pinImpulseNs=pin_impulse,pinMomentumChangeNs=momentum-sample_momentum if m.pinned and elapsed else None,
+            pinGravityImpulseNs=m.total_mass*p['g']*elapsed if m.pinned and elapsed else None,
+            pinExternalImpulseNs=m.force[1]*elapsed if m.pinned and elapsed else None,
+            pinContactImpulseNs=sumJ[1] if m.pinned and elapsed else None,
+            pinPositionErrorMm=abs(u[0]-pin_height)*1000 if m.pinned else None,pinWorkJ=0. if m.pinned else None)
+        frame.update(pinForceZN=pin,pinPositionErrorMm=row['pinPositionErrorMm'])
+        sample_momentum=momentum
         rows.append(row);frames.append(frame);sample_t=t;sumJ[:]=[0.,0.];sumN=sumT=0.;points.clear();slips.clear()
     append()
     if rows[0]['penetrationMm']>1e-7:
@@ -123,7 +150,7 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         vertical_momentum=(terms['A']*v[0]+terms['H']*v[1]) if m.finite_links else None
         # Exact constant-force drift/kick; contacts use the physical velocity only.
         for k in range(3):u[k]+=v[k]*dt+.5*acc[k]*dt*dt;v[k]+=acc[k]*dt
-        if m.finite_links:
+        if m.finite_links and not m.pinned:
             # h is cyclic apart from external gravity/load: integrate its
             # canonical momentum exactly through the changing finite geometry.
             # This prevents internal leg motion creating vertical COM impulse.
@@ -273,6 +300,15 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         result['diagnostics'].update(rigidBodies=4,finiteLinkDynamics=True,modelRevision='finite-link-contact-v1',linkMomentsKgM2={k:m.I[k] for k in ('2','3')},totalBodyMassKg=m.total_mass)
         result['warnings'][0]='Experimental finite uniform-link quarter model with exact analytical mass matrix; no tire, chassis collision shape or hardware validation.'
     result['energyEstimate']=energy_estimate(m,case) if case['energyMethod'] else None
+    result['scope']['fixture']=c['fixture']
+    result['scope']['wheelTerrainBound']=False
+    result['scope']['rideTargetStepEnabled']=case['kind']=='terrain-stability' and bool((m.actuator_config or {}).get('rideTargetStepMm',0))
+    result['scope']['rideTargetStepMeaning']='Desired chassis-height step applies only to floating terrain-stability; saved step fields are inactive in jump and landing. No position or wheel contact is prescribed.'
+    result['diagnostics'].update(chassisPinned=m.pinned,initialPinHeightMm=pin_height*1000 if m.pinned else None,
+        maxPinPositionErrorMm=max(abs(f['A'][2]-pin_height*1000) for f in frames) if m.pinned else None,
+        pinForceMeaning='Upward fixture-on-chassis force from interval total-assembly momentum balance; includes rigid-contact impulses and numerical projection effects, not an impact peak.',
+        pinForceDeltaMeaning='Change from first finite output-interval force; t=0 force is unavailable.',pinWorkJ=0. if m.pinned else None)
+    if m.pinned:result['warnings'].append('Only the chassis is pinned at its initial hip height. Wheel rotation, separation and contact remain free. The unchanged height feedback sees no chassis motion; pin-force response is a diagnostic, not a floating-chassis response time.')
     result['diagnostics'].update(reflectedHipInertiaKgM2=m.Jref,energyBalanceResidualJ=rows[-1]['energyBalanceResidualJ'],maxPreProjectionPenetrationMm=maxpre,maxPostProjectionPenetrationMm=maxpost,penetrationTerminationLimitMm=penetration_limit_mm,maxTravelStopDriftMm=max_stop_position_error)
     result['targetObservations']=observation.result()
     result['targetObservations'].update(com_observation.result())

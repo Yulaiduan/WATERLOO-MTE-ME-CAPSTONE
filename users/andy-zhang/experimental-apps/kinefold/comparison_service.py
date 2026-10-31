@@ -97,6 +97,8 @@ class ComparisonService:
         if not self.python.is_file():raise ValueError('Set up the app numerical environment before a finite comparison.')
         project=payload.get('project')
         if project is not None and (not isinstance(project,dict) or project.get('schema')!='kinefold/project-v3'):raise ValueError('Comparison requires a captured project-v3 design.')
+        if project is not None and project.get('solverConfig',{}).get('fixture')=='pinned-chassis':
+            raise ValueError('All-case actuator comparison requires a floating chassis; use the separate pinned terrain diagnostic for pin-force measurements.')
         assumptions=validate_assumptions(payload.get('assumptions'));budget=validate_budget(payload.get('budget'))
         selection=payload.get('selection') or {}
         if not isinstance(selection,dict) or set(selection)-{'motorIds','gearboxIds'}:raise ValueError('Invalid exact catalog selection.')

@@ -1,5 +1,41 @@
 # Kinefold context
 
+## Latest — 2026-10-30 chassis pin and gearbox response
+
+Read [gear-response study](../gear-response-study.md). Based on main c623463;
+three authorized GPT-6.1 Sol workers owned constrained contact, UI/persistence
+and the bounded runner in separate worktrees. Parent integrated/audited, ran
+physics, exported Plotly/GIF media, documented and published. No Computer skill.
+Optional runConfig.fixture=pinned-chassis fixes only chassis height during actual
+terrain stability; physical wheel collision, spin, slip and separation remain.
+Signed pinForceZN is interval-average fixture force +z, with momentum budget,
+zero ideal work and unavailable t0; support=m1*g-pin. Floating fields stay null.
+Pinned bench/jump/landing and pinned nonzero height steps reject transactionally.
+Optional actuatorConfig rideTargetStepMm/time change only the floating terrain
+controller reference; stationary actual floor accepts speed0, prescribed bench
+still requires positive speed. All-case automatic jobs reject pinned diagnostic.
+
+An actual finite-link/hardware flat-pin run exposed near-zero-speed holding
+dropout: braking classification now requires shaft speed above the existing
+1e-12 cutoff. Below it, conservative holding conversion keeps torque present;
+regen/contact/power caps unchanged. The old42 preliminary runs are superseded.
+Final50 fresh runs (36base,8half-step,6large-step) all resolve,25exact enginepairs;
+source hashes, raw metrics, signed pin budgets and6live HTTP cases pass.
+ODrive+G5/G10/G20+B2 gives totalN10/20/40,peak64.4/128.8/244.4Nm,
+reflectedJ.0591/.2364/.9457. 100mm rise118/108/113ms; settle344/347/598ms.
+Same gains:20 helps a torque-limited larger move;40 overshoots more. Highest
+passing tested terrain speed4/3/1m/s, not certified maxima. Half-step preserves
+10pass/20fail at4m/s. Contact and controller response matter; terrain never
+reaches torque cap. Full assumptions and discrete loaded-contact definition
+are in the report. No hardware or full-body stability claim.
+
+Focused tests and existing JS/replay/Plotly checks pass; actual launcher reuse /
+stop/start at4191 passes. The live profile library is preserved (outside user
+edits remain); no runner writes it. Six Plotly PNGs,3paired actual GIFs and
+compact exact settings/raw-example ZIP stay app-local ignored/native Notion.
+Use gear_response_study.py with a fresh output/config for bounded refinements,
+and retain physical unilateral contact instead of binding the wheel to terrain.
+
 ## Latest — 2026-10-30 ODrive, hip belt and terrain speed
 
 Read [terrain-speed study](../terrain-speed-study.md). Based on mainaca73a1;

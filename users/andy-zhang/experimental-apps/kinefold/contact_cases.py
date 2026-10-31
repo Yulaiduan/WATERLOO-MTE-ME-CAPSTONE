@@ -126,6 +126,9 @@ def validate_contact_request(payload):
         raise ValueError('This contact model requires zero restitution.')
     case=resolve_case(payload)
     model=ContactGeometry(payload['params'],payload['runConfig'])
+    model.pinned=model.c['fixture']=='pinned-chassis'
+    if model.pinned and case['kind']!='terrain-stability':
+        raise ValueError('Pinned chassis supports terrain-stability only; jumping and landing require a floating chassis.')
     if 'motorConfig' in payload and not isinstance(payload['motorConfig'],dict):
         raise ValueError('motorConfig must be an object when supplied.')
     model.motor=Motor.resolve(payload.get('motorConfig'))
@@ -136,6 +139,8 @@ def validate_contact_request(payload):
     if 'actuatorConfig' in payload:
         from actuation_limits import validate_actuator_config
         model.actuator_config=validate_actuator_config(payload.get('actuatorConfig'))
+        if model.actuator_config and model.actuator_config.get('rideTargetStepMm',0) and model.pinned:
+            raise ValueError('A ride-height target step requires a floating chassis; terrain-only step fields remain inactive during jump/landing.')
     if case['kind'] in ('jump','landing') and model.axis[1]*model.jacobian((model.lo+model.hi)/2)<=0:
         raise ValueError('Jump/landing require tc to be the geometrically compressed endpoint; this straight-path branch reverses that convention.')
     if case['kind']=='landing' and case['brakeStrategy']=='energy-sized' and abs(model.axis[0])>1e-10:
@@ -159,6 +164,8 @@ def initial_motion(m,case,q):
     """SI supported-grade initial velocity; preserves legacy flat initialization."""
     qd=m.c['initialVelocityDegS']*R if case['kind']=='terrain-stability' else 0.
     prime=m.sites(q)['6'][1];vx=prime[0]*qd;vz=0.
+    if getattr(m,'pinned',False):
+        return dict(qd=qd,guideVelocity=m.jacobian(q)*qd,chassisVelocity=0.,wheelVelocity=(vx,prime[1]*qd))
     config=getattr(m,'terrain_config',None)
     if case['kind']=='terrain-stability' and config and config['schema']=='kinefold/terrain-v2':
         vz=config['gradePercent']/100*(m.c['inputSpeedMmS']/1000-vx)
