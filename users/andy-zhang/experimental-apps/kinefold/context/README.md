@@ -1,5 +1,21 @@
 # Kinefold context
 
+## Latest — 2026-10-31 screenshot torque reproduced in current calculator
+
+See [current calculator reconstruction](../table-landing-study.md#current-calculator-reproduction--2026-10-31).
+Current Energy source40c077d,45kg chassis/4,full65deg,zero reserve and the same
+mass/cos(alpha)-retuned V4 support gives97.276/145.917Nm at alpha0/20, rounding
+to all four screenshot cells. No formula/physics/UI or live-library change.
+Spring-off gives137.10/185.74Nm at20deg and139.66/188.30Nm at0deg. Compensation
+stores≈48J against≈48J compression gravity, leaving≈165.5J fall energy at1.5m.
+Recent V4.5 comparison differs:145.922→178.350Nm with55gross,→184.012 with63deg,
+→187.715 with actual net potential;212.48Nm is available actuator capacity.
+Energy gives constant/angle-average torque, not a transient shock peak. Original
+table derivation/belt-load inputs remain unavailable; prior engine audit reused,
+not rerun. Two Plotly PNGs/data/scripts/four separately named import-validated
+project examples stay app-local/native Notion; rounded97 can bottom out at zero
+reserve, so imports are energy reproductions rather than new landing validation.
+
 ## Latest — 2026-10-31 ODrive8325 /1.5m-drop ratio
 
 Read [conditional gearing recommendation](../8325-drop15-study.md). Owner asked

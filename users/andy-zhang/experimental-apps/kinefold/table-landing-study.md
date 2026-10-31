@@ -132,6 +132,75 @@ The retained final evidence contains240 actual engine executions: table commands
 bounded torque trials, full-output bracket checks, fine/coarse checks and the
 unrounded97.2816Nm test. No UI pointer automation, GPU or hardware review is claimed.
 
+## Current calculator reproduction — 2026-10-31
+
+The current Energy tab calculation was executed directly from source40c077d,
+without changing the app, live profiles or physics. Use11.25kg chassis mass per
+leg, full100→165deg travel, landing opening1, zero compression reserve,50mm
+clearance and underside offset. For approximate gravity compensation, multiply
+both original V4 springK and p0 by `(11.25/8.75)*cos(alpha)`, preserving its local
+route. This is the same explicit scaling used in the earlier engine fixture.
+
+| Case | Screenshot Nm | Inferred ideal formula Nm | Current retuned V4 energy Nm | Current spring-off energy Nm |
+| --- | ---: | ---: | ---: | ---: |
+|1a:1m,20deg|97|97.281623|97.276411|137.101300|
+|1b:1.5m,20deg|146|145.922434|145.917222|185.742111|
+|2a:1m,0deg|97|97.281623|97.276077|139.656838|
+|2b:1.5m,0deg|146|145.922434|145.916888|188.297650|
+
+All four calculator results round to the screenshot. No numeric fitting or
+relaxed test was used. The scalar equation inferred from the image is
+`tau=(45/4)*9.81*h/(65*pi/180)`; the original derivation is unavailable, so this
+is numerical reconstruction rather than attribution of the author's reasoning.
+The physically complete chassis-only equation is
+`tau=[m*g*h + m*g*s_compression - deltaU_spring]/deltaTheta`.
+At alpha0 and1.5m, the actual V4 terms are
+`(165.543750+48.073157-48.079449)J/1.134464rad=145.916888Nm`.
+Thus the spring stores about48J, almost cancelling compression gravity; it does
+not absorb the165.5J fall energy. The residual from ideal compensation is less
+than.006Nm. Simply disabling the spring produces188.298Nm for that same case.
+
+The table equation is consistent with either compensated compression gravity
+or omission of that term; the screenshot alone cannot distinguish them.
+"No soft-stop suspension" does not specify whether gravity compensation remains.
+Keeping the original8.75kg spring unchanged at11.25kg produces104.138/152.779Nm
+at20deg and106.694/155.335Nm at0deg. Tilt changes compression gravity; vertical
+drop energy and joint angular travel remain unchanged. Retuning support by
+cos(alpha) nearly cancels the gravity change, explaining the repeated97/146.
+
+The latest8325 design comparison is a different energy screen. At1.5m its
+required constant joint torque changes in these explicit steps:
+
+| Assumption | Required Nm |
+| --- | ---: |
+| Screenshot:45kg chassis,65deg |145.922434|
+| Include V4.5 links/wheels:55kg gross,65deg |178.349641|
+| Keep2deg stop reserve:55kg gross,63deg |184.011535|
+| Include actual net compression potential≈4.072J |187.714980|
+
+The32:1 motor combo's212.48Nm no-loss braking figure is **available peak actuator
+capacity**, not the187.715Nm required energy-equivalent torque. These bookkeeping
+steps do not rerun finite-link trajectories. The existing rigid-impact caveat in
+[the gearing study](8325-drop15-study.md) remains material.
+
+Energy specifies `integral(tau dtheta)`, hence angle-average torque. It equals
+a constant command only if constant braking is assumed; it cannot alone give
+a transient impact peak, load-sharing peak or raw motor-shaft rating. See
+[rotational work](https://openstax.org/books/university-physics-volume-1/pages/10-8-work-and-power-for-rotational-motion).
+The belt row still lacks the original force/geometry/preload derivation; the
+earlier interval estimates above are not an exact reproduction or physical shock
+rating. In particular, do not force both torque and belt numbers to match by
+quietly changing pulley sizes or spring settings.
+
+Two new Plotly PNGs, the current calculator output, three small analysis scripts
+and four import-validated project-v3 examples are retained in ignored app exports
+and the native Notion attachment. The projects are named separately, include an
+explicit.5kg wheel for optional contact (chassis-only Energy excludes its drop
+energy), and never overwrite the live library. They reproduce calculator values;
+their rounded97/146Nm dynamic commands are not new trajectory/survival results.
+Rounded97Nm can bottom out at zero reserve as documented above. Historical engine
+numbers are reused from the2026-10-30 audit, with no new dynamic execution claimed.
+
 ## Reproduce and inspect
 
 After app setup, from this directory:

@@ -5590,3 +5590,37 @@ Canonical robot physics is NOT APPLICABLE to isolated member workspace documenta
 Read 8325-drop15-study.md for the bounded recommendation, full-open stroke assumption, endpoint criterion and critical85% rigid-impact loss.
 Use the native Notion archive for the frozen runner, exact settings/hashes, all14compact results and only the selected32:1 raw captures; repeat in fresh app-local output with the same source guard.
 Treat32:1 as a conditional prototype starting ratio, preserve live profiles and obtain measured compliance/drive/gear data before claiming real1.5m-drop survival or changing the landing opening.
+
+---
+
+## Entry: 2026-10-31 — Andy Zhang — Reproduce screenshot torque in current Energy calculator
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app study documentation and context.
+- **Associated Issue/Task:** Owner asked why the earlier screenshot's peak torque row differed and requested the same numbers. Execute the current Energy source at fetched main40c077d with matched45kg/65deg/alpha0–20 assumptions, distinguish constant energy torque from transient peak and separate the recent V4.5 mass/stroke budget. No new delegation, Computer skill, GUI or runtime change.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/table-landing-study.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+
+- **API/Interface Changes:** None. Add exact current-calculator reconstruction, support retuning/energy terms, V4.5 comparison steps and angle-average versus impact-peak interpretation to the existing table report. Three small calculation/plot/profile scripts, calculator JSON, four separately named portable project examples, two PNGs and compact ZIP remain ignored app-local/native Notion. No app law, UI, controller, dependency, canonical asset, shared interface, enforcement or live library change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS12 current JS calculator fixtures (four screenshot cases ×off/scaled/original spring), source SHA, exact work equation/purity/full65deg checks and all four rounded97/146 matches. Retuned values97.276411/145.917222Nm at20deg and97.276077/145.916888Nm at0deg; below.006Nm from the inferred unrounded formula. Four portable project-v3 imports decode/validate and reproduce the same values, no live writes. Exact latest V4.5 endpoint reconstruction145.922→178.350→184.012→187.715Nm passes;16 historical engine summary rows reused without new trajectory runs. Two Plotly PNGs visually inspected;12-file346,090-byte ZIP CRC/SHA,JS/Python syntax,25local links and whitespace pass. Three native Notion attachments/report completed. Initial profile export failed strict design-ID prefix, then cross-VM plain-object validation; both corrected in helper before any project output, with validators unchanged. One inspection mistakenly parsed only the first line of a pretty JSON and an app-relative orientation lookup used the wrong directory; full current data parsed successfully and required root orientation read at the correct path. An overly broad initial text search included ignored exports and was discarded in favor of tracked exact files. Fetched-base, staged and exact-push workspace checks apply before publication. Profile SHA05f8ecb695ac7a6de5935592e38413ef95f8c77138a14e81fd5d5fe305431904 preserved. Headless analysis/media only; no server created/started/delivered, launcher unchanged. No new tests for documentation-only publication; no hardware, thermal, impact-strength, full-body, GPU or canonical validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member documentation. The inferred screenshot formula is(45/4)gh/rad65; original derivation unavailable. Actual V4 support scales k/p0 by(11.25/8.75)cos(alpha), cancelling compression gravity to within.006Nm. Springoff needs137–140/186–188Nm; original8.75kg support unchanged at11.25kg produces104–107/153–155Nm. The table's no-soft-stop label does not establish whether support is absent. Vertical fall energy does not receive a cos(alpha) factor. Energy fixes angle-average/constant torque, not peak impact or raw shaft torque. Import examples have explicit.5kg wheel excluded by chassis-only energy, zero stop reserve and rounded dynamic commands that may bottom out; no new dynamics pass claimed. Belt row and real impact survival remain unresolved. Artifacts stay in Capstone/Notion, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read the current-calculator section in table-landing-study.md for exact reproduction, support scaling and the146→188Nm assumptions breakdown.
+Use the small native Notion archive for current source-hashed values, Plotly figures and four manually imported energy examples, preserving existing live profiles.
+Keep angle-average demand separate from actuator capacity and transient shock peaks, and retain historical dynamics/rounding/compliance qualifications rather than rerunning the old240-case search.
