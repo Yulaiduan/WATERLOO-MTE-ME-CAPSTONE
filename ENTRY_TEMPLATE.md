@@ -5487,3 +5487,37 @@ checks remain enabled.
 Read gear-response-study.md for the signed chassis fixture, height-command metrics, actual speed/contact criteria and complete assumptions.
 Use gear_response_study.py with generated editable settings and fresh app-local output; keep wheel contact unilateral, guard source/config resumes and retain only a small worked raw example.
 Use Start Kinefold.cmd at4191 after shutdown, preserve live user profiles and separate pinned force diagnostics from floating ride response and hardware claims.
+
+---
+
+## Entry: 2026-10-30 — Andy Zhang — High-variance terrain leg-lag case
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app study documentation and app context.
+- **Associated Issue/Task:** Owner requested one high-variance terrain case to show leg lag. Run existing source at fetched main eb1fb35 with the same ODrive N20/B2, alpha20, V4.5 masses, controller,600mm period,seed481 and3m/s; only nominal terrain RMS15→60mm. No new agent delegation, Computer skill, GUI, source physics or UI changes.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/gear-response-study.md`
+
+- **API/Interface Changes:** None. Add the bounded case's measured response, geometry-reference definition, reproducible existing-runner settings delta, validation and native media provenance. Analysis/plot scripts, exact configs, raw rows/reference CSV, PNG/GIF/ZIP remain ignored app-local artifacts and native Notion attachments; no profile or runtime edits, dependencies, canonical assets, shared interfaces or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS four new actual executions: both engines at dt.00025 and.000125, all numerically resolved through.6s; reused mild baseline without rerunning. Exact requests differ only by engine, terrain RMS and explicit timestep refinement; current source SHA, recomputed metrics and wheelTerrainBound=false pass. Level-body geometry reference solves minimum exact circle/contour gap with tilted leg/finite wheel radius, within original travel at every saved time; residual<1e-7mm. Two final Plotly PNGs visually inspected after correcting footer/legend overlap; actual paired25fps GIF passes source SHA/16frames/1120x970/loop/1100ms, including.6s physical time and labelled.5s pause; no retained frame caches. Initial30fps export accumulated10ms GIF quantization to540ms instead of600ms and is superseded/excluded; retained final25fps clock is exact.24-file2,718,082-byte ZIP passes CRC/SHA, includes only selected cases/reference/scripts, not superseded QA media. Four native Notion attachments/report completed. Local doc links/whitespace pass; profile SHA05f8ecb695ac7a6de5935592e38413ef95f8c77138a14e81fd5d5fe305431904 unchanged. One documentation patch context did not match and was reapplied at the correct existing anchor; no source change. Fetched-base/staged/exact-push scoped checks apply before publication. Existing launcher unchanged; no server startup/delivery or app/browser behavior change in this headless case run. No new regression tests needed for documentation-only publication; no hardware/thermal/impact/full-body/GPU/canonical validation claimed.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this member workspace documentation. Base rough case A/P: chassis RMS6.195/6.131mm,peak9.684/9.778mm,leg angle error3.823/3.902deg,maxgap6.694/6.543mm,loaded intervals76/73%,no torque saturation. First descending140deg crossing6.211/6.140ms later than the geometry reference; half-step6.191/6.212ms with RMS6.144/6.119mm,contact75.5/74.5%. Metrics evaluate.2–.6s; local interpolated2ms-sample timing is coupled response/contact loss, not intrinsic motor latency or constant phase lag. Realized full-cell RMS59.09mm/peak184.86mm excludes wheel-path interpretation. Existing assumed J/drag/controller and approximate routed-spring support remain unchanged. Raw/media stay in the app/Notion, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read the high-variance follow-up in gear-response-study.md for exact inputs, measured leg lag and its coupled-contact interpretation.
+Repeat with the existing gear_response_study.py filtered to gear-10/floating-terrain/3mps and RMS60 in fresh app-local folders, retaining the source/config guards and optional half-step check.
+Use the native Notion data attachment for reference CSV/analysis scripts, preserve live profiles and keep the reviewed25fps clock separate from the superseded30fps export.

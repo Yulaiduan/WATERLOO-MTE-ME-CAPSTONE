@@ -206,6 +206,50 @@ time and a labelled .5 s final reading pause. Temporary frame caches are removed
 Raw/media are not committed and never sent to Downloads. The live profile library
 is preserved; this runner uses portable saved baseline inputs rather than editing it.
 
+## High-variance follow-up — 2026-10-30
+
+Owner requested a rougher case to expose leg lag. Same ODrive/AB90-G10/B2
+(total20), alpha20°, masses, approximate spring support, controller, seed481,
+600mm period,25% cycle variation and3m/s; only nominal terrain RMS changes
+15→60mm. The amplitude is4× and variance16× for the same generated cells.
+Realized full-cell mean-removed RMS is59.09mm and peak184.86mm; these are not
+wheel-path-window statistics. Four new actual runs: two engines at dt.00025
+and a matched pair at dt.000125, all numerically resolved through.6s.
+
+| Metric, .2–.6s common window | Analytical | Pymunk |
+| --- | ---: | ---: |
+| Chassis RMS height error | 6.195mm | 6.131mm |
+| Peak absolute chassis error | 9.684mm | 9.778mm |
+| Peak angle error versus level-body geometry | 3.823° | 3.902° |
+| Maximum actual wheel gap | 6.694mm | 6.543mm |
+| Loaded-contact intervals | 76% | 73% |
+| Motor torque saturation | 0% | 0% |
+
+The geometry reference solves `min circle-to-contour gap(q,h_target,t)=0`
+inside the exact leg travel, including alpha, lateral wheel shift and finite
+wheel radius. It is an offline diagnostic, not a joint command or wheel pin.
+Positive angle error on the descending face means the leg has insufficient
+extension to keep the chassis level. The first descent crosses140° about
+6.211/6.140ms after the reference; interpolation uses2ms output samples.
+Half-step results are6.191/6.212ms, with chassis RMS6.144/6.119mm and contact
+75.5/74.5%. The case fails the original ride/contact criteria, without reaching
+the motor cap. It shows coupled inertia/controller/contact response, not a
+pure motor delay. Crest delays differ between bumps and whole-window correlation
+does not establish a constant phase lag. The mild baseline's RMS was1.873/1.882mm.
+
+Reproduce using the existing runner: generate a fresh config, set terrain.rmsMm=60
+and retainFloatingSpeedsMps=[3], then select `--candidate gear-10 --case
+floating-terrain --speed 3`; repeat in a fresh folder with `--dt .000125`.
+The two final Plotly PNGs, one actual paired GIF and exact settings/raw/reference
+CSV/scripts ZIP are app-local ignored exports and native Notion attachments.
+Source hashes, requests, stored metrics and tangency residuals(<1e-7mm) pass;
+no physics laws, UI settings or live profiles are changed by this follow-up.
+Use25fps for the reviewed GIF:16frames,.6s physical time plus.5s final pause,
+1100ms total. An initial30fps export quantized18 intervals to540ms rather than
+600ms in GIF's10ms clock; it is superseded and excluded from delivery. Initial
+plot footer/legend overlap was corrected before attachment. No GUI, hardware,
+thermal, impact-strength or full-body stability validation is implied.
+
 Restart at <http://127.0.0.1:4191/?tab=analytical> with
 [Start Kinefold.cmd](Start%20Kinefold.cmd); stop with
 [Stop Kinefold.cmd](Stop%20Kinefold.cmd). The launcher is verified from an unrelated

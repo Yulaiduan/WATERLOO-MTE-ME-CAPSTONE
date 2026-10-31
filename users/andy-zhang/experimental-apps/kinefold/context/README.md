@@ -1,5 +1,22 @@
 # Kinefold context
 
+## Latest — 2026-10-30 high-variance leg-lag example
+
+Owner asked for a rougher run. See [follow-up results](../gear-response-study.md#high-variance-follow-up--2026-10-30).
+Existing source at eb1fb35, no app/physics/UI changes: same ODrive N20/B2,3m/s,
+alpha20°,V4.5 mass/controller/seed/period; nominal terrain RMS15→60mm only.
+Four new actual runs (two engines plus half-step): all resolve, both fail ride /
+contact criteria. Chassis RMS6.19/6.13mm versus1.87/1.88 baseline; peak geometry
+angle error3.82/3.90°,actual wheel gap6.69/6.54mm,loaded contact76/73%,no torque
+saturation. Offline exact tilted-leg/finite-wheel tangency reference never pins
+or commands the wheel. First140° descent crossing6.21/6.14ms late; half-step
+6.19/6.21ms. This is local coupled response/contact loss, not pure motor latency.
+Final two Plotly PNGs,25fps actual paired GIF and compact data/reference ZIP stay
+app-local ignored/native Notion. Initial30fps GIF timing quantization and plot
+overlap are superseded;16-frame reviewed replay is.6s+.5s pause=1100ms.
+Use existing runner config delta /exact archive for a bounded repeat, preserve
+live profiles and separate geometric tracking error from an assumed phase lag.
+
 ## Latest — 2026-10-30 chassis pin and gearbox response
 
 Read [gear-response study](../gear-response-study.md). Based on main c623463;
