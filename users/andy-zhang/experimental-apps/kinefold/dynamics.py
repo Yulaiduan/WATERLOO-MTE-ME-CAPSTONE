@@ -291,13 +291,13 @@ def simulate(payload):
         warnings.append('Pymunk integrates the actual m1 chassis body; linkage masses/inertias use exact inertial condensation, not separate rigid-link bodies. Refine dt before interpreting force peaks.')
     result = dict(schema='kinefold/dynamics-v2', engine=payload['engine'], params=model.p, runConfig=model.c,
                   snapshot=dict(params=model.p, solverConfig=model.c), designHash=model.hash(), rows=rows, frames=frames, events=events,
-                  diagnostics={**diagnostics, 'modelRevision': 'floating-chassis-v2',
+                  diagnostics={**diagnostics, 'modelRevision': 'floating-chassis-v2', 'springConvention':'chassis-fixed-v1',
                                'initialStaticTorqueNm': -model.generalized(model.q0),
                                'initialGeneralizedInertiaKgM2': model.mass(model.q0)[0], 'resolvedInertiasKgM2': model.I,
                                'builderMassesKg': {key: model.p['m' + key] for key in ('1', '2', '3', '5', '6')},
                                'wheelCoefficientK': model.K, 'inputLaw': 'exact-spatial-square' if model.exact_square else 'C2-quintic-spatial-square',
                                'inputSpeedIsStudyAssumption': True}, warnings=warnings,
-                  scope=dict(quarterModel=True, fixture='floating-chassis',
+                  scope=dict(springConvention='chassis-fixed-v1',quarterModel=True, fixture='floating-chassis',
                              coordinates='+x front / left in preview; +z up; +y toward viewer',
                              chassis='vertical translation only; fixed horizontal position and pitch',
                              input='prescribed wheel height, no unilateral terrain contact'))

@@ -1,6 +1,6 @@
 /** Independent tilted-mount endpoint-work checks. Run node verify-energy-alpha.cjs.
  * Temporary mm/deg/kg/N fixtures cover rotated link geometry, gravity work,
- * local spring invariance, gearing and signed budgets. No contact trajectory,
+ * fixed chassis anchors, gearing and signed budgets. No contact trajectory,
  * retained rolling/rotor energy, impact peak or hardware claim is tested.
  */
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
@@ -12,12 +12,19 @@ const base=P.baseline();
 // Derive each world point directly from the two link vectors, not VSL.state,
 // the production guide axis or the phi0=0 cos(alpha) simplification.
 function world(p,q){const b=p.phi0+(180-q)*(p.ra/p.rb-1),u=-p.L2*Math.cos(q*R)-p.L3*Math.cos(b*R),v=-p.L2*Math.sin(q*R)-p.L3*Math.sin(b*R);return {u,v,x:-Math.cos(p.alpha*R)*u-Math.sin(p.alpha*R)*v,z:-Math.sin(p.alpha*R)*u+Math.cos(p.alpha*R)*v,h:p.rw+Math.sin(p.alpha*R)*u-Math.cos(p.alpha*R)*v};}
+// Independent finite-idler payout difference in fixed chassis/world coordinates.
+// The tangent polar change stays on the reference branch over these short strokes.
+function springEnergy(p,q){
+ const raw=t=>{const a=(t+p.nu-p.alpha)*R,x=p.hornR*Math.cos(a)-p.Su,z=p.hornR*Math.sin(a)-p.Sv,d=Math.hypot(x,z);return {span:Math.sqrt(d*d-p.rs*p.rs),psi:Math.atan2(z,x)-Math.acos(p.rs/d)};};
+ const a=raw(q),b=raw(90),delta=a.span-b.span+p.rs*Math.atan2(Math.sin(a.psi-b.psi),Math.cos(a.psi-b.psi)),force=Math.max(0,p.p0+p.springK*delta);
+ return p.springK?force*force/(2*p.springK)/1000:p.p0*delta/1000;
+}
 for(const alpha of [0,10,20,30,45])for(const phi0 of [0,20])for(const law of ['v4'])for(const enabled of [false,true])for(const limit of [50,450])for(const H of [0,100,2000])for(const kind of ['jump','landing']){
   const p=clone(base);Object.assign(p.params,{alpha,phi0,springLaw:law,springEnabled:enabled,m6:1.5,...phi0?{te:110}:{}});
   p.motorConfig={...P.motorDefaults,enabled:true,gearRatio:7,coggingAmplitudeNm:.7,coggingPeriodsPerRev:3,coggingPhaseDeg:27};
   p.energyConfig={...P.energyDefaults,dropHeightMm:H,targetClearanceMm:limit};p.torqueTargetConfig={...P.torqueTargetDefaults,jumpHeightMm:H};
   const before=JSON.stringify(p),z=A.workspace(p,kind,{samples:41}),m=p.params,start=world(m,z.qStartDeg),end=world(m,z.qEndDeg),ref=ctx.Kinefold.reference(m);
-  const d0=V.VSLSpring.geometry(ref,90).payout,Us=q=>{const d=V.VSLSpring.geometry(ref,q).payout-d0;return enabled?(m.p0*d+.5*(law==='constant'?0:m.springK)*d*d)/1000:0;},Uc=q=>.7/3*Math.cos((3*7*q+27)*R);
+  const Us=q=>enabled?springEnergy(m,q):0,Uc=q=>.7/3*Math.cos((3*7*q+27)*R);
   const Ug=p.params.m1*m.g*(end.h-start.h)/1000,Ds=Us(z.qEndDeg)-Us(z.qStartDeg),Dc=Uc(z.qEndDeg)-Uc(z.qStartDeg);
   const work=kind==='jump'?Ug+(m.m1+m.m6)*m.g*H/1000+Ds+Dc:m.m1*m.g*H/1000-Ug-Ds-Dc;
   near(z.alphaDeg,alpha);near(z.guideTiltFromDownDeg,alpha-phi0/2);near(z.startHipHeightMm,start.h);near(z.endHipHeightMm,end.h);near(z.startWheelCxMm,start.x);near(z.endWheelCxMm,end.x);near(z.horizontalWheelTravelMm,end.x-start.x);
@@ -30,18 +37,18 @@ for(const alpha of [0,10,20,30,45])for(const phi0 of [0,20])for(const law of ['v
   else near(A.jumpEstimate(p,H).jointNm,z.requiredJointNm);
   ok(JSON.stringify(p)===before,'tilted estimator/workspace pure');fixtures++;
 }
-// For phi0=0, only vertical gravity projection scales with cos(alpha); local
-// spring work and the angular work distance must not receive that factor.
+// Gravity scales with cos(alpha), but fixed-chassis spring work must be
+// recomputed from the horn/idler geometry; it is not invariant or cos-scaled.
 for(const law of ['v4'])for(const kind of ['jump','landing']){
  const zero=clone(base);zero.params.springLaw=law;zero.energyConfig={...P.energyDefaults,dropHeightMm:2000};const z0=A.workspace(zero,kind);
- for(const alpha of [10,20,30,45]){const p=clone(zero);p.params.alpha=alpha;const z=A.workspace(p,kind);near(z.angularTravelRad,z0.angularTravelRad);near(kind==='jump'?z.stanceGravityJ:z.gravityCompressionJ,(kind==='jump'?z0.stanceGravityJ:z0.gravityCompressionJ)*Math.cos(alpha*R));near(kind==='jump'?z.springReleaseJ:z.springReleasedJ,kind==='jump'?z0.springReleaseJ:z0.springReleasedJ);}
+ for(const alpha of [10,20,30,45]){const p=clone(zero);p.params.alpha=alpha;const z=A.workspace(p,kind);near(z.angularTravelRad,z0.angularTravelRad);near(kind==='jump'?z.stanceGravityJ:z.gravityCompressionJ,(kind==='jump'?z0.stanceGravityJ:z0.gravityCompressionJ)*Math.cos(alpha*R));near(kind==='jump'?z.springReleaseJ:z.springReleasedJ,springEnergy(p.params,z.qStartDeg)-springEnergy(p.params,z.qEndDeg));ok(Math.abs((kind==='jump'?z.springReleaseJ:z.springReleasedJ)-(kind==='jump'?z0.springReleaseJ:z0.springReleasedJ))>1e-4,'fixed chassis spring work changes with alpha');}
 }
 // Independent finite derivative work integration in world coordinates for an
 // asymmetric phase and tilted mount, including total conservative potential.
-const d=clone(base);Object.assign(d.params,{alpha:30,phi0:20,te:110});d.energyConfig={...P.energyDefaults,dropHeightMm:2000};const z=A.workspace(d,'landing'),ref=ctx.Kinefold.reference(d.params),pot=q=>d.params.m1*d.params.g*world(d.params,q).h/1000+V.VSLSpring.state(ref,q).energy;
+const d=clone(base);Object.assign(d.params,{alpha:30,phi0:20,te:110});d.energyConfig={...P.energyDefaults,dropHeightMm:2000};const z=A.workspace(d,'landing'),ref=ctx.Kinefold.reference(d.params),pot=q=>d.params.m1*d.params.g*world(d.params,q).h/1000+springEnergy(d.params,q);
 let integral=0;const n=2000,dq=(z.qEndDeg-z.qStartDeg)/n,eps=1e-4;for(let i=0;i<=n;i++){const q=z.qStartDeg+i*dq,derivative=(pot(q+eps)-pot(q-eps))/(2*eps*R);integral+=(i===0||i===n?.5:1)*derivative*dq*R;}near(integral,z.stroke.at(-1).gravityDeltaJ+z.stroke.at(-1).springDeltaJ,1e-5);
 for(const kind of ['jump','landing'])for(const patch of [{alpha:46},{phi0:20,te:90,tc:95,theta2:92},{phi0:20,te:100}]){const p=clone(base);Object.assign(p.params,patch);assert.throws(()=>A.workspace(p,kind));checks++;}
-const low=clone(base);low.params.alpha=45;low.energyConfig={...P.energyDefaults,dropHeightMm:0};const landing=A.workspace(low,'landing');ok(landing.workJ<0&&landing.requiredJointNm===0&&landing.endpointKineticBudgetJ<0&&landing.sampledNegativeInteriorCount>0,'zero brake retains negative unreachable endpoint, not false exact arrest');
+const low=clone(base);low.params.alpha=0;low.params.p0=1000;low.energyConfig={...P.energyDefaults,dropHeightMm:0};const landing=A.workspace(low,'landing');ok(landing.workJ<0&&landing.requiredJointNm===0&&landing.endpointKineticBudgetJ<0&&landing.sampledNegativeInteriorCount>0,'zero brake retains negative unreachable endpoint, not false exact arrest');
 low.torqueTargetConfig={...P.torqueTargetDefaults,jumpHeightMm:0};const jump=A.workspace(low,'jump');ok(jump.workJ<0&&jump.requiredJointNm===0&&jump.endpointKineticBudgetJ>0,'zero drive retains positive jump surplus');
 const baseline=clone(base);baseline.energyConfig={...P.energyDefaults,dropHeightMm:2000};near(A.calculate(baseline).requiredJointNm,232.345151886620,1e-10);
 console.log(`PASS ${checks} tilted-energy assertions across ${fixtures} independent endpoint fixtures`);

@@ -5855,3 +5855,69 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Bou
 Open00Suspension and choose Lock/Solve,then Solve suspension,review peaks/values and Apply fit;save the named design separately.
 Keep the retained V4 optimizer/hash unchanged and use the captured JSON plus bounds/warnings to debug fits without claiming a global or hardware optimum.
 Preserve concurrent Energy work,live profiles and existing project-local launchers;PNG evidence remains app-local/native Notion.
+
+---
+
+## Entry: 2026-11-01 — Andy Zhang — Fix tilted spring mounting and reduce text clutter
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app spring frame,solvers,replays and explanatory UI.
+- **Associated Issue/Task:** Owner asks α-rotated legs to retain fixed spring mounts,accepts new compensation constants,and requests explanatory text behind i controls with details below. Three authorized GPT-6.1 Sol agents audit the model,implement compact help and implement consistent frame/version behavior in separate worktrees from67240c2. Parent integrates in an approved member worktree;concurrent durable Energy edits are preserved and excluded.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/comparison-replay.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-render.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium-diagrams.js`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/info-disclosure.css`
+- `users/andy-zhang/experimental-apps/kinefold/info-disclosure.js`
+- `users/andy-zhang/experimental-apps/kinefold/model.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview-geometry.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/spring-mounting.md`
+- `users/andy-zhang/experimental-apps/kinefold/suspension-fit.js`
+- `users/andy-zhang/experimental-apps/kinefold/validate_static.py`
+- `users/andy-zhang/experimental-apps/kinefold/variables.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-comparison-replay.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-alpha.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-equilibrium.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-fixed-spring.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-info-disclosure.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-suspension-fit.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_fixed_spring.py`
+
+- **API/Interface Changes:** Model convention chassis-fixed-v1 inverse-rotates raw chassis Su/Sv into the unchanged source force equations;horn ν stays link-relative,p0 stays force at storedθ2=90. Separate spring-only world reference keeps body horizontal and rejects routes requiring outlet rotation. JS/static/fit/energy consumers and Python prescribed/contact/native/Desktop use this frame;α0 physical values unchanged. No stored constants,profiles or vendor/hash changes. Tilted free geometry uses app-owned bounded multistart minimax search over captured chassis bounds;exact locks retained. Convention token enters engine hashes/scope/frames and browser comparison/cache keys;untagged captures retain legacy-leg rendering with explicit badges,mixed versions rejected. Native i disclosures progressively hide targeted prose while retaining nodes/IDs,listeners,current numbers,controls/errors/warnings and bottom details;keyboard/touch/Escape supported. Two served assets;no dependency,persistence schema,canonical/shared-interface or enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS worker6286fixed-frame/cross-Python assertions,1515independentPython assertions and4actualshortα20prescribed/contact A/P runs. Force difference<=3.41e-13N,work derivative error<=1.62e-8Nm. Static72cases/144equilibrium runs+4negative controls,dynamics6,spring8actualruns/4506drawing checks,viewer9headless(5GUI skipped),model1793/project35,equilibrium9404/FBD11758,Energy119/workspace2262/independentα92862/finite2488,replay119/dynamicPlotly4090 pass. Parentcombinedfixed-frame3256pass without optional cross-Python argument;UI29real native-browser fixture checks and all-tab1440/390px review pass,zero page errors. Parent actual11-sampleα20captures render and play in both tabs with exact payloads,new token/hash and world-fixedS/horizontal body;legacy fallback confirmed. Unretunedcontactpair maxheave difference.120729mm,angle.016875deg,Fs.126637N atdt.0005—no new refinement claim. Seven saved designs/currentworking validate read-only;library SHA074c0ef164204fa8a221af8a7b3c1427b21ea9360171645e658afbb7159dd47b unchanged within isolatedQA. Recomputed2mα20endpoint examples304.769/246.758Nm landing and213.936/175.105Nm jump finite/massless,originalconstants;not trajectories. Final Plotly fixed-camera comparison/compactUI/paired playback PNGs inspected;first figure footer/duplicate legend corrected before delivery. Selected paired captures/helpers/source hashes stay ignored app-local;no new large archive. Whitespace,syntax/doc-link and fetched-base/staged/exact-push workspace gates apply before publication;existing durable launcher start/restart workflow retained at4191.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Fixed means relative to the vertically floating chassis,not fixed absolute ground height;horn followsactualleg. No automatic g-comp fit,named save,mass change or library migration. Older tilted numbers remain valid only for their recorded leg-mounted convention;current docs explicitly supersede their α20 example. Impossible fixed-outlet routes fail rather than silently redirect the spring. Endpoint energy,finite sampled fits,native impulse/energy residuals,full-chassis/loaded-drive/belt/hardware limitations remain;desktop GUI operation was not exercised. Native info does not hide critical errors/status/current numeric basis. Parentcopy helper initially concatenated two test filenames via PowerShell array syntax;copied runtime was complete and separate test copies corrected before checks. No Computer skill/live-user-tab control,boot automation,unrelated Energy implementation import or Downloads output.
+
+## 4. Compute Saving Handoff State
+
+Read spring-mounting.md for fixed chassis Su/Sv,horn phase,p0reference,versioned captures and the deliberately unchanged raw constants.
+Use Suspension Lock/Solve to refit and rerun both engines for new fixed-mount results;older captures remain explicitly legacy and cannot mix with new runs.
+Use native i help and bottom equations for details,keep concurrent Energy edits/live libraries intact,and restart with the project-local launcher at4191.

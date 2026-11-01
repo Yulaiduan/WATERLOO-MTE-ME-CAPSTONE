@@ -60,6 +60,9 @@ manual snapshot, while the live profile library remains local.
   calculation. Cancel stops the worker. Geometry, masses, pitch and current loads
   stay fixed. Apply changes the working design; save the named profile separately.
   This is a bounded sampled minimax fit, not a guaranteed global optimum.
+  The idler and horizontal spring body stay fixed to the chassis when α changes;
+  only the horn follows the leg. Constants remain unchanged until explicitly
+  refitted. See [mounting convention and compatibility](spring-mounting.md).
   Dynamic run controls live in02/03; saved designs retain them without a duplicate
   editor in the00 library. Archived fixed-hip settings remain read-only.
 - **01 Energy · jump & landing:** immediate work–energy calculations for the
@@ -102,6 +105,9 @@ manual snapshot, while the live profile library remains local.
 
 All data plots use the pinned offline **Plotly basic 4.1.2** runtime; no CDN or
 npm install is needed. Plotly supports hover, zoom, pan, legends and reset axes.
+Explanatory prose is collapsed behind native **i** controls. Click or use the
+keyboard to open it; Escape closes it. Values, labels, actions and model/error
+warnings remain visible, with detailed equations and tables available below.
 Existing contextual JSON/CSV exports write to this app's `exports/` folder;
 Plotly's browser-download camera is removed. Mechanism, spring, free-body and
 conventions drawings remain geometrically scaled SVG illustrations.
@@ -186,7 +192,7 @@ identities, sampled work ledgers, saved metadata, chart traces and explicit
 command handoff without a simulation request. The UI harness uses an in-memory
 DOM; live pointer, sizing and visual behaviour require browser review.
 `node verify-energy-alpha.cjs` independently checks tilted world projections,
-gravity work, unchanged chassis-local spring energy and clearance endpoints.
+gravity work, fixed-chassis spring work and clearance endpoints.
 
 `node verify-plotly-runtime.cjs`, `node verify-equilibrium-plotly.cjs` and
 `node verify-dynamic-plotly.cjs` check lifecycle and trace semantics. The offline

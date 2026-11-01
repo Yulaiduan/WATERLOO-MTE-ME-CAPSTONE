@@ -16,7 +16,7 @@ globalThis.KinefoldFields = [
       ['re','r_e','Output · knee','mm',25,.1,1000,'Pulley e at B, rigidly attached to d; input of belt e–f.'],
       ['rf','r_f','Output · wheel','mm',25,.1,1000,'Pulley f at C, fixed to the wheel. q_fe = r_f/r_e.']]],
     ['Mounting & motion',[
-      ['alpha','α','Chassis pitch','°',0,0,45,'Clockwise mounting pitch in the original u/v plane; local +v tilts toward −x as α increases.'],
+      ['alpha','α','Leg mounting pitch','°',0,0,45,'Clockwise leg mounting pitch; the fixed chassis spring/idler do not rotate. Changing α does not retune spring constants.'],
       ['phi0','φ₀','Lower-link phase','°',0,0,30,'Fixed lower-link phase in θ₃ = φ₀ + (180°−θ₂)(q_ab−1).'],
       ['te','θ₂ᵉ','Extension stop','°',100,90,270,'Lower working θ₂ endpoint and zero for displacement and drive/wheel angle changes.'],
       ['tc','θ₂ᶜ','Compression stop','°',165,90,270,'Upper working θ₂ endpoint. Names do not guarantee monotonic height in arbitrary geometry.']]]]},
@@ -26,8 +26,8 @@ globalThis.KinefoldFields = [
       ['p0','p₀','Reference force','N',330.8692828089511,0,100000,'V4 cable force at θ₂ = 90°; a force, not extra predeflection. Cable tension changes with payout; it is not the upward chassis support force.'],
       ['hornR','r_h','Horn radius','mm',62.22694951186731,.1,2000,'Distance A to cable pin D, rotating rigidly with the femur.'],
       ['nu','ν','Horn offset','°',0,-360,360,'Angular offset of A→D from the B→A vector. D = r_h[cos(θ₂+ν), sin(θ₂+ν)] in u/v.'],
-      ['Su','S_u','Idler · local u','mm',9.387776728149294,-2000,2000,'Fixed idler centre S coordinate along local +u (rearward at α = 0).'],
-      ['Sv','S_v','Idler · local v','mm',100,-2000,2000,'Fixed idler centre S coordinate along local +v (up at α = 0).'],
+      ['Su','S_u','Idler · chassis u','mm',9.387776728149294,-2000,2000,'Fixed chassis idler coordinate: world x = −Su, independent of α.'],
+      ['Sv','S_v','Idler · chassis v','mm',100,-2000,2000,'Fixed chassis idler height above A: world z = Sv, independent of α.'],
       ['rs','r_s','Idler radius','mm',10,0,1000,'Finite idler pitch radius; exact tangent span plus clockwise wrap. Zero is an ideal point limit.']]]]},
   {id:'loading',title:'Loadings & preloads',note:'Mass, gravity & prescribed forces',sections:[
     ['Mass & gravity',[

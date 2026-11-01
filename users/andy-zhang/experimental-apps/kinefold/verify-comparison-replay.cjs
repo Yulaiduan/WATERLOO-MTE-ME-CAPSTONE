@@ -81,6 +81,9 @@ same(JSON.stringify({...original,runs:{...original.runs,analytical:{...original.
 // Unequal observation endings are shown honestly, using the final actual frame.
 const shortTimer=clock(),short=Replay.create(fixture('landing',[0,.5,1]),{...shortTimer});short.seek(1.6);same(short.getState().engines.pymunk.t,1);same(short.getState().engines.pymunk.held,true);same(short.getState().engines.pymunk.ended,true);same(short.getState().engines.analytical.t,1);const shortHost=new Element(),shortMount=Replay.mount(shortHost,short);ok(shortHost.textContent.includes('ended; holding last frame'),'Early termination shown');shortMount.destroy();short.destroy();
 // Source identity and mismatched settings cannot silently combine unrelated runs.
+reject(b=>{b.runs.analytical.result.scope={springConvention:'chassis-fixed-v1'};},/conventions/);
+reject(b=>{for(const e of ['analytical','pymunk'])b.runs[e].result.scope={springConvention:'chassis-fixed-v1'};},/frame spring convention/);
+const fixedBundle=fixture();for(const e of ['analytical','pymunk']){fixedBundle.runs[e].result.scope={springConvention:'chassis-fixed-v1'};for(const f of fixedBundle.runs[e].result.frames)f.springConvention='chassis-fixed-v1';}ok(Replay.validate(fixedBundle),'Matching new scope/frame convention accepted');
 reject(b=>{b.candidateId='other';},/candidate/);reject(b=>{b.runs.pymunk.candidateId='other';},/candidate/);reject(b=>{b.runs.pymunk.kind='jump';},/case/);reject(b=>{b.runs.pymunk.payload.engine='analytical';},/engine/);
 reject(b=>{b.runs.pymunk.result.designHash='other';},/design/);reject(b=>{b.runs.pymunk.result.schema='kinefold/dynamics-v1';},/contact/);reject(b=>{b.runs.pymunk.payload.params.alpha=20;},/params/);
 reject(b=>{b.runs.pymunk.payload.motorConfig.gearRatio=20;b.runs.pymunk.result.motorConfig.gearRatio=20;b.runs.pymunk.result.snapshot.motorConfig.gearRatio=20;},/settings/);

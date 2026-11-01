@@ -1,0 +1,14 @@
+/* Compact native info disclosures. Explanations remain readable by touch and
+   keyboard; numeric/state/guard styling and all model data remain unchanged. */
+details.info-disclosure{display:block;min-width:0;margin:4px 0 7px;padding:0;border:0;background:transparent;box-shadow:none;font-size:inherit}
+.info-disclosure>.info-summary{display:inline-flex;align-items:center;justify-content:center;min-width:30px;min-height:30px;padding:3px;gap:0;list-style:none;cursor:pointer;border:0;border-radius:4px;background:transparent;color:var(--sage);line-height:1}
+.info-disclosure>.info-summary::marker,.info-disclosure>.info-summary::-webkit-details-marker{display:none;content:''}
+.info-disclosure>.info-summary:hover{background:var(--sage-pale,rgba(88,117,93,.1))}
+.info-disclosure>.info-summary:focus-visible{outline:2px solid var(--sage);outline-offset:2px}
+.info-symbol{display:inline-flex;width:18px;height:18px;align-items:center;justify-content:center;border:1px solid currentColor;border-radius:50%;font-family:Georgia,serif;font-weight:700;font-size:12px;font-style:normal;line-height:1}
+.info-disclosure>.info-body{max-width:100%;margin:3px 0 9px;padding:9px 11px;border-left:2px solid var(--line);color:var(--muted);background:var(--paper);overflow-wrap:anywhere;text-align:start}
+.info-disclosure>.info-body>:first-child{margin-top:0}
+.info-disclosure>.info-body>:last-child{margin-bottom:0}
+.info-disclosure>.info-body p,.info-disclosure>.info-body .hint{line-height:1.6}
+:is(.contact-controls,.terrain-controls)>.info-disclosure{grid-column:1/-1}
+@media(max-width:600px){.info-disclosure>.info-summary{min-width:34px;min-height:34px}.info-disclosure>.info-body{padding:10px;line-height:1.6}}

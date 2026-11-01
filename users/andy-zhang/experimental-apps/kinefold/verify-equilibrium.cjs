@@ -15,7 +15,7 @@ const original=vm.createContext({});vm.runInContext(retained+'\nglobalThis.O={VS
 const O=original.O;let assertions=2,cases=0,branches=0;
 function ok(v,message){assert.ok(v,message);assertions++;}
 function near(a,b,tol=1e-8){ok(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=tol,`${a} != ${b}`);}
-function reference(p){const r={...p,Fy:-p.Fx,loadMode:p.loadMode==='contact'?'nt':'yz',springK:p.springK};if(p.loadMode==='weight'){r.Fy=0;r.Fz=(p.m1+p.m2+p.m3+p.m5+p.m6)*p.g;}return O.VSLStatic.resolveLoads(r);}
+function reference(p){const r={...p,Fy:-p.Fx,loadMode:p.loadMode==='contact'?'nt':'yz',springK:p.springK};const a=p.alpha*Math.PI/180,c=Math.cos(a),s=Math.sin(a);r.Su=c*p.Su-s*p.Sv;r.Sv=s*p.Su+c*p.Sv;if(p.loadMode==='weight'){r.Fy=0;r.Fz=(p.m1+p.m2+p.m3+p.m5+p.m6)*p.g;}return O.VSLStatic.resolveLoads(r);}
 function compare(p,q,axis='t2',x=q){const r=reference(p),s=O.VSLStatic.solve(r,q,false),k=O.VSL.state(r,q),a=D.row(p,q,axis,x);cases++;ok(a.valid===s.valid);near(a.x,axis==='dz'?k.dz:x);for(const key of ['t3','t5','t6','du','dv','dz'])near(a[key],k[key]);near(a.dx,-k.dy);for(const [key,u,v]of [['gammaUV',k.du,k.dv],['gammaXZ',-k.dy,k.dz]]){if(Math.hypot(u,v)<1e-9)ok(a[key]===null);else near(a[key],Math.atan2(Math.abs(u)<1e-9?0:u,Math.abs(v)<1e-9?0:v)*180/Math.PI);}
 for(const key of ['tauG','tauS','tau2','tau4','Fs'])s.valid?near(a[key],s[key]):ok(a[key]===null);
 for(const key of ['ab','cd','ef'])if(s.valid){near(a[key+'U'],s[key].U);near(a[key+'L'],s[key].L);near(a[key],Math.max(s[key].U,s[key].L));ok(a[key+'Active']===s[key].active);}else ok(a[key]===null);

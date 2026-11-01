@@ -47,7 +47,8 @@ globalThis.KinefoldDrawing = (() => {
   }
   function spring(params,frame) {
     if(!params.springEnabled)return {enabled:false,law:'Spring disabled'};
-    const p=Kinefold.reference(params),z=KinefoldV4.VSLSpring.state(p,frame.theta2);
+    const convention=frame.springConvention||(Number.isFinite(frame.t)?Kinefold.legacySpringConvention:Kinefold.springConvention);
+    const p=Kinefold.springReference(params,convention),z=KinefoldV4.VSLSpring.state(p,frame.theta2);
     if(!z.valid)return {enabled:true,valid:false,reason:z.reason};
     const A=frame.actualA||frame.A,at=v=>world(p,v).map((n,i)=>n+A[i]);
     const arc=params.rs>0?Array.from({length:65},(_,i)=>at([
@@ -66,7 +67,7 @@ globalThis.KinefoldDrawing = (() => {
     const fixedBar=[along(125,-20),along(125,20)],movingBar=[along(125+lengthMm,-20),along(125+lengthMm,20)];
     const rails=[[-18,18].map(n=>along(125,n)),[-18,18].map(n=>along(125+80+spanMm,n))];
     const assemblyPoints=[...fixedBar,...movingBar,...wire,...rails.flat()];
-    return {enabled:true,valid:true,law:'V4 linear spring',
+    return {enabled:true,valid:true,law:'V4 linear spring',springConvention:convention,
       A,D:at(z.D),Q:at(z.Q),S:at(z.S),out:at(z.out),remote:movingSeat,arc,
       forceN:z.force,torqueNm:z.tauS,payoutMm:z.payout,deltaMm:z.delta,
       fixedSeat,movingSeat,fixedBar,movingBar,wire,rails,assemblyPoints,lengthMm,

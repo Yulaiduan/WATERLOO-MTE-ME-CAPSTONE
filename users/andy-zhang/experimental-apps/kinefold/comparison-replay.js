@@ -30,6 +30,7 @@
     if(!object(b.candidate)||typeof b.candidateId!=='string'||b.candidate.id!==b.candidateId)throw Error('Replay candidate identities do not match.');
     if(typeof b.settingsHash!=='string'||!/^[a-f0-9]{64}$/.test(b.settingsHash))throw Error('Replay has no valid captured settings hash.');
     if(!object(b.runs)||ENGINES.some(e=>!object(b.runs[e])))throw Error('Both saved engines are required for synchronized replay.');
+    if((b.runs.analytical.result.scope?.springConvention||'legacy-leg-v1')!==(b.runs.pymunk.result.scope?.springConvention||'legacy-leg-v1'))throw Error('Saved engines use different spring mounting conventions.');
     let firstSettings=null;
     for(const engine of ENGINES){
       const record=b.runs[engine],p=record.payload,r=record.result;
@@ -61,6 +62,7 @@
       let previous=-Infinity;
       for(let i=0;i<r.rows.length;i++){
         const row=r.rows[i],frame=r.frames[i];
+        if((frame.springConvention||'legacy-leg-v1')!==(r.scope?.springConvention||'legacy-leg-v1'))throw Error(engine+' frame spring convention disagrees with its captured result.');
         if(!object(row)||!object(frame))throw Error(engine+' has an invalid saved sample.');
         finite(row.t,engine+' row time');finite(frame.t,engine+' frame time');
         if(row.t<0||row.t<previous||Math.abs(row.t-frame.t)>EPS)throw Error(engine+' replay timestamps are not aligned and monotonic.');

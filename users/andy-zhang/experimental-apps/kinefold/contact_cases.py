@@ -9,7 +9,7 @@ import math
 import hashlib
 import json
 from terrain_profiles import validate_terrain, periodic_spec, surface_height
-from dynamic_model import Model, R, mul, validate, finite
+from dynamic_model import Model, R, mul, validate, finite, spring_parameters, SPRING_CONVENTION
 from motor_model import Motor
 
 CASE_DEFAULTS = dict(kind='terrain-stability',jumpTorqueNm=20.,landingDropMm=100.,
@@ -55,6 +55,7 @@ class ContactGeometry(Model):
         if p['te'] == p['tc']:
             raise ValueError('Terrain contact requires a nonempty monotonic working range.')
         self.p, self.c = p, c
+        self.spring_p = spring_parameters(p)
         self.motor=Motor.resolve()
         self.Jref=c['hipRotorInertiaKgM2']
         self.q0, self.lo, self.hi = p['theta2'] * R, p['te'] * R, p['tc'] * R
@@ -74,6 +75,7 @@ class ContactGeometry(Model):
         self.route = self.exit_route() if p['springEnabled'] else dict(applied=0, shift=0)
         self.reference_payout = self.geometry(math.pi/2, reference=True)['payout'] if p['springEnabled'] else 0
         if p['springEnabled']:
+            self.world_spring()
             for q in self.candidates(self.lo,self.hi):
                 self.geometry(q)
         self.force, self.Mw = self.loads()
@@ -219,7 +221,7 @@ def terrain_spec(m,case):
 
 
 def model_identity(m,contact,case):
-    return hashlib.sha256(json.dumps(dict(params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'terrainConfig':m.terrain_config} if getattr(m,'terrain_config',None) is not None else {}),**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {}),**({'actuatorConfig':m.actuator_config} if getattr(m,'actuator_config',None) is not None else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(dict(springConvention=SPRING_CONVENTION,params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'terrainConfig':m.terrain_config} if getattr(m,'terrain_config',None) is not None else {}),**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {}),**({'actuatorConfig':m.actuator_config} if getattr(m,'actuator_config',None) is not None else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
 def usable_compression(m,q,case):

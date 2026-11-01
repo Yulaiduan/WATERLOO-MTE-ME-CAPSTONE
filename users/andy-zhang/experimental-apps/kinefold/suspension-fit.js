@@ -2,14 +2,15 @@
  * Load after reference-v4.js/model.js; mount(host,{studio,beforeSolve}) in app.js.
  * Inputs explicit mm/deg/kg/N design and seven boolean locks; outputs proposed
  * spring values, sampled peak hip torque (Nm), bounds and an exportable report.
- * Uses unchanged VSLFit, not a new optimizer. Bounded quasi-static fit only;
+ * Uses retained VSLFit when locks map directly, and a chassis-variable bounded
+ * search when tilted idler locks require it. Quasi-static fit only;
  * dense sampling is not a global optimum or hardware/contact certification.
  */
 globalThis.KinefoldSuspensionFit=(()=>{
  'use strict';
  const M=globalThis.Kinefold,source=VSLFit;
  const keys=Object.freeze([...source.keys]),defaults=Object.freeze({...source.defaults});
- const names={springK:['Spring rate','k','N/mm'],hornR:['Horn radius','rₕ','mm'],Sv:['Idler local v','Sᵥ','mm'],rs:['Idler radius','rₛ','mm'],p0:['Reference force','p₀','N'],nu:['Horn offset','ν','°'],Su:['Idler local u','Sᵤ','mm']};
+ const names={springK:['Spring rate','k','N/mm'],hornR:['Horn radius','rₕ','mm'],Sv:['Idler chassis v','Sᵥ','mm'],rs:['Idler radius','rₛ','mm'],p0:['Reference force','p₀','N'],nu:['Horn offset','ν','°'],Su:['Idler chassis u','Sᵤ','mm']};
  const settings=Object.freeze({samples:181,iterations:240,verification:6501,starts:6});
  const signature=p=>JSON.stringify(Object.keys(p).sort().filter(k=>k!=='theta2').map(k=>[k,p[k]]));
  function peak(p,count){
@@ -18,13 +19,48 @@ globalThis.KinefoldSuspensionFit=(()=>{
   for(let i=0;i<count;i++){const theta=p.te+(p.tc-p.te)*i/(count-1),z=KinefoldV4.VSLStatic.solve(r,theta,false);if(!z.valid||!Number.isFinite(z.tau2))return null;if(Math.abs(z.tau2)>maximum){maximum=Math.abs(z.tau2);at=theta;}}
   return {maxTorqueNm:maximum,thetaDeg:at};
  }
+ // At nonzero alpha an independent source-S lock is not a chassis-S lock.
+ // This bounded multistart Nelder–Mead adapter searches the stored chassis
+ // variables directly. Bounds are captured once; the source equations stay intact.
+ function fitChassis(p,driving,run,progress){
+  if(!p.springEnabled)return {valid:false,reason:'Enable spring assistance before fitting.'};
+  const free=keys.filter(k=>!driving[k]),bounds=source.boundsFor(p),n=free.length;
+  const ts=Array.from({length:run.samples},(_,i)=>p.te+(p.tc-p.te)*i/(run.samples-1)),ref=M.reference(p);
+  const bad=KinefoldV4.VSLUnassisted.validate(ref);if(bad.length)return {valid:false,reason:bad.join(' ')};
+  const base=ts.map(t=>KinefoldV4.VSLUnassisted.solve(ref,t,false).tau2),clamp=x=>Math.max(0,Math.min(1,x));let evaluations=0;
+  const encode=a=>free.map(k=>clamp((a[k]-bounds[k].min)/(bounds[k].max-bounds[k].min)));
+  function evaluate(v){evaluations++;v=v.map(clamp);const candidate={...p};free.forEach((k,i)=>candidate[k]=bounds[k].min+v[i]*(bounds[k].max-bounds[k].min));
+   const r=M.reference(candidate),world=M.springReference(candidate),route=KinefoldV4.VSLSpring.exit(world),window=KinefoldV4.VSLSpring.interval(r,p.te,p.tc),reference=KinefoldV4.VSLSpring.geometry(r,90);
+   if(!route.valid||Math.abs(route.applied)>1e-8||!window.valid||!reference.valid||candidate.p0+candidate.springK*(window.min-reference.payout)<-1e-8)return {v,score:1e100,parameters:candidate};
+   let score=0;for(let i=0;i<ts.length;i++){const z=KinefoldV4.VSLSpring.geometry(r,ts[i]);if(!z.valid)return {v,score:1e100,parameters:candidate};const force=Math.max(0,candidate.p0+candidate.springK*(z.payout-reference.payout));score=Math.max(score,Math.abs(base[i]+force*z.derivative/1000));}
+   return {v,score,parameters:candidate};
+  }
+  function search(seed){let simplex=[evaluate(seed),...free.map((_,i)=>evaluate(seed.map((x,j)=>j===i?x+(x>.94?-.035:.035):x)))];
+   for(let step=0;step<run.iterations;step++){simplex.sort((a,b)=>a.score-b.score);const best=simplex[0],worst=simplex.at(-1),center=free.map((_,j)=>simplex.slice(0,-1).reduce((sum,z)=>sum+z.v[j],0)/n),reflect=evaluate(center.map((x,j)=>2*x-worst.v[j]));
+    if(reflect.score<best.score){const expand=evaluate(center.map((x,j)=>3*x-2*worst.v[j]));simplex[n]=expand.score<reflect.score?expand:reflect;}
+    else if(reflect.score<simplex[n-1].score)simplex[n]=reflect;
+    else{const target=reflect.score<worst.score?reflect:worst,contract=evaluate(center.map((x,j)=>(x+target.v[j])/2));if(contract.score<target.score)simplex[n]=contract;else simplex=[best,...simplex.slice(1).map(z=>evaluate(z.v.map((x,j)=>(x+best.v[j])/2)))];}
+    if(step>35&&simplex[0].score<1e99&&Math.max(...simplex.flatMap(z=>z.v.map((x,j)=>Math.abs(x-simplex[0].v[j]))))<1e-9)break;
+   }return simplex.sort((a,b)=>a.score-b.score)[0];
+  }
+  const seeds=[p,{...p,Su:0,hornR:p.hornR*.9,p0:p.p0*1.1},{...p,Su:p.rs,hornR:p.hornR*1.1},{...p,Su:-p.rs,p0:p.p0*.8},{...p,Su:p.Su+p.rs,hornR:p.hornR*.8},{...p,Su:p.Su-p.rs,hornR:p.hornR*1.2}];
+  const unique=[...new Map(seeds.map(a=>{const v=encode(a);return [JSON.stringify(v),v];})).values()].slice(0,run.starts);let best=evaluate(encode(p));
+  for(let i=0;i<unique.length;i++){const z=search(unique[i]);if(z.score<best.score)best=z;progress({completed:i+1,total:unique.length});}
+  if(best.score>1e99)return {valid:false,reason:'No valid horizontal-exit spring fit within the captured chassis bounds.'};
+  const checked=peak(best.parameters,run.verification);if(!checked)return {valid:false,reason:'Dense fitted-route verification failed.'};
+  const warnings=['Chassis-frame bounded multistart search; no global optimum certificate.'];
+  if(free.some(k=>Math.abs(best.parameters[k]-bounds[k].min)<1e-5*(bounds[k].max-bounds[k].min)||Math.abs(best.parameters[k]-bounds[k].max)<1e-5*(bounds[k].max-bounds[k].min)))warnings.push('A solved variable reached a numerical search bound.');
+  if(checked.maxTorqueNm>best.score+1e-4)warnings.push('Dense check found a larger between-sample peak.');
+  return {valid:true,parameters:best.parameters,free,maxTorque:checked.maxTorqueNm,peakTheta:checked.thetaDeg,bounds,evaluations,samples:run.samples,verification:run.verification,warnings,sampledObjective:best.score,method:'bounded sampled chassis-variable Nelder–Mead minimax |tau2|; no global optimum certificate'};
+ }
  function solve(params,locks=defaults,{progress=()=>{},...options}={}){
   const captured={...params},driving=source.normalize(locks),run={...settings,...options};
-  const fit=source.fit(M.reference(captured),{...run,driving,progress});
+  const chassisSearch=captured.alpha!==0&&keys.some(k=>!['springK','p0'].includes(k)&&!driving[k]);
+  const fit=chassisSearch?fitChassis(captured,driving,run,progress):source.fit(M.reference(captured),{...run,driving,progress});
   if(!fit.valid)return {valid:false,reason:fit.reason};
   const proposed={...captured};for(const key of keys)proposed[key]=driving[key]?captured[key]:fit.parameters[key];
   const errors=M.validate(proposed);if(errors.length)return {valid:false,reason:'Fitted design is invalid in Kinefold: '+errors.join(' ')};
-  return {schema:'kinefold/suspension-fit-v1',valid:true,inputParams:captured,params:proposed,locks:driving,free:fit.free,
+  return {schema:'kinefold/suspension-fit-v1',springConvention:M.springConvention,valid:true,inputParams:captured,params:proposed,locks:driving,free:fit.free,
    before:peak(captured,fit.verification),after:{maxTorqueNm:fit.maxTorque,thetaDeg:fit.peakTheta},bounds:fit.bounds,
    settings:{samples:fit.samples,verification:fit.verification,iterations:run.iterations,starts:run.starts},evaluations:fit.evaluations,
    sampledObjectiveNm:fit.sampledObjective,warnings:fit.warnings,method:fit.method,
@@ -37,9 +73,9 @@ globalThis.KinefoldSuspensionFit=(()=>{
   const fmt=n=>Number.isFinite(n)?n.toLocaleString('en-CA',{maximumFractionDigits:6}):'Unavailable';
   let locks={...defaults},worker=null,candidate=null,capturedKey='',generation=0,applied=false;
   host.className='suspension-fit';
-  host.innerHTML=`<h3>Find suspension fit</h3><p class="hint">Lock keeps the current value. Solve lets the fitter change it to minimize peak residual hip torque over the working travel.</p><div class="fit-choices">${keys.map(key=>`<label><span>${names[key][0]}<small>${names[key][1]} · ${names[key][2]}</small></span><select data-fit-lock="${key}" aria-label="${names[key][0]} fit mode"><option value="lock" ${locks[key]?'selected':''}>Lock</option><option value="solve" ${locks[key]?'':'selected'}>Solve</option></select></label>`).join('')}</div><div class="fit-actions"><button class="primary" data-fit-solve>Solve suspension</button><button data-fit-cancel hidden>Cancel</button></div><p data-fit-status role="status" aria-live="polite">Current α, loads, masses and leg geometry stay fixed.</p><div data-fit-result></div><details class="fit-bounds"><summary>Search bounds &amp; method</summary><div data-fit-bounds></div><p>Jon’s retained V4 bounded minimax fitter: 181 search poses, 6 starts, then 6,501 checked poses. A numerical fit, not a guaranteed global optimum. Freeing the idler radius can reach the ideal zero-radius limit.</p></details>`;
+  host.innerHTML=`<h3>Find suspension fit</h3><p class="hint">Lock keeps the current value. Solve lets the fitter change it to minimize peak residual hip torque over the working travel.</p><div class="fit-choices">${keys.map(key=>`<label><span>${names[key][0]}<small>${names[key][1]} · ${names[key][2]}</small></span><select data-fit-lock="${key}" aria-label="${names[key][0]} fit mode"><option value="lock" ${locks[key]?'selected':''}>Lock</option><option value="solve" ${locks[key]?'':'selected'}>Solve</option></select></label>`).join('')}</div><div class="fit-actions"><button class="primary" data-fit-solve>Solve suspension</button><button data-fit-cancel hidden>Cancel</button></div><p data-fit-status role="status" aria-live="polite">Current α, loads, masses and leg geometry stay fixed.</p><div data-fit-result></div><details class="fit-bounds"><summary>Search bounds &amp; method</summary><div data-fit-bounds></div><p>181 search poses, up to 6 starts, then 6,501 checked poses. Tilted free idler coordinates use a bounded chassis-variable search; other cases use retained V4 fitting. A numerical fit, not a guaranteed global optimum. Freeing the idler radius can reach the ideal zero-radius limit.</p></details>`;
   const $=selector=>host.querySelector(selector),status=$('[data-fit-status]'),solveButton=$('[data-fit-solve]'),cancelButton=$('[data-fit-cancel]'),result=$('[data-fit-result]');
-  function refreshBounds(params){try{const bounds=source.boundsFor(M.reference(params));$('[data-fit-bounds]').innerHTML=`<table><thead><tr><th>Variable</th><th>Min</th><th>Max</th></tr></thead><tbody>${keys.map(k=>`<tr><th>${names[k][1]} · ${names[k][2]}</th><td>${fmt(bounds[k].min)}</td><td>${fmt(bounds[k].max)}</td></tr>`).join('')}</tbody></table>`;}catch{$('[data-fit-bounds]').textContent='Enter finite mechanism and spring values to inspect bounds.';}}
+  function refreshBounds(params){try{const bounds=source.boundsFor(params.alpha!==0&&keys.some(k=>!['springK','p0'].includes(k)&&!locks[k])?params:M.reference(params));$('[data-fit-bounds]').innerHTML=`<table><thead><tr><th>Variable</th><th>Min</th><th>Max</th></tr></thead><tbody>${keys.map(k=>`<tr><th>${names[k][1]} · ${names[k][2]}</th><td>${fmt(locks[k]?params[k]:bounds[k].min)}</td><td>${fmt(locks[k]?params[k]:bounds[k].max)}</td></tr>`).join('')}</tbody></table>`;}catch{$('[data-fit-bounds]').textContent='Enter finite mechanism and spring values to inspect bounds.';}}
   function busy(on){solveButton.disabled=on||!S.getSnapshot().params.springEnabled;cancelButton.hidden=!on;for(const el of host.querySelectorAll('[data-fit-lock]'))el.disabled=on;host.setAttribute('aria-busy',String(on));}
   function stop(message){generation++;worker?.terminate();worker=null;busy(false);if(message)status.textContent=message;}
   function invalidate(message){stop();candidate=null;capturedKey='';applied=false;result.innerHTML='';status.textContent=message;}

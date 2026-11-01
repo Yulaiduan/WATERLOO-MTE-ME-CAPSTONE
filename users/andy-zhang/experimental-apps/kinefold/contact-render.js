@@ -71,6 +71,7 @@ globalThis.KinefoldContactDrawing = (() => {
     }
     for(const index of drawing.indices)html+=circle(index.centre,index.radius,'var(--amber)',1.1)+line([index.centre,index.primary],'var(--red)',1.5)+line([index.centre,index.secondary],'var(--red)',.8,'stroke-dasharray="3 3"');
     html+=KinefoldDrawing.springSvg(KinefoldDrawing.spring(p,frame),P,scale);
+    if(!frame.springConvention)html+='<text x="22" y="91" fill="var(--amber)" font-size="11">Legacy leg-mounted spring capture · rerun current model</text>';
     const [ax,az]=P(frame.A);
     html+=`<rect x="${ax-48}" y="${az-28}" width="96" height="26" rx="4" fill="var(--soft)" stroke="var(--sage)"/><text x="${ax}" y="${az-10}" text-anchor="middle" fill="var(--ink)" font-size="11">m₁ ${p.m1} kg</text>`;
     const offset=result.caseConfig?.undersideOffsetMm;

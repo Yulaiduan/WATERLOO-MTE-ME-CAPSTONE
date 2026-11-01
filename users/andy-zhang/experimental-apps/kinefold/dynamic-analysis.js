@@ -101,7 +101,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}';
     return JSON.stringify(value);
   }
-  function snapshotKey(snapshot) { return stable({params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null,terrain:snapshot.terrainConfig||null}); }
+  function snapshotKey(snapshot) { return stable({springConvention:Kinefold.springConvention,params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null,terrain:snapshot.terrainConfig||null}); }
   function integralRow(result,row) {
     const since=row.sinceContact, impact=result.events?.find(e=>e.type==='first-contact')?.state;
     const fields={};
@@ -167,6 +167,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     if(stable(a.terrainConfig||null)!==stable(b.terrainConfig||null))return {valid:false,reason:'Periodic terrain profiles differ. Run both from the same captured design.'};
     if(stable(a.motorConfig||null)!==stable(b.motorConfig||null))return {valid:false,reason:'Motor/gear profiles differ. Run both from the same captured design.'};
     if (a.scope?.mode !== b.scope?.mode || stable(a.contactConfig||null)!==stable(b.contactConfig||null) || stable(a.caseConfig||null)!==stable(b.caseConfig||null)) return {valid:false,reason:'Interaction, material or case profiles differ. Run both on the same captured snapshot.'};
+    if((a.scope?.springConvention||'legacy-leg-v1')!==(b.scope?.springConvention||'legacy-leg-v1'))return {valid:false,reason:'Spring mounting conventions differ. Rerun both engines using the same convention.'};
     const fields=a.scope?.mode==='terrain-contact'?contactComparisonFields:comparisonFields;
     if (!a.designHash || a.designHash !== b.designHash || stable(a.params) !== stable(b.params))
       return {valid: false, reason: 'Mechanism snapshots differ. Run both again from one captured design.'};

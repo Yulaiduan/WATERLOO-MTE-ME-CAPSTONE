@@ -118,8 +118,10 @@ identify the saved α.
 For equal links with guide ratio2 and φ₀=0 only, this reduces to
 `h(q,α)=r_w+2L*sin(q)*cos(α)`. Thus stance rise/compression scales with cos(α)
 at fixed angular endpoints. Nonzero φ₀ uses the full projection above. Spring
-horn/idler geometry is chassis-local: changing α alone does **not** retune saved
-preload/stiffness, change spring work or multiply it by cos(α). World-height
+mounts are fixed to the chassis: changing α does **not** rotate the idler or
+spring body, or retune saved constants. The horn still follows the leg, so cable
+travel and spring work change with α. The spring term is recomputed from the
+actual geometry rather than multiplied by cos(α). See [the frame convention](spring-mounting.md). World-height
 projection also determines the clearance-limited landing endpoint. The underside
 offset remains a fixed vertical distance below A, not a rotated chassis shape.
 
@@ -177,10 +179,13 @@ their saved α rather than reusing these values.
 For an explicit finite-link example, use L2=L3=300mm, rw=200mm, α=20°,
 φ0=0°, stops100/165°, m1=8.75kg, m2=m3=1kg, m5=0, m6=0.5kg and the original
 K8N/mm/p0=330.869282809N V4 spring. At a2m drop with2/3 opening and1° reserve,
-the finite-link endpoint screen gives287.937Nm versus229.926Nm in massless
+the fixed-chassis endpoint screen gives304.769Nm versus246.758Nm in massless
 comparison. Both use42.333° braking travel and305.409mm residual clearance,
 so the50mm target is nonbinding. For2m jump above takeoff and the full65°
-extension, finite-link demand is196.814Nm versus157.982Nm. These values are
+extension, finite-link demand is213.936Nm versus175.105Nm. The unretuned spring
+stores17.207668J during this landing stroke and releases17.970325J through jump
+extension. These values replace the earlier leg-mounted α20° example; α0°
+baseline values above remain unchanged. These values are
 constant ideal joint torques, without friction, impact-loss credit or a
 demonstrated dynamic trajectory; do not interpret them as hardware peak loads.
 

@@ -166,7 +166,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         theta5=(1-1/m.dc)*(q/R-p['te'])+theta4/m.dc
         A,C=_world(chassis.position),_world(wheel.position)
         translated=lambda point:_world((point[0]+chassis.position.x,point[1]+chassis.position.y))
-        frame=dict(t=t,theta2=q/R,A=A,B=translated(m.sites(q)['5'][0]),C=C,actualA=A,actualC=C,
+        frame=dict(springConvention='chassis-fixed-v1',t=t,theta2=q/R,A=A,B=translated(m.sites(q)['5'][0]),C=C,actualA=A,actualC=C,
                    chassisZMm=A[2],wheelZMm=C[2],wheelAngle=wheel.angle/R,theta4=theta4,theta5=theta5,theta6=theta6,
                    bodyPositionsMm={'1':A,'6':C},bodyAnglesDeg={'1':chassis.angle/R,'6':wheel.angle/R},
                    indexAnglesDeg={'a':0,'b':p['phi0']+(180-q/R)*(m.ab-1),'c':theta4,'d':theta5,'e':theta5,'f':theta6},
@@ -466,6 +466,8 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         maxPinPositionErrorMm=max(r['pinPositionErrorMm'] for r in rows) if m.pinned else None,
         pinForceMeaning='Upward fixture-on-chassis force from interval total-assembly momentum balance; includes rigid-contact impulses and native solver effects, not an impact peak.',
         pinForceDeltaMeaning='Change from first finite output-interval force; t=0 force is unavailable.',pinWorkJ=0. if m.pinned else None)
+    result['scope']['springConvention']='chassis-fixed-v1'
+    result['diagnostics']['springConvention']='chassis-fixed-v1'
     result['scope']['rideTargetStepEnabled']=case['kind']=='terrain-stability' and bool((m.actuator_config or {}).get('rideTargetStepMm',0))
     result['scope']['rideTargetStepMeaning']='Desired chassis-height step applies only to floating terrain-stability; saved step fields are inactive in jump and landing. No position or wheel contact is prescribed.'
     if m.pinned:

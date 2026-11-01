@@ -1,5 +1,33 @@
 # Kinefold context
 
+## Latest — 2026-11-01 fixed spring mounts and compact help
+
+Owner requests α rotate the leg without rotating the spring,and less explanatory
+text. Current `chassis-fixed-v1` holds idler S and horizontal body to chassis A;
+the horn follows θ2+ν−α. Stored Su/Sv now denote chassis coordinates. Inverse-S
+adapter feeds unchanged V4 force equations; spring-only world geometry draws the
+horizontal body. p0 remains force at stored θ2=90°. No constants are retuned.
+See [mount convention](../spring-mounting.md). α0 is physically unchanged.
+Tilted free-geometry fits search chassis variables with captured fixed bounds;
+locks remain exact. Geometry requiring outlet rotation is explicitly invalid.
+
+Both engine hashes/scope/frames and browser comparison keys carry the convention.
+Untagged captures retain legacy-leg geometry with visible rerun badges; mixed
+conventions cannot compare. All seven current saved designs plus working copy
+validate read-only; no migration/library write. Existing α20 energy example is
+recomputed:2m landing304.769/246.758Nm finite/massless,2m jump213.936/175.105Nm
+with originalK8/p0330.869,2/3landingopening and1deg reserve;not new trajectories.
+
+Native i disclosures hide targeted explanatory prose while retaining nodes/IDs,
+keyboard/touch access,current numbers,actions/errors/warnings and bottom details.
+29native fixture checks and parentall-tab1440/390px checks pass. Parentcombined
+actual short α20 captured A/P playback passes with fixedS/horizontalbody,legacy
+fallback and unchanged librarySHA074c0ef1. Physics worker:6286crossJS/Python,
+1515Python,4shortactualα20runs,144static+4negative,8springruns/4506drawing,
+92862independentα,1793model,35project,9404equilibrium,11758FBD and119replay.
+Selected11-sample paired captures,source hashes,helpers and final Plotly/UI PNGs
+remain ignored app-local/native Notion;separate concurrent Energy work preserved.
+
 ## Latest — 2026-11-01 suspension Lock/Solve button
 
 Owner requested Jon-style spring-variable locks and asked whether it already

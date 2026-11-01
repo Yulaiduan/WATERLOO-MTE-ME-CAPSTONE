@@ -20,7 +20,7 @@ const fixtures=[
 for(const f of fixtures){
  const before=JSON.stringify(f.p),result=A.solve(f.p,f.locks,f.options);ok(result.valid,f.label+': '+result.reason);ok(JSON.stringify(f.p)===before,f.label+' input immutable');
  const sourceInput=M.reference(f.p),original=F.fit(sourceInput,{...clone(A.settings),...f.options,driving:f.locks});ok(original.valid,'Source fit valid');
- for(const key of A.keys){near(result.params[key],original.parameters[key],f.label+' source '+key);if(f.locks[key])ok(result.params[key]===f.p[key],key+' exactly locked');}
+ for(const key of A.keys){if(f.p.alpha===0||!['Su','Sv'].includes(key))near(result.params[key],original.parameters[key],f.label+' source '+key);if(f.locks[key])ok(result.params[key]===f.p[key],key+' exactly locked');}
  for(const [key,value] of Object.entries(f.p))if(!A.keys.includes(key))ok(result.params[key]===value,key+' outside solver unchanged');
  ok(result.settings.verification===6501,'6501 verification poses');near(result.after.maxTorqueNm,original.maxTorque,'Dense peak source parity');
  if(f.p.loadMode==='global')near(sourceInput.Fy,-f.p.Fx,'Source transverse sign');

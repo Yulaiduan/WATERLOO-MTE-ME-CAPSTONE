@@ -94,9 +94,10 @@ def spring_drawing(model, frame):
     builder's initial pose. Illustrative seats, wire and clearance are drawing
     dimensions only; no new stiffness, inertia or package specification is used.
     """
-    p = model.p
-    if not p['springEnabled']:
+    if not model.p['springEnabled']:
         return dict(enabled=False, law='Spring disabled')
+    model=model.world_spring(legacy=frame.get('springConvention')!='chassis-fixed-v1')
+    p=model.p
     z = model.spring(frame['theta2'] * R)
     A = frame.get('actualA', frame['A'])
     def world(v):

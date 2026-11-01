@@ -15,6 +15,14 @@ from motor_model import Motor
 
 R = math.pi / 180
 TAU = 2 * math.pi
+SPRING_CONVENTION = "chassis-fixed-v1"
+
+
+def spring_parameters(params):
+    """Map fixed chassis S to leg-local coordinates; preserve raw saved values."""
+    p=dict(params);a=p["alpha"]*R;c=math.cos(a);z=math.sin(a)
+    p["Su"],p["Sv"]=c*params["Su"]-z*params["Sv"],z*params["Su"]+c*params["Sv"]
+    return p
 NUMERIC_KEYS = ('L2 L3 ra rb rc rd re rf rw alpha phi0 te tc m1 m2 m3 m5 m6 g beta Fn Ft Fx Fz Tab0 Tcd0 Tef0 springK hornR Sv rs p0 nu Su theta2').split()
 BOUNDS = {'duration': (.05, 30), 'dt': (.0001, .01), 'outputHz': (1, 1000),
           'initialVelocityDegS': (-720, 720), 'hipTorqueNm': (-10000, 10000),
@@ -110,6 +118,7 @@ class Model:
         self.motor = Motor.resolve(motorConfig)
         self.motor_config_supplied = motorConfig is not None
         self.p, self.c = dict(params), dict(config)
+        self.spring_p = spring_parameters(self.p)
         p = self.p
         self.q0 = p['theta2'] * R
         self.lo, self.hi = p['te'] * R, p['tc'] * R
@@ -133,6 +142,7 @@ class Model:
         self.route = self.exit_route() if p['springEnabled'] else dict(applied=0, shift=0)
         self.reference_payout = self.geometry(math.pi / 2, reference=True)['payout'] if p['springEnabled'] else 0
         if p['springEnabled']:
+            self.world_spring()
             for q in self.candidates(self.lo, self.hi):
                 self.geometry(q)
         # A Lipschitz bound on zC' certifies the gaps between samples as well;
@@ -155,6 +165,21 @@ class Model:
     def rotate(self, v):
         a = self.p['alpha'] * R
         return (math.cos(a) * v[0] + math.sin(a) * v[1], -math.sin(a) * v[0] + math.cos(a) * v[1])
+
+    def world_spring(self, legacy=False):
+        """Spring-only chassis geometry; numerical force agrees with leg-local map."""
+        key = '_legacy_spring_view' if legacy else '_world_spring_view'
+        if not hasattr(self, key):
+            view = object.__new__(Model)
+            view.p = dict(self.p) if legacy else {**self.p, 'alpha':0., 'nu':self.p['nu']-self.p['alpha']}
+            view.spring_p = dict(view.p)
+            view.lo, view.hi = self.lo, self.hi
+            view.route = view.exit_route()
+            if not legacy and abs(view.route['applied']) > 1e-8:
+                raise ValueError('Fixed chassis spring exit cannot stay horizontal over this travel; change the idler/horn geometry.')
+            view.reference_payout = view.geometry(math.pi/2, reference=True)['payout']
+            setattr(self, key, view)
+        return getattr(self, key)
 
     def loads(self):
         p = self.p
@@ -279,7 +304,7 @@ class Model:
         return brentq(f, self.lo, self.hi, xtol=1e-14)
 
     def raw_geometry(self, q):
-        p = self.p
+        p = self.spring_p
         phi = q + p['nu'] * R
         D = (p['hornR'] * math.cos(phi), p['hornR'] * math.sin(phi))
         v = (D[0] - p['Su'], D[1] - p['Sv'])
@@ -311,7 +336,7 @@ class Model:
                     derivative=D[1] * unit[0] - D[0] * unit[1])
 
     def candidates(self, lo, hi):
-        p = self.p
+        p = self.spring_p
         out = [lo, hi]
         radius = math.hypot(p['Su'], p['Sv'])
         for A, B, target in ((-p['Sv'], p['Su'], p['rs']), (-p['Sv'], p['Su'], -p['rs']),
@@ -410,7 +435,7 @@ class Model:
                 + B * acceleration + dB * velocity * velocity - self.force[1])
 
     def hash(self):
-        identity = dict(params=self.p, motorConfig=self.motor.config) if self.motor_config_supplied else self.p
+        identity = dict(springConvention=SPRING_CONVENTION,params=self.p,**({'motorConfig':self.motor.config} if self.motor_config_supplied else {}))
         return hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
     def observe(self, t, q, velocity, acceleration, actual=None, side='right'):
@@ -424,7 +449,7 @@ class Model:
         world = lambda p: [-p[0] * 1000, 0, p[1] * 1000]
         height, heave_v, heave_a = self.chassis(t, q, velocity, acceleration, side)
         translated = lambda p: world((p[0], p[1] + height))
-        frame = dict(t=t, theta2=q / R, A=translated((0, 0)), B=translated(B), C=translated(C),
+        frame = dict(springConvention=SPRING_CONVENTION,t=t, theta2=q / R, A=translated((0, 0)), B=translated(B), C=translated(C),
                      chassisZMm=height * 1000, wheelZMm=self.wheel_height(t, side) * 1000,
                      wheelAngle=self.K * (q - self.p['te'] * R) / R)
         if self.p['springEnabled']:

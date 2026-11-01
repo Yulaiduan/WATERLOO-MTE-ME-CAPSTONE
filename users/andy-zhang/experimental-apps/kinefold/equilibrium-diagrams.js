@@ -38,7 +38,7 @@ globalThis.KinefoldEquilibriumDiagrams = (() => {
     return {valid:true,bodies};
   }
   function springData(params,evaluated) {
-    const p=Kinefold.reference(params);
+    const p=Kinefold.springReference(params);
     if(!params.springEnabled)return {valid:false,disabled:true,reason:'Spring assistance is disabled. Cable force and spring torque are zero.'};
     if(evaluated?.valid===false)return {valid:false,reason:evaluated.errors?.join(' ')||'Correct the mechanism geometry before viewing the cable route.'};
     const sp=evaluated?.spring||VSLSpring.state(p,params.theta2);
@@ -121,7 +121,7 @@ globalThis.KinefoldEquilibriumDiagrams = (() => {
   function renderSpring(params,evaluated) {
     const d=springData(params,evaluated);if(!d.valid)return `<div class="notice${d.disabled?'':' error'}">${esc(d.reason)}</div>`;
     const values=[['Cable condition',d.slack?'Zero tension / slack':'Taut'],['Cable tension Fs',`${fmt(d.forceMagnitude)} N`],['Spring torque τS',`${fmt(d.tauS,6)} N·m`],['Incoming tangent D–Q',`${fmt(d.tangentLength)} mm`],['Clockwise idler wrap',`${fmt(d.wrapDegrees)}°`],['Payout · tangent + wrap arc',`${fmt(d.payout)} mm`],['90° reference payout',`${fmt(d.referencePayout)} mm`],['Payout change Δℓ',`${fmt(d.delta)} mm`],['Fixed exit redirection',`${fmt(d.exitDegrees)}°`],['Idler radius rs',`${fmt(d.radius)} mm`],['World idler x / z',`${fmt(d.S[0])} / ${fmt(d.S[2])} mm`],['Stored spring energy',`${fmt(d.energy,6)} J`]];
-    return `<div class="eqd-spring-layout"><div>${springSvg(d)}<p class="eqd-caption">Su / Sv are mounting-frame dimensions, rotated by α into the world axes. Idler circle, tangent, clockwise wrap and horn share one scale. The remote spring endpoint is schematic; no housing dimensions are implied. The force arrow is schematic.</p></div><dl class="eqd-readouts">${values.map(([a,b])=>`<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl></div>`;
+    return `<div class="eqd-spring-layout"><div>${springSvg(d)}<p class="eqd-caption">Su / Sv are fixed chassis dimensions; α rotates the leg and horn, not the idler or spring body. Idler circle, tangent, clockwise wrap and horn share one scale. The remote spring endpoint is schematic; no housing dimensions are implied. The force arrow is schematic.</p></div><dl class="eqd-readouts">${values.map(([a,b])=>`<div><dt>${esc(a)}</dt><dd>${esc(b)}</dd></div>`).join('')}</dl></div>`;
   }
   return {world,momentY,bodyData,springData,renderBodies,renderSpring};
 })();

@@ -52,7 +52,7 @@ if(!z.valid){$('mechanism').innerHTML=out+`<text x="${W/2}" y="${H/2-15}" text-a
 // Camera flip: +x is screen-left and +z stays up; physical vectors stay in x/y/z.
 const isoX=Math.sqrt(3)/2;
 const project=v=>view.projection==='side'?[-v[0],-v[2]]:[isoX*(-v[0]+v[1]),.5*(v[0]+v[1])-v[2]];
-const w=v=>M.point(R.VSL.global(z.reference,v));
+const w=v=>M.point(v);
 const extra=p.springEnabled&&z.spring.valid?[z.D,z.S,w(z.spring.remote(230))]:[];
 const wheelBounds=c=>Array.from({length:24},(_,i)=>[c[0]+p.rw*Math.cos(i*Math.PI/12),c[1],c[2]+p.rw*Math.sin(i*Math.PI/12)]);
 const springFocus=camera.fit==='spring'&&p.springEnabled&&z.spring.valid;
