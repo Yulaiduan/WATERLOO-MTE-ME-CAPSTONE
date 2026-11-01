@@ -30,8 +30,8 @@ minimum. The app inverts the actual saved world-height geometry, including α,
 to obtain the two hip angles and uses those endpoints for all gravity, spring,
 cogging and motor-work terms, plots and exported calculations.
 
-Editing one mode leaves the other range and the physical mechanism/dynamic
-case settings unchanged. Overrides are saved as optional
+Editing one mode's ordinary range controls leaves the other range and the
+physical mechanism/dynamic case settings unchanged. Overrides are saved as optional
 `energyConfig.travelRanges.jump` and `.landing`, each containing
 `minClearanceMm` and `maxClearanceMm`. Existing project-v3 files need no
 migration: without overrides, Jump retains full mechanical travel and Landing
@@ -45,6 +45,30 @@ mode. They change the displayed curve domain, not the physical stroke or target.
 Custom Energy strokes are not implemented in the dynamic engines, so copying a
 command is disabled while the selected mode has an explicit travel override.
 Restore its default before using the existing dynamic handoff.
+
+**Use full 90° · update working stops** is the explicit exception: it updates the
+working design's extension/compression stops to a full quarter turn and sets
+the active Energy band to that envelope. At φ₀0, θ₂ runs from90° at extension
+to180° at compression. With nonzero φ₀, the extension endpoint is
+`(180°+φ₀)/2` and the compression endpoint is90° higher. The other case's saved
+band, spring constants, masses, gearing and dynamic case commands remain intact.
+A named design changes only when explicitly saved. The action rejects an invalid
+spring route or full compression below the floor instead of silently retuning.
+
+Editable **Compressed endpoint θ₂** and **Extended endpoint θ₂** inputs calculate
+the corresponding saved clearance endpoints. Total Energy hip travel is capped
+at90°. Exact mechanical endpoints are returned directly rather than recovered by
+an ill-conditioned height inversion near full extension. Current65° presets
+and existing interior-angle calculations remain unchanged until explicitly edited.
+
+At full extension, `dh/dq=0`: first-order hip motion gives no vertical travel.
+Potential-energy endpoints remain finite, so the work screen accepts this
+boundary and displays a warning. Interior turning points remain rejected.
+This does not validate dynamic takeoff, impact or passage through the singular
+pose. Both contact engines keep their existing strict branch guard; restoring
+an Energy default does not remove a90° physical-stop singularity. Use interior
+working stops before running those engines. Fully folded geometry is ideal;
+chassis/tire packaging and self-interference are not assessed by this calculator.
 
 The live equation table is visible with the Plotly charts. It lists each quantity,
 equation/source, numerical value and unit,

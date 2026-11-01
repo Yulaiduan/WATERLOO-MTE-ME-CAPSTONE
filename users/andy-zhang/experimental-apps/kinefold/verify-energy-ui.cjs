@@ -37,7 +37,7 @@ const realm=v=>{ctx.raw=JSON.stringify(v);return vm.runInContext('JSON.parse(raw
 ctx=vm.createContext({console,document,structuredClone:v=>realm(v),window:{addEventListener:(k,fn)=>(events[k]??=[]).push(fn)},fetch(){requests++;throw Error('Energy UI must not fetch dynamics.');}});
 for(const f of ['reference-v4.js','model.js','variables.js','project-store.js','energy-analysis.js','dynamic-analysis.js'])vm.runInContext(read(f),ctx,{filename:f});
 const P=ctx.KinefoldProjects,A=ctx.KinefoldEnergyAnalysis;current=P.baseline();const original=JSON.stringify(current);
-ctx.KinefoldStudio={getSnapshot:()=>realm(current),exportProject:()=>realm(current),toast:s=>toasts.push(s),showTab:id=>{tab=id;document.getElementById('energy').hidden=id!=='energy';for(const fn of events['kinefold-solver-tab']||[])fn({detail:{id}});},
+ctx.KinefoldStudio={applySnapshot:async value=>{current=P.decode(realm(value)).project;ctx.KinefoldEnergyUI.update(realm(current));return realm(current);},getSnapshot:()=>realm(current),exportProject:()=>realm(current),toast:s=>toasts.push(s),showTab:id=>{tab=id;document.getElementById('energy').hidden=id!=='energy';for(const fn of events['kinefold-solver-tab']||[])fn({detail:{id}});},
 setEnergyConfig:c=>{if(c===null)delete current.energyConfig;else current.energyConfig=P.validateEnergy(realm(c));ctx.KinefoldEnergyUI.update(realm(current));},setTorqueTargetConfig:c=>{current.torqueTargetConfig=P.validateTorqueTargets(realm(c));ctx.KinefoldEnergyUI.update(realm(current));},setCaseConfig:c=>{current.caseConfig=P.validateCase(realm(c));ctx.KinefoldEnergyUI.update(realm(current));},saveArtifact:async(name,value,mime)=>{artifacts.push({name,value:typeof value==='string'?value:realm(value),mime});}};
 ctx.KinefoldPlotly={purge(){},resizeAll(){},react:async(host,traces,layout)=>{ok(!!host,'chart host exists');ok(traces.every(t=>t.type==='scatter'),'BASIC scatter only');for(const t of traces){ok(t.x.length===t.y.length,'matching trace axes');ok(t.y.every(v=>v===null||Number.isFinite(v)),'finite or explicit missing values');}charts.push({host,traces,layout});}};
 for(const f of ['contact-ui.js','energy-ui.js'])vm.runInContext(read(f),ctx,{filename:f});
@@ -148,6 +148,17 @@ ok(JSON.stringify(current.energyConfig.travelRanges)===savedBeforeDrift,'stale b
 await click('[data-energy-travel-reset]');ok(UI.getState().result!==null,'restore default recovers from stale range');
 ok(document.getElementById('energy').querySelectorAll('[data-energy-chart]').length===4,'all four existing plots remain, without duplicate traces or hosts');
 ok([...document.getElementById('energy').querySelectorAll('[data-energy-chart]')].filter(el=>el.dataset.energyChart!=='torque').every(el=>el.closest('.energy-results')===results),'remaining three plots follow full-width parameters');
+// Explicit full-travel action updates working stops; angle edits stay case-local.
+current=P.v45();current.energyConfig=realm({...P.energyDefaults,travelRanges:{jump:{minClearanceMm:400,maxClearanceMm:650}}});UI.open('landing');
+const savedOther=JSON.stringify(current.energyConfig.travelRanges.jump),savedPhysical=JSON.stringify([current.caseConfig,current.solverConfig,current.motorConfig]);
+await click('[data-energy-full-travel]');near(current.params.te,90);near(current.params.tc,180);near(UI.getState().result.angularTravelDeg,90,1e-12);
+ok(JSON.stringify(current.energyConfig.travelRanges.jump)===savedOther,'full working travel preserves the other case range');
+ok(JSON.stringify([current.caseConfig,current.solverConfig,current.motorConfig])===savedPhysical,'full stop action preserves controller/run settings');
+ok(!$('[data-energy-travel-boundary]').hidden&&$('[data-energy-travel-boundary]').textContent.includes('zero vertical Jacobian'),'singular boundary warning visible');
+near(Number($('[data-energy-travel-angle="compressed"]').value),180);near(Number($('[data-energy-travel-angle="extended"]').value),90);
+change('[data-energy-travel-angle="extended"]',100);near(UI.getState().result.angularTravelDeg,80);ok(JSON.stringify(current.energyConfig.travelRanges.jump)===savedOther,'angle edits preserve other case');
+const beforeAngleError=JSON.stringify(current);change('[data-energy-travel-angle="compressed"]',95);ok(JSON.stringify(current)===beforeAngleError,'crossed angles rejected without mutation');
+await click('[data-energy-full-travel]');near(UI.getState().result.angularTravelDeg,90,1e-12);ok($('[data-energy-use="pymunk"]').disabled,'full Energy endpoint never bypasses dynamic guards');
 const html=read('index.html');ok(html.indexOf('data-tab="builder"')<html.indexOf('data-tab="energy"')&&html.indexOf('data-tab="energy"')<html.indexOf('data-tab="analytical"'),'energy before dynamics');ok(read('app.js').includes("['builder','energy','analytical','pymunk','presets','flow','actuator','conventions']"),'stable tab IDs / conventions last');ok(!read('solvers.js').includes('KinefoldEnergyUI.mount(id'),'no duplicate energy calculators in dynamics');
 ok(document.querySelectorAll('label').every(label=>!label.querySelector('label')),'valid nonnested labels');
 console.log('PASS '+checks+' Energy DOM/VM assertions; '+charts.length+' BASIC-compatible chart mounts; no live browser QA.');

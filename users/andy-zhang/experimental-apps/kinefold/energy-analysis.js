@@ -33,11 +33,18 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
   function straightProjection(p){
     if(Math.abs(p.L2-p.L3)>1e-9||Math.abs(p.ra/p.rb-2)>1e-10)throw Error('This energy screen requires equal links and r_a/r_b=2 for straight travel.');
     const mean=(180+p.phi0)/2,angle=(mean-p.alpha)*R;
-    for(let n=-2;n<4;n++)if(mean+n*180>=p.te-1e-9&&mean+n*180<=p.tc+1e-9)throw Error('Working travel crosses a singular or reversing straight-path branch.');
+    if(p.tc-p.te>90+1e-9)throw Error('Energy hip travel cannot exceed 90° full travel.');
+    const singularBoundaryAnglesDeg=[];
+    for(let n=-2;n<4;n++){
+      const turn=mean+n*180;
+      if(turn>p.te+1e-9&&turn<p.tc-1e-9)throw Error('Working travel crosses a singular or reversing straight-path branch.');
+      if(Math.abs(turn-p.te)<1e-9||Math.abs(turn-p.tc)<1e-9)singularBoundaryAnglesDeg.push(turn);
+    }
     const axisX=Math.cos(angle),axisZ=-Math.sin(angle),mid=(p.te+p.tc)/2;
     const dCzDq=axisZ*(-2*p.L2*Math.sin((mid-mean)*R));
     if(!(p.tc>p.te&&dCzDq>1e-9))throw Error('Compression toward θ_c must monotonically decrease world chassis height on a nonsingular branch.');
-    return {alphaDeg:p.alpha,phi0Deg:p.phi0,guideAxisX:axisX,guideAxisZ:axisZ,guideTiltFromDownDeg:Math.atan2(axisX,-axisZ)/R,
+    return {alphaDeg:p.alpha,phi0Deg:p.phi0,guideAxisX:axisX,guideAxisZ:axisZ,guideTiltFromDownDeg:Math.atan2(axisX,-axisZ)/R,singularBoundaryAnglesDeg,
+      fullTravelBoundaryWarning:singularBoundaryAnglesDeg.length?'Full extension has zero vertical Jacobian. Its potential-energy endpoint is finite, but this is not a dynamically validated takeoff, contact or passage through that singular pose.':'',
       sourceVerticalProjection:'C_z(q, α) = −sin(α) P_u(q) + cos(α) P_v(q)',
       sourceHorizontalProjection:'C_x(q, α) = −cos(α) P_u(q) − sin(α) P_v(q)',hipHeightEquation:'h(q, α) = r_w − C_z(q, α)',
       contactAssumption:'Fixed wheel height z_w = r_w on a stationary horizontal floor; horizontal wheel motion allowed; fixed chassis x and mounting pitch α.'};
@@ -114,10 +121,11 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
   }
   function mechanicalTravel(project){
     const p=project.params,c={...KinefoldProjects.caseDefaults,...project.caseConfig};
-    straightProjection(p);KinefoldProjects.validateCase(c);
+    const projection=straightProjection(p);KinefoldProjects.validateCase(c);
     if(c.undersideOffsetMm===null)throw Error('Set the shared underside offset below hip A before calculating ground clearance.');
     const ref=Kinefold.reference(p),d=c.undersideOffsetMm,lo=point(ref,p.tc).hipHeightMm-d,hi=point(ref,p.te).hipHeightMm-d;
-    return {mechanicalMinClearanceMm:lo,mechanicalMaxClearanceMm:hi,availableMinClearanceMm:Math.max(0,lo),availableMaxClearanceMm:hi,undersideOffsetMm:d};
+    return {mechanicalMinClearanceMm:lo,mechanicalMaxClearanceMm:hi,availableMinClearanceMm:Math.max(0,lo),availableMaxClearanceMm:hi,undersideOffsetMm:d,
+      fullTravelBoundaryWarning:projection.fullTravelBoundaryWarning,mechanicalAngularTravelDeg:p.tc-p.te};
   }
   function selectedTravel(project,kind,options={}){
     if(options.ignoreSavedTravel)return null;
@@ -127,7 +135,11 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const b=mechanicalTravel(project),p=project.params,ref=Kinefold.reference(p),d=b.undersideOffsetMm;
     const min=options.jumpMinClearanceMm??selected?.minClearanceMm??b.availableMinClearanceMm,max=options.jumpMaxClearanceMm??selected?.maxClearanceMm??b.availableMaxClearanceMm;
     if(![min,max].every(Number.isFinite)||min<b.availableMinClearanceMm-1e-7||max>b.availableMaxClearanceMm+1e-7||max-min<1e-6)throw Error(kind+' Energy range is outside the current mechanical envelope or has no positive travel. Edit the range or restore its default.');
-    const angleAt=value=>{let a=p.te,c=p.tc;for(let i=0;i<65;i++){const q=(a+c)/2;if(point(ref,q).hipHeightMm-d>value)a=q;else c=q;}return (a+c)/2;};
+    const angleAt=value=>{
+      if(Math.abs(value-b.mechanicalMaxClearanceMm)<1e-8)return p.te;
+      if(Math.abs(value-b.mechanicalMinClearanceMm)<1e-8)return p.tc;
+      let a=p.te,c=p.tc;for(let i=0;i<65;i++){const q=(a+c)/2;if(point(ref,q).hipHeightMm-d>value)a=q;else c=q;}return (a+c)/2;
+    };
     const qStartDeg=angleAt(min),qEndDeg=angleAt(max),a=point(ref,qStartDeg),z=point(ref,qEndDeg);
     return {...b,minClearanceMm:min,maxClearanceMm:max,qStartDeg,qEndDeg,verticalTravelMm:max-min,
       legAxisTravelMm:Math.hypot(z.wheelCxMm-a.wheelCxMm,z.wheelCzMm-a.wheelCzMm),angularTravelDeg:qStartDeg-qEndDeg,angularTravelRad:(qStartDeg-qEndDeg)*R,
@@ -143,6 +155,26 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     return {...selectedTravel(temp,kind,{}),explicit:false};
   }
   const jumpTravel=(project,options={})=>travelRange(project,'jump',options);
+  function travelRangeFromAngles(project,kind,compressedDeg,extendedDeg){
+    const p=project.params;
+    if(![compressedDeg,extendedDeg].every(Number.isFinite)||extendedDeg<p.te-1e-9||compressedDeg>p.tc+1e-9||compressedDeg-extendedDeg<1e-8||compressedDeg-extendedDeg>90+1e-9)throw Error('Choose extended < compressed hip angles inside the mechanical stops, with at most 90° travel.');
+    const bounds=mechanicalTravel(project),ref=Kinefold.reference(p),clearance=q=>point(ref,q).hipHeightMm-bounds.undersideOffsetMm;
+    const range={minClearanceMm:clearance(compressedDeg),maxClearanceMm:clearance(extendedDeg)};
+    const next={...project,energyConfig:{...KinefoldProjects.energyDefaults,...project.energyConfig,travelRanges:{...project.energyConfig?.travelRanges,[kind]:range}}};
+    KinefoldProjects.validateEnergy(next.energyConfig);travelRange(next,kind);return range;
+  }
+  function fullTravelProject(project,kind='jump'){
+    if(!['jump','landing'].includes(kind))throw Error('Choose jump or landing energy.');
+    const P=KinefoldProjects,base=P.decode(P.clone(project)).project,te=(180+base.params.phi0)/2,tc=te+90;
+    base.params={...base.params,te,tc,theta2:Math.max(te,Math.min(tc,base.params.theta2))};
+    const b=mechanicalTravel(base);
+    if(b.mechanicalMinClearanceMm<0)throw Error('Full 90° travel would put the chassis underside below the floor. Change the physical design before selecting it.');
+    const range=travelRangeFromAngles(base,kind,tc,te);
+    base.energyConfig={...P.energyDefaults,...base.energyConfig,travelRanges:{...base.energyConfig?.travelRanges,[kind]:range}};
+    // Validate the actual spring over the new stroke without retuning its constants.
+    workspace(base,kind,{includeLegMasses:true});
+    return P.validate(base);
+  }
   function jumpEstimate(project,targetHeightMm,options={}){
     project=selectMasses(project,options);
     const p=project.params,motor={...KinefoldProjects.motorDefaults,...project.motorConfig};
@@ -223,5 +255,5 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
       endpointKineticBudgetJ:stroke.at(-1).kineticBudgetJ,unclippedMotorWorkJ:result.workJ,
       assumptions:kind==='jump'?'Ideal endpoint work: actual uniform-link COM gravity during stance; chassis, included links/compound and wheel rise together in fixed-pose flight. Relative joint rates are zero at comparison endpoints, so rotational inertias add no endpoint work. Takeoff redistribution/stop losses, retained spin, friction and transient inertia require dynamics; this is an optimistic bound, not guaranteed height.':'Initial-arrest endpoint screen: full (m₁ + included leg/compound masses)gH retained, actual body COM gravity during compression. Wheel impact energy remains omitted. Fixed wheel height on horizontal ground, fixed chassis x/pitch and rest at arrest; rotational inertias add no rest-to-rest endpoint work. No impact/friction loss credit, transient peak torque or post-arrest hold claim.'};
   }
-  return {calculate,landingEstimate,jumpEstimate,jumpTravel,travelRange,mechanicalTravel,workspace,resolveScreen,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
+  return {calculate,landingEstimate,jumpEstimate,jumpTravel,travelRange,mechanicalTravel,travelRangeFromAngles,fullTravelProject,workspace,resolveScreen,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
 })();

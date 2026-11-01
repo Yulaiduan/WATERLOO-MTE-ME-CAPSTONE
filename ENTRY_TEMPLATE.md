@@ -5967,3 +5967,45 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. No 
 Open01Energy and set Travel limits independently for Jump and Landing; these are underbody clearance endpoints, separate from the airborne height targets.
 Use Restore case default before copying a dynamic estimate, since custom Energy strokes are not implemented in either engine.
 Retain the original fixed-chassis spring convention and use the app-root Start Kinefold.cmd at4191; reviewed previews and frozen local draft evidence stay under the ignored app folders.
+
+---
+
+## Entry: 2026-11-01 — Andy Zhang / Codex — Full90 degree Energy hip travel
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated Kinefold Energy workspace and current working design.
+- **Associated Issue/Task:** Owner requests maximum hip rotation90degrees/full travel after independent Jump/Landing ranges.
+
+Treat90degrees as total stroke, not absolute maximum theta2. For the current phi0zero design this is theta2=90..180. Add an explicit full90 working-stop action, direct per-case compressed/extended angle inputs, exact boundary inversion and visible zero-leverage notice. Apply the authorized working change while retaining all named profiles. No Notion report, new trajectory, contact-guard relaxation or spring refit.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-alpha.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-full-travel.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+
+- **API/Interface Changes:** App-local mechanicalTravel adds boundary metadata; energy straightProjection caps span at90degrees, admits a turning point only at an endpoint and rejects interior reversals. Exact mechanical bounds map directly to stored angles before height bisection. New pure travelRangeFromAngles and fullTravelProject helpers return validated per-case metadata/project clones. Full action phase-adjusts extension to(180+phi0)/2 and compression90degrees higher, clamps preview pose only when necessary, updates active Energy band and retains other settings/other-case band. It validates actual unretuned spring work and rejects below-floor compression. UI uses existing Studio.applySnapshot; no new persistence schema, server, dependency, vendor, model adapter, dynamic or shared interface. Display-only integer snapping and coincidentA/C label improve exact-fold preview.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS GPT-6.1Sol worker223full90 assertions,2081EnergyUI/160BASIC mounts,Energy119/workspace2262,independent-range284 andalpha92864over240fixtures; syntax/whitespacepass. Full90 fixtures includealpha0/20, exact90/180 endpoints, finite/massless links, spring on/off, manual potential/work identities, invalid span/interior reversals and unchanged65-degree defaults. Parent actual headlessEdge1440/390px passes full90 action, degree controls, independent other-case preservation, invalid-angle purity, save/reload/named preservation, visible endpoint warning, four actual Plotly charts and phone width; no page errors or unexpected API writes. Final polished PNGs inspected. QA persistence intercepted in memory and live-library bytes unchanged within isolated checks. Parent subsequently applies authorized working-only fullTravelProject through actual revision-checked4191HTTP:590to591,te90/tc180,the original preview angle/masses/spring/case/motor/run settings and all seven named designs retained. Active Landing band150..750mm givesexact90degrees/600mm travel; current1m energy result70.884687Nm. Actual live data preserved before/after under ignored app-local evidence. Launcher reuse/HTTP readiness and new frontend assets confirmed at127.0.0.1:4191/?tab=energy; unchanged startup/restart lifecycle verified in preceding range contribution. Fetched-base, staged and exact-push workspace gates apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Full extension has dh/dqzero; finite potential-energy endpoints do not certify takeoff/contact/transient torque. Both contact UI/Python guards still reject an exact singular physical stop, even after an Energy override reset; choose interior stops/load a historical65-degree design for contact runs. No actual new dynamic runs claimed. Fully folded chassis/tire self-interference remains outside the ideal geometry model. One prior alpha negative fixture placed its turning point exactly on the boundary; replaced with an interior-crossing negative plus explicit finite-boundary positive. Parent API helper initially omitted terrain module and assumed optional motor metadata present; both failed before any write, then corrected terrain loading/optional handling and completed the guarded working update. No raw runs, live profile library, private chats, PNGs, helpers, Notion writes, Downloads or boot automation committed.
+
+## 4. Compute Saving Handoff State
+
+The working nominal design now has90degrees total ideal travel, with direct Energy angle controls and independent case bands.
+Use the explicit full90 action to repeat this on another design, save named profiles deliberately, and retain strict dynamic singularity guards.
+Read energy-calculator.md for endpoint limits and restart using app-root Start Kinefold.cmd at4191; current PNGs and guarded API evidence remain ignored app-local.

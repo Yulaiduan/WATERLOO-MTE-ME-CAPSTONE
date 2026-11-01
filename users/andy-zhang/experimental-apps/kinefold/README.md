@@ -79,6 +79,11 @@ manual snapshot, while the live profile library remains local.
   mechanism views. Their height-plot inspection ranges are also independent.
   Explicit travel overrides are Energy-only; dynamic handoff is disabled until
   the case default is restored, since the engines retain their existing strokes.
+  **Use full 90° · update working stops** sets a full quarter-turn envelope
+  (θ₂90–180° at φ₀0), without retuning the spring or overwriting a named design.
+  Compressed/extended angle inputs edit each Energy band directly. The exact
+  extension boundary is an ideal energy endpoint; contact dynamics still reject
+  its zero vertical Jacobian even after removing an Energy override.
 - **02 Analytical / 03 Pymunk:** shared quarter-model case controls, playback,
   categorized result charts and exact-snapshot engine comparison described below.
   The top mechanism viewer has a compact run/replay/navigation rail; all detailed

@@ -1,5 +1,25 @@
 # Kinefold context
 
+## Latest — 2026-11-01 full90° Energy travel
+
+Owner requests90° total hip rotation. Energy now caps its mechanical span at90°
+and accepts an exact turning-point boundary, while rejecting interior reversals.
+Use full90° explicitly updates working stops to90–180° forφ₀0 (phase-adjusted
+otherwise), selects the active Energy band and preserves other settings/named
+designs. Angle inputs edit compressed/extended endpoints directly. Height inverse
+snaps exact boundaries, so displayed/calculated span is exactly90°. Spring stays
+chassis-fixed with original constants; invalid routes/floor crossings reject.
+Full extension has zero vertical Jacobian: a finite potential-energy screen is
+not a takeoff/impact trajectory. Contact guards remain strict and reject this
+physical boundary, even if an Energy override is removed. Historical65° presets
+remain unchanged. Parent applies only the current working design using the
+revision-checked app-folder API; named designs are retained. No Notion report.
+One GPT-6.1 Sol worker passes223full90/2081UI/92864alpha plus existing Energy and
+range checks. Parent actual desktop/phone QA covers exact90, editable angles,
+independent ranges, invalid-input purity, reload/named preservation and warning.
+Reviewed PNGs and bounded API/QA evidence stay ignored app-local; launcher4191
+is retained. No new dynamic or hardware acceptance is claimed.
+
 ## Latest — 2026-11-01 independent Energy travel limits
 
 Owner clarified separate maximum ranges for Jump/Landing, not a spring optimizer.

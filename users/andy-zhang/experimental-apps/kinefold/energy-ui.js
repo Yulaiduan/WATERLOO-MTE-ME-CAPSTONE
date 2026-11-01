@@ -18,7 +18,7 @@ globalThis.KinefoldEnergyUI=(()=>{
   let activeJumpBand=null;
   const calculationOptions=extra=>({...extra,includeLegMasses,jumpTravel:kind==='jump'});
   const energy=p=>({...P.energyDefaults,dropHeightMm:p.caseConfig?.landingDropMm??P.caseDefaults.landingDropMm,...p.energyConfig});
-  function travelMarkup(){return `<section class="energy-travel-panel energy-input-card" data-energy-travel-panel><div class="energy-plot-heading"><div><h3 data-energy-travel-title>Landing travel limits</h3><p>Independent saved range for this Energy case. Physical stops and dynamic settings stay unchanged.</p></div><button data-energy-travel-reset>Restore case default</button></div><p class="notice" data-energy-travel-limit role="status"></p><div class="energy-travel-band" data-energy-travel-band><input type="range" min="0" max="1" step="any" data-energy-travel-range="min" aria-label="Minimum energy-case clearance"><input type="range" min="0" max="1" step="any" data-energy-travel-range="max" aria-label="Maximum energy-case clearance"></div><div class="energy-travel-values"><label>Minimum underside clearance · mm<input type="number" step="any" data-energy-travel-value="min"></label><label>Maximum underside clearance · mm<input type="number" step="any" data-energy-travel-value="max"></label></div><div class="solver-readouts" data-energy-travel-metrics></div><details data-energy-travel-preview><summary>Minimum & maximum mechanism poses</summary><div class="energy-travel-poses" data-energy-travel-poses><article><h4>Minimum · compressed</h4><svg data-energy-travel-pose="min" role="img" aria-label="Compressed mechanism endpoint"></svg><p data-energy-travel-caption="min"></p></article><article><h4>Maximum · extended</h4><svg data-energy-travel-pose="max" role="img" aria-label="Extended mechanism endpoint"></svg><p data-energy-travel-caption="max"></p></article></div><p class="energy-travel-caption">Same scale and floor datum; +x left, +z up. Kinematic poses with wheel-drive input θ₄ held, not contact trajectories.</p></details></section>`;}
+  function travelMarkup(){return `<section class="energy-travel-panel energy-input-card" data-energy-travel-panel><div class="energy-plot-heading"><div><h3 data-energy-travel-title>Landing travel limits</h3><p>Range inputs edit this Energy case. The full 90° action updates working mechanical stops; save the named design separately.</p></div><div class="design-actions"><button data-energy-full-travel>Use full 90° · update working stops</button><button data-energy-travel-reset>Restore case default</button></div></div><p class="notice" data-energy-travel-limit role="status"></p><div class="energy-travel-band" data-energy-travel-band><input type="range" min="0" max="1" step="any" data-energy-travel-range="min" aria-label="Minimum energy-case clearance"><input type="range" min="0" max="1" step="any" data-energy-travel-range="max" aria-label="Maximum energy-case clearance"></div><div class="energy-travel-values"><label>Minimum underside clearance · mm<input type="number" step="any" data-energy-travel-value="min"></label><label>Maximum underside clearance · mm<input type="number" step="any" data-energy-travel-value="max"></label></div><div class="energy-travel-values energy-travel-angles"><label>Compressed endpoint θ₂ · deg<input type="number" step="any" data-energy-travel-angle="compressed"></label><label>Extended endpoint θ₂ · deg<input type="number" step="any" data-energy-travel-angle="extended"></label></div><p class="notice warning" data-energy-travel-boundary hidden></p><div class="solver-readouts" data-energy-travel-metrics></div><details data-energy-travel-preview><summary>Minimum & maximum mechanism poses</summary><div class="energy-travel-poses" data-energy-travel-poses><article><h4>Minimum · compressed</h4><svg data-energy-travel-pose="min" role="img" aria-label="Compressed mechanism endpoint"></svg><p data-energy-travel-caption="min"></p></article><article><h4>Maximum · extended</h4><svg data-energy-travel-pose="max" role="img" aria-label="Extended mechanism endpoint"></svg><p data-energy-travel-caption="max"></p></article></div><p class="energy-travel-caption">Same scale and floor datum; +x left, +z up. Kinematic poses with wheel-drive input θ₄ held, not contact trajectories.</p></details></section>`;}
   function drawJumpPoses(p,band){
     const D=globalThis.KinefoldDrawing,d=band.undersideOffsetMm;
     const pose=q=>{const params={...p,theta2:q},z=Kinefold.evaluate(params);if(!z.valid)throw Error(z.errors.join(' '));const h=p.rw-z.C[2],W=v=>[v[0],v[1],v[2]+h],spring=D?.spring(params,{theta2:q,A:z.A,B:z.B,C:z.C});return {q,z,h,W,spring};};
@@ -33,7 +33,8 @@ globalThis.KinefoldEnergyUI=(()=>{
       svg+=line(s.z.A,s.z.B,'var(--sage)',10)+line(s.z.B,s.z.C,'var(--blue)',9);
       const [cx,cy]=local(s.z.C);svg+=`<circle cx="${cx}" cy="${cy}" r="${p.rw*scale}" fill="none" stroke="var(--ink)" stroke-width="2"/>`;
       if(D){for(const b of D.belts(s.z.reference,q))if(b.valid)svg+='<path d="'+b.outline.map((v,i)=>(i?'L':'M')+local(v).join(',')).join(' ')+'" fill="none" stroke="var(--muted)"/>';for(const a of D.indices(s.z.reference,q)){const[x,y]=local(a.center);svg+=`<circle cx="${x}" cy="${y}" r="${a.radius*scale}" fill="none" stroke="var(--amber)"/>`+line(a.center,a.primary,'var(--red)',1.2);}if(s.spring?.valid)svg+=D.springSvg(s.spring,local,scale);}
-      for(const [v,name]of [[s.z.A,'A · hip'],[s.z.B,'B · knee'],[s.z.C,'C · wheel']]){const[x,y]=local(v);svg+=`<circle cx="${x}" cy="${y}" r="3" fill="var(--paper)" stroke="var(--ink)"/><text x="${x+8}" y="${y-7}" font-size="11" fill="var(--ink)">${name}</text>`;}
+      const coincident=Math.hypot(...s.z.C.map((v,i)=>v-s.z.A[i]))<1e-7,labels=coincident?[[s.z.A,'A/C · hip / wheel'],[s.z.B,'B · knee']]:[[s.z.A,'A · hip'],[s.z.B,'B · knee'],[s.z.C,'C · wheel']];
+      for(const [v,name]of labels){const[x,y]=local(v);svg+=`<circle cx="${x}" cy="${y}" r="3" fill="var(--paper)" stroke="var(--ink)"/><text x="${x+8}" y="${y-7}" font-size="11" fill="var(--ink)">${name}</text>`;}
       const [ux,uy]=Pxy([0,0,s.h-d]);svg+=`<path d="M${ux-18} ${uy}h36" stroke="var(--red)" stroke-dasharray="4 3"/><text x="${ux+23}" y="${uy+4}" font-size="9" fill="var(--red)">underside datum</text><text x="16" y="20" font-size="10" fill="var(--muted)">GRID 100 mm · SAME SCALE</text><path d="M90 390H30m7-4-7 4 7 4M90 390V368m-4 7 4-7 4 7" fill="none" stroke="var(--ink)"/><text x="9" y="393" font-size="10" fill="var(--red)">+x</text><text x="99" y="372" font-size="10" fill="var(--blue)">+z</text><text x="106" y="393" font-size="9" fill="var(--sage)">⊙ +y</text>`;
       const target=root.querySelector(`[data-energy-travel-pose="${key}"]`);target.setAttribute('viewBox','0 0 600 420');target.innerHTML=svg;
       root.querySelector(`[data-energy-travel-caption="${key}"]`).textContent=`θ₂ ${fmt(q,3)}° · underside clearance ${fmt(s.h-d,3)} mm · hip height ${fmt(s.h,3)} mm`;
@@ -42,20 +43,22 @@ globalThis.KinefoldEnergyUI=(()=>{
   function renderJumpTravel(p){
     const panel=root.querySelector('[data-energy-travel-panel]');activeJumpBand=null;
     panel.querySelector('[data-energy-travel-title]').textContent=(kind==='jump'?'Jump launch':'Landing braking')+' travel limits';
-    const controls=[...panel.querySelectorAll('[data-energy-travel-range]'),...panel.querySelectorAll('[data-energy-travel-value]')];
+    const controls=[...panel.querySelectorAll('[data-energy-travel-range]'),...panel.querySelectorAll('[data-energy-travel-value]')],angleControls=[...panel.querySelectorAll('[data-energy-travel-angle]')];
     try{
       const bounds=A.mechanicalTravel(p),lo=bounds.availableMinClearanceMm,hi=bounds.availableMaxClearanceMm;
       let band,error='';
       try{band=A.travelRange(p,kind);}catch(e){error=e.message;const saved=energy(p).travelRanges?.[kind];band={...bounds,...saved};}
       activeJumpBand=band;
       const min=band.minClearanceMm,max=band.maxClearanceMm;
-      for(const el of controls){const key=el.dataset.energyTravelRange||el.dataset.energyTravelValue,value=key==='min'?min:max;el.disabled=!Number.isFinite(value);el.min=lo;el.max=hi;el.step='any';if(document.activeElement!==el)el.value=value;el.setAttribute('aria-invalid',error?'true':'false');}
+      for(const el of angleControls){const q=el.dataset.energyTravelAngle==='compressed'?band.qStartDeg:band.qEndDeg;el.disabled=!Number.isFinite(q);el.min=p.params.te;el.max=p.params.tc;if(document.activeElement!==el)el.value=Number.isFinite(q)?q:'';}
+      const boundary=panel.querySelector('[data-energy-travel-boundary]');boundary.hidden=!bounds.fullTravelBoundaryWarning;boundary.textContent=bounds.fullTravelBoundaryWarning||'';
+      for(const el of controls){const key=el.dataset.energyTravelRange||el.dataset.energyTravelValue,value=key==='min'?min:max;el.disabled=!Number.isFinite(value);el.min=lo;el.max=hi;el.step='any';if(document.activeElement!==el)el.value=el.dataset.energyTravelValue&&Math.abs(value-Math.round(value))<1e-9?Math.round(value):value;el.setAttribute('aria-invalid',error?'true':'false');}
       panel.querySelector('[data-energy-travel-band]').setAttribute('style',`--band-min:${100*Math.max(0,Math.min(1,(min-lo)/(hi-lo)))}%;--band-max:${100*Math.max(0,Math.min(1,(max-lo)/(hi-lo)))}%`);
       panel.querySelector('[data-energy-travel-limit]').textContent=error||`${band.explicit?'Saved '+kind+' range':'Case default'}: ${fmt(min,3)}–${fmt(max,3)} mm. Mechanical envelope ${fmt(lo,3)}–${fmt(hi,3)} mm. ${kind==='landing'&&!band.explicit?'Default follows saved landing opening, residual clearance and angular reserve.':''}`;
       panel.querySelector('[data-energy-travel-limit]').className=error?'notice error':'notice';
       panel.querySelector('[data-energy-travel-metrics]').innerHTML=error?'':card('Vertical chassis travel',band.verticalTravelMm,'mm')+card('Hip rotation',band.angularTravelDeg,'°')+card('Travel along leg axis',band.legAxisTravelMm,'mm');
       panel.querySelector('[data-energy-travel-poses]').hidden=!!error;if(!error)drawJumpPoses(p.params,band);
-    }catch(error){for(const el of controls)el.disabled=true;panel.querySelector('[data-energy-travel-limit]').textContent=error.message;panel.querySelector('[data-energy-travel-limit]').className='notice error';panel.querySelector('[data-energy-travel-metrics]').innerHTML='';panel.querySelector('[data-energy-travel-poses]').hidden=true;}
+    }catch(error){for(const el of [...controls,...angleControls])el.disabled=true;panel.querySelector('[data-energy-travel-limit]').textContent=error.message;panel.querySelector('[data-energy-travel-limit]').className='notice error';panel.querySelector('[data-energy-travel-metrics]').innerHTML='';panel.querySelector('[data-energy-travel-poses]').hidden=true;}
   }
   function editJumpRange(key,value,slider=false){
     edit(()=>{
@@ -66,6 +69,16 @@ globalThis.KinefoldEnergyUI=(()=>{
       const next={...e,travelRanges:{...e.travelRanges,[kind]:range}};
       P.validateEnergy(next);A.travelRange({...p,energyConfig:next},kind);S.setEnergyConfig(next);
     });
+  }
+  async function useFullTravel(){
+    try{
+      const next=A.fullTravelProject(S.exportProject(),kind),saved=await S.applySnapshot(next);
+      if(saved===null)throw Error('Working-copy save failed; the previous design was restored.');
+      lastKey='';update(S.getSnapshot(),true);S.toast('Working stops now span 90°; this Energy case uses full travel. Save the named design separately. Dynamic singularity guards remain active.');
+    }catch(error){S.toast('Cannot use full travel: '+error.message);update(S.getSnapshot(),true);}
+  }
+  function editTravelAngle(){
+    edit(()=>{const p=S.getSnapshot(),values=Object.fromEntries([...root.querySelectorAll('[data-energy-travel-angle]')].map(el=>[el.dataset.energyTravelAngle,el.value===''?NaN:Number(el.value)])),range=A.travelRangeFromAngles(p,kind,values.compressed,values.extended),e=energy(p);S.setEnergyConfig({...e,travelRanges:{...e.travelRanges,[kind]:range}});});
   }
   function table(head,rows,label){return `<div class="eqd-table-wrap"><table aria-label="${esc(label)}"><thead><tr>${head.map(s=>`<th>${esc(s)}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${row.map(s=>`<td>${esc(s)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;}
   function mount(id='energy',host=document.getElementById('energy')){
@@ -84,6 +97,8 @@ globalThis.KinefoldEnergyUI=(()=>{
     const clearance=root.querySelector('[data-energy-key="targetClearanceMm"]').closest('label');clearance.closest('.contact-controls').append(clearance);
     for(const el of root.querySelectorAll('[data-energy-travel-range]'))el.oninput=()=>editJumpRange(el.dataset.energyTravelRange,Number(el.value),true);
     for(const el of root.querySelectorAll('[data-energy-travel-value]'))el.onchange=()=>editJumpRange(el.dataset.energyTravelValue,el.value===''?NaN:Number(el.value));
+    for(const el of root.querySelectorAll('[data-energy-travel-angle]'))el.onchange=editTravelAngle;
+    root.querySelector('[data-energy-full-travel]').onclick=useFullTravel;
     root.querySelector('[data-energy-travel-reset]').onclick=()=>edit(()=>{const e=energy(S.getSnapshot()),ranges={...e.travelRanges};delete ranges[kind];if(Object.keys(ranges).length)e.travelRanges=ranges;else delete e.travelRanges;S.setEnergyConfig(e);});
     for(const b of root.querySelectorAll('[data-energy-mode]'))b.onclick=()=>open(b.dataset.energyMode);
     root.querySelector('[data-energy-principles]').onclick=()=>{const target=root.querySelector('[data-energy-equations]');if(target){target.scrollIntoView({block:'start'});target.focus({preventScroll:true});}else S.toast('Principles and equations are available after resolving the input error.');};
