@@ -5670,3 +5670,44 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Cur
 Read solver-workspace-and-support.md for the direct01–03 layouts, optional06 and exact support deficit/calibration qualifications.
 Use the native Notion21-file archive for frozen inputs, six actual runs, reviewed PNGs and source-hashed helpers; the new flat profile is a separate manual import, with original/live designs preserved.
 Keep static balance separate from rough-terrain height control and native energy residual from physical absorption, preserving validity guards, captured settings and project-local Start/Stop launchers.
+
+---
+
+## Entry: 2026-10-31 — Andy Zhang — Viewer-first solver pages
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app solver UI and context.
+- **Associated Issue/Task:** Owner superseded the prior RHS layout: make the main mechanism visual the top item, compact run/mode/principles buttons on its left and detailed parameters full-width below. Two authorized GPT-6.1 Sol workers used separate e109b67 worktrees; parent integrated and reviewed the actual rendered pages. Accuracy/transparency remains the priority.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no additions/deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-workspace.css`
+- `users/andy-zhang/experimental-apps/kinefold/solver-workspace-and-support.md`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+
+- **API/Interface Changes:** Internal Results.mount options.playerHost optionally moves the existing player to the top visual and scopes its listeners locally; absent option preserves the old read-only mount. Existing saved/run/backend API and physics unchanged. New dynamic saved-pose preview uses retained geometry/belt/index/spring APIs with100mm grid,+x left,+z up; explicitly not simulated motion/contact.190px rail provides run/both/replay and labelled navigation below. All Contact/Case/Terrain/Motor/numerics parameters follow full-width; detailed results/exports follow them. Energy keeps four unique Plotly hosts, immediate computations, equations/data/handoff, with primary torque plot and Jump/Landing/Principles rail above forms. Display-only negative zero normalized; raw/export values unchanged. Prior optional06 and support example retained. Ignored headless helper/log/fivePNGs remain app-local/native Notion; no new dependency, canonical, shared-interface or enforcement change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS parent734Energy UI/52BASIC mounts,4490Energy workspace,4090dynamic Plotly,48actual-bundle replay integration,22pinned UI and18motor UI assertions. Worker additionally passes119Energy,116saved replay,35project groups,52terrain/35mounts,666contact drawing and530real-engine contact-work assertions (four short existing landing regressions, no new design sweep). Headless Edge1440/390px passes main-visual-before-all-forms/full-width-parameter geometry, four unique Energy charts, Jump/Landing/Principles actions, saved-pose versus captured labels, both playback clocks, rerun unique player IDs, comparison navigation and visible unsupported-contact guard. Zero browser errors. Profile library SHA cbec7b39e7bfee2addac9b89a7c7861d252b9a4720767b9cd518ddbdd822cfa2 preserved across both isolated QA runs; profile mutations intercepted in memory. Dynamic UI payloads match prior actual half-step captures exactly; screenshots are UI evidence, not new calibration trajectories. Five final PNGs visually reviewed; native Notion uploads/report completed. JS syntax, local doc links and whitespace checks apply. Existing durable launcher reuse from unrelated cwd passes; actual scoped stop/start/restart verified earlier this session with the same unchanged launcher/server. Fetched-base/staged/commit-hook/exact-push workspace gates apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member UI contribution. No numerical law, calibration, solver setting, live profile or reference changed. Previous support deficit/native energy residual qualifications remain. Agent's contact-work check initially lacked a worktree-local.venv, then passed with explicit installed KINEFOLD_PYTHON; no dependency/source workaround. One documentation patch had an unmatched extra context hunk, failed atomically and was reapplied without it. Prior read-only mirror/API consumers remain covered; phone rail wraps above the viewer, detailed inputs remain editable below it. No Computer skill/live-tab automation, app stop during user activity, boot automation, hardware/thermal/GPU/full-vehicle or canonical certification. No new raw-run archive or broad parameter search; media remain Capstone-local/Notion, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read the viewer-first follow-up in solver-workspace-and-support.md; it supersedes only the earlier01–03 RHS arrangement and retains all support-study qualifications.
+Use the top rail for run/replay or labelled navigation, with full-width details below, preserving exact captured settings and distinguishing saved geometry from simulated motion.
+Find the five reviewed PNGs in native Notion attachments, keep live libraries untouched and use the unchanged project-local Start/Stop launchers at4191.

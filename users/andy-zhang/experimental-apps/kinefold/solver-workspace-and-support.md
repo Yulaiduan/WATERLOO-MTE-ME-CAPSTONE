@@ -1,10 +1,42 @@
 # Solver workspace and V4.5 support check
 
-Andy Zhang with Codex,2026-10-31; experimental member app, source87175bd.
+Andy Zhang with Codex,2026-10-31; experimental member app.
+Support audit source87175bd; viewer-first follow-up based on e109b67.
 Priority: accurate design numbers and transparent assumptions, rather than a
 general reusable framework. No force law or numerical tolerance changed here.
 
-## Layout
+## Viewer-first follow-up
+
+The owner superseded the following layout with a simpler viewer-first page in
+tabs01–03. A190px action/mode rail sits beside the main visual at the top; every
+detailed form and the categorized result sections span the full page below.
+On phones the rail wraps above the visual.01 leads with the existing torque
+Plotly chart and Jump/Landing/Principles actions,followed by signed readouts,
+full-width inputs,all remaining charts,equations and sample/export data.
+02/03 show an exact saved-pose geometry preview before running,clearly labelled
+as geometry only; actual captured motion replaces it after a run. The existing
+drawing APIs retain finite belt/spring geometry,+x left,+z up and100mm grid.
+
+The dynamic rail runs one/both engines,replays from the first sample or navigates
+to Parameters,Results,Compare and Principles below. These navigation buttons
+carry down arrows; Principles opens existing assumptions rather than changing
+the physics. Repeated runs replace the previous player and retain one set of
+IDs/listeners. Exports/desktop actions remain with detailed results. The optional
+options.playerHost property in internal Results.mount preserves the old default path
+for other read-only views. Energy normalizes display-only negative zero; raw
+signed calculations and exports remain unchanged.
+
+Two authorized GPT-6.1 Sol workers implemented isolated patches. Headless Edge
+at1440/390px verifies main visual precedes every form,full-width parameters,
+four unique Energy charts,Jump/Landing/Principles actions,both playback clocks,
+repeat-run unique player IDs,comparison navigation and visible invalid-contact
+guards. The UI uses the same isolated in-memory fixtures described below and
+exact existing half-step captures; these screenshots add no new trajectories. Live library
+hash is preserved during the check. Relevant Energy/Plotly/replay checks pass;
+five PNGs and the bounded QA log remain app-local/native Notion. No model,
+saved-design default,solver API or physical calibration changed in this follow-up.
+
+## Earlier layout at e109b67 (superseded)
 
 Tabs01–03 put inputs/shared settings on the left and outputs on the right.
 01 retains immediate energy readouts, all Plotly charts, equations and signed

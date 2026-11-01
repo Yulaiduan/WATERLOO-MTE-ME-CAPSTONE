@@ -1,6 +1,22 @@
 # Kinefold context
 
-## Latest — 2026-10-31 solver layout and support diagnosis
+## Latest — 2026-10-31 viewer-first solver layout
+
+Owner supersedes the prior01–03 inputs-left/results-right layout: main visual
+first,190px action/mode rail at left,full-width detailed parameters and results
+below. Two GPT-6.1 Sol workers handled isolated patches. Energy leads with its
+existing torque Plotly chart and Jump/Landing/Principles navigation; all four
+charts and full equations/data remain.02/03 lead with saved-pose geometry before
+run and captured player afterward; labels distinguish them,100mm grid/+x left/
++z up preserved. Rail actions run/replay/navigate,never fabricate simulation.
+Optional06/support calibration remain. See [follow-up](../solver-workspace-and-support.md#viewer-first-follow-up).
+
+Headless1440/390px checks confirm visual-before-forms,full-width forms,mode links,
+both playback clocks,repeated-run unique player IDs and visible invalid-contact
+guards. Profile writes intercepted in memory; actual prior half-step captures
+are exact-payload UI fixtures,not new physics runs. Main API/numerical laws stay.
+
+## Earlier — 2026-10-31 solver layout and support diagnosis
 
 Read [layout/support record](../solver-workspace-and-support.md). Owner prioritizes
 accurate numbers/transparent specs over long-term tool reuse. Three authorized

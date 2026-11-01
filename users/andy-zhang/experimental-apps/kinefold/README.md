@@ -4,8 +4,9 @@ Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver 
 no canonical robot or hardware acceptance is implied.
 
 The [solver layout and support check](solver-workspace-and-support.md) records
-inputs-left/results-right in01–03,optional collapsed06 setup,and the finite-link
-reference's measured support deficit. A separate flat calibration example
+viewer-first tabs01–03: compact mode/action rail at left, main visual at top,
+then full-width parameters and detailed results. It also records optional06
+setup and the finite-link reference's measured support deficit. A separate flat calibration example
 demonstrates static balance without changing the original reference or live design.
 
 The [8325 /1.5m-drop gearing study](8325-drop15-study.md) recommends a conditional
@@ -49,9 +50,14 @@ manual snapshot, while the live profile library remains local.
 - **01 Energy · jump & landing:** immediate work–energy calculations for the
   current saved mechanism, separate from simulation. Jump and landing show
   torque-versus-height plots, energy terms, the signed budget through the stroke,
-  geometry and full numerical equation tables. See [energy calculations](energy-calculator.md).
+  geometry and full numerical equation tables. The main torque plot leads the
+  page beside Jump/Landing/Principles actions; detailed parameters and the remaining
+  charts/equations follow across the full page. See [energy calculations](energy-calculator.md).
 - **02 Analytical / 03 Pymunk:** shared quarter-model case controls, playback,
   categorized result charts and exact-snapshot engine comparison described below.
+  The top mechanism viewer has a compact run/replay/navigation rail; all detailed
+  parameter groups and results span the page below it. Before running, the viewer
+  labels the saved geometry-only pose; captured simulation playback is labelled separately.
 - **04 Presets & studies:** save suspension/mechanism, motor–gearbox and input
   components independently, capture immutable multi-candidate studies, compare
   torque/speed/inertia screens and run the same captured case in both engines.

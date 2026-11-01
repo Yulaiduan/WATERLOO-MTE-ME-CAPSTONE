@@ -12,22 +12,60 @@ const engines=['analytical','pymunk'], runs=Object.fromEntries(engines.map(id=>[
 let snapshot=null,previousModel=null,clock=0,sharedTime=0,sharedSide='',pairBusy=false,viewerTimer=null,viewerSnapshotKey=null;
 const Analysis=KinefoldDynamicAnalysis,Results=KinefoldDynamicResults,Contact=KinefoldContactUI;
 const field=(id,key,label,unit,min,max,step='any')=>`<label for="${id}-${key}"><span>${label}${unit?` · ${unit}`:''}</span><input id="${id}-${key}" data-run-key="${key}" type="number" min="${min}" max="${max}" step="${step}"></label>`;
+function revealSection(target){
+  if(!target)return;
+  for(let node=target;node;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;
+  target.scrollIntoView({block:'start',behavior:'smooth'});
+}
 function arrangeWorkspace(id){
   const panel=$(id),workspace=panel.querySelector('.dyn-workspace'),output=workspace.querySelector('.solver-output'),toolbar=panel.querySelector('.dyn-toolbar');
-  const inputs=document.createElement('aside');inputs.className='dyn-inputs';inputs.setAttribute('aria-label','Shared simulation inputs');
-  inputs.innerHTML='<details class="dyn-input-disclosure" open><summary>Inputs &amp; run setup <small>Shared by both engines</small></summary><div class="dyn-input-content"></div></details>';
-  const content=inputs.querySelector('.dyn-input-content'),actions=document.createElement('div');actions.className='dyn-toolbar dyn-run-actions';
-  actions.setAttribute('aria-label','Run simulation');
-  actions.append(panel.querySelector('[data-run-primary]'),panel.querySelector('[data-run-both]'));
-  content.append(actions,panel.querySelector('.quarter-scope'),workspace.querySelector('.dyn-settings-panel'));
-  workspace.prepend(inputs);
+  const hero=document.createElement('section');hero.className='dyn-viewer-workspace';hero.setAttribute('aria-label','Mechanism viewer and run controls');
+  hero.innerHTML='<nav class="dyn-mode-rail" aria-label="Simulation actions"><span class="eyebrow">SIMULATION</span><div class="dyn-run-actions"></div><button data-dyn-replay disabled>Replay captured run</button><span class="eyebrow">INSPECT</span><button data-dyn-section="inputs">Parameters ↓</button><button data-dyn-section="results">Results &amp; plots ↓</button><button data-dyn-section="comparison">Compare engines ↓</button><button data-dyn-section="principles">Principles ↓</button></nav><div class="dyn-viewer"><div class="dyn-viewer-heading"><h3>Mechanism viewer</h3><span data-viewer-kind>Saved pose · no simulation</span></div><div class="dyn-viewer-stage"></div></div>';
+  hero.querySelector('.dyn-run-actions').append(panel.querySelector('[data-run-primary]'),panel.querySelector('[data-run-both]'));
+  hero.querySelector('.dyn-viewer').append($(id+'-status'),$(id+'-warnings'));
+  const inputs=document.createElement('section');inputs.className='dyn-inputs';inputs.setAttribute('aria-label','Shared simulation parameters');
+  inputs.innerHTML='<details class="dyn-input-disclosure" open><summary>Parameters &amp; run setup <small>Shared by both engines</small></summary><div class="dyn-input-content"></div></details>';
+  const content=inputs.querySelector('.dyn-input-content');content.append(panel.querySelector('.quarter-scope'),workspace.querySelector('.dyn-settings-panel'));
+  workspace.prepend(hero,inputs);
   const settings=content.querySelector('.dyn-settings-panel');settings.open=true;
   settings.querySelector('summary').innerHTML='Wheel input, actuation &amp; numerics';
-  toolbar.classList.add('dyn-output-actions');
-  toolbar.setAttribute('aria-label','Result exports and desktop playback');
+  toolbar.classList.add('dyn-output-actions');toolbar.setAttribute('aria-label','Result exports and desktop playback');
   const heading=document.createElement('div');heading.className='dyn-output-heading';
-  heading.innerHTML='<h3>Animation &amp; results</h3><p>Run the saved inputs, then play or scrub the captured response and inspect the plots below.</p>';
-  output.setAttribute('aria-label',(id==='analytical'?'Analytical':'Pymunk')+' animation and results');output.prepend(heading,toolbar);
+  heading.innerHTML='<h3>Results &amp; plots</h3><p>Exact captured response, categorized plots and engine comparison.</p>';
+  output.setAttribute('aria-label',(id==='analytical'?'Analytical':'Pymunk')+' results and plots');output.prepend(heading,toolbar);
+  hero.querySelector('[data-dyn-replay]').onclick=()=>{const state=runs[id];if(!state.result)return;stop(id);state.index=0;sharedTime=state.result.rows[0].t;sharedSide=state.result.rows[0].eventSide||'';drawFrame(id);play(id);};
+  for(const button of hero.querySelectorAll('[data-dyn-section]'))button.onclick=()=>{
+    const section=button.dataset.dynSection;
+    if(section==='inputs')revealSection(inputs.querySelector('.dyn-input-disclosure'));
+    else if(section==='results')revealSection(output);
+    else if(section==='comparison'){
+      const comparison=output.querySelector('[data-result-group="comparison"]');
+      if(comparison)revealSection(comparison);
+      else {status(id,'Run both & compare to capture the same inputs in both engines.');hero.querySelector('[data-run-both]').focus();}
+    }else{
+      const notes=Contact.isContact(snapshot||{})?content.querySelector('.contact-model-notes'):content.querySelector('.quarter-scope details');
+      revealSection(notes);
+    }
+  };
+}
+function drawSavedPose(id,s){
+  if(runs[id].result)return;
+  const stage=$(id).querySelector('.dyn-viewer-stage'),p=s.params,z=Kinefold.evaluate(p);
+  $(id).querySelector('[data-viewer-kind]').textContent='Saved pose · no simulation';
+  if(!z.valid){stage.innerHTML='<div class="solver-empty"><b>Saved geometry needs attention</b><span>'+esc(z.errors.join(' '))+'</span></div>';return;}
+  const spring=KinefoldDrawing.spring(p,{theta2:p.theta2,A:z.A,B:z.B,C:z.C}),points=[z.A,z.B,[z.C[0]-p.rw,0,z.C[2]-p.rw],[z.C[0]+p.rw,0,z.C[2]+p.rw],...(spring.valid?[spring.D,spring.S,spring.Q,spring.out,...spring.assemblyPoints]:[])];
+  const xs=points.map(v=>-v[0]),ys=points.map(v=>-v[2]),loX=Math.min(...xs),hiX=Math.max(...xs),loY=Math.min(...ys),hiY=Math.max(...ys),scale=Math.min(600/Math.max(200,hiX-loX),300/Math.max(200,hiY-loY));
+  const P=v=>[370+(-v[0]-(loX+hiX)/2)*scale,240+(-v[2]-(loY+hiY)/2)*scale];
+  const line=(vs,color,width=1)=>'<path d="'+vs.map((v,i)=>(i?'L':'M')+P(v).join(',')).join(' ')+'" fill="none" stroke="'+color+'" stroke-width="'+width+'"/>';
+  const ring=(v,r,color,width=1)=>'<circle cx="'+P(v)[0]+'" cy="'+P(v)[1]+'" r="'+r*scale+'" fill="none" stroke="'+color+'" stroke-width="'+width+'"/>';
+  const grid=100*scale,origin=P([0,0,0]),gridId=id+'-saved-grid';
+  let html='<defs><pattern id="'+gridId+'" x="'+origin[0]+'" y="'+origin[1]+'" width="'+grid+'" height="'+grid+'" patternUnits="userSpaceOnUse"><path d="M'+grid+' 0H0V'+grid+'" fill="none" stroke="var(--line)" stroke-width=".7"/></pattern></defs><rect width="740" height="450" fill="var(--paper)"/><rect width="740" height="450" fill="url(#'+gridId+')"/><text x="610" y="28" fill="var(--muted)" font-size="10">GRID 100 mm</text>'+line([z.A,z.B],'var(--sage)',12)+line([z.B,z.C],'var(--blue)',10)+ring(z.C,p.rw,'var(--ink)',2);
+  for(const belt of KinefoldDrawing.belts(z.reference,p.theta2))if(belt.valid)html+=line(belt.outline,'var(--muted)');
+  for(const axis of KinefoldDrawing.indices(z.reference,p.theta2))html+=ring(axis.center,axis.radius,'var(--amber)')+line([axis.center,axis.primary],'var(--red)',1.2);
+  html+=KinefoldDrawing.springSvg(spring,P,scale);
+  for(const [point,label]of [[z.A,'A · hip'],[z.B,'B · knee'],[z.C,'C · wheel']]){const[x,y]=P(point);html+='<circle cx="'+x+'" cy="'+y+'" r="3" fill="var(--paper)" stroke="var(--ink)"/><text x="'+(x+9)+'" y="'+(y-9)+'" fill="var(--ink)" font-size="11">'+label+'</text>';}
+  html+='<text x="22" y="28" fill="var(--muted)" font-size="11">SAVED MECHANISM · GEOMETRY PREVIEW ONLY</text><path d="M95 415H35m8-4-8 4 8 4M95 415V382m-4 8 4-8 4 8" fill="none" stroke="var(--ink)" stroke-width="1.4"/><text x="14" y="418" fill="var(--red)" font-size="11">+x</text><text x="105" y="387" fill="var(--blue)" font-size="11">+z</text><text x="108" y="418" fill="var(--sage)" font-size="9">⊙ +y toward you</text>';
+  stage.innerHTML='<div class="solver-player dyn-saved-pose"><svg viewBox="0 0 740 450" role="img" aria-label="Saved mechanism pose; no simulated motion or contact" data-saved-pose="'+id+'">'+html+'</svg><p class="dyn-floor-note">Saved hip-relative pose. Run to view captured world motion, floor and contact; no simulation results are shown here.</p></div>';
 }
 function dynamicShell(id){const title=id==='analytical'?'Dynamic · analytical':'Dynamic · Pymunk guided chassis';$(id).innerHTML=`<div class="solver-heading"><div><span class="eyebrow">KINEFOLD / VERTICAL CHASSIS</span><h2>${title}</h2><p>${id==='analytical'?'Reduced equations · SciPy DOP853':'Pymunk chassis body · ideal belt-coupled transmission'}</p></div><strong class="quarter-badge">¼ MODEL · SINGLE LEG</strong></div><div id="${id}-identity"></div><div class="dyn-toolbar"><button class="primary" data-run-primary="${id}">Run ${id==='analytical'?'analytical':'Pymunk'}</button><button data-run-both>Run both & compare</button><button id="${id}-export" disabled>Export run JSON</button><button id="${id}-csv" disabled>CSV</button>${id==='pymunk'?'<button data-viewer-open>Open desktop Pymunk</button><button data-viewer-close disabled>Close desktop window</button><span data-viewer-status role="status">Desktop viewer closed</span>':''}</div><div class="quarter-scope"><b>Chassis heave · fixed horizontal position and pitch · prescribed wheel height</b><details><summary>Model assumptions</summary><p>Mass m₁ moves vertically with hip A; no guide rods are drawn. The same saved mechanism geometry, finite-idler spring, masses and belt ratios feed both engines. θ₄ is locked. Pymunk integrates a real guided chassis body with the ideal linkage/inertia condensed into its force law; it is not an all-body rigid linkage simulation.</p><p>The exact V4 baseline uses m₁ = 8.75 kg, other masses = 0, no added rotor inertia and no damping. Its ideal square input has instantaneous massless-linkage pose jumps while chassis position and velocity stay continuous. Moving linkage inertia or damping requires a declared finite transition. This prescribed wheel-height test does not solve collision, tire contact, pitch, roll or four-leg redistribution.</p></details></div><div class="dyn-workspace"><details class="dyn-settings-panel"><summary>Input, actuation & numerical settings <small>Shared saved profile · expand to edit</small></summary><aside class="solver-settings" aria-label="${title} settings"><button class="primary solver-run-top" data-run-top="${id}">Run ${id==='analytical'?'analytical':'Pymunk'}</button><button class="solver-small-action" data-baseline="${id}">Apply V4 baseline + 150 mm square</button><details open><summary>Wheel input</summary>${field(id,'inputHeightMm','Square height','mm',0,1000)}${field(id,'inputPlateauMm','Plateau width','mm',.1,10000)}${field(id,'inputGapMm','Gap width','mm',.1,10000)}${field(id,'inputSpeedMmS','Input speed','mm/s',0,10000)}${field(id,'inputRiseMm','Transition distance · 0 = exact square','mm',0,1000)}${field(id,'inputDelayS','Initial delay','s',0,30)}<p>Width and gap map to time through the entered speed. Positive transition distance applies smooth ramps inside the square plateau; requested and applied inputs are plotted separately.</p></details><details open><summary>Run & actuation</summary>${field(id,'duration','Duration','s',.05,30)}${field(id,'initialVelocityDegS','Initial relative hip rate','°/s',-720,720)}${field(id,'hipTorqueNm','Constant hip torque','N·m',-10000,10000)}${field(id,'dampingNms','Hip viscous damping','N·m·s/rad',0,10000)}<button class="solver-small-action" data-hold="${id}">Copy static balance torque</button> <button class="solver-small-action" data-release="${id}">Release · torque 0</button><p>These actions set one constant torque; they do not add a feedback controller.</p></details><details><summary>Inertia assumptions</summary><label for="${id}-inertiaModel">Body inertia model<select id="${id}-inertiaModel" data-run-key="inertiaModel"><option value="uniform-rods-discs">Uniform rods & discs</option><option value="custom">Custom inertias</option></select></label>${field(id,'hipRotorInertiaKgM2','Additional joint inertia · legacy','kg·m²',0,1000)}${field(id,'I2','Femur I₂','kg·m²',0,1000)}${field(id,'I3','Tibia I₃','kg·m²',0,1000)}${field(id,'I5','Compound pulley I₅','kg·m²',0,1000)}${field(id,'I6','Wheel assembly I₆','kg·m²',0,1000)}<p>Baseline values are exactly zero for massless moving parts. Custom values are explicit assumptions. Geometry and all masses remain controlled by the builder.</p></details><details><summary>Numerical settings</summary>${field(id,'dt','Integration / maximum step','s',.0001,.01)}${field(id,'outputHz','Output sample rate','Hz',1,1000,1)}${field(id,'iterations','Pymunk constraint iterations','',10,500,1)}<p>Refine the step and compare chassis trajectories. Exact-square jump events are retained separately and do not represent a finite peak hip speed.</p></details><div class="solver-actions"><button class="primary" id="${id}-run">Run ${id==='analytical'?'analytical':'Pymunk'}</button></div></aside></details><div class="solver-output"><div class="solver-state" id="${id}-status" role="status">Ready to run the saved mechanism and input profile.</div><div class="solver-warnings" id="${id}-warnings"></div><div id="${id}-results"><div class="solver-empty"><b>Vertical chassis response</b><span>Apply the exact V4 square baseline or run your saved design.<br>No link mass is added automatically.</span></div></div></div></div>`;
 arrangeWorkspace(id);
@@ -46,7 +84,7 @@ function status(id,message,state='idle'){$(id+'-status').textContent=message;$(i
 function syncSettings(s){for(const id of engines){for(const input of $(id).querySelectorAll('[data-run-key]')){const k=input.dataset.runKey;input.value=s.solverConfig[k];input.removeAttribute('aria-invalid');if(/^I[2356]$/.test(k))input.disabled=s.solverConfig.inertiaModel!=='custom';}runs[id].invalidConfig=false;$(id+'-run').disabled=runs[id].busy;$(id).querySelector('[data-run-top]').disabled=runs[id].busy;$(id+'-identity').innerHTML=identity(s);$(id+'-identity').querySelector('button').addEventListener('click',openDesigns);}}
 function openDesigns(){KinefoldStudio.showTab('designs');}
 function saveSettings(id){try{const config={...snapshot.solverConfig};for(const input of $(id).querySelectorAll('[data-run-key]')){const key=input.dataset.runKey;config[key]=key==='inertiaModel'?input.value:input.value===''?NaN:Number(input.value);}KinefoldStudio.setSolverConfig(config);syncSettings(KinefoldStudio.getSnapshot());}catch(error){runs[id].invalidConfig=true;$(id+'-run').disabled=true;$(id).querySelector('[data-run-top]').disabled=true;for(const input of $(id).querySelectorAll('[data-run-key]'))input.setAttribute('aria-invalid','true');status(id,error.message,'error');syncRunControls();}}
-function changed(s){snapshot=s;syncSettings(s);if(previousModel!==null&&previousModel!==s.modelRevision){for(const id of engines){const state=runs[id];stop(id);if(state.result||state.busy){const label=$(id).querySelector('[data-snapshot-state]');if(label)label.textContent='Earlier snapshot · rerun the current design';status(id,'Design or run settings changed. These results belong to an earlier snapshot; run again to update.','stale');$(id+'-results').classList.add('solver-stale-content');}}}previousModel=s.modelRevision;Contact.update(s);KinefoldCaseUI.update(s);globalThis.KinefoldTerrainUI?.update(s);KinefoldMotorUI.update(s);KinefoldEnergyUI.update(s);syncRunControls();refreshComparisons();}
+function changed(s){snapshot=s;syncSettings(s);if(previousModel!==null&&previousModel!==s.modelRevision){for(const id of engines){const state=runs[id];stop(id);if(state.result||state.busy){const label=$(id).querySelector('[data-snapshot-state]');if(label)label.textContent='Earlier snapshot · rerun the current design';$(id).querySelector('[data-viewer-kind]').textContent='Earlier captured simulation · rerun to update';status(id,'Design or run settings changed. These results belong to an earlier snapshot; run again to update.','stale');$(id+'-results').classList.add('solver-stale-content');}}}previousModel=s.modelRevision;Contact.update(s);KinefoldCaseUI.update(s);globalThis.KinefoldTerrainUI?.update(s);KinefoldMotorUI.update(s);KinefoldEnergyUI.update(s);for(const id of engines)drawSavedPose(id,s);syncRunControls();refreshComparisons();}
 function syncRunControls() {
   const busy=pairBusy||engines.some(id=>runs[id].busy),contact=Contact.isContact(snapshot||{});
   for(const id of engines) {
@@ -112,9 +150,11 @@ function nearestIndex(rows,time) {
 function renderResult(id) {
   const state=runs[id];
   Results.mount($(id+'-results'),{id,result:state.result,snapshot:state.snapshot,index:state.index},{
-    comparison:currentComparison,currentTime:()=>sharedTime,onExportComparison:downloadComparison,
+    playerHost:$(id).querySelector('.dyn-viewer-stage'),comparison:currentComparison,currentTime:()=>sharedTime,onExportComparison:downloadComparison,
     onScrub:index=>{stop(id);state.index=index;sharedTime=state.result.rows[index].t;sharedSide=state.result.rows[index].eventSide||'';drawFrame(id);},
     onPlay:()=>state.playing?stop(id):play(id)});
+  $(id).querySelector('[data-viewer-kind]').textContent='Captured simulation · '+state.snapshot.name+' · revision '+state.snapshot.modelRevision;
+  $(id).querySelector('[data-dyn-replay]').disabled=false;
   drawFrame(id);
 }
 async function downloadComparison() {
