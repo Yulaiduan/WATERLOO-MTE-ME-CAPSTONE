@@ -5624,3 +5624,49 @@ Canonical robot physics is NOT APPLICABLE to this isolated member documentation.
 Read the current-calculator section in table-landing-study.md for exact reproduction, support scaling and the146→188Nm assumptions breakdown.
 Use the small native Notion archive for current source-hashed values, Plotly figures and four manually imported energy examples, preserving existing live profiles.
 Keep angle-average demand separate from actuator capacity and transient shock peaks, and retain historical dynamics/rounding/compliance qualifications rather than rerunning the old240-case search.
+
+---
+
+## Entry: 2026-10-31 — Andy Zhang — Solver workspaces and V4.5 support diagnosis
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app UI, saved example and numerical study documentation.
+- **Associated Issue/Task:** Owner requested inputs-left/results-right tabs01–03, simpler optional06 and agents; prioritizes accurate numbers and transparent assumptions over long-term reuse. Diagnose the confirmed V4.5 terrain-stability support failure, preserve live profiles and show PNG evidence. Three authorized GPT-6.1 Sol workers used separate worktrees; parent integrated/reviewed at fetched main87175bd.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.css`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.css`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-workspace.css`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/vsl-v45-flat-support-balanced-alpha0.json`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/solver-workspace-and-support.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-automatic-comparison.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+
+- **API/Interface Changes:** No numerical/API/dependency change. Direct DOM wrappers/scoped CSS put inputs left and animation/plots/results right; mobile stacks/collapses inputs. Optional06 detailed setup closes initially with explicit edit action and visible status/results. Contact explanatory prose collapses while invalid-contact guard stays visible. Energy opening max1 now matches existing validation. Preserve IDs/listeners/snapshots, plot categories/equations/exports and original references; add a separately identified manually imported flat calibration example, never silently apply it. Six raw runs, settings/source hashes, headless helpers/PNGs/ZIP remain ignored app-local/native Notion.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS parent integrated Energy UI728, Energy workspace4490, dynamic Plotly4090, automatic comparison130, motor18, pinned22, project35scenario groups, terrain52checks/35BASIC mounts, actual-bundle replay48checks. Separate headless Edge/Playwright-core1.56.1 checks1440/390px placement and post-Plotly-resize overflow, both real playback clocks, invalid-contact guard, optional06 disclosure and manual profile import; no page errors or live writes. Dynamic UI payloads exactly match actual half-step saved captures; Energy uses its valid massless-link table fixture, not an unsupported finite-link energy claim. Six actual isolated1.5s flat-floor runs compare original/calibrated/refined settings across engines;3exact pairs, source SHA, finite rows and sub-mm constraint/penetration checks pass. Calibrated max drift.123206/.002451mm becomes.030748/.000976mm with half dt; original reaches stop≈.763s and sinks269mm. Plotly audit plus five UI PNGs visually inspected;21-file1,860,925-byte ZIP CRC/SHA and local doc links/Python syntax pass. Seven native Notion attachments/report completed. Existing project-local launchers verified from unrelated cwd for running-app reuse, scoped stop/restart and HTTP200 at4191 original routes; no boot automation. No Computer skill/live-tab automation. Whitespace clean; fetched-base/staged/exact-push workspace checks apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Current35kg-chassis/45gross V4.5 alpha0/135deg retained K8/p0330.869 after adding1kg links and.5kg wheel: support85.788885N versus finite-body required95.6475N; missing joint torque−4.182656Nm. Separate initial-pose scale1.114917155 gives K8.919337241N/mm,p0368.891839524N, approximate V4 support rather than exact constant vertical force. Analytical calibrated energy residual3.04e-5→3.78e-6J; native combined constraint/force-splitting residual3.433→1.717J remains unvalidated and is not physical absorption. Passive balance is not active rough-terrain regulation; stops/impact, full vehicle, hardware/thermal and GPU not validated. Corrected an early progress claim that both calibrated drifts were<.003mm. Initial helper syntax/visibility-selector/async-resize checks and missing replay --bundle flags were corrected; final checks pass. One support diagnostic and one documentation inspection used wrong relative paths, rerun at actual root; one combined inspection output truncated and relevant source reread in bounded calls. Outside user saves changed live library hashes during task; each isolated headless run preserved its own initial hash and no old library restored. Artifacts remain Capstone-local/Notion, never Git or Downloads.
+
+## 4. Compute Saving Handoff State
+
+Read solver-workspace-and-support.md for the direct01–03 layouts, optional06 and exact support deficit/calibration qualifications.
+Use the native Notion21-file archive for frozen inputs, six actual runs, reviewed PNGs and source-hashed helpers; the new flat profile is a separate manual import, with original/live designs preserved.
+Keep static balance separate from rough-terrain height control and native energy residual from physical absorption, preserving validity guards, captured settings and project-local Start/Stop launchers.

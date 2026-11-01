@@ -1,11 +1,37 @@
 /* Native dynamic analysis disclosure groups; shared Kinefold theme and units. */
 .dyn-toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:0 0 16px}
 .dyn-toolbar [data-viewer-status]{font-size:12px;color:var(--muted);flex-basis:100%}
-.dyn-workspace{display:block}
+.dyn-workspace{display:grid;grid-template-columns:350px minmax(0,1fr);align-items:start;gap:22px}
+.dyn-inputs{min-width:0}
+.dyn-inputs [hidden]{display:none!important}
+.dyn-input-disclosure{border:1px solid var(--line);border-radius:9px;background:var(--paper);overflow:hidden}
+.dyn-input-disclosure>summary{padding:15px 16px;font-size:15px;font-weight:600;cursor:pointer;background:var(--sage-soft)}
+.dyn-input-disclosure>summary small{display:block;margin-top:4px;font-size:11px;font-weight:400;color:var(--muted)}
+.dyn-input-content{padding:14px 12px 0}
+.dyn-run-actions{display:grid;grid-template-columns:1fr;margin-bottom:14px}
+.dyn-run-actions button{width:100%;min-height:38px}
+.dyn-output-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 12px}
+.dyn-output-heading h3{font-size:18px;margin:0}
+.dyn-output-heading p{font-size:12px;line-height:1.6;color:var(--muted);margin:0;max-width:490px}
+.dyn-output-actions{margin-bottom:13px}
+.dyn-inputs .contact-mode-panel{padding:13px;margin-bottom:13px;min-width:0}
+.dyn-inputs .contact-mode-heading{align-items:start;gap:10px}
+.dyn-inputs .contact-mode-heading h3{font-size:14px}
+.dyn-inputs .contact-mode-heading>label,.dyn-inputs .contact-controls,.dyn-inputs .contact-controls>div{width:100%;min-width:0}
+.dyn-inputs .contact-controls{display:grid;grid-template-columns:minmax(0,1fr);gap:12px;margin:12px 0}
+.dyn-inputs .contact-controls>div{display:grid;gap:12px}
+.dyn-inputs .contact-controls label,.dyn-inputs .contact-mode-heading>label{display:grid;gap:6px;min-width:0;max-width:100%}
+.dyn-inputs .contact-mode-panel input:not([type=checkbox]),.dyn-inputs .contact-mode-panel select{box-sizing:border-box;min-width:0;max-width:100%;width:100%}
+.dyn-inputs .terrain-controls,.dyn-inputs .terrain-metrics{grid-template-columns:minmax(0,1fr)}
+.dyn-inputs .contact-mode-panel button{white-space:normal;max-width:100%}
+.dyn-inputs .solver-actions{padding:0;gap:8px}
+.dyn-inputs .solver-actions button{width:100%}
+.dyn-inputs .quarter-scope{margin:0 0 13px;padding:12px;font-size:11px}
+.dyn-inputs pre{white-space:pre-wrap;overflow-wrap:anywhere}
 .dyn-settings-panel{margin:0 0 18px;border:1px solid var(--line);border-radius:9px;background:var(--paper)}
 .dyn-settings-panel>summary{padding:15px 18px;font-weight:600;cursor:pointer}
 .dyn-settings-panel>summary small{font-weight:400;color:var(--muted);margin-left:12px}
-.dyn-settings-panel .solver-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border:0;border-top:1px solid var(--line);border-radius:0}
+.dyn-settings-panel .solver-settings{display:grid;grid-template-columns:minmax(0,1fr);border:0;border-top:1px solid var(--line);border-radius:0}
 .dyn-settings-panel .solver-settings>button,.dyn-settings-panel .solver-actions{margin:12px 16px;align-self:start}
 .dyn-settings-panel .solver-settings details{border:1px solid var(--line);margin:8px}
 .dyn-settings-panel .solver-settings label{font-size:12px}
@@ -29,7 +55,10 @@
 .dyn-category td,.dyn-category th{text-align:right;border-bottom:1px solid var(--line);padding:9px}
 .dyn-category td:first-child,.dyn-category th:first-child{text-align:left}
 @media(max-width:1150px){.dyn-chart-grid,.dyn-comparison-plots{grid-template-columns:1fr}}
-@media(max-width:780px){.dyn-settings-panel .solver-settings{grid-template-columns:1fr}.dyn-settings-panel>summary small{display:block;margin-left:0}.dyn-compare-actions label{flex-direction:column;align-items:flex-start}}
+@media(min-width:1600px){.dyn-workspace{grid-template-columns:370px minmax(0,1fr)}}
+@media(max-width:1100px) and (min-width:981px){.dyn-workspace{grid-template-columns:320px minmax(0,1fr);gap:18px}}
+@media(max-width:980px){.dyn-workspace{grid-template-columns:minmax(0,1fr);gap:18px}.dyn-inputs{order:0}.dyn-workspace>.solver-output{order:1}.dyn-input-disclosure>summary small{display:inline;margin-left:8px}.dyn-inputs .contact-controls{grid-template-columns:repeat(2,minmax(0,1fr))}.dyn-inputs .contact-controls>div{grid-column:1/-1}.dyn-inputs .terrain-controls,.dyn-inputs .terrain-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dyn-settings-panel>summary small{display:block;margin-left:0}.dyn-compare-actions label{flex-direction:column;align-items:flex-start}}
+@media(max-width:540px){.dyn-input-content{padding:12px 8px 0}.dyn-inputs .contact-controls,.dyn-inputs .terrain-controls,.dyn-inputs .terrain-metrics{grid-template-columns:minmax(0,1fr)}.dyn-input-disclosure>summary small{display:block;margin-left:0}.dyn-output-actions button{flex:1 1 130px}.dyn-workspace .solver-playerbar{flex-wrap:wrap}.dyn-workspace .solver-playerbar output{white-space:normal;overflow-wrap:anywhere;flex-basis:100%}.dyn-inputs .solver-settings label{align-items:start;flex-direction:column}.dyn-inputs .solver-settings input,.dyn-inputs .solver-settings select{width:100%;box-sizing:border-box}}
 
 .contact-mode-panel{border:1px solid var(--line);border-radius:9px;background:var(--paper);padding:18px;margin:0 0 18px}.contact-mode-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.contact-mode-heading h3{font-size:16px;margin:5px 0}.contact-controls{display:flex;align-items:end;gap:20px;flex-wrap:wrap;margin:14px 0}.contact-controls label{display:grid;gap:6px;font-size:12px}.contact-controls span,.contact-mode-panel p{font-size:12px;line-height:1.6;color:var(--muted);margin:10px 0}.contact-mode-panel ul{margin:8px 0;padding-left:20px}
 

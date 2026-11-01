@@ -3,6 +3,11 @@
 Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver workspace;
 no canonical robot or hardware acceptance is implied.
 
+The [solver layout and support check](solver-workspace-and-support.md) records
+inputs-left/results-right in01–03,optional collapsed06 setup,and the finite-link
+reference's measured support deficit. A separate flat calibration example
+demonstrates static balance without changing the original reference or live design.
+
 The [8325 /1.5m-drop gearing study](8325-drop15-study.md) recommends a conditional
 32:1 starting ratio (HTG90-G20 ×1.6 hip belt),using normal losses,conservative
 endpoint work and14actual paired runs. It also quantifies the rigid-impact

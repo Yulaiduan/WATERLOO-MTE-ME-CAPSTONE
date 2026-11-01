@@ -44,6 +44,14 @@ for(const f of ['contact-ui.js','energy-ui.js'])vm.runInContext(read(f),ctx,{fil
 const UI=ctx.KinefoldEnergyUI,$=s=>document.getElementById('energy').querySelector(s),click=async s=>{let el=$(s);ok(!!el,s+' exists');await el.onclick({target:el});},change=(s,value)=>{let el=$(s);el.value=value;el.onchange({target:el});};
 (async()=>{
 UI.mount('energy',document.getElementById('energy'));UI.update(realm(current));ok(JSON.stringify(current)===original,'initial mount/update no saved writes');ok(charts.length===0,'hidden initial tab defers chart work');
+const sidebar=$('.energy-sidebar'),results=$('.energy-results');
+ok(sidebar&&results&&sidebar.parentNode===results.parentNode,'input sidebar and results are sibling workspace columns');
+ok(sidebar.parentNode.children.indexOf(sidebar)<sidebar.parentNode.children.indexOf(results),'inputs precede results in mobile and keyboard order');
+for(const selector of ['[data-energy-key]','[data-energy-target]','[data-energy-case]','[data-energy-screen]','[data-energy-mode]','[data-energy-use]'])ok([...document.getElementById('energy').querySelectorAll(selector)].every(el=>el.closest('.energy-sidebar')===sidebar),selector+' stays in input sidebar');
+ok($('[data-energy-output]').closest('.energy-results')===results&&$('[data-energy-announcement]').closest('.energy-results')===results,'calculation output and status remain in result column');
+ok($('[data-energy-identity]').textContent.includes('8.75 kg per leg')&&$('[data-energy-identity]').textContent.includes('α = 0°'),'saved mass and alpha stay visible in compact identity');
+ok(!$('[data-energy-context-values]').closest('details').open,'detailed saved mechanism context is optional');
+ok($('[data-energy-case="landingOpenFraction"]').attrs.max==='1','full opening is accepted by the input range');
 ctx.KinefoldStudio.showTab('energy');ok(charts.length===4,'URL/tab reveal mounts all four plots');ok(!UI.getState().result.sampledNegativeInteriorCount,'baseline landing no negative interior budget');ok($('[data-energy-use="pymunk"]').disabled,'massless/prescribed profile blocks handoff only');ok($('[data-energy-handoff]').textContent.includes('Wheel mass'),'actionable mass limitation');
 await click('[data-energy-two-metre]');near(UI.getState().result.requiredJointNm,232.3451518866197);ok(charts.length===8,'height edit recomputes plots without run');ok(!current.caseConfig,'height edit only analysis metadata');
 // Saved Studio mounting pitch participates immediately, survives save/reload,
@@ -76,6 +84,9 @@ current.params.alpha=0;current.motorConfig.gearRatio=10;UI.update(realm(current)
 const beforeZero=realm(current);current.params.alpha=45;current.energyConfig={...P.energyDefaults,dropHeightMm:0};UI.update(realm(current));ok(UI.getState().result.requiredJointNm===0&&UI.getState().result.endpointKineticBudgetJ<0,'tilted zero-height landing keeps signed unreachable endpoint');ok($('[data-energy-output]').textContent.includes('earlier arrest/reversal'),'negative landing demand explains earlier arrest');
 current.torqueTargetConfig={...P.torqueTargetDefaults,jumpHeightMm:0};await click('[data-energy-mode="jump"]');ok(UI.getState().result.requiredJointNm===0&&UI.getState().result.endpointKineticBudgetJ>0,'tilted zero-height jump keeps surplus');ok($('[data-energy-output]').textContent.includes('positive endpoint kinetic surplus'),'negative jump demand explains apex not established');current=beforeZero;UI.open('landing');
 await click('[data-energy-remove]');ok(!current.energyConfig&&current.torqueTargetConfig,'reset removes only calculator metadata');ok(requests===0,'no dynamics/network calls from calculator or handoff');
+current=P.baseline();UI.open('landing');change('[data-energy-case="landingOpenFraction"]',1);change('[data-energy-key="compressionReserveDeg"]',0);
+near(UI.getState().result.qStartDeg,current.params.te);near(UI.getState().result.angularTravelDeg,65);ok(UI.getState().result.boundaryOnly,'full-open UI edit preserves explicit zero-reserve boundary warning');
+ok(document.getElementById('energy').querySelectorAll('[data-energy-chart]').every(el=>el.closest('.energy-results')===results),'all rendered plots remain in result column');
 const html=read('index.html');ok(html.indexOf('data-tab="builder"')<html.indexOf('data-tab="energy"')&&html.indexOf('data-tab="energy"')<html.indexOf('data-tab="analytical"'),'energy before dynamics');ok(read('app.js').includes("['builder','energy','analytical','pymunk','presets','flow','actuator','conventions']"),'stable tab IDs / conventions last');ok(!read('solvers.js').includes('KinefoldEnergyUI.mount(id'),'no duplicate energy calculators in dynamics');
 ok(document.querySelectorAll('label').every(label=>!label.querySelector('label')),'valid nonnested labels');
 console.log('PASS '+checks+' Energy DOM/VM assertions; '+charts.length+' BASIC-compatible chart mounts; no live browser QA.');

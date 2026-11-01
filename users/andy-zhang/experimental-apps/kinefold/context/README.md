@@ -1,5 +1,24 @@
 # Kinefold context
 
+## Latest — 2026-10-31 solver layout and support diagnosis
+
+Read [layout/support record](../solver-workspace-and-support.md). Owner prioritizes
+accurate numbers/transparent specs over long-term tool reuse. Three authorized
+GPT-6.1 Sol workers implement direct01–03 inputs-left/results-right layouts and
+optional collapsed06 setup. All calculations/capture semantics stay. Contact
+notes collapse but errors stay visible; Energy opening max now1. Headless1440/
+390px checks use in-memory profiles and exact actual saved-capture playback.
+
+Confirmed current V4.5 terrain is passive:8.75kg chassis,1kg rods,.5kg wheel,
+alpha0,theta135,oldK8/p0330.869,torque0. Required finite-body support95.6475N
+versus85.788885N; effective support mass9.75kg,missing joint torque−4.182656Nm.
+Six actual flat checks: original stop≈.763s/sink269mm. Scaling K/p0 by1.114917155
+gives8.919337241N/mm /368.891839524N. Calibrated drift.1232/.00245mm; half-step
+.03075/.000976mm. Native combined energy residual3.433→1.717J remains numerical
+uncertainty. Separate tracked flat calibration profile; reference/live library
+untouched. Current35kg-chassis/45gross differs from earlier45chassis/55gross.
+Static balance is not active rough-terrain height regulation; see full report.
+
 ## Latest — 2026-10-31 screenshot torque reproduced in current calculator
 
 See [current calculator reconstruction](../table-landing-study.md#current-calculator-reproduction--2026-10-31).

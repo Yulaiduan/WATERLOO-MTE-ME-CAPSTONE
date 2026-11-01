@@ -40,11 +40,22 @@ mechanical design under a new identity, without replacing old named designs.
 
 The template selects prescribed-height mode with explicit 10 mm C2 transitions
 on the 150 mm square input, because finite masses cannot undergo imposed
-instantaneous height jumps. Actual terrain-contact engines retain their
-massless-link restriction; V4.5 is not a supported contact fixture. The separate
+instantaneous height jumps. Current actual-contact engines also support the
+finite V4.5 rods/free wheel; the massless-only restriction was superseded. The separate
 [actuator calculator](../actuator-calculator.md) includes the link/wheel masses
 in its inertia and optimistic grounded-wheel launch calculations. The older
 Energy tab retains its chassis-only, massless-link guard.
+
+## V4.5 flat support calibration · 2026-10-31
+
+[V4.5 passive support balanced at135deg,alpha0](vsl-v45-flat-support-balanced-alpha0.json)
+is an independent diagnostic profile: same reference masses/geometry,
+K8.919337241392N/mm,p0368.891839524N,stationary flat floor,zero motor,
+damping1Nms/rad,1.5s and0.25ms step. Actual analytical/native maximum height
+drift is0.030748/0.000976mm. This is initial-pose static balance,not active terrain
+height control or exact support at every angle. See [derivation and limitations](../solver-workspace-and-support.md).
+Original reference/live library unchanged; import the new identity separately.
+The older Energy calculator still rejects moving link mass.
 
 ## Verification and limits
 
