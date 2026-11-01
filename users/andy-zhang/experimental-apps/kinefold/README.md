@@ -52,6 +52,14 @@ manual snapshot, while the live profile library remains local.
   followed directly by all 17 equilibrium charts in categorized expandable groups.
   Diagnostic ranges inspect the same builder design without editing its physical
   stops. See [plot coverage and controls](equilibrium-plots.md).
+  **Suspension → Find suspension fit** exposes the already retained Jon V4
+  optimizer. Choose Lock/Solve for k, horn radius/offset, idler u/v/radius and
+  reference force, then **Solve suspension → Apply fit**. The proposed fit shows
+  before/after peak residual hip torque across 6,501 checked working poses,
+  parameter values, numerical bounds and warnings; JSON export records the full
+  calculation. Cancel stops the worker. Geometry, masses, pitch and current loads
+  stay fixed. Apply changes the working design; save the named profile separately.
+  This is a bounded sampled minimax fit, not a guaranteed global optimum.
   Dynamic run controls live in02/03; saved designs retain them without a duplicate
   editor in the00 library. Archived fixed-hip settings remain read-only.
 - **01 Energy · jump & landing:** immediate work–energy calculations for the

@@ -5814,3 +5814,44 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. End
 Use energy-calculator.md and the current app context for selected finite-link endpoint equations,massless comparison and actual-mass dynamic handoff.
 Keep the exact pinned Git oracle/reference hashes,previous coupling/support limitations and viewer-first UI;old side-worktree patches are already merged or superseded.
 Use the durable project-local Start/Stop launchers at4191 and native Notion PNGs,keeping live saved profiles intact and raw runs out of Git.
+
+---
+
+## Entry: 2026-11-01 — Andy Zhang — Expose suspension Lock/Solve fit
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app mechanism studio.
+- **Associated Issue/Task:** Owner requested a quick Jon V4/V5-style Solve button with per-variable locks and asked whether it already exists. Confirmed VSLFit is retained but has no builder UI; one authorized GPT-6.1 Sol worker added the adapter/UI in a separate c736647 worktree,with parent review and real-worker QA. Separate concurrent Energy changes in durable main are preserved and excluded.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/index.html`
+- `users/andy-zhang/experimental-apps/kinefold/preview.py`
+- `users/andy-zhang/experimental-apps/kinefold/style.css`
+- `users/andy-zhang/experimental-apps/kinefold/suspension-fit.js`
+- `users/andy-zhang/experimental-apps/kinefold/suspension-fit-worker.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-suspension-fit.cjs`
+
+- **API/Interface Changes:** App-owned KinefoldSuspensionFit.solve/mount wraps unchanged lexical VSLFit. Seven springK,hornR,Sv,rs,p0,nu,Su Lock/Solve selectors; source defaults hold k,Sv,rs,nu. Cancellable Worker returns proposed fit,explicit Apply updates only those fields via existing shared working-copy API; named save stays explicit. Source load/frame mapping uses Kinefold.reference,including Fy=-Fx for global loads. Before/after6501-pose peak residual torque,bounds,warnings,values and captured JSON shown; invalid baseline is unavailable,not fabricated. Physical edits cancel/invalidate stale results; pose-only edits preserve proposals. Add two served assets and load adapter before app. No vendored reference/hash,model equation,dependency,persistence schema,canonical or shared-interface change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS26220source-equivalent adapter assertions including exact locks,only-seven-fields,finite-link tilted global/contact loads,dense maxima,input immutability,invalid-start repair and rejected removed law;project35scenario groups/retained-model1793. Headless Edge real Worker checks default/p0-only masks,6501dense result,solve/export purity,pose-only compatibility,explicitApply/settings preservation,stale result removal after edits and afterApply,Cancel and disabled suspension.1440/390px sizing/no horizontal overflow;zero page errors,all QA profile/export actions fulfilled in memory. Captured test1:6 profile peak5.622698277→.026583783Nm; default fitted hornR68.643159458mm,p0288.133835107N,Su8.999038796mm with k8,Sv100,rs10,nu0 fixed;other geometry/masses/alpha/shared settings unchanged. Reviewed panel/builder PNGs,app-local QA log/helper;no new dynamic rollout. Live library SHA29fb6a8af629b88685954094d92ad06553cba51d275e49d245db5a2f2da37f13 unchanged through isolated QA. Actual durable launcher restart/reuse from unrelated cwd succeeds at4191; server whitelist adds only intended assets. Whitespace/syntax and fetched-base/staged/exact-push workspace gates apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Bounded sampled minimax static residual at current loads is not a guaranteed global optimum,physical packaging/spring-stroke/strength/contact/terrain/hardware validation. Free rs may reach the point-pulley limit and source warnings remain. No named profile/live library overwritten; local QA uses a frozen captured copy. Initial browser helper tried a collapsed nested alpha input,then opened its ancestor details before edit; final test passes. Initial durable-copy guard correctly stopped on a separate concurrent energy-analysis.js edit; owned paths are integrated separately without reverting it. Earlier actual support/coupling/native energy-residual qualifications remain. No Computer skill/live-tab automation,new dependencies,broad search or Downloads output.
+
+## 4. Compute Saving Handoff State
+
+Open00Suspension and choose Lock/Solve,then Solve suspension,review peaks/values and Apply fit;save the named design separately.
+Keep the retained V4 optimizer/hash unchanged and use the captured JSON plus bounds/warnings to debug fits without claiming a global or hardware optimum.
+Preserve concurrent Energy work,live profiles and existing project-local launchers;PNG evidence remains app-local/native Notion.

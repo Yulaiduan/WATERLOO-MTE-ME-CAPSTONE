@@ -33,6 +33,7 @@ URL = "http://127.0.0.1:4191/"
 IDENTITY = hashlib.sha256(str(ROOT).casefold().encode()).hexdigest()[:20]
 STATE = ROOT / ".preview"
 ASSETS = {"index.html", "style.css", "app.js", "model.js", "variables.js",
+          "suspension-fit.js", "suspension-fit-worker.js",
           "reference-v4.js", "conventions.js", "reference.json", "preview-geometry.js",
           "solvers.js", "solver-style.css", "project-store.js", "designs.js",
           "equilibrium-data.js", "equilibrium-diagrams.js", "equilibrium.js", "equilibrium.css",

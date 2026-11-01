@@ -1,5 +1,29 @@
 # Kinefold context
 
+## Latest — 2026-11-01 suspension Lock/Solve button
+
+Owner requested Jon-style spring-variable locks and asked whether it already
+exists. VSLFit was already in the retained reference but had no builder control.
+New app-owned adapter/panel exposes it under00Suspension; no vendor/reference
+hash or algorithm edit. Default holds k,Sv,rs,nu and solves hornR,p0,Su. Worker
+uses181search poses/6starts/240iterations and6501densechecks at current masses,
+mounting pitch and prescribed loads. Only seven spring values can change.
+Solve proposes;Apply updates shared working params/plots,not the named profile.
+Export includes inputs,locks,bounds,settings,values,warnings and checked peaks.
+Cancel/stale guards preserve the design; pose-only changes retain the proposal.
+
+PASS26220adapter checks across source-equivalent baseline,finite tilted global
+Fx,contact-load and all-locked fixtures,plus invalid-spring repair;project35 and
+retained-model1793 pass. Real headless worker at1440/390px confirms selector
+masks,solve/export purity,Apply-only spring fields,unchanged shared settings,
+pose preservation,stale guards,cancellation and disabled-spring behavior.
+Captured coupling example peak5.622698→.0265838Nm across100–165deg; k8,Sv100,
+rs10,nu0 remain fixed,proposed hornR68.643159mm,p0288.133835N,Su8.999039mm.
+This is static residual torque,not new contact/terrain/hardware evidence or a
+global optimum. QA profiles/exports intercepted in memory;no live calibration.
+PNG/report/helpers stay ignored app-local/native Notion. A separate concurrent
+durable-checkout Energy edit is preserved and excluded from this contribution.
+
 ## Latest — 2026-11-01 side-work integration
 
 Owner requested merging all side-chat changes. Integration from fetched0f071d6
