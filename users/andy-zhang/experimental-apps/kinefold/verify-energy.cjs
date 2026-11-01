@@ -15,8 +15,7 @@ const H=clone(off);H.energyConfig={...P.energyDefaults,dropHeightMm:200};const h
 const atCapacity=clone(p);atCapacity.energyConfig={...P.energyDefaults,dropHeightMm:z.capacityMm};near(A.calculate(atCapacity).requiredJointNm,20);
 const clearance=clone(p);clearance.energyConfig={...P.energyDefaults,targetClearanceMm:500};const limited=A.calculate(clearance);near(limited.endClearanceMm,500,1e-7);ok(limited.qEndDeg<164&&limited.limiter==='Target ground clearance','clearance constraint can dominate stop');
 near(limited.qEndDeg,180-Math.asin((500-p.params.rw+50)/(2*p.params.L2))*180/Math.PI,1e-8);
-const constant=clone(p);constant.params.springLaw='constant';const cf=A.calculate(constant),ref=ctx.Kinefold.reference(constant.params),sp=ctx.KinefoldV4.VSLSpring;
-near(cf.springReleasedJ,constant.params.p0*(sp.geometry(ref,cf.qStartDeg).payout-sp.geometry(ref,cf.qEndDeg).payout)/1000);
+const removed=clone(p);removed.params.springLaw='constant';assert.throws(()=>A.calculate(removed),/removed/);checks++;
 const wheel=clone(p);wheel.params.m6=20;near(A.calculate(wheel).requiredJointNm,z.requiredJointNm);
 const boundary=clone(p);boundary.energyConfig={...P.energyDefaults,compressionReserveDeg:0};ok(A.calculate(boundary).boundaryOnly,'zero reserve is labeled boundary only');near(A.calculate(boundary).qEndDeg,165);
 const geared=clone(p);geared.motorConfig={...P.motorDefaults,enabled:true,gearRatio:10,rotorInertiaKgM2:.2,coulombFrictionNm:1,viscousFrictionNms:1,commandBasis:'motor'};const gear=A.calculate(geared);near(gear.requiredJointNm,z.requiredJointNm);near(gear.requiredShaftNm,z.requiredJointNm/10);near(gear.availableShaftNm,2);

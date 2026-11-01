@@ -239,14 +239,14 @@ class ViewerChecks(unittest.TestCase):
         self.assertEqual(state['state'], 'closed')
         self.assertTrue(state['selfTestPassed'], state)
 
-    def test_gui_constant_force_compression_seats(self):
+    def test_gui_v4_compression_seats(self):
         if not GUI:
-            self.skipTest('Use --gui for actual constant-force Tk canvas drawing.')
-        request = self.request(params={**self.params, 'm6': 1.5, 'springLaw': 'constant'},
+            self.skipTest('Use --gui for actual V4 spring Tk canvas drawing.')
+        request = self.request(params={**self.params, 'm6': 1.5, 'springLaw': 'v4'},
                                contactConfig={'mode': 'terrain-contact', 'friction': .8, 'restitution': 0, 'drive': 'free'},
-                               runConfig={**self.config, 'duration': .3, 'dt': .00025, 'inputHeightMm': 0})
+                               runConfig={**self.config, 'duration': .3, 'dt': .00025, 'inputHeightMm': 0, 'initialVelocityDegS': 30})
         result = simulate_snapshot(ViewerService._validate(request))
-        window = PlaybackWindow(result, 'Constant cable force verification', mock.Mock(), os.getpid())
+        window = PlaybackWindow(result, 'V4 spring compression verification', mock.Mock(), os.getpid())
         try:
             window.root.update_idletasks()
             lengths = []

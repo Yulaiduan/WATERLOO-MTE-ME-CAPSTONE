@@ -5749,3 +5749,68 @@ Canonical robot physics is NOT APPLICABLE to this isolated member contribution. 
 Read coupling-validation.md for the exact2:1/1:6 carrier equations,free-input boundary and qualified ideal AB reaction comparison.
 Import the separately captured coupling profile manually and use the native Notion24-file archive for frozen settings,source hashes,selected raw evidence and final PNGs.
 Keep the D checkout's concurrent spring/Energy edits intact and separate from this publication,retaining the native energy/slack/loaded-drive limitations and existing project-local launchers.
+
+---
+
+## Entry: 2026-11-01 — Andy Zhang — Integrate Kinefold side-work
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Isolated Kinefold member app,energy/spring law and developer reference checks.
+- **Associated Issue/Task:** Owner requested merging all side-chat changes after the coupling audit. Three authorized GPT-6.1 Sol agents reviewed finite-link Energy,spring/provenance checks and historical worktree inventory. Frozen dirty D-checkout patch at7ea04c5 integrated in an approved member worktree based on fetched0f071d6; existing coupling audit,portable profile,viewer-first layout and00cleanup retained. Older worker/snapshot copies are already published or superseded,not cherry-picked; separate wheel-leg-lab experiments untouched.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.js`
+- `users/andy-zhang/experimental-apps/kinefold/app.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/desktop_viewer.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-workspace.css`
+- `users/andy-zhang/experimental-apps/kinefold/equilibrium.js`
+- `users/andy-zhang/experimental-apps/kinefold/model.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-flow.js`
+- `users/andy-zhang/experimental-apps/kinefold/preview-geometry.js`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/reference-source.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/validate_static.py`
+- `users/andy-zhang/experimental-apps/kinefold/variables.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-alpha.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-link-masses.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-workspace.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-equilibrium-diagrams.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-equilibrium.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-spring-playback.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_contact_work.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_spring_playback.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_viewer.py`
+
+- **API/Interface Changes:** V4 is sole supported springLaw; removed constant-cable-force imports fail explicitly in JS/Python/storage. No silent migration,mass deletion or support retune. Energy calculate/workspace/jump accept explicit includeLegMasses to sum world body-COM potential and selected falling/flight masses. Local UI preference preserves saved params and exports its mass basis. Physical dynamic handoff always recalculates actual saved masses,fixing the display-approximation coupling. Developer oracle helper loads exact5e52a12 Git HTML,verifies recorded full/block SHA and current analytical blocks,allowing unrelated upstream UI edits without changing reference.json/reference-v4.js. Missing history/hash/equation drift fails. Full generalized equations/limitations documented; legacy report scripts remain historical. No API schema,dependency,canonical,shared-interface or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS worker Energy119/workspace2262/alpha92854 across240fixtures/finite2488/UI1098 with80BASIC chart mounts; independent COM,potential,passive/wheel treatment,zero-masslimit,immutable toggles,exports and saved-mass physical handoff. Model1793/equilibrium9404/FBD11758/drawing1123/actuator6162;project35groups/profile17. Eight actual short spring-on/off prescribed/contact A/P runs,4506SVG/native playback checks,max chassis difference.0001373mm. Existing static-limit suite72original-V4 cases/144equilibrium runs plus4negative controls;worst torque5.68e-14Nm,spring3.41e-13N,geometry1.14e-13mm. Dynamics6/contact-work6/viewer9headless pass;5desktop GUI checks skipped. Oracle rejects missing revision,altered pinned HTML and numerical upstream drift; full/block reference hashes untouched. Parent combined model1793,EnergyUI1098,finite2488,preset55/analysis103/flowUI49 pass. Headless Edge1440/390px uses integrated static assets,profilewrites fulfilled in memory,unexpected POST blocked,earlier actual exact paired captures for both replay clocks;no pageerrors. Tests allfourEnergy charts,toggle purity/reload persistence,full-width parameters,duplicate00absence and one native viewer per tab. Live library SHA bcd91e3dd6ab02d1496ab9808bb5503748972466983b88a34f98c5f4dae4bae3 preserved. Four PNGs reviewed; native landing/jump uploads completed; helpers/PNGs/frozen patch remain ignored app-local. Durable launcher reused successfully from unrelated cwd; same unchanged launcher/server actual start/stop/restart verified earlier this session. Basic whitespace/doc-link/syntax and fetched-base/staged/exact-push gates apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Endpoint Energy remains a conservative work screen,not impact/peak/takeoff validation; wheel impact energy omitted in landing,wheel mass included locked-flight. At alpha20 with originalK8/p0330.869,m1=8.75,m2=m3=1,m6=.5,H2m,2/3opening/1deg reserve:landing287.937Nm versus229.926massless,jump196.814Nm versus157.982;clearance305.409mm means50mm target nonbinding. Prior numerical energy residual,chassis-reaction/slack/loaded-drive/hardware/thermal/full-vehicle/GPU limitations remain. Side law-removal source previously failed whole-upstream-HTML checksum; pinned-source plus current-block checks now preserve meaningful oracle coverage. Parent QA first used a descendant selector although Plotly class is on its host,then an incomplete torqueTarget fixture that correctly failed import and loaded defaults;both helper mistakes corrected before final passes. One doc patch failed atomically on context and was reapplied. No Computer skill/live-user-tab automation,broad search,extra raw archive,library restore or Downloads output. Historical context retained rather than rewritten as new evidence.
+
+## 4. Compute Saving Handoff State
+
+Use energy-calculator.md and the current app context for selected finite-link endpoint equations,massless comparison and actual-mass dynamic handoff.
+Keep the exact pinned Git oracle/reference hashes,previous coupling/support limitations and viewer-first UI;old side-worktree patches are already merged or superseded.
+Use the durable project-local Start/Stop launchers at4191 and native Notion PNGs,keeping live saved profiles intact and raw runs out of Git.

@@ -66,7 +66,7 @@ globalThis.KinefoldDrawing = (() => {
     const fixedBar=[along(125,-20),along(125,20)],movingBar=[along(125+lengthMm,-20),along(125+lengthMm,20)];
     const rails=[[-18,18].map(n=>along(125,n)),[-18,18].map(n=>along(125+80+spanMm,n))];
     const assemblyPoints=[...fixedBar,...movingBar,...wire,...rails.flat()];
-    return {enabled:true,valid:true,law:params.springLaw==='constant'?'Ideal constant cable force':'V4 linear coil',
+    return {enabled:true,valid:true,law:'V4 linear spring',
       A,D:at(z.D),Q:at(z.Q),S:at(z.S),out:at(z.out),remote:movingSeat,arc,
       forceN:z.force,torqueNm:z.tauS,payoutMm:z.payout,deltaMm:z.delta,
       fixedSeat,movingSeat,fixedBar,movingBar,wire,rails,assemblyPoints,lengthMm,

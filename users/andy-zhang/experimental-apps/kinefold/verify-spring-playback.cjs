@@ -1,6 +1,6 @@
 /** Verify frame-driven spring SVG against actual Python-engine fixtures.
  * Invocation: called by verify_spring_playback.py with JSON on stdin.
- * Inputs: captured constant-force/contact and prescribed results (mm/deg/N).
+ * Inputs: captured V4 spring contact and prescribed results (mm/deg/N).
  * Outputs: bounded assertions and two ignored .preview SVG frame illustrations.
  * Pure geometry/data checks; no browser screenshot or hardware claim.
  */
@@ -16,8 +16,9 @@ for(const result of fixtures){
  const p=result.params;
  for(const i of [0,Math.floor(result.frames.length/2),result.frames.length-1]){
   const f=result.frames[i],z=D.spring(p,f);
-  assert.equal(z.law,'Ideal constant cable force');assertions++;
-  near(z.forceN,p.p0);point(z.D,f.D);point(z.Q,f.Q);
+  assert.equal(z.law,'V4 linear spring');assertions++;
+  const expected=ctx.KinefoldV4.VSLSpring.state(ctx.Kinefold.reference(p),f.theta2);
+  near(z.forceN,expected.force);point(z.D,f.D);point(z.Q,f.Q);
   near(dist(z.S,z.Q),p.rs);near(dist(z.S,z.out),p.rs);
   point(z.arc[0],z.Q);point(z.arc.at(-1),z.out);
   const radial=z.Q.map((n,k)=>n-z.S[k]),tangent=z.D.map((n,k)=>n-z.Q[k]);
@@ -59,7 +60,7 @@ if(contact){
  const out=path.join(__dirname,'.preview');fs.mkdirSync(out,{recursive:true});
  for(const index of [0,contact.frames.length-1]){
   const state={snapshot:{params:contact.params},result:contact,index},render=C.render(state);
-  assert.ok(render.html.includes('Ideal constant cable force')&&render.html.includes('data-spring-payout-mm'));assertions++;
+  assert.ok(render.html.includes('V4 linear spring')&&render.html.includes('data-spring-payout-mm'));assertions++;
   const style=':root{--paper:#f6f5ee;--line:#e3e7df;--sage-soft:#e2ebdf;--sage:#557b64;--ink:#263c34;--blue:#527e98;--amber:#bb8b3c;--muted:#68736b;--red:#ad6054;--soft:#e9eee2}';
   fs.writeFileSync(path.join(out,`spring-contact-frame-${index}.svg`),`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 740 450"><style>${style}</style>${render.html}</svg>`);
  }

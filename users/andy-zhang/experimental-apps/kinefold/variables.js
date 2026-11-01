@@ -22,8 +22,8 @@ globalThis.KinefoldFields = [
       ['tc','θ₂ᶜ','Compression stop','°',165,90,270,'Upper working θ₂ endpoint. Names do not guarantee monotonic height in arbitrary geometry.']]]]},
   {id:'suspension',title:'Suspension',note:'Constant support & cable routing',sections:[
     ['Spring & attachment',[
-      ['springK','k','Spring rate','N/mm',8,0,1000,'V4 linear coil rate. F_s = max(0, p₀ + k[c−c₀]); ignored by the ideal constant-force law.'],
-      ['p0','p₀','Reference force','N',330.8692828089511,0,100000,'V4 cable force at θ₂ = 90°; a force, not extra predeflection. For the ideal constant-force law this is the cable force at every pose.'],
+      ['springK','k','Spring rate','N/mm',8,0,1000,'V4 linear spring rate. F_s = max(0, p₀ + k[c−c₀]); linkage geometry is tuned for approximately constant upward support.'],
+      ['p0','p₀','Reference force','N',330.8692828089511,0,100000,'V4 cable force at θ₂ = 90°; a force, not extra predeflection. Cable tension changes with payout; it is not the upward chassis support force.'],
       ['hornR','r_h','Horn radius','mm',62.22694951186731,.1,2000,'Distance A to cable pin D, rotating rigidly with the femur.'],
       ['nu','ν','Horn offset','°',0,-360,360,'Angular offset of A→D from the B→A vector. D = r_h[cos(θ₂+ν), sin(θ₂+ν)] in u/v.'],
       ['Su','S_u','Idler · local u','mm',9.387776728149294,-2000,2000,'Fixed idler centre S coordinate along local +u (rearward at α = 0).'],

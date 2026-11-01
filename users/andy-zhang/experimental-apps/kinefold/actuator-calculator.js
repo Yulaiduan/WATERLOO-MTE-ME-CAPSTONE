@@ -91,7 +91,8 @@
     for(const x of Object.values(z.sites)){gravity+=x.mass*p.g*x.site[0][1];gravityQ+=x.mass*p.g*x.site[1][1];}
     if(balance==='profile'&&p.springEnabled){
       if(!root.KinefoldV4?.VSLSpring)throw Error('The V4 spring reference must be loaded for profile suspension.');
-      const r=root.Kinefold?.reference?root.Kinefold.reference(p):{...p,springK:p.springLaw==='constant'?0:p.springK};
+      if(p.springLaw!=='v4')throw Error('Constant cable-force spring support has been removed. Use the V4 linear spring.');
+      const r=root.Kinefold?.reference?root.Kinefold.reference(p):{...p};
       const s=root.KinefoldV4.VSLSpring.state(r,q/RAD);
       if(!s.valid||!Number.isFinite(s.energy)||!Number.isFinite(s.tauS))throw Error(s.reason||'Invalid spring route.');
       if(s.slack)throw Error('Saved spring route is slack; recovery is outside this screening calculation.');

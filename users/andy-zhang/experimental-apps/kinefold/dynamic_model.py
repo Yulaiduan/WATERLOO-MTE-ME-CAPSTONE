@@ -50,8 +50,10 @@ def validate(params, config):
         raise ValueError('Unknown builder parameters: ' + ', '.join(sorted(set(params) - allowed)))
     if type(params.get('springEnabled')) is not bool:
         raise ValueError('springEnabled must be boolean.')
-    if params.get('springLaw') not in ('constant', 'v4') or params.get('loadMode') not in ('weight', 'global', 'contact'):
-        raise ValueError('Unknown spring law or loading convention.')
+    if params.get('springLaw') != 'v4':
+        raise ValueError('Constant cable-force spring support has been removed. Use the V4 linear spring for gravity compensation.')
+    if params.get('loadMode') not in ('weight', 'global', 'contact'):
+        raise ValueError('Unknown loading convention.')
     for key in ('L2', 'L3', 'ra', 'rb', 'rc', 'rd', 're', 'rf', 'rw', 'hornR'):
         if params[key] <= 0:
             raise ValueError(key + ' must be positive.')
@@ -347,7 +349,7 @@ class Model:
             return dict(force=0, torque=0, energy=0)
         z = self.geometry(q)
         delta = z['payout'] - self.reference_payout
-        rate = 0 if self.p['springLaw'] == 'constant' else self.p['springK']
+        rate = self.p['springK']
         F = max(0, self.p['p0'] + rate * delta)
         if F > 0 and math.hypot(*z['unit']) < .5:
             raise ValueError('Coincident cable pin/idler has no force direction.')

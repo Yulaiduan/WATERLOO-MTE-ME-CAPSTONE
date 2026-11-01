@@ -91,8 +91,8 @@ def _project(value):
     for key in numeric_params:
         if type(params.get(key)) not in (int, float):
             raise StorageError(f"Missing numeric parameter {key}.")
-    if params["loadMode"] not in ("weight", "global", "contact") or params["springLaw"] not in ("v4", "constant") or type(params["springEnabled"]) is not bool:
-        raise StorageError("Unknown load or spring convention.")
+    if params["loadMode"] not in ("weight", "global", "contact") or params["springLaw"] != "v4" or type(params["springEnabled"]) is not bool:
+        raise StorageError("Only the V4 linear spring is supported; constant cable-force designs have been removed. Check the load convention as well.")
     if params["L2"] <= 0 or params["L3"] <= 0 or params["g"] < 0 or any(params[k] < 0 for k in ("m1", "m2", "m3", "m5", "m6")) or not params["te"] <= params["theta2"] <= params["tc"]:
         raise StorageError("Invalid geometry, mass or pose bounds.")
     view = value["view"]

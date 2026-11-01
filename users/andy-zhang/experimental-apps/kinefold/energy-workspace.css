@@ -6,6 +6,8 @@
 .energy-rail { border:1px solid var(--line); border-radius:10px; padding:16px; background:var(--paper); }
 .energy-rail button { width:100%; max-width:100%; white-space:normal; text-align:left; padding:10px 12px; }
 .energy-rail p { color:var(--muted); font-size:12px; line-height:1.55; margin:14px 0 0; }
+.energy-mass-toggle { display:flex; align-items:start; gap:8px; margin-top:16px; font-size:13px; font-weight:600; line-height:1.5; }
+.energy-mass-toggle input { width:auto; flex:none; margin-top:3px; }
 .energy-mode { display:flex; flex-direction:column; gap:8px; margin:12px 0 8px; }
 .energy-mode button[aria-pressed="true"] { background:var(--sage); color:var(--paper); border-color:var(--sage); }
 .energy-primary > .energy-chart-card { margin-bottom:16px; }

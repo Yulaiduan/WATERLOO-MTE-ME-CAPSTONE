@@ -12,7 +12,7 @@ const base=P.baseline();
 // Derive each world point directly from the two link vectors, not VSL.state,
 // the production guide axis or the phi0=0 cos(alpha) simplification.
 function world(p,q){const b=p.phi0+(180-q)*(p.ra/p.rb-1),u=-p.L2*Math.cos(q*R)-p.L3*Math.cos(b*R),v=-p.L2*Math.sin(q*R)-p.L3*Math.sin(b*R);return {u,v,x:-Math.cos(p.alpha*R)*u-Math.sin(p.alpha*R)*v,z:-Math.sin(p.alpha*R)*u+Math.cos(p.alpha*R)*v,h:p.rw+Math.sin(p.alpha*R)*u-Math.cos(p.alpha*R)*v};}
-for(const alpha of [0,10,20,30,45])for(const phi0 of [0,20])for(const law of ['v4','constant'])for(const enabled of [false,true])for(const limit of [50,450])for(const H of [0,100,2000])for(const kind of ['jump','landing']){
+for(const alpha of [0,10,20,30,45])for(const phi0 of [0,20])for(const law of ['v4'])for(const enabled of [false,true])for(const limit of [50,450])for(const H of [0,100,2000])for(const kind of ['jump','landing']){
   const p=clone(base);Object.assign(p.params,{alpha,phi0,springLaw:law,springEnabled:enabled,m6:1.5,...phi0?{te:110}:{}});
   p.motorConfig={...P.motorDefaults,enabled:true,gearRatio:7,coggingAmplitudeNm:.7,coggingPeriodsPerRev:3,coggingPhaseDeg:27};
   p.energyConfig={...P.energyDefaults,dropHeightMm:H,targetClearanceMm:limit};p.torqueTargetConfig={...P.torqueTargetDefaults,jumpHeightMm:H};
@@ -32,7 +32,7 @@ for(const alpha of [0,10,20,30,45])for(const phi0 of [0,20])for(const law of ['v
 }
 // For phi0=0, only vertical gravity projection scales with cos(alpha); local
 // spring work and the angular work distance must not receive that factor.
-for(const law of ['v4','constant'])for(const kind of ['jump','landing']){
+for(const law of ['v4'])for(const kind of ['jump','landing']){
  const zero=clone(base);zero.params.springLaw=law;zero.energyConfig={...P.energyDefaults,dropHeightMm:2000};const z0=A.workspace(zero,kind);
  for(const alpha of [10,20,30,45]){const p=clone(zero);p.params.alpha=alpha;const z=A.workspace(p,kind);near(z.angularTravelRad,z0.angularTravelRad);near(kind==='jump'?z.stanceGravityJ:z.gravityCompressionJ,(kind==='jump'?z0.stanceGravityJ:z0.gravityCompressionJ)*Math.cos(alpha*R));near(kind==='jump'?z.springReleaseJ:z.springReleasedJ,kind==='jump'?z0.springReleaseJ:z0.springReleasedJ);}
 }

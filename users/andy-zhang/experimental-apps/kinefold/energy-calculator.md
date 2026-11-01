@@ -1,6 +1,6 @@
 # Jump and landing energy workspace
 
-Andy Zhang / Codex, updated 2026-10-26. Experimental work screens, not a
+Andy Zhang / Codex, updated 2026-11-01. Experimental work screens, not a
 trajectory integration, peak rating, hardware test or post-arrest guarantee.
 
 Open **01 Energy · jump & landing**, then choose Jump or Landing.
@@ -10,6 +10,14 @@ It works independently of terrain/prescribed mode and requires no dynamics run.
 Editing the height updates the result and all plots; there is no Run action in
 this workspace. The dynamic tabs retain engine-based target searches and link
 here for the separate energy calculation.
+
+**Use saved leg masses** includes the upper/lower links and compound pulley by
+default. Turning it off makes an analysis-only massless-link comparison. This
+local browser preference never changes the mechanism or dynamic masses, survives
+reload and is included in calculation exports. A dynamic handoff recomputes the
+physical command with all saved masses even when the comparison is massless.
+The original V4 linear spring is the sole supported suspension law; constant
+cable-force designs are explicitly rejected rather than converted.
 
 The live equation table is visible with the Plotly charts. It lists each quantity,
 equation/source, numerical value and unit,
@@ -29,12 +37,14 @@ compression stop `q_c` to the extension stop `q_e`, then one locked relative pos
 in flight. With positive extension magnitude `Δq_j=(q_c−q_e)π/180`, stance rise
 `s_j=h(q_e)−h(q_c)` in metres, and target airborne rise `h_j` in metres:
 
-`τ_jump = max[0, (m1*g*s_j + (m1+m6)*g*h_j − S_j − C_j) / Δq_j]`
+`τ_jump = max[0, (ΔUg_j + Mflight*g*h_j − S_j − C_j) / Δq_j]`
 
 Here `S_j=Us(q_c)−Us(q_e)` and `C_j=Uc(q_c)−Uc(q_e)` are signed energy releases.
 The wheel stays on the floor during stance, so its height does not contribute
-stance gravity work. Chassis and wheel both rise in the assumed locked flight,
-so the flight term uses `m1+m6`. Ideal takeoff speed is `sqrt(2*g*h_j)`.
+stance gravity work. Every selected body rises in the assumed locked flight,
+so `Mflight=m1+m2+m3+m5+m6` using the selected link-mass basis. Ideal takeoff
+speed is `sqrt(2*g*h_j)`. With massless links, `ΔUg_j=m1*g*s_j` and
+`Mflight=m1+m6`, reproducing the previous calculator.
 The shaft magnitude is the joint magnitude divided by the selected ideal ratio.
 During extension q decreases, so a positive extension magnitude corresponds to
 a **negative generalized joint torque**, with positive motor work.
@@ -42,8 +52,9 @@ a **negative generalized joint torque**, with positive motor work.
 This is an optimistic endpoint work estimate. It omits friction, impact and stop
 losses, and retained rotor kinetic energy. Endpoint arithmetic does not guarantee
 that the mechanism can start, traverse a potential barrier, take off or reach an
-apex. Moving link masses and unsupported geometry remain explicit errors rather
-than being silently ignored.
+apex. Finite-link mass changes gravity and conservative flight energy; it does
+not supply a finite-link trajectory, impact-loss or rotor-speed calculation.
+Unsupported geometry remains an explicit error.
 
 ## Plots and full calculation details
 
@@ -64,7 +75,7 @@ expose the numerical inputs and outputs; JSON/CSV exports stay in the app's
 
 For either stroke the signed work ledger is
 `K_budget(q)=K_start+W_motor(q)−ΔU_gravity(q)−ΔU_spring(q)−ΔU_cog(q)`.
-Landing uses `K_start=m1*g*H` and negative braking work; jump uses zero starting
+Landing uses `K_start=Mdrop*g*H` and negative braking work; jump uses zero starting
 kinetic energy and positive extension work. Negative sampled budget values stay
 visible and warn of an energy barrier. Sampling is not a proof of continuous-path
 feasibility, and a landing can arrest before the chosen endpoint.
@@ -118,10 +129,18 @@ stationary flat ground, hip height is `h(q)=rw−Cz(q)` and underbody clearance 
 `h(q)−undersideOffset`. The selected endpoint is the earlier of `tc−reserve`
 and the target-clearance crossing on monotonic compression.
 
+For finite masses the grounded body heights in millimetres are
+`z1=h`, `z2=h+Bz/2`, `z3=h+(Bz+Cz)/2`, `z5=h+Bz`, `z6=rw`, where B and C
+are the rotated world knee and wheel positions relative to the hip.
+`Ug(q)=g*Σ(mi*zi)/1000` sums their potential energies in joules. At α=0 and
+the symmetric straight-line geometry, the effective grounded support mass is
+`m1+0.75*m2+0.25*m3+0.5*m5`; it differs from the falling/flight mass.
+
 Using radians for Δq and metres for height, define:
 
-- Drop energy: `K0=m1*g*H=½*m1*v²`, with `v=sqrt(2*g*H)`.
-- Gravity released in compression: `G=m1*g*(h0−hend)`.
+- Drop energy: `K0=Mdrop*g*H=½*Mdrop*v²`, with `v=sqrt(2*g*H)` and
+  `Mdrop=m1+m2+m3+m5` in the selected mass basis.
+- Gravity released in compression: `G=Ug(q0)−Ug(qend)`.
 - Spring released: `S=Uspring(q0)−Uspring(qend)`; negative means absorbed.
 - Cogging released: `C=Ucog(q0)−Ucog(qend)` with the fixed motor phase.
 - Constant joint resisting magnitude: `τ=max(0,(K0+G+S+C)/Δq)`.
@@ -132,7 +151,7 @@ Available torque in this calculator is always **joint-side**, independent of the
 dynamic command-basis setting. No controller input is automatically changed.
 
 The inverse endpoint drop capacity is
-`Hcap=(τavailable*Δq−G−S−C)/(m1*g)`.
+`Hcap=(τavailable*Δq−G−S−C)/(Mdrop*g)`.
 A negative value is reported unavailable rather than silently clipped to zero.
 This is a sufficient selected-endpoint work screen, not the true global maximum
 over intermediate spring/cogging barriers. It assesses initial arrest only;
@@ -154,6 +173,16 @@ claim. The arrest endpoint remains315.382413mm above ground because the stop
 reserve, rather than the50mm residual-clearance target, limits usable travel.
 These retained baseline numbers use α=0°; tilted designs are recomputed from
 their saved α rather than reusing these values.
+
+For an explicit finite-link example, use L2=L3=300mm, rw=200mm, α=20°,
+φ0=0°, stops100/165°, m1=8.75kg, m2=m3=1kg, m5=0, m6=0.5kg and the original
+K8N/mm/p0=330.869282809N V4 spring. At a2m drop with2/3 opening and1° reserve,
+the finite-link endpoint screen gives287.937Nm versus229.926Nm in massless
+comparison. Both use42.333° braking travel and305.409mm residual clearance,
+so the50mm target is nonbinding. For2m jump above takeoff and the full65°
+extension, finite-link demand is196.814Nm versus157.982Nm. These values are
+constant ideal joint torques, without friction, impact-loss credit or a
+demonstrated dynamic trajectory; do not interpret them as hardware peak loads.
 
 ## Assumptions and storage
 
@@ -231,12 +260,15 @@ private workbook URLs and unrelated spreadsheet data are not bundled in the app.
 
 ### Model scope and persistence
 
-This screen retains the full chassis m1*g*H without impact-loss credit. Wheel
-impact energy is excluded. Rotor starts/ends at rest, so its endpoint kinetic
+This screen retains the full selected falling mass Mdrop*g*H without impact-loss
+credit. Wheel impact energy is excluded: the wheel is grounded during braking,
+and no rigid-contact impact energy is claimed recoverable by the motor. This is
+a conservative work allocation, not a resolved impact model. Rotor starts/ends
+at rest, so its endpoint kinetic
 change is zero; inertia still changes actual impact trajectories and peaks.
 Motor/joint friction is given no energy credit. The relative path must be
 straight (equal links,2:1 guide), nonsingular and monotonic in world height,
-with massless moving links/compound pulley,
+with explicitly selected saved or massless link/compound masses,
 positive m1/g, no extra prescribed loads and a valid spring cable route.
 Unsupported geometry, slack recovery or unavailable stroke is shown explicitly.
 Fixed tilted guides are supported in this standalone work calculator. The

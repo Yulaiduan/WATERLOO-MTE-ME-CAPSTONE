@@ -19,7 +19,7 @@ const fs=require('fs'),vm=require('vm');
 vm.runInThisContext(fs.readFileSync('reference-v4.js','utf8'));
 vm.runInThisContext(fs.readFileSync('model.js','utf8'));
 const variants=[{}, {L2:340,L3:280,ra:47,rb:27,rc:31,rd:39,re:22,rf:29,alpha:13,phi0:17,m2:.5,m3:.5,m5:.2,m6:1},
-{springLaw:'constant',alpha:25,m2:.3,m3:.8,m6:1.2},{rs:0,Su:0,nu:8},{springEnabled:false}];
+{springLaw:'v4',alpha:25,m2:.3,m3:.8,m6:1.2},{rs:0,Su:0,nu:8},{springEnabled:false}];
 console.log(JSON.stringify(variants.map(v=>{const p={...Kinefold.defaults,...v};return{p,rows:[101,120,140,164].map(theta=>{const s=Kinefold.evaluate({...p,theta2:theta});if(!s.valid)throw Error(s.errors);return{theta,tau:s.raw.tau2,Fs:s.spring.force,energy:s.spring.energy,C:s.C};})};})));
 """
 class Checks(unittest.TestCase):

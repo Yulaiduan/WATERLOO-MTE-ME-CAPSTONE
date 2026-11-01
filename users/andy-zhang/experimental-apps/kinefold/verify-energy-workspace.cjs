@@ -10,12 +10,12 @@ const clone=v=>{ctx.raw=JSON.stringify(v);return vm.runInContext('JSON.parse(raw
 let checks=0;const ok=(v,s)=>{assert.ok(v,s);checks++;},near=(a,b,t=1e-8)=>ok(Math.abs(a-b)<t,`${a} != ${b}`);
 const base=P.baseline(),before=JSON.stringify(base),two=clone(base);two.energyConfig={...P.energyDefaults,dropHeightMm:2000};
 near(A.workspace(two,'landing').requiredJointNm,232.3451518866197);
-for(const kind of ['jump','landing'])for(const law of ['v4','constant'])for(const enabled of [false,true]){
+for(const kind of ['jump','landing'])for(const law of ['v4'])for(const enabled of [false,true]){
   const p=clone(two);p.params.springLaw=law;p.params.springEnabled=enabled;p.params.m6=1.5;
   p.motorConfig={...P.motorDefaults,enabled:true,gearRatio:7,coggingAmplitudeNm:.7,coggingPeriodsPerRev:3,coggingPhaseDeg:27};
   const original=JSON.stringify(p),z=A.workspace(p,kind,{heightMinMm:50,heightMaxMm:2500,samples:181}),ref=ctx.Kinefold.reference(p.params),m=p.params;
   const height=q=>m.rw-2*m.L2*Math.cos((q-(180+m.phi0)/2)*R)*(-Math.sin(((180+m.phi0)/2-m.alpha)*R));
-  const geom90=V.VSLSpring.geometry(ref,90),spring=q=>{const d=V.VSLSpring.geometry(ref,q).payout-geom90.payout;return enabled?(m.p0*d+.5*(law==='constant'?0:m.springK)*d*d)/1000:0;};
+  const geom90=V.VSLSpring.geometry(ref,90),spring=q=>{const d=V.VSLSpring.geometry(ref,q).payout-geom90.payout;return enabled?(m.p0*d+.5*m.springK*d*d)/1000:0;};
   const cog=q=>.7/3*Math.cos((3*7*q+27)*R),start=z.qStartDeg,end=z.qEndDeg,dh=(height(end)-height(start))/1000;
   const springDelta=spring(end)-spring(start),cogDelta=cog(end)-cog(start),gravityDelta=m.m1*m.g*dh;
   const expectedWork=kind==='jump'?gravityDelta+(m.m1+m.m6)*m.g*.1+springDelta+cogDelta:m.m1*m.g*2-gravityDelta-springDelta-cogDelta;

@@ -9,17 +9,19 @@ const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),asse
 const read=f=>fs.readFileSync(path.join(__dirname,f),'utf8'),ctx=vm.createContext({});
 for(const f of ['reference-v4.js','model.js','equilibrium-diagrams.js'])vm.runInContext(read(f),ctx,{filename:f});
 const {Kinefold:M,KinefoldV4:R,KinefoldEquilibriumDiagrams:D}=ctx;
-const provenance=JSON.parse(read('reference.json')),source=fs.readFileSync(path.resolve(__dirname,'../../../..',provenance.source),'utf8').replace(/\r\n/g,'\n');
+const {source,retained,provenance}=require('./reference-source.cjs').loadReferenceSource();
 assert.equal(crypto.createHash('sha256').update(source).digest('hex'),provenance.source_sha256);
-const scripts=[...source.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m=>m[1]),original=vm.createContext({});
-vm.runInContext([...scripts.slice(0,2),scripts[2].split('const VSLDomains=')[0],'globalThis.ORIGINAL={VSL,VSLStatic,VSLSpring};'].join('\n'),original);
-let count=1,maxForce=0,maxMoment=0,maxSpringEndpoint=0;
+const original=vm.createContext({});
+const hash=s=>crypto.createHash('sha256').update(s).digest('hex');
+assert.equal(hash(retained),provenance.retained_blocks_sha256);
+vm.runInContext(retained+'\nglobalThis.ORIGINAL={VSL,VSLStatic,VSLSpring};',original);
+let count=2,maxForce=0,maxMoment=0,maxSpringEndpoint=0;
 const near=(a,b,tol=1e-8)=>{assert.ok(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=tol,`${a} vs ${b}, tol ${tol}`);count++;};
 const ok=v=>{assert.ok(v);count++;};
 for(let i=0;i<45;i++){
   const p={...M.defaults,alpha:i%46,theta2:105+i%55,L2:270+i,L3:230+i*.7,m1:8.75,m2:.25,m3:.3,m5:.2,m6:.8,
     loadMode:i%2?'global':'contact',Fx:35-i,Fz:90+i,Fn:70+i,Ft:i-22,beta:i%91,Tab0:20+i,Tcd0:15+i,Tef0:10+i,
-    springLaw:i%3?'v4':'constant'},r=M.reference(p),z=M.evaluate(p),s=original.ORIGINAL.VSLStatic.solve(r,p.theta2,true),data=D.bodyData(p,z.raw);
+    springLaw:'v4'},r=M.reference(p),z=M.evaluate(p),s=original.ORIGINAL.VSLStatic.solve(r,p.theta2,true),data=D.bodyData(p,z.raw);
   ok(z.valid&&s.valid&&data.valid);near(data.bodies.length,5);
   for(const b of data.bodies){
     const old=s.bodies[b.id];near(b.forces.length,old.forces.length);near(b.couples.length,old.couples.length);

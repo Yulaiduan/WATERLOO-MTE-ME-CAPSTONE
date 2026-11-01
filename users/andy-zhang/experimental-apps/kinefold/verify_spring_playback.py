@@ -1,7 +1,7 @@
-"""Check actual constant-force dynamics and spring playback reconstruction.
+"""Check V4 gravity-compensation spring dynamics and playback reconstruction.
 
 Run with app .venv Python verify_spring_playback.py from this app directory.
-Inputs: explicit V4 baseline, constant cable law, 330.869282809 N tension,
+Inputs: explicit V4 baseline linear spring, 30 deg/s initial hip motion,
 0.3 s flat prescribed/contact runs at dt=0.00025 s; contact wheel 1.5 kg,
 mu=0.8, no bounce/free drive. Outputs unittest evidence, JSON findings and
 ignored .preview SVG illustrations via the companion Node drawing check.
@@ -28,12 +28,12 @@ class SpringPlaybackChecks(unittest.TestCase):
     def setUpClass(cls):
         source = "const fs=require('fs'),vm=require('vm');for(const f of ['reference-v4.js','model.js'])vm.runInThisContext(fs.readFileSync(f,'utf8'));console.log(JSON.stringify(Kinefold.defaults));"
         cls.base = json.loads(subprocess.check_output(['node', '-e', source], cwd=ROOT, text=True))
-        cls.config = {**defaults(), 'duration': .3, 'inputHeightMm': 0, 'dt': .00025}
+        cls.config = {**defaults(), 'duration': .3, 'inputHeightMm': 0, 'dt': .00025, 'initialVelocityDegS': 30}
         cls.results, cls.report = {}, {}
         for mode in ('prescribed', 'contact'):
             for engine in ('pymunk', 'analytical'):
                 for enabled in (True, False):
-                    params = {**cls.base, 'springLaw': 'constant', 'springEnabled': enabled, 'm6': 1.5 if mode == 'contact' else 0}
+                    params = {**cls.base, 'springLaw': 'v4', 'springEnabled': enabled, 'm6': 1.5 if mode == 'contact' else 0}
                     payload = dict(engine=engine, params=params, runConfig=cls.config)
                     if mode == 'contact':
                         payload['contactConfig'] = dict(mode='terrain-contact', friction=.8, restitution=0, drive='free')
@@ -42,9 +42,14 @@ class SpringPlaybackChecks(unittest.TestCase):
                         result = simulate(payload)
                     cls.results[mode, engine, enabled] = result
 
-    def test_constant_tension_variable_torque_and_independent_virtual_work(self):
+    def test_removed_constant_cable_law_is_rejected(self):
+        for enabled in (True, False):
+            with self.assertRaisesRegex(ValueError, 'removed'):
+                Model({**self.base, 'springLaw': 'constant', 'springEnabled': enabled}, self.config)
+
+    def test_v4_variable_tension_torque_and_independent_virtual_work(self):
         report = []
-        for law in ('constant', 'v4'):
+        for law in ('v4',):
             model = Model({**self.base, 'springLaw': law}, self.config)
             forces, torques, errors = [], [], []
             for angle in (105, 120, 132.5, 145, 160):
@@ -54,10 +59,7 @@ class SpringPlaybackChecks(unittest.TestCase):
                 self.assertAlmostEqual(z['torque'], virtual, delta=3e-7)
                 forces.append(z['force']); torques.append(z['torque']); errors.append(abs(z['torque'] - virtual))
             self.assertGreater(max(torques) - min(torques), 1)
-            if law == 'constant':
-                self.assertEqual(min(forces), self.base['p0']); self.assertEqual(max(forces), self.base['p0'])
-            else:
-                self.assertGreater(max(forces) - min(forces), 1)
+            self.assertGreater(max(forces) - min(forces), 1)
             report.append(dict(law=law, forceRangeN=[min(forces), max(forces)], torqueRangeNm=[min(torques), max(torques)], maxVirtualWorkErrorNm=max(errors)))
         self.report['geometrySweep'] = report
 
@@ -67,12 +69,14 @@ class SpringPlaybackChecks(unittest.TestCase):
             on = self.results[mode, 'pymunk', True]; off = self.results[mode, 'pymunk', False]
             analytical = self.results[mode, 'analytical', True]
             self.assertEqual(on['diagnostics']['termination'], 'duration')
-            self.assertTrue(all(row['Fs'] == self.base['p0'] for row in on['rows']))
+            expected = Model({**on['params'], 'm6': 0}, self.config)
+            for row in on['rows']:
+                self.assertAlmostEqual(row['Fs'], expected.spring(row['theta2'] * R)['force'], delta=1e-7)
             self.assertTrue(all(row['Fs'] == 0 for row in off['rows']))
             common_on = next(row for row in on['rows'] if abs(row['t'] - .2) < 1e-10)
             common_off = next(row for row in off['rows'] if abs(row['t'] - .2) < 1e-10)
             self.assertGreater(abs(common_on['chassisZMm'] - common_off['chassisZMm']), 50)
-            self.assertGreater(on['rows'][-1]['theta2'] - on['rows'][0]['theta2'], 20)
+            self.assertGreater(on['rows'][-1]['theta2'] - on['rows'][0]['theta2'], 1)
             error = max(abs(a['chassisZMm'] - b['chassisZMm']) for a, b in zip(on['rows'], analytical['rows']))
             self.assertLess(error, .3)
             model = Model({**on['params'], 'm6': 0}, self.config)

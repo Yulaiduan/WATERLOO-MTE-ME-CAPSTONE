@@ -60,6 +60,9 @@ manual snapshot, while the live profile library remains local.
   geometry and full numerical equation tables. The main torque plot leads the
   page beside Jump/Landing/Principles actions; detailed parameters and the remaining
   charts/equations follow across the full page. See [energy calculations](energy-calculator.md).
+  A local **Use saved leg masses** switch compares finite-link and massless
+  endpoint screens without editing the design; dynamic handoff always uses the
+  actual saved masses. Exported calculations record the selected mass basis.
 - **02 Analytical / 03 Pymunk:** shared quarter-model case controls, playback,
   categorized result charts and exact-snapshot engine comparison described below.
   The top mechanism viewer has a compact run/replay/navigation rail; all detailed
@@ -122,14 +125,21 @@ index stays level as the leg folds. Side view preserves plane lengths uniformly;
 the isometric view is an orthographic projection. No wheel width is invented.
 
 V4 uses a **linear coil with approximately constant support**, not constant cable
-tension. Both that reference and an **ideal constant cable-force** option are
-explicitly available in the builder. The equilibrium section beneath the preview shows signed
+tension. This V4 law is the suspension model used throughout the app. The former
+constant-cable-force option was removed because the intended goal is chassis
+gravity compensation. Imports using that removed law are rejected explicitly. The equilibrium section beneath the preview shows signed
 torque sweeps, belt tensions and equilibrium residuals from these same inputs. Wheel loads are prescribed; gravity acts on the individual masses.
 The default 8.75 kg is a single-leg supported mass, not a whole-vehicle mass.
 Remote spring housing is schematic. Cable stretch, friction, strength, contact,
 manufacturing and 3D packaging remain unresolved. Travel is sampled at 181 poses.
 
 ## Developer checks
+
+Oracle checks use [reference-source.cjs](reference-source.cjs) to load the exact
+Git revision in reference.json. Keep that history available: the recorded full
+HTML and analytical-block hashes are verified, and current upstream analytical
+blocks must also match. Upstream UI edits do not change the pinned oracle.
+This developer-only helper does not affect the offline app runtime.
 
 The [small worked workflow](workflow-example.md) shows one mechanism, three
 fixed motor/gearbox choices and one terrain in both engines, with saved terrain

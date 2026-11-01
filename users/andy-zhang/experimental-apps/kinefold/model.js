@@ -10,8 +10,9 @@ globalThis.Kinefold = (() => {
   delete defaults.Fy;
   const point = ([y,z]) => [-y,0,z];
   function reference(p) {
+    if(p.springLaw!=='v4')throw Error('Constant cable-force spring support has been removed. Use the V4 linear spring for gravity compensation.');
     const r = {...p, Fy:-p.Fx, loadMode:p.loadMode==='contact'?'nt':'yz',
-      springK:p.springLaw==='constant'?0:p.springK};
+      springK:p.springK};
     if (p.loadMode==='weight') {r.Fy=0; r.Fz=VSLSpring.totalMass(p)*p.g;}
     return VSLStatic.resolveLoads(r);
   }
@@ -21,7 +22,7 @@ globalThis.Kinefold = (() => {
       if (typeof value==='number' && !Number.isFinite(p[key])) errors.push(`${key} must be a finite number.`);
     }
     if (!['weight','global','contact'].includes(p.loadMode)) errors.push('Choose a known loading convention.');
-    if (!['v4','constant'].includes(p.springLaw)) errors.push('Choose a known spring law.');
+    if (p.springLaw!=='v4') errors.push('Constant cable-force spring support has been removed. Use the V4 linear spring for gravity compensation.');
     if (errors.length) return errors;
     if (p.springK<0) errors.push('Spring rate k must be nonnegative.');
     if (p.theta2<p.te || p.theta2>p.tc) errors.push('Preview angle must be inside the working range.');

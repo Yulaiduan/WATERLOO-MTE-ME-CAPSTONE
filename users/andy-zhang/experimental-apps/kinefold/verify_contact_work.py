@@ -53,7 +53,7 @@ class WorkChecks(unittest.TestCase):
                 print(name,'contact/arrest',impact['t'],arrest['t'],'post-contact chassis/wheel mm/s',impact['postImpulseChassisVelocityMmS'],impact['postImpulseWheelVelocityZMmS'],'spring/motor J',arrest['sinceContact']['springStoredJ'],arrest['sinceContact']['motorRemovedJ'])
 
     def test_independent_force_payout_and_motor_angle_integrals_all_spring_laws(self):
-        for law in ('v4','constant','off'):
+        for law in ('v4','off'):
             request=self.request();request['params'].update(springLaw='v4' if law=='off' else law,springEnabled=law!='off')
             for name,result in self.engines(request):
                 with self.subTest(engine=name,law=law):

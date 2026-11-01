@@ -128,7 +128,7 @@ def spring_drawing(model, frame):
                   14 * math.sin(i / 168 * 14 * math.pi)) for i in range(169)]
     rails = [[along(125, n) for n in (-18, 18)],
              [along(125 + 80 + maximum - minimum, n) for n in (-18, 18)]]
-    return dict(enabled=True, law='Ideal constant cable force' if p['springLaw'] == 'constant' else 'V4 linear coil',
+    return dict(enabled=True, law='V4 linear spring',
                 A=A, D=world(z['D']), Q=world(z['Q']), S=world((p['Su'], p['Sv'])),
                 out=world(outgoing), remote=moving, fixedSeat=fixed, movingSeat=moving,
                 fixedBar=fixed_bar, movingBar=moving_bar, wire=wire, rails=rails,

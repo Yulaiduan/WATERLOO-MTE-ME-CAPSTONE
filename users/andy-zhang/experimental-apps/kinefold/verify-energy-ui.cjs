@@ -91,6 +91,30 @@ current.torqueTargetConfig={...P.torqueTargetDefaults,jumpHeightMm:0};await clic
 await click('[data-energy-remove]');ok(!current.energyConfig&&current.torqueTargetConfig,'reset removes only calculator metadata');ok(requests===0,'no dynamics/network calls from calculator or handoff');
 current=P.baseline();UI.open('landing');change('[data-energy-case="landingOpenFraction"]',1);change('[data-energy-key="compressionReserveDeg"]',0);
 near(UI.getState().result.qStartDeg,current.params.te);near(UI.getState().result.angularTravelDeg,65);ok(UI.getState().result.boundaryOnly,'full-open UI edit preserves explicit zero-reserve boundary warning');
+// The massless display option leaves saved masses intact. Exports record the
+// choice, while a physical command always recalculates the actual saved masses.
+ctx.KinefoldStudio.showTab('energy');
+Object.assign(current.params,{m2:1,m3:.7,m5:.2,m6:.5});
+current.contactConfig=realm({...P.contactDefaults});current.motorConfig=realm({...P.motorDefaults,enabled:true,gearRatio:10,hipBeltRatio:2,commandBasis:'motor'});
+current.torqueTargetConfig=realm({...P.torqueTargetDefaults,jumpHeightMm:2000});
+for(const mode of ['landing','jump']){
+ UI.open(mode);const savedFinite=JSON.stringify(current),on=UI.getState().result,physicalOn=UI.command(realm(current),mode);
+ ok(UI.getState().includeLegMasses&&on.includeLegMasses,'saved-mass choice is the initial state');near(on.usedLinkMassesKg.upperLink,1);
+ const box=$('[data-energy-leg-masses]');box.checked=false;box.onchange({target:box});
+ const off=UI.getState().result,physicalOff=UI.command(realm(current),mode);
+ ok(!off.includeLegMasses&&off.requiredJointNm<on.requiredJointNm,'massless display recalculates lower ideal work demand');
+ near(off.usedLinkMassesKg.upperLink,0);near(off.savedLinkMassesKg.upperLink,1);
+ near(physicalOff.jointNm,physicalOn.jointNm);near(physicalOff.commandNm,physicalOn.commandNm);
+ ok(physicalOff.jointNm>off.requiredJointNm,'physical handoff does not copy ignored-mass estimate');
+ ok($('[data-energy-handoff]').textContent.includes('Recomputed with saved leg masses'),'handoff explains saved-mass recalculation');
+ ok(JSON.stringify(current)===savedFinite,'display mass choice makes no saved-project changes');
+ await click('[data-energy-export="json"]');const exported=artifacts.at(-1).value;
+ ok(exported.calculation.includeLegMasses===false&&exported.calculation.massModel==='Massless leg approximation','JSON records selected approximation');
+ near(exported.projectSnapshot.params.m2,1);near(exported.calculation.usedLinkMassesKg.upperLink,0);
+ ok(JSON.stringify(current)===savedFinite,'export is read-only');
+ box.checked=true;box.onchange({target:box});near(UI.getState().result.requiredJointNm,on.requiredJointNm);
+ ok(JSON.stringify(current)===savedFinite,'reenabling saved masses is read-only');
+}
 ok(document.getElementById('energy').querySelectorAll('[data-energy-chart]').length===4,'all four existing plots remain, without duplicate traces or hosts');
 ok([...document.getElementById('energy').querySelectorAll('[data-energy-chart]')].filter(el=>el.dataset.energyChart!=='torque').every(el=>el.closest('.energy-results')===results),'remaining three plots follow full-width parameters');
 const html=read('index.html');ok(html.indexOf('data-tab="builder"')<html.indexOf('data-tab="energy"')&&html.indexOf('data-tab="energy"')<html.indexOf('data-tab="analytical"'),'energy before dynamics');ok(read('app.js').includes("['builder','energy','analytical','pymunk','presets','flow','actuator','conventions']"),'stable tab IDs / conventions last');ok(!read('solvers.js').includes('KinefoldEnergyUI.mount(id'),'no duplicate energy calculators in dynamics');

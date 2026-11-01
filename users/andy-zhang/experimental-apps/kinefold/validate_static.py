@@ -2,7 +2,8 @@
 
 Run here: .venv/Scripts/python.exe validate_static.py
 Optional --output .preview/static-validation.json writes detailed generated evidence.
-Inputs: original repository HTML (hash verified), explicit mm/deg/kg/N designs,
+Inputs: original HTML at reference.json's Git revision (hash verified),
+current upstream analytical-block hash, explicit mm/deg/kg/N designs,
 flat wheel input, zero initial speed/damping and source-derived holding torque.
 Outputs: checked-case counts, tolerances and numerical errors as JSON; nonzero on
 failure. Requires Node and this app's pinned SciPy/Pymunk environment. Does not
@@ -22,21 +23,19 @@ from dynamics import simulate
 
 ROOT = Path(__file__).resolve().parent
 # Execute only the source's reviewed analytical blocks, never its UI scripts.
-# The oracle uses the original HTML directly, not Python or the vendored adapter.
+# The oracle uses pinned original HTML, not Python or the vendored adapter;
+# later upstream UI edits are allowed only if its analytical blocks still match.
 ORACLE_JS = r"""
 const fs=require('fs'),vm=require('vm'),crypto=require('crypto'),path=require('path');
-const provenance=JSON.parse(fs.readFileSync('reference.json','utf8'));
-const src=fs.readFileSync(path.resolve('../../../..',provenance.source),'utf8').replace(/\r\n/g,'\n');
+const {source:src,retained,provenance}=require('./reference-source.cjs').loadReferenceSource();
 const sha=s=>crypto.createHash('sha256').update(s).digest('hex');
 if(sha(src)!==provenance.source_sha256)throw Error('Original source hash differs');
-const scripts=[...src.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(x=>x[1]);
-const retained=[...scripts.slice(0,2),scripts[2].split('const VSLDomains=')[0]].join('\n');
 if(sha(retained)!==provenance.retained_blocks_sha256)throw Error('Original blocks hash differs');
 vm.runInThisContext(retained);
 const baseline={...VSLStatic.defaults,Fx:0,loadMode:'weight',springLaw:'v4',theta2:132.5};delete baseline.Fy;
-const variants=[['baseline',{}],['unequal-ratios',{L2:340,L3:280,ra:47,rb:27,rc:31,rd:39,re:22,rf:29,alpha:13,phi0:17,m2:.5,m3:.5,m5:.2,m6:1}],['constant',{springLaw:'constant',alpha:25,m2:.3,m3:.8,m6:1.2}],['point-idler',{rs:0,Su:0,nu:8}],['spring-disabled',{springEnabled:false}],['additional-loads',{loadMode:'global',Fx:7,Fz:14,m2:.4,m6:1,ra:47,rb:27,rc:31,rd:39,re:22,rf:29}],['contact-loads',{loadMode:'contact',Fn:11,Ft:5,m2:.2,m3:.3}],['offset-support',{L2:340,L3:280,ra:47,rb:27,rc:31,rd:39,re:22,rf:29,alpha:13,phi0:17,beta:25,loadMode:'global',Fx:7,Fz:14,m2:.5,m3:.5,m5:.2,m6:1}]];
+const variants=[['baseline',{}],['unequal-ratios',{L2:340,L3:280,ra:47,rb:27,rc:31,rd:39,re:22,rf:29,alpha:13,phi0:17,m2:.5,m3:.5,m5:.2,m6:1}],['tilted-v4',{springLaw:'v4',alpha:25,m2:.3,m3:.8,m6:1.2}],['point-idler',{rs:0,Su:0,nu:8}],['spring-disabled',{springEnabled:false}],['additional-loads',{loadMode:'global',Fx:7,Fz:14,m2:.4,m6:1,ra:47,rb:27,rc:31,rd:39,re:22,rf:29}],['contact-loads',{loadMode:'contact',Fn:11,Ft:5,m2:.2,m3:.3}],['offset-support',{L2:340,L3:280,ra:47,rb:27,rc:31,rd:39,re:22,rf:29,alpha:13,phi0:17,beta:25,loadMode:'global',Fx:7,Fz:14,m2:.5,m3:.5,m5:.2,m6:1}]];
 console.log(JSON.stringify({sha:sha(src),variants:variants.map(([name,v])=>{const p={...baseline,...v};const mt=['m1','m2','m3','m5','m6'].reduce((a,k)=>a+p[k],0);const b=p.beta*Math.PI/180;let Fy,FzExtra;if(p.loadMode==='weight'){Fy=0;FzExtra=0;}else if(p.loadMode==='global'){Fy=-p.Fx;FzExtra=p.Fz;}else{Fy=p.Fn*Math.sin(b)+p.Ft*Math.cos(b);FzExtra=p.Fn*Math.cos(b)-p.Ft*Math.sin(b);}
-const ref={...p,loadMode:'yz',Fy,Fz:mt*p.g,springK:p.springLaw==='constant'?0:p.springK};
+const ref={...p,loadMode:'yz',Fy,Fz:mt*p.g,springK:p.springK};
 return {name,p,Fy,FzExtra,support:mt*p.g-FzExtra,rows:[100.1,105,115,125,132.5,140,150,160,164.9].map(theta=>{const s=VSLStatic.solve(ref,theta,true);if(!s.valid)throw Error(name+':'+s.reason);return{theta,tau:s.tau2,Fs:s.Fs,C:s.Cg,tau4:s.tau4,maxForce:s.maxForce,maxMoment:s.maxMoment};})};})}));
 """
 

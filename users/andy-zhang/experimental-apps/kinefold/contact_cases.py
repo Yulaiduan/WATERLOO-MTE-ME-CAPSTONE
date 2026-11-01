@@ -356,7 +356,7 @@ def annotate_contact_work(result,m):
         kinetic='Chassis kinetic change = integral(m1*v_A dv_A) = 0.5*m1*(v_A²−v_ref²).',
         balance='ΔK = gravity released − spring stored − cogging stored − motor removed − damping removed − motor losses + terrain/external work − impulse accounting + projection + residual.',
         shading='Force/torque chart fill joins output samples in trajectory order. Reversals overlap; displayed polygon area is not the authoritative integral.',
-        springLaw='disabled' if not m.p['springEnabled'] else 'ideal constant cable tension' if m.p['springLaw']=='constant' else 'V4 linear spring; approximately constant chassis support',
+        springLaw='disabled' if not m.p['springEnabled'] else 'V4 linear spring; approximately constant chassis support',
         exactChassisGravityCompensation=False)
     return result
 

@@ -1,5 +1,42 @@
 # Kinefold context
 
+## Latest — 2026-11-01 side-work integration
+
+Owner requested merging all side-chat changes. Integration from fetched0f071d6
+preserves viewer-first01–03,00 duplicate removal,exact coupling profile/report
+and previous support qualifications. Three authorized GPT-6.1 Sol agents review
+Energy,spring/reference validation and historical worktree provenance. All older
+Kinefold worker features are already integrated or superseded; archive-cleanup
+snapshots are early presets copies,not missing features. Separate wheel-leg-lab
+work remains outside this Kinefold request.
+
+V4 is the only supported spring law; removed constant-cable-force imports fail
+explicitly. No saved library mass,calibration or design is silently changed.
+Energy now offers saved finite-link masses versus a local massless comparison,
+records the choice in exports,and always recomputes a dynamic handoff with the
+actual saved masses. See [generalized equations](../energy-calculator.md).
+This is endpoint potential/flight energy,not transient inertia or impact proof.
+
+Reference checks now load the exact5e52a12 Git source and preserve37767388 full
+SHA plus901bd626 analytical SHA. Current upstream9fa3528c differs only in UI;
+its analytical blocks must still match. Missing history or equation drift fails,
+with no reference hash/vendor update. Developer checks therefore require Git
+history for that revision,while app runtime still uses its retained reference.
+
+PASS Energy119/workspace2262/alpha92854/finite2488/UI1098; model1793,
+equilibrium9404,FBD11758,drawing1123,actuator6162,project35,profile17. Eight short
+spring-on/off A/P runs give4506playback checks. Existing static-limit suite:
+72matched cases/144equilibrium runs plus4negative controls; torque error<=
+5.68e-14Nm. Dynamics6/contact-work6/viewer9headless pass;5GUI checks skipped.
+Parent combined preset55/analysis103/flowUI49,finite2488 and EnergyUI1098 pass.
+Headless1440/390px checks verify full-width details,allfourcharts,mass toggle
+purity/persistence,actual prior capture playback,both engines and00cleanup.
+PNG example α20/originalK8/p0330.869 uses2m landing287.937Nm and2m jump196.814Nm;
+it is explicitly a calculator fixture,not a new trajectory. Profile writes are
+intercepted in memory; live library SHA bcd91e3d unchanged. Reviewed PNGs/native
+Notion report are app-local; no broad design search,new dependencies or raw
+archive. Prior native energy residual/full-chassis/loaded-drive limitations stay.
+
 ## Latest — 2026-11-01 coupling test and duplicate-editor removal
 
 Read [coupling validation](../coupling-validation.md). Frozen named/working
@@ -28,6 +65,27 @@ and remain intact/unpublished by this contribution; work isolated for publicatio
 Additional current-retained-V4 checks match1001-pose kinematics and all6251/6181
 numeric fields in two extra short A/P runs exactly. Preserve version/hash scope;
 the current-source helper's documented cwd correction did not change trajectories.
+
+## Earlier side task — 2026-11-01 constant-cable-force option removal
+
+Owner clarified that gravity compensation is intended,not constant cable tension,
+and explicitly requested removing that law and matching saved designs in a side
+conversation. V4 remains the sole springLaw; UI/conventions/labels,model/reference,
+dynamic validation and profile storage reject the removed law without conversion.
+V4 parameters/calibration unchanged. Six disk designs,four portable reference
+profiles,five exported projects and browser backup contain no constant-law designs;
+no saved design was deleted or rewritten. Changes remain local/uncommitted; no
+subagents,server restart,Git publication or external-page mutation in this side task.
+
+Checks: headless builder/in-memory storage; project35 groups,Energy119/UI734/
+workspace2262/alpha92854,drawing1123,actuator6162 and profile17 pass. Eight short
+V4 spring on/off runs across both engines/prescribed+contact pass,including4506
+SVG/native parity assertions and explicit removed-law rejection. Direct15-pose
+retained-V4 parity and JS/Python import/model guards pass. Broader verify.cjs,
+verify-equilibrium.cjs and verify-equilibrium-diagrams.cjs stop at the existing
+external V4 source hash mismatch (9fa3528c versus recorded37767388); reference
+files/hashes were not changed to bypass it. Old law-specific regression fixtures
+now use V4 or assert rejection. Preserve unrelated concurrent designs.js edits.
 
 ## Latest — 2026-10-31 viewer-first solver layout
 
