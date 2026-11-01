@@ -3,6 +3,11 @@
 Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver workspace;
 no canonical robot or hardware acceptance is implied.
 
+The [coupling validation](coupling-validation.md) checks the saved1:6 drive-train
+test: exact2:1 straight-leg geometry,two1:6 wheel-drive stages,free-input backdrive
+and ideal AB reactions in both engines. Loaded-drive and physical belt-span loads
+remain unassessed. Its exact portable profile is included for laptop import.
+
 The [solver layout and support check](solver-workspace-and-support.md) records
 viewer-first tabs01–03: compact mode/action rail at left, main visual at top,
 then full-width parameters and detailed results. It also records optional06
@@ -47,6 +52,8 @@ manual snapshot, while the live profile library remains local.
   followed directly by all 17 equilibrium charts in categorized expandable groups.
   Diagnostic ranges inspect the same builder design without editing its physical
   stops. See [plot coverage and controls](equilibrium-plots.md).
+  Dynamic run controls live in02/03; saved designs retain them without a duplicate
+  editor in the00 library. Archived fixed-hip settings remain read-only.
 - **01 Energy · jump & landing:** immediate work–energy calculations for the
   current saved mechanism, separate from simulation. Jump and landing show
   torque-versus-height plots, energy terms, the signed budget through the stroke,

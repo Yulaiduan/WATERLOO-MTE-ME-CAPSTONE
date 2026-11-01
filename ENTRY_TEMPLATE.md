@@ -5711,3 +5711,41 @@ Canonical robot physics is NOT APPLICABLE to this isolated member UI contributio
 Read the viewer-first follow-up in solver-workspace-and-support.md; it supersedes only the earlier01–03 RHS arrangement and retains all support-study qualifications.
 Use the top rail for run/replay or labelled navigation, with full-width details below, preserving exact captured settings and distinguishing saved geometry from simulated motion.
 Find the five reviewed PNGs in native Notion attachments, keep live libraries untouched and use the unchanged project-local Start/Stop launchers at4191.
+
+---
+
+## Entry: 2026-11-01 — Andy Zhang — Coupling validation and duplicate run-editor removal
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Kinefold isolated member-app design library, portable profile and coupling study.
+- **Associated Issue/Task:** Owner asked to remove00's shared Dynamic settings editor and validate the exact named1:6 drive-train coupling test,including2:1 leg motion,wheel backdrive and reactions. Three GPT-6.1 Sol workers handled focused removal,independent kinematics and bounded force evidence. Primary source7ea04c5; concurrent D-checkout spring/UI/Energy edits are preserved locally,excluded from this contribution and rechecked for retained-V4 equivalence.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/coupling-validation.md`
+- `users/andy-zhang/experimental-apps/kinefold/designs.js`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/test-1-6-drive-train-coupling.json`
+
+- **API/Interface Changes:** None to model/backend/persistence. Remove duplicate Dynamic settings card,renderProfile function and listeners from00;02/03 remain shared editors. Preserve saved/exported solverConfig and read-only legacySolverConfig disclosure in portability card. Correct stale V4.5 massless-contact template wording without changing templates/values. Add exact frozen portable named profile and explicit free-versus-held-input/reaction limitations; no live import/overwrite or physical retune. Scripts,selected raw captures/native trace,source hashes,PNGs/ZIP remain ignored app-local/native Notion. No concurrent source diffs/dependencies/full libraries/credentials published.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS35project/library scenario groups and JS syntax. Isolated headless Edge checks removed editor,02→03 shared duration,unchanged geometry/case/contact and retained read-only legacy archive; every QA profile write fulfilled in memory,unexpected POST blocked,viewer status mocked,zero page errors. Final live library hash bcd91e3dd6ab02d1496ab9808bb5503748972466983b88a34f98c5f4dae4bae3 unchanged; prior concurrent outside saves preserved. Frozen profile SHA66435f092ccccdbb5bcfaea8350ea65db4201dbc515a331665003af2d12fe4e6 matches saved/working fields and tracked snapshot. Independent1001-pose sweep,240actual drawing wrap checks,252index checks and finite-rod static virtual-work tests pass: straightness<=1.14e-13mm,wrap FD<=2.87e-7mm/rad,torque<=1.67e-8Nm. Six actual.25s A/P flat/gentle-floor runs with paired/refined settings; native reaction/momentum/virtual-power checks pass. Comparable final10ms AB G24.37739869Nm analytical inverse/24.37566556Nm native mean,delta.0071%; inferred signed U-L≈975N and chassis-2G qualified. Current-retained-V4 recheck adds two exact prior-request runs:6251/6181numeric comparisons,maxdiff0,finite26rows/frames,stable source hashes. Three final PNGs visually reviewed; first clipped plot footers corrected in v2 and superseded images excluded.24-file667493-byte ZIP CRC/SHA/source/helper/finite-pair/Python checks and75local doc links pass; four native Notion attachments/report completed. Existing launcher/server unchanged; earlier actual start/stop/restart and reuse checks apply,no new server. Fetched-base,staged commit-hook and exact-push workspace gates apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member contribution. AB2:1 gives Cx0; two1:6 stages give36:1 fixed-leg drive and w6=-25/36w2+w4/36. Held-input full65deg wheel rotation-45.139deg; constant-wheel input backdrive1625deg. Free massless/unforced input/m5=0 justifies CD/EF elimination here,not loaded/locked/inertial-drive validation. AB ideal torque-equivalent differences are not physical span/radial/bearing/slack/strength loads; chassis AB couple is inferred under fixed pitch,not explicitly solved/applied. Analytical reaction is approximate interval inverse dynamics; no exact A/P tension equality/continuous impact peak claimed. Spring remains under-supported by-5.038Nm at149.4deg and sags31.175/31.123mm in.25s. Native refined energy residual.524816J remains unresolved; no absorption,hardware,full-vehicle,GPU or canonical claim. Initial UI hash guards caught outside live saves and no old library was restored; explicit network isolation then passed. Missing mocked viewer-status POST was added to QA,not app source. Current-check helper ran from above Capstone using absolute intended scripts; corrected future cwd and both hashes recorded without more sims. One doc patch failed on concurrent context,so publication moved to an approved member worktree; concurrent D changes untouched. Copied CRLF triggered whitespace check and was normalized before passing. No Computer skill/live-tab automation,broad search or mass substitution. Publish only this isolated contribution to main; D checkout remains locally dirty with other work.
+
+## 4. Compute Saving Handoff State
+
+Read coupling-validation.md for the exact2:1/1:6 carrier equations,free-input boundary and qualified ideal AB reaction comparison.
+Import the separately captured coupling profile manually and use the native Notion24-file archive for frozen settings,source hashes,selected raw evidence and final PNGs.
+Keep the D checkout's concurrent spring/Energy edits intact and separate from this publication,retaining the native energy/slack/loaded-drive limitations and existing project-local launchers.

@@ -1,5 +1,16 @@
 # Saved Kinefold configurations
 
+## 2026-11-01 coupling-test snapshot
+
+[test-1-6-drive-train-coupling.json](test-1-6-drive-train-coupling.json) preserves
+the exact named1:6 coupling profile,including original talus terrain and unretuned
+spring. The [audit](../coupling-validation.md) records independent kinematics and
+six short diagnostic engine runs with explicitly flat/gentle test floors; it
+does not claim the saved talus run,loaded drive or physical belt loads are validated.
+Import manually after pulling on another computer; live libraries are untouched.
+
+## Earlier reference captures
+
 Owner: Andy Zhang with Codex. Captured: 2026-10-24, from app-folder library
 revision 20 at source commit `156ba08`. Status: experimental portable settings.
 

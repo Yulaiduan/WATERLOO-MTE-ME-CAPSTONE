@@ -1,5 +1,34 @@
 # Kinefold context
 
+## Latest — 2026-11-01 coupling test and duplicate-editor removal
+
+Read [coupling validation](../coupling-validation.md). Frozen named/working
+`test 1:6 drive train coupling test` matched at7ea04c5; exact snapshot now under
+saved-configurations. ra/rb2,CD/EF1:6each gives36:1 fixed-leg drive and
+w6=−25/36w2+1/36w4.1001pose/240wrap/252index checks pass. Full65deg sweep:
+435.593mm vertical,−45.139deg wheel ifdrive held,or1625deg input ifwheel held.
+Actual contact is free/unloaded; independent wheel spin with reconstructed
+input is correct for m5=0 and no drive input inertia/torque,not loaded-drive proof.
+
+Six actual.25s flat/gentle-floor runs: refined stationary sag31.175/31.123mm;
+wheel stationary,input85.024/84.866deg backdrive. Final10ms ideal AB G:
+A reconstructed24.37740/P24.37567Nm,delta.0071%;signed U−L≈975N,chassis−48.75Nm
+inferred. Native chassis AB couple is not explicitly solved/applied with fixed
+pitch. Span/radial/bearing/slack/loaded-drive/hardware loads unassessed; native
+refined energy residual.525J persists. Do not mix final-step and10ms mean G.
+Original spring deficit−5.038Nm at149.4deg causes sag; no retune or physics edit.
+
+00 duplicate Dynamic settings card/editor removed;02/03 edit the same saved
+solverConfig. Library/export retain all settings; legacy archive moved to
+portability card. Stale V4.5 massless-contact copy corrected. Isolated headless
+checks prove02→03 sharing and archive retention; outside live saves preserved.
+Three Sol workers; two Plotly PNGs,cleanup PNG,compact evidence archive in native
+Notion/app-local ignored outputs. Concurrent D-checkout source edits are separate
+and remain intact/unpublished by this contribution; work isolated for publication.
+Additional current-retained-V4 checks match1001-pose kinematics and all6251/6181
+numeric fields in two extra short A/P runs exactly. Preserve version/hash scope;
+the current-source helper's documented cwd correction did not change trajectories.
+
 ## Latest — 2026-10-31 viewer-first solver layout
 
 Owner supersedes the prior01–03 inputs-left/results-right layout: main visual
