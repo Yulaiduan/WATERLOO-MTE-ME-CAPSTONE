@@ -15,9 +15,17 @@ function validateTorqueTargets(value){keys(value,Object.keys(torqueTargetDefault
 const energyDefaults={dropHeightMm:100,targetClearanceMm:50,torqueLimitNm:20,compressionReserveDeg:1};
 const energyMotorIds=['custom','flipsky-6374-190','flipsky-6384-170','flipsky-6354-140','flipsky-6384-140','flipsky-6374-140','flipsky-7070-110','flipsky-6368-140','flipsky-63100-140','flipsky-80100-130'];
 function validateEnergy(value){
- keys(value,[...Object.keys(energyDefaults),'screening'],'energy configuration');
+ keys(value,[...Object.keys(energyDefaults),'screening','travelRanges'],'energy configuration');
  for(const [key,[lo,hi]]of Object.entries({dropHeightMm:[0,5000],targetClearanceMm:[0,5000],torqueLimitNm:[0,10000],compressionReserveDeg:[0,180]}))if(!Number.isFinite(value[key])||value[key]<lo||value[key]>hi)throw Error(key+' must be finite between '+lo+' and '+hi+'.');
  const out={...value};
+ if('travelRanges' in value){
+  keys(value.travelRanges,['jump','landing'],'energy travel ranges');out.travelRanges={};
+  for(const [kind,range]of Object.entries(value.travelRanges)){
+   keys(range,['minClearanceMm','maxClearanceMm'],kind+' energy travel');
+   if(Object.keys(range).length!==2||![range.minClearanceMm,range.maxClearanceMm].every(Number.isFinite)||range.minClearanceMm<0||range.maxClearanceMm>5000||range.maxClearanceMm-range.minClearanceMm<1e-6)throw Error(kind+' travel needs finite 0 ≤ minimum < maximum ≤ 5000 mm.');
+   out.travelRanges[kind]={...range};
+  }
+ }
  if('screening' in value){const v=value.screening;keys(v,['motorId','gearboxId','peakShaftNm','customRatio','customMomentaryNm'],'energy motor screen');
   if(Object.keys(v).length!==5||!energyMotorIds.includes(v.motorId)||!['direct','custom','eg5','eg10','eg20','eg50'].includes(v.gearboxId))throw Error('Choose a known energy-screen motor and gearbox.');
   for(const [key,[lo,hi]]of Object.entries({peakShaftNm:[0,10000],customRatio:[1e-6,10000]}))if(!Number.isFinite(v[key])||v[key]<lo||v[key]>hi)throw Error('Invalid screening '+key+'.');

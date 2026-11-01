@@ -62,13 +62,13 @@ await click('[data-energy-two-metre]');near(UI.getState().result.requiredJointNm
 // Saved Studio mounting pitch participates immediately, survives save/reload,
 // appears in all chart titles and full projection equations, and remains pure.
 current.params.alpha=20;const tiltedBefore=JSON.stringify(current);UI.update(realm(current));const tilted=UI.getState().result;
-ok(tilted!==null&&tilted.alphaDeg===20&&tilted.requiredJointNm<232.3451518866197,'saved alpha recomputes projected gravity without Run');
+ok(tilted!==null&&tilted.alphaDeg===20,'saved alpha recomputes projected gravity without Run');near(tilted.requiredJointNm,246.75784704694223);
 ok(JSON.stringify(current)===tiltedBefore,'mounting pitch read does not edit saved design');ok($('[data-energy-alpha]').textContent.includes('α = 20°'),'prominent saved alpha readout');
 ok($('[data-energy-output]').textContent.includes('−sin(α) P_u(q) + cos(α) P_v(q)'),'full rotated vertical projection visible');ok($('[data-energy-output]').textContent.includes('horizontal wheel motion is allowed')||$('[data-energy-output]').textContent.includes('wheel x motion is allowed'),'wheel horizontal freedom visible');
 ok(charts.slice(-4).every(c=>c.layout.title.text.includes('α = 20°')),'all chart titles retain saved mounting pitch');
 current=P.decode(realm(P.validate(current))).project;UI.update(realm(current));near(UI.getState().result.requiredJointNm,tilted.requiredJointNm);near(UI.getState().result.alphaDeg,20);
 await click('[data-energy-alpha-edit]');ok(tab==='builder','alpha edit action opens Studio');ctx.KinefoldStudio.showTab('energy');
-const beforeModeCharts=charts.length;await click('[data-energy-mode="jump"]');ok(UI.getState().kind==='jump'&&charts.length===beforeModeCharts+4,'mode switches all plots');ok($('[data-energy-case="landingOpenFraction"]').closest('label').hidden,'jump hides irrelevant opening');ok(!$('[data-energy-target="jumpHeightMm"]').closest('[data-energy-for]').hidden,'jump height visible');near(UI.getState().result.alphaDeg,20);
+const beforeModeCharts=charts.length;await click('[data-energy-mode="jump"]');ok(UI.getState().kind==='jump'&&charts.length===beforeModeCharts+4,'mode switches all plots');ok(!$('[data-energy-case="landingOpenFraction"]').closest('label').hidden,'shared dynamic defaults remain visible without changing Jump travel');ok(!$('[data-energy-target="jumpHeightMm"]').closest('[data-energy-for]').hidden,'jump height visible');near(UI.getState().result.alphaDeg,20);
 const lower=UI.getState().result.requiredJointNm;change('[data-energy-target="jumpHeightMm"]',300);ok(UI.getState().result.requiredJointNm>lower,'jump target changes work torque');
 change('[data-energy-motor]','flipsky-80100-130');change('[data-energy-gear]','eg20');near(UI.getState().result.gearRatio,20);near(UI.getState().result.availableJointNm,60);ok($('[data-energy-screen="customRatio"]').closest('label').hidden,'custom ratio hidden for catalog');ok(!current.motorConfig,'catalog never creates physical motor');
 change('[data-energy-gear]','custom');ok(!$('[data-energy-screen="customRatio"]').closest('label').hidden,'custom fields shown only when selected');ok(UI.getState().result.screening.gearboxPass===null,'unknown gearbox cannot pass');
@@ -86,11 +86,11 @@ ctx.KinefoldStudio.showTab('energy');await click('[data-energy-mode="landing"]')
 current.motorConfig.gearRatio=.001;current.motorConfig.commandBasis='motor';UI.update(realm(current));ok(UI.command(realm(current),'landing').reasons.some(s=>s.includes('cannot be copied')),'oversized motor-side command blocked before writes');
 current.params.alpha=46;UI.update(realm(current));ok(UI.getState().result===null&&!$('[data-energy-key="dropHeightMm"]').disabled,'unsupported geometry leaves editable controls');ok($('[data-energy-output]').textContent.includes('unavailable')&&!primary.querySelector('[data-energy-chart]'),'old results and primary chart removed on error');
 current.params.alpha=0;current.motorConfig.gearRatio=10;UI.update(realm(current));ok(UI.getState().result!==null,'valid edits recover');
-const beforeZero=realm(current);current.params.alpha=45;current.energyConfig={...P.energyDefaults,dropHeightMm:0};UI.update(realm(current));ok(UI.getState().result.requiredJointNm===0&&UI.getState().result.endpointKineticBudgetJ<0,'tilted zero-height landing keeps signed unreachable endpoint');ok(primary.textContent.includes('earlier arrest/reversal'),'negative landing demand explains earlier arrest');
+const beforeZero=realm(current);current.params.alpha=20;current.params.p0=2000;current.energyConfig={...P.energyDefaults,dropHeightMm:0};UI.update(realm(current));ok(UI.getState().result.requiredJointNm===0&&UI.getState().result.endpointKineticBudgetJ<0,'over-assisted tilted zero-height landing keeps signed unreachable endpoint');ok(primary.textContent.includes('earlier arrest/reversal'),'negative landing demand explains earlier arrest');
 current.torqueTargetConfig={...P.torqueTargetDefaults,jumpHeightMm:0};await click('[data-energy-mode="jump"]');ok(UI.getState().result.requiredJointNm===0&&UI.getState().result.endpointKineticBudgetJ>0,'tilted zero-height jump keeps surplus');ok(primary.textContent.includes('positive endpoint kinetic surplus'),'negative jump demand explains apex not established');current=beforeZero;UI.open('landing');
 await click('[data-energy-remove]');ok(!current.energyConfig&&current.torqueTargetConfig,'reset removes only calculator metadata');ok(requests===0,'no dynamics/network calls from calculator or handoff');
-current=P.baseline();UI.open('landing');change('[data-energy-case="landingOpenFraction"]',1);change('[data-energy-key="compressionReserveDeg"]',0);
-near(UI.getState().result.qStartDeg,current.params.te);near(UI.getState().result.angularTravelDeg,65);ok(UI.getState().result.boundaryOnly,'full-open UI edit preserves explicit zero-reserve boundary warning');
+current=P.baseline();UI.open('landing');change('[data-energy-case="landingOpenFraction"]',1);ok(!$('[data-energy-key="compressionReserveDeg"]').closest('label').hidden,'legacy default angular reserve remains editable');
+near(UI.getState().result.qStartDeg,current.params.te);near(UI.getState().result.angularTravelDeg,64);ok(!UI.getState().result.boundaryOnly,'old profiles keep the saved one-degree reserve');
 // The massless display option leaves saved masses intact. Exports record the
 // choice, while a physical command always recalculates the actual saved masses.
 ctx.KinefoldStudio.showTab('energy');
@@ -115,6 +115,37 @@ for(const mode of ['landing','jump']){
  box.checked=true;box.onchange({target:box});near(UI.getState().result.requiredJointNm,on.requiredJointNm);
  ok(JSON.stringify(current)===savedFinite,'reenabling saved masses is read-only');
 }
+// Independent saved endpoint bands and independent local plot limits.
+current=P.v45();current.params.springEnabled=false;current.contactConfig=realm({...P.contactDefaults});
+UI.open('landing');const physicalBefore=JSON.stringify([current.params,current.caseConfig,current.solverConfig]);
+const lb=A.travelRange(realm(current),'landing'),jb=A.travelRange(realm(current),'jump');
+change('[data-energy-travel-value="max"]',lb.maxClearanceMm-20);
+const landingMax=current.energyConfig.travelRanges.landing.maxClearanceMm,landingTorque=UI.getState().result.requiredJointNm;
+ok(UI.command(realm(current),'landing').reasons.some(s=>s.includes('Energy-only'))&&$('[data-energy-use="pymunk"]').disabled,'custom landing endpoints cannot masquerade as exact dynamic replay');
+change('[data-energy-range="heightMaxMm"]',1200);
+UI.open('jump');near(UI.getState().plotRange.heightMaxMm,100); // Earlier Jump-only plot edit survives.
+near(Number($('[data-energy-travel-value="max"]').value),jb.maxClearanceMm);
+change('[data-energy-travel-value="max"]',jb.maxClearanceMm-50);
+change('[data-energy-travel-value="min"]',jb.minClearanceMm+25);
+const jumpRange=JSON.stringify(current.energyConfig.travelRanges.jump);
+near(current.energyConfig.travelRanges.landing.maxClearanceMm,landingMax);
+ok(UI.command(realm(current),'jump').reasons.some(s=>s.includes('Energy-only')),'custom jump endpoints cannot silently copy full-stroke command');
+change('[data-energy-range="heightMaxMm"]',4500);
+UI.open('landing');near(UI.getState().plotRange.heightMaxMm,1200);near(UI.getState().result.requiredJointNm,landingTorque);
+near(Number($('[data-energy-travel-value="max"]').value),landingMax);
+const validRanges=JSON.stringify(current.energyConfig.travelRanges),beforeBad=JSON.stringify(current);
+change('[data-energy-travel-value="max"]',-1);ok(JSON.stringify(current)===beforeBad&&toasts.at(-1).includes('travel'),'invalid endpoints reject rather than clamp numeric input or mutate settings');
+current=P.decode(realm(current)).project;UI.update(realm(current));ok(JSON.stringify(current.energyConfig.travelRanges)===validRanges,'project roundtrip preserves independent ranges');
+await click('[data-energy-export="json"]');ok(JSON.stringify(artifacts.at(-1).value.projectSnapshot.energyConfig.travelRanges)===validRanges,'full export retains both saved travel ranges');
+ok(JSON.stringify([current.params,current.caseConfig,current.solverConfig])===physicalBefore,'range edits leave physical mechanism/dynamic case/config unchanged');
+await click('[data-energy-travel-reset]');ok(!current.energyConfig.travelRanges.landing&&JSON.stringify(current.energyConfig.travelRanges.jump)===jumpRange,'reset removes current case only');
+UI.open('jump');near(UI.getState().plotRange.heightMaxMm,4500);
+const savedBeforeDrift=JSON.stringify(current.energyConfig.travelRanges);current.params.L2=290;current.params.L3=290;UI.update(realm(current));
+// A sufficiently changed envelope must report stale values, never rewrite them.
+current.params.L2=100;current.params.L3=100;UI.update(realm(current));
+ok(UI.getState().result===null&&$('[data-energy-travel-limit]').textContent.includes('envelope'),'geometry drift invalidates selected bounds visibly');
+ok(JSON.stringify(current.energyConfig.travelRanges)===savedBeforeDrift,'stale bounds are preserved for correction');
+await click('[data-energy-travel-reset]');ok(UI.getState().result!==null,'restore default recovers from stale range');
 ok(document.getElementById('energy').querySelectorAll('[data-energy-chart]').length===4,'all four existing plots remain, without duplicate traces or hosts');
 ok([...document.getElementById('energy').querySelectorAll('[data-energy-chart]')].filter(el=>el.dataset.energyChart!=='torque').every(el=>el.closest('.energy-results')===results),'remaining three plots follow full-width parameters');
 const html=read('index.html');ok(html.indexOf('data-tab="builder"')<html.indexOf('data-tab="energy"')&&html.indexOf('data-tab="energy"')<html.indexOf('data-tab="analytical"'),'energy before dynamics');ok(read('app.js').includes("['builder','energy','analytical','pymunk','presets','flow','actuator','conventions']"),'stable tab IDs / conventions last');ok(!read('solvers.js').includes('KinefoldEnergyUI.mount(id'),'no duplicate energy calculators in dynamics');

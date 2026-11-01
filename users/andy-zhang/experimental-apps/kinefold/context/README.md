@@ -1,5 +1,28 @@
 # Kinefold context
 
+## Latest — 2026-11-01 independent Energy travel limits
+
+Owner clarified separate maximum ranges for Jump/Landing, not a spring optimizer.
+The earlier local Jump range draft edited shared landing opening/clearance; it
+is integrated here as independent Energy-only saved endpoints for both modes.
+Optional energyConfig.travelRanges.jump/landing each store minimum/maximum
+underbody clearance in mm, with matching JS and app-folder validation. Exact
+world-height inversion supplies q endpoints for all signed work/plots/exports.
+Physical params/case/motor/run settings remain unchanged. Absent overrides keep
+full mechanical Jump and the original reserved Landing defaults. Restore affects
+one case only; invalid/stale geometry remains visible. Dynamic handoff is blocked
+for custom strokes, since neither engine implements these Energy endpoints.
+
+The main Plotly chart remains first; full-width limits, dual handles/numerical
+inputs and optional same-scale pose previews follow. +x left/+z up retained.
+Height-plot domains are independent local mode state. One GPT-6.1 Sol worker
+owns implementation/tests in an isolated worktree; parent owns integrated browser
+QA/docs/publication. Real desktop/phone QA covers actual thumb drag, independent
+edits, torque/work response, invalid-input purity, reload, reset and handoff.
+All QA persistence is intercepted in memory; the live library stays unchanged.
+Reviewed PNGs/helpers stay in ignored app folders. Owner opted out of Notion
+reporting for this change. Existing app-root launchers retain4191.
+
 ## Latest — 2026-11-01 fixed spring mounts and compact help
 
 Owner requests α rotate the leg without rotating the spring,and less explanatory

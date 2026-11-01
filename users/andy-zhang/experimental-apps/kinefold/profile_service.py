@@ -130,9 +130,17 @@ def _project(value):
     if "energyConfig" in value:
         energy=value["energyConfig"]
         limits={"dropHeightMm":(0,5000),"targetClearanceMm":(0,5000),"torqueLimitNm":(0,10000),"compressionReserveDeg":(0,180)}
-        _shape(energy,(*limits,"screening"),"energy configuration")
-        if set(energy)-{"screening"}!=set(limits) or any(type(energy.get(k)) not in (int,float) or not lo<=energy[k]<=hi for k,(lo,hi) in limits.items()):
+        _shape(energy,(*limits,"screening","travelRanges"),"energy configuration")
+        if set(energy)-{"screening","travelRanges"}!=set(limits) or any(type(energy.get(k)) not in (int,float) or not lo<=energy[k]<=hi for k,(lo,hi) in limits.items()):
             raise StorageError("Unknown, missing or out-of-range energy settings.")
+        if "travelRanges" in energy:
+            ranges=energy["travelRanges"]
+            _shape(ranges,("jump","landing"),"energy travel ranges")
+            for kind, span in ranges.items():
+                fields={"minClearanceMm","maxClearanceMm"}
+                _shape(span,fields,kind+" energy travel")
+                if set(span)!=fields or any(type(span.get(k)) not in (int,float) or not math.isfinite(span[k]) for k in fields) or not 0<=span["minClearanceMm"]<span["maxClearanceMm"]<=5000 or span["maxClearanceMm"]-span["minClearanceMm"]<1e-6:
+                    raise StorageError(kind+" travel needs finite 0 <= minimum < maximum <= 5000 mm.")
         if "screening" in energy:
             screen=energy["screening"]
             fields={"motorId","gearboxId","peakShaftNm","customRatio","customMomentaryNm"}

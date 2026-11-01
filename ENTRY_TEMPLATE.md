@@ -5921,3 +5921,49 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Fix
 Read spring-mounting.md for fixed chassis Su/Sv,horn phase,p0reference,versioned captures and the deliberately unchanged raw constants.
 Use Suspension Lock/Solve to refit and rerun both engines for new fixed-mount results;older captures remain explicitly legacy and cannot mix with new runs.
 Use native i help and bottom equations for details,keep concurrent Energy edits/live libraries intact,and restart with the project-local launcher at4191.
+
+---
+
+## Entry: 2026-11-01 — Andy Zhang / Codex — Independent Jump and Landing Energy ranges
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated Kinefold Energy workspace.
+- **Associated Issue/Task:** Separate Jump and Landing maximum travel ranges following the owner's clarification; preserve the original fixed-mount model and saved mechanisms.
+
+Owner clarified independent maximum ranges for Jump and Landing, not a spring Lock/Solve control. Integrated the existing local Jump travel draft while replacing its writes to shared landing opening/clearance with separate saved Energy-only minimum/maximum clearance endpoints for each case. Main torque chart stays first, full-width range parameters and optional same-scale mechanism views follow; height-plot display ranges are independently retained per mode. Physical mechanism, spring, motor and dynamic-case settings remain unchanged by range edits. Owner requested no Notion report for this change; PNG previews remain app-local and in chat.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-workspace.css`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-jump-travel.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-energy-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+
+- **API/Interface Changes:** Optional project-v3 energyConfig.travelRanges.jump/landing each hold finite minClearanceMm/maxClearanceMm. JavaScript and Python enforce matching shapes and valid increasing bounds; exact geometry validity is checked during calculation. No migration of absent settings. Energy workspace inverts world-height including alpha and recalculates signed gravity/spring/cogging work over selected endpoints; physical solver guidance retains its original stroke. New mechanicalTravel/travelRange helpers and jumpTravel alias are app-local. Default Jump remains full mechanical travel; default Landing retains opening/clearance/reserve. Case reset removes one override only. Custom Energy ranges explicitly disable dynamic command handoff because the engines do not implement those endpoints. No dependency, canonical asset, shared interface, enforcement or vendor change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS GPT-6.1 Sol worker284 independent range/manual work assertions across alpha0/20, spring on/off and saved/massless links; UI1730 assertions/132BASIC chart mounts; project35, Energy119/workspace2262, tilted-energy92862 over240fixtures, finite-mass2488, preset55; Python profile18 temporary-storage tests. Tests cover independent editing, JSON/schema roundtrip, named save/read/working/reload, stale geometry and rejected null/unknown/crossed/non-finite/bool ranges without disk mutation. Parent real headless Edge1440/390px checks pass for actual maximum-thumb drag, numeric edits, independent saved intervals and plot domains, torque/work response, invalid-input purity, reload, active-case reset, four actual Plotly charts and explicit handoff guard; zero page errors or unexpected service writes. QA persistence is intercepted in memory; live-library bytes are unchanged within each check while normal user edits remain permitted between checks. Example2m alpha0 calculations: Jump400–650mm/31.818372deg/401.881779Nm; Landing350–700mm/46.972315deg/261.459331Nm, original finite V4.5 fixture. These are endpoint work screens, not new trajectories. Reviewed source is copied to durable app only after confirming the original five draft files match their frozen backups; original draft patch/bytes and review manifest stay ignored app-local. Launcher stop/start/reuse from unrelated cwd succeeds at127.0.0.1:4191/?tab=energy,HTTP200 and new asset confirmed. Whitespace/syntax and fetched-base/staged/exact-push workspace checks apply before publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. No analytical/Pymunk trajectory or hardware performance is newly claimed. One parent QA attempt omitted a textContent() call; corrected the ignored helper and reran successfully, including a later real thumb-drag check. The existing draft's two stale fixed-mount UI assertions were replaced with current explicit fixed-frame fixtures, without changing source equations or expected legacy defaults. Raw runs, screenshots, private libraries and QA helpers are not committed; no Downloads, Computer skill, Notion write or boot automation.
+
+## 4. Compute Saving Handoff State
+
+Open01Energy and set Travel limits independently for Jump and Landing; these are underbody clearance endpoints, separate from the airborne height targets.
+Use Restore case default before copying a dynamic estimate, since custom Energy strokes are not implemented in either engine.
+Retain the original fixed-chassis spring convention and use the app-root Start Kinefold.cmd at4191; reviewed previews and frozen local draft evidence stay under the ignored app folders.

@@ -68,6 +68,27 @@ class ProfileTests(unittest.TestCase):
         bad['energyConfig']['screening']=None
         self.call('working',status=400,expectedRevision=result['revision'],project=bad)
 
+    def test_independent_energy_travel_ranges_roundtrip_and_reject_invalid(self):
+        state, _ = self.migrate()
+        value=project('Separate energy travel')
+        ranges=dict(jump=dict(minClearanceMm=320,maxClearanceMm=720),landing=dict(minClearanceMm=360,maxClearanceMm=650))
+        value['energyConfig']=dict(dropHeightMm=2000,targetClearanceMm=50,torqueLimitNm=250,compressionReserveDeg=1,travelRanges=ranges)
+        saved=self.call('save',expectedRevision=state['revision'],project=value)
+        self.assertEqual(self.call('read',id=value['id'])['project'],value)
+        working=self.call('working',expectedRevision=saved['revision'],project=json.loads(json.dumps(value)))
+        reloaded=ProfileService(self.root).handle({'action':'list'})[0]
+        self.assertEqual(reloaded['working'],value)
+        self.assertEqual(reloaded['working']['energyConfig']['travelRanges'],ranges)
+        unchanged=self.service.file.read_bytes()
+        for invalid in (None,[],{'minClearanceMm':10},{'minClearanceMm':10,'maxClearanceMm':10},{'minClearanceMm':20,'maxClearanceMm':10},{'minClearanceMm':-1,'maxClearanceMm':10},{'minClearanceMm':False,'maxClearanceMm':10},{'minClearanceMm':float('nan'),'maxClearanceMm':10},{'minClearanceMm':0,'maxClearanceMm':float('inf')},{'minClearanceMm':0,'maxClearanceMm':10,'extra':1}):
+            bad=copy.deepcopy(value)
+            bad['energyConfig']['travelRanges']['jump']=invalid
+            self.call('working',status=400,expectedRevision=working['revision'],project=bad)
+        for invalid in (None,[],{'terrain':ranges['jump']}):
+            bad=copy.deepcopy(value);bad['energyConfig']['travelRanges']=invalid
+            self.call('working',status=400,expectedRevision=working['revision'],project=bad)
+        self.assertEqual(self.service.file.read_bytes(),unchanged)
+
     def test_optional_motor_profile_roundtrip_and_null_rejection(self):
         from motor_model import DEFAULTS
         state, _ = self.migrate()

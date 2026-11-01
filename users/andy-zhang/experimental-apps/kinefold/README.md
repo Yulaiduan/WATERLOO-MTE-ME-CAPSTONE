@@ -74,6 +74,11 @@ manual snapshot, while the live profile library remains local.
   A local **Use saved leg masses** switch compares finite-link and massless
   endpoint screens without editing the design; dynamic handoff always uses the
   actual saved masses. Exported calculations record the selected mass basis.
+  Jump and Landing have independent saved **Travel limits**: minimum/maximum
+  underbody clearance, two slider handles, numerical inputs and optional endpoint
+  mechanism views. Their height-plot inspection ranges are also independent.
+  Explicit travel overrides are Energy-only; dynamic handoff is disabled until
+  the case default is restored, since the engines retain their existing strokes.
 - **02 Analytical / 03 Pymunk:** shared quarter-model case controls, playback,
   categorized result charts and exact-snapshot engine comparison described below.
   The top mechanism viewer has a compact run/replay/navigation rail; all detailed

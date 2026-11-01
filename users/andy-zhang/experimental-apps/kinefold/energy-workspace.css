@@ -8,6 +8,22 @@
 .energy-rail p { color:var(--muted); font-size:12px; line-height:1.55; margin:14px 0 0; }
 .energy-mass-toggle { display:flex; align-items:start; gap:8px; margin-top:16px; font-size:13px; font-weight:600; line-height:1.5; }
 .energy-mass-toggle input { width:auto; flex:none; margin-top:3px; }
+.energy-travel-panel[hidden] { display:none; }
+.energy-travel-panel .energy-plot-heading { margin-top:0; }
+.energy-travel-band { position:relative; height:42px; margin:12px 12px 4px; }
+.energy-travel-band::before { content:''; position:absolute; inset:18px 10px auto; height:6px; border-radius:4px; background:linear-gradient(to right,var(--line) 0,var(--line) var(--band-min,0%),var(--sage) var(--band-min,0%),var(--sage) var(--band-max,100%),var(--line) var(--band-max,100%),var(--line) 100%); }
+.energy-travel-band input[type=range] { position:absolute; inset:0; margin:0; padding:0; width:100%; background:transparent; appearance:none; pointer-events:none; border:0; }
+.energy-travel-band input::-webkit-slider-thumb { appearance:none; width:20px; height:20px; border-radius:50%; background:var(--sage); border:3px solid var(--paper); box-shadow:0 0 0 1px var(--sage); pointer-events:auto; cursor:ew-resize; }
+.energy-travel-band input::-moz-range-thumb { width:16px; height:16px; border-radius:50%; background:var(--sage); border:3px solid var(--paper); pointer-events:auto; cursor:ew-resize; }
+.energy-travel-band input::-moz-range-track { background:transparent; }
+.energy-travel-values,.energy-travel-poses { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.energy-travel-values label { display:grid; gap:7px; font-size:12px; color:var(--muted); }
+#energy .energy-travel-panel .solver-readouts { grid-template-columns:repeat(3,minmax(0,1fr)); margin:16px 0; }
+.energy-travel-poses article { min-width:0; border:1px solid var(--line); border-radius:8px; background:var(--paper); padding:12px; }
+.energy-travel-poses article h4 { margin:0 0 8px; }
+.energy-travel-poses svg { display:block; width:100%; height:auto; }
+.energy-travel-poses p,.energy-travel-caption { font-size:12px; line-height:1.5; }
+@media(max-width:700px) { .energy-travel-values,.energy-travel-poses { grid-template-columns:1fr; }#energy .energy-travel-panel .solver-readouts { grid-template-columns:1fr; } }
 .energy-mode { display:flex; flex-direction:column; gap:8px; margin:12px 0 8px; }
 .energy-mode button[aria-pressed="true"] { background:var(--sage); color:var(--paper); border-color:var(--sage); }
 .energy-primary > .energy-chart-card { margin-bottom:16px; }

@@ -61,7 +61,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
   function calculate(project,options={}){
     project=selectMasses(project,options);
     const p=project.params,P=KinefoldProjects,V=KinefoldV4;
-    const e=P.validateEnergy({...P.energyDefaults,dropHeightMm:project.caseConfig?.landingDropMm??P.caseDefaults.landingDropMm,...project.energyConfig});
+    const e=P.validateEnergy({...P.energyDefaults,dropHeightMm:project.caseConfig?.landingDropMm??P.caseDefaults.landingDropMm,...project.energyConfig,...(options.useCompressionReserve===false?{compressionReserveDeg:0}:{})});
     const c={...P.caseDefaults,...project.caseConfig},savedMotor={...P.motorDefaults,...project.motorConfig},screening=resolveScreen(e.screening);
     P.validateCase(c);P.validateMotor(savedMotor);
     // Candidate reduction changes conservative cogging phase; never mutate dynamics.
@@ -73,15 +73,19 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     if(options.includeLegMasses!==true&&['m2','m3','m5'].some(k=>p[k]!==0))throw Error('Select saved leg masses or the massless-leg approximation for this calculation.');
     if(p.loadMode==='contact'||p.loadMode==='global'&&(Math.abs(p.Fx)>1e-12||Math.abs(p.Fz)>1e-12))throw Error('Additional prescribed wheel loads are outside this chassis gravity/spring/cogging screen. Use weight reference or zero additional global loads.');
     const projection=straightProjection(p);
-    const q0=p.tc+c.landingOpenFraction*(p.te-p.tc),stop=p.tc-e.compressionReserveDeg;
+    let q0=p.tc+c.landingOpenFraction*(p.te-p.tc);const stop=p.tc-e.compressionReserveDeg;
     if(!(p.tc>q0))throw Error('The saved landing opening must compress toward θ_c with decreasing chassis height.');
     if(c.undersideOffsetMm===null)throw Error('Set the shared underside offset below hip A before calculating ground clearance.');
     const ref=Kinefold.reference(p),height=q=>p.rw-V.VSL.state(ref,q).Pg[1],clearance=q=>height(q)-c.undersideOffsetMm;
-    const initialClearance=clearance(q0);
-    if(initialClearance<=e.targetClearanceMm+1e-8)throw Error('Initial underside clearance is at/below the requested residual clearance; no usable braking stroke remains.');
-    if(stop<=q0+1e-8)throw Error('The stop reserve consumes the entire available compression angle. Reduce it or open the initial leg further.');
     let end=stop,limiter=e.compressionReserveDeg>0?'Mechanical stop reserve':'Mechanical stop boundary';
-    if(clearance(stop)<e.targetClearanceMm){let lo=q0,hi=stop;for(let i=0;i<65;i++){const mid=(lo+hi)/2;if(clearance(mid)>e.targetClearanceMm)lo=mid;else hi=mid;}end=(lo+hi)/2;limiter='Target ground clearance';}
+    const selected=options.useTravelRanges===true?selectedTravel(project,'landing',options):null;
+    if(selected){q0=selected.qEndDeg;end=selected.qStartDeg;limiter='Selected Energy landing range';}
+    else{
+      if(clearance(q0)<=e.targetClearanceMm+1e-8)throw Error('Initial underside clearance is at/below the requested residual clearance; no usable braking stroke remains.');
+      if(stop<=q0+1e-8)throw Error('The stop reserve consumes the entire available compression angle. Reduce it or open the initial leg further.');
+      if(clearance(stop)<e.targetClearanceMm){let lo=q0,hi=stop;for(let i=0;i<65;i++){const mid=(lo+hi)/2;if(clearance(mid)>e.targetClearanceMm)lo=mid;else hi=mid;}end=(lo+hi)/2;limiter='Target ground clearance';}
+    }
+    const initialClearance=clearance(q0);
     const travel=(end-q0)*R;if(!(travel>1e-10))throw Error('No usable compression travel remains.');
     if(p.springEnabled){const span=V.VSLSpring.interval(ref,q0,end),z=V.VSLSpring.geometry(ref,90);if(!span.valid||!z.valid)throw Error(span.reason||z.reason);if(ref.p0+ref.springK*(span.min-z.payout)<-1e-8)throw Error('The cable becomes slack during the braking stroke; slack recovery is outside this energy screen.');}
     const spring=q=>{if(!p.springEnabled)return 0;const z=V.VSLSpring.state(ref,q);if(!z.valid||!Number.isFinite(z.energy))throw Error(z.reason||'Invalid spring energy.');return z.energy;};
@@ -93,10 +97,10 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const requiredJointNm=Math.max(0,(dropJ+fixedWorkJ)/travel),capacityRawMm=(availableJointNm*travel-fixedWorkJ)/weight*1000;
     const terms={dropJ,gravityCompressionJ,springReleasedJ,coggingReleasedJ};
     if(screening){screening.motorPass=requiredJointNm/N<=screening.peakShaftNm+1e-10;screening.gearboxPass=!screening.gearboxAssessed?null:screening.momentaryNm===null||requiredJointNm<=screening.momentaryNm+1e-10;screening.savedPassiveMotorEnabled=savedMotor.enabled;}
-    return {...projection,config:e,openingFraction:c.landingOpenFraction,undersideOffsetMm:c.undersideOffsetMm,qStartDeg:q0,qEndDeg:end,angularTravelRad:travel,angularTravelDeg:end-q0,
+    return {...projection,config:e,travelSelection:selected,openingFraction:(p.tc-q0)/(p.tc-p.te),undersideOffsetMm:c.undersideOffsetMm,qStartDeg:q0,qEndDeg:end,angularTravelRad:travel,angularTravelDeg:end-q0,
       startWheelCxMm:point(ref,q0).wheelCxMm,endWheelCxMm:point(ref,end).wheelCxMm,horizontalWheelTravelMm:point(ref,end).wheelCxMm-point(ref,q0).wheelCxMm,
       startHipHeightMm:height(q0),endHipHeightMm:height(end),initialClearanceMm:initialClearance,endClearanceMm:clearance(end),chassisCompressionMm:height(q0)-height(end),limiter,
-      boundaryOnly:e.compressionReserveDeg===0&&limiter==='Mechanical stop boundary',massKg:p.m1,legMassKg,dropMassKg,flightMassKg:dropMassKg+p.m6,gravityMS2:p.g,impactSpeedMS:Math.sqrt(2*p.g*e.dropHeightMm/1000),gearRatio:N,
+      boundaryOnly:Math.abs(end-p.tc)<1e-8,massKg:p.m1,legMassKg,dropMassKg,flightMassKg:dropMassKg+p.m6,gravityMS2:p.g,impactSpeedMS:Math.sqrt(2*p.g*e.dropHeightMm/1000),gearRatio:N,
       requiredJointNm,requiredShaftNm:requiredJointNm/N,availableJointNm,availableShaftNm:availableJointNm/N,screening,
       capacityRawMm,capacityMm:capacityRawMm>=0?capacityRawMm:null,passes:requiredJointNm<=availableJointNm+1e-10&&(!screening||screening.gearboxAssessed),
       workJ:dropJ+fixedWorkJ,availableWorkJ:availableJointNm*travel,...terms,
@@ -108,6 +112,37 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     delete energyConfig.screening;
     return calculate({...project,energyConfig},options);
   }
+  function mechanicalTravel(project){
+    const p=project.params,c={...KinefoldProjects.caseDefaults,...project.caseConfig};
+    straightProjection(p);KinefoldProjects.validateCase(c);
+    if(c.undersideOffsetMm===null)throw Error('Set the shared underside offset below hip A before calculating ground clearance.');
+    const ref=Kinefold.reference(p),d=c.undersideOffsetMm,lo=point(ref,p.tc).hipHeightMm-d,hi=point(ref,p.te).hipHeightMm-d;
+    return {mechanicalMinClearanceMm:lo,mechanicalMaxClearanceMm:hi,availableMinClearanceMm:Math.max(0,lo),availableMaxClearanceMm:hi,undersideOffsetMm:d};
+  }
+  function selectedTravel(project,kind,options={}){
+    if(options.ignoreSavedTravel)return null;
+    const selected=project.energyConfig?.travelRanges?.[kind];
+    const override=kind==='jump'&&(options.jumpMinClearanceMm!==undefined||options.jumpMaxClearanceMm!==undefined);
+    if(!selected&&!override)return null;
+    const b=mechanicalTravel(project),p=project.params,ref=Kinefold.reference(p),d=b.undersideOffsetMm;
+    const min=options.jumpMinClearanceMm??selected?.minClearanceMm??b.availableMinClearanceMm,max=options.jumpMaxClearanceMm??selected?.maxClearanceMm??b.availableMaxClearanceMm;
+    if(![min,max].every(Number.isFinite)||min<b.availableMinClearanceMm-1e-7||max>b.availableMaxClearanceMm+1e-7||max-min<1e-6)throw Error(kind+' Energy range is outside the current mechanical envelope or has no positive travel. Edit the range or restore its default.');
+    const angleAt=value=>{let a=p.te,c=p.tc;for(let i=0;i<65;i++){const q=(a+c)/2;if(point(ref,q).hipHeightMm-d>value)a=q;else c=q;}return (a+c)/2;};
+    const qStartDeg=angleAt(min),qEndDeg=angleAt(max),a=point(ref,qStartDeg),z=point(ref,qEndDeg);
+    return {...b,minClearanceMm:min,maxClearanceMm:max,qStartDeg,qEndDeg,verticalTravelMm:max-min,
+      legAxisTravelMm:Math.hypot(z.wheelCxMm-a.wheelCxMm,z.wheelCzMm-a.wheelCzMm),angularTravelDeg:qStartDeg-qEndDeg,angularTravelRad:(qStartDeg-qEndDeg)*R,
+      minimumHipHeightMm:min+d,maximumHipHeightMm:max+d,explicit:true};
+  }
+  function travelRange(project,kind='jump',options={}){
+    if(!['jump','landing'].includes(kind))throw Error('Choose jump or landing energy.');
+    const saved=selectedTravel(project,kind,options);if(saved)return saved;
+    const b=mechanicalTravel(project),p=project.params,ref=Kinefold.reference(p);
+    let min=b.availableMinClearanceMm,max=b.availableMaxClearanceMm;
+    if(kind==='landing'){const z=calculate(project,{includeLegMasses:false,...options,useTravelRanges:false});min=z.endClearanceMm;max=z.initialClearanceMm;}
+    const temp={...project,energyConfig:{...project.energyConfig,travelRanges:{[kind]:{minClearanceMm:min,maxClearanceMm:max}}}};
+    return {...selectedTravel(temp,kind,{}),explicit:false};
+  }
+  const jumpTravel=(project,options={})=>travelRange(project,'jump',options);
   function jumpEstimate(project,targetHeightMm,options={}){
     project=selectMasses(project,options);
     const p=project.params,motor={...KinefoldProjects.motorDefaults,...project.motorConfig};
@@ -117,18 +152,20 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     if(options.includeLegMasses!==true&&['m2','m3','m5'].some(k=>p[k]!==0))throw Error('Select saved leg masses or the massless-leg approximation for this calculation.');
     const projection=straightProjection(p);
     if(p.loadMode==='contact'||p.loadMode==='global'&&(Math.abs(p.Fx)>1e-12||Math.abs(p.Fz)>1e-12))throw Error('Extra wheel loads are outside this gravity-only jump work estimate.');
-    const ref=Kinefold.reference(p),V=KinefoldV4,travel=(p.tc-p.te)*R;
-    if(p.springEnabled){const span=V.VSLSpring.interval(ref,p.te,p.tc),z=V.VSLSpring.geometry(ref,90);if(!span.valid||!z.valid)throw Error(span.reason||z.reason);if(ref.p0+ref.springK*(span.min-z.payout)<-1e-8)throw Error('The jump cable becomes slack within the full stroke; slack recovery is outside this energy screen.');}
-    const stanceRiseMm=V.VSL.state(ref,p.tc).Pg[1]-V.VSL.state(ref,p.te).Pg[1];
+    const band=options.jumpTravel===true||options.useTravelRanges===true?jumpTravel(project,options):null;
+    const qStart=band?.qStartDeg??p.tc,qEnd=band?.qEndDeg??p.te;
+    const ref=Kinefold.reference(p),V=KinefoldV4,travel=(qStart-qEnd)*R;
+    if(p.springEnabled){const span=V.VSLSpring.interval(ref,qEnd,qStart),z=V.VSLSpring.geometry(ref,90);if(!span.valid||!z.valid)throw Error(span.reason||z.reason);if(ref.p0+ref.springK*(span.min-z.payout)<-1e-8)throw Error('The jump cable becomes slack within the selected stroke; slack recovery is outside this energy screen.');}
+    const stanceRiseMm=V.VSL.state(ref,qStart).Pg[1]-V.VSL.state(ref,qEnd).Pg[1];
     if(!(travel>0&&stanceRiseMm>0))throw Error('The extension endpoint must raise the chassis on the supported branch.');
     const spring=q=>{if(!p.springEnabled)return 0;const z=V.VSLSpring.state(ref,q);if(!z.valid)throw Error(z.reason);return z.energy;};
     const N=motor.enabled?KinefoldProjects.totalMotorRatio(motor):1,cog=q=>motor.enabled?motor.coggingAmplitudeNm/motor.coggingPeriodsPerRev*Math.cos(motor.coggingPeriodsPerRev*N*q*R+motor.coggingPhaseDeg*R):0;
     const legMassKg=p.m2+p.m3+p.m5,flightMassKg=p.m1+legMassKg+p.m6;
-    const stanceGravityJ=bodyGravity(p,ref,p.te).totalJ-bodyGravity(p,ref,p.tc).totalJ,flightEnergyJ=flightMassKg*p.g*targetHeightMm/1000;
-    const springReleaseJ=spring(p.tc)-spring(p.te),coggingReleaseJ=cog(p.tc)-cog(p.te);
+    const stanceGravityJ=bodyGravity(p,ref,qEnd).totalJ-bodyGravity(p,ref,qStart).totalJ,flightEnergyJ=flightMassKg*p.g*targetHeightMm/1000;
+    const springReleaseJ=spring(qStart)-spring(qEnd),coggingReleaseJ=cog(qStart)-cog(qEnd);
     const jointNm=Math.max(0,(stanceGravityJ+flightEnergyJ-springReleaseJ-coggingReleaseJ)/travel);
-    return {...projection,startWheelCxMm:point(ref,p.tc).wheelCxMm,endWheelCxMm:point(ref,p.te).wheelCxMm,horizontalWheelTravelMm:point(ref,p.te).wheelCxMm-point(ref,p.tc).wheelCxMm,jointNm,shaftNm:jointNm/N,stanceRiseMm,stanceGravityJ,flightEnergyJ,flightMassKg,legMassKg,springReleaseJ,coggingReleaseJ,angularTravelRad:travel,
-      meaning:'Optimistic work screen: full extension at takeoff, locked relative pose during flight, all mass rises together; fixed wheel height and horizontal wheel motion allowed during stance. No stop/contact/rolling/friction loss or retained wheel-spin/rotor kinetic energy. Not guaranteed takeoff or apex.'};
+    return {...projection,qStartDeg:qStart,qEndDeg:qEnd,jumpTravel:band,startWheelCxMm:point(ref,qStart).wheelCxMm,endWheelCxMm:point(ref,qEnd).wheelCxMm,horizontalWheelTravelMm:point(ref,qEnd).wheelCxMm-point(ref,qStart).wheelCxMm,jointNm,shaftNm:jointNm/N,stanceRiseMm,stanceGravityJ,flightEnergyJ,flightMassKg,legMassKg,springReleaseJ,coggingReleaseJ,angularTravelRad:travel,
+      meaning:'Optimistic work screen: selected extension endpoint at takeoff, locked relative pose during flight, all mass rises together; fixed wheel height and horizontal wheel motion allowed during stance. No stop/contact/rolling/friction loss or retained wheel-spin/rotor kinetic energy. Not guaranteed takeoff or apex.'};
   }
   /** Detailed, sampled endpoint work ledger. No time integration or pass claim.
    * Plot range is local display state in mm; all signed energy budgets stay raw.
@@ -140,7 +177,7 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const count=options.samples??161,min=options.heightMinMm??0,max=options.heightMaxMm??5000;
     if(!Number.isInteger(count)||count<3||count>501||![min,max].every(Number.isFinite)||min<0||max<=min||max>5000)throw Error('Plot range needs 0 ≤ minimum < maximum ≤ 5000 mm, with 3–501 samples.');
     const P=KinefoldProjects,V=KinefoldV4,p=project.params,c={...P.caseDefaults,...project.caseConfig};
-    const e=P.validateEnergy({...P.energyDefaults,dropHeightMm:c.landingDropMm,...project.energyConfig});
+    const e=P.validateEnergy({...P.energyDefaults,dropHeightMm:c.landingDropMm,...project.energyConfig,...(options.useCompressionReserve===false?{compressionReserveDeg:0}:{})});
     const target={...P.torqueTargetDefaults,...project.torqueTargetConfig};
     P.validateTorqueTargets(target);
     const savedMotor=P.validateMotor({...P.motorDefaults,...project.motorConfig}),screen=resolveScreen(e.screening);
@@ -148,12 +185,12 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
     const motor=screen?{...savedMotor,enabled:true,gearRatio:screen.ratio,hipBeltRatio:1,coggingAmplitudeNm:savedMotor.enabled?savedMotor.coggingAmplitudeNm:0}:savedMotor;
     const analysisProject={...project,motorConfig:motor};
     let result;
-    if(kind==='landing')result=calculate(project,options);
+    if(kind==='landing')result=calculate(project,{...options,useTravelRanges:true});
     else{
-      const j=jumpEstimate(analysisProject,target.jumpHeightMm,options),N=motor.enabled?KinefoldProjects.totalMotorRatio(motor):1,available=screen?screen.effectiveJointNm:e.torqueLimitNm;
+      const j=jumpEstimate(analysisProject,target.jumpHeightMm,{...options,useTravelRanges:true}),N=motor.enabled?KinefoldProjects.totalMotorRatio(motor):1,available=screen?screen.effectiveJointNm:e.torqueLimitNm;
       if(screen){screen.motorPass=j.shaftNm<=screen.peakShaftNm+1e-10;screen.gearboxPass=!screen.gearboxAssessed?null:screen.momentaryNm===null||j.jointNm<=screen.momentaryNm+1e-10;screen.savedPassiveMotorEnabled=savedMotor.enabled;}
       result={...j,config:e,requiredJointNm:j.jointNm,requiredShaftNm:j.shaftNm,gearRatio:N,availableJointNm:available,availableShaftNm:available/N,screening:screen,
-        qStartDeg:p.tc,qEndDeg:p.te,angularTravelDeg:p.tc-p.te,massKg:p.m1,gravityMS2:p.g,flightMassKg:j.flightMassKg,wheelMassKg:p.m6,
+        qStartDeg:j.qStartDeg,qEndDeg:j.qEndDeg,angularTravelDeg:j.qStartDeg-j.qEndDeg,massKg:p.m1,gravityMS2:p.g,flightMassKg:j.flightMassKg,wheelMassKg:p.m6,
         targetHeightMm:target.jumpHeightMm,workJ:j.stanceGravityJ+j.flightEnergyJ-j.springReleaseJ-j.coggingReleaseJ,
         passes:j.jointNm<=available+1e-10&&(!screen||screen.gearboxAssessed),boundaryOnly:false,undersideOffsetMm:c.undersideOffsetMm};
     }
@@ -186,5 +223,5 @@ globalThis.KinefoldEnergyAnalysis=(()=>{
       endpointKineticBudgetJ:stroke.at(-1).kineticBudgetJ,unclippedMotorWorkJ:result.workJ,
       assumptions:kind==='jump'?'Ideal endpoint work: actual uniform-link COM gravity during stance; chassis, included links/compound and wheel rise together in fixed-pose flight. Relative joint rates are zero at comparison endpoints, so rotational inertias add no endpoint work. Takeoff redistribution/stop losses, retained spin, friction and transient inertia require dynamics; this is an optimistic bound, not guaranteed height.':'Initial-arrest endpoint screen: full (m₁ + included leg/compound masses)gH retained, actual body COM gravity during compression. Wheel impact energy remains omitted. Fixed wheel height on horizontal ground, fixed chassis x/pitch and rest at arrest; rotational inertias add no rest-to-rest endpoint work. No impact/friction loss credit, transient peak torque or post-arrest hold claim.'};
   }
-  return {calculate,landingEstimate,jumpEstimate,workspace,resolveScreen,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
+  return {calculate,landingEstimate,jumpEstimate,jumpTravel,travelRange,mechanicalTravel,workspace,resolveScreen,motors:Object.freeze(motors),gearboxes:Object.freeze(gearboxes)};
 })();

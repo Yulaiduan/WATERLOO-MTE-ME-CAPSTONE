@@ -19,6 +19,33 @@ physical command with all saved masses even when the comparison is massless.
 The original V4 linear spring is the sole supported suspension law; constant
 cable-force designs are explicitly rejected rather than converted.
 
+## Independent Jump and Landing travel limits
+
+Each mode has its own minimum/maximum **underbody clearance** in millimetres,
+with two slider handles, numerical inputs and optional same-scale mechanism
+views. These heights define supported leg travel on the horizontal floor; they
+are separate from airborne jump height and the wheel-bottom drop distance.
+Jump moves from minimum to maximum clearance; Landing brakes from maximum to
+minimum. The app inverts the actual saved world-height geometry, including α,
+to obtain the two hip angles and uses those endpoints for all gravity, spring,
+cogging and motor-work terms, plots and exported calculations.
+
+Editing one mode leaves the other range and the physical mechanism/dynamic
+case settings unchanged. Overrides are saved as optional
+`energyConfig.travelRanges.jump` and `.landing`, each containing
+`minClearanceMm` and `maxClearanceMm`. Existing project-v3 files need no
+migration: without overrides, Jump retains full mechanical travel and Landing
+retains its saved opening, residual-clearance target and stop reserve.
+**Restore case default** removes only the active mode's override. Invalid or
+outdated ranges remain explicit errors; geometry changes do not silently move
+saved endpoints. JavaScript and the app-folder backend validate the same shape.
+
+The height-plot minimum/maximum are separate local inspection settings for each
+mode. They change the displayed curve domain, not the physical stroke or target.
+Custom Energy strokes are not implemented in the dynamic engines, so copying a
+command is disabled while the selected mode has an explicit travel override.
+Restore its default before using the existing dynamic handoff.
+
 The live equation table is visible with the Plotly charts. It lists each quantity,
 equation/source, numerical value and unit,
 including positive spring/cogging storage and the resulting joint/shaft torque.
@@ -32,10 +59,11 @@ mechanism, landing geometry and dynamic controller commands.
 ## Jump height to extension torque
 
 The target is chassis rise **above takeoff**, not total rise from the compressed
-starting pose. The ideal work estimate assumes a supported stance from the full
-compression stop `q_c` to the extension stop `q_e`, then one locked relative pose
-in flight. With positive extension magnitude `Δq_j=(q_c−q_e)π/180`, stance rise
-`s_j=h(q_e)−h(q_c)` in metres, and target airborne rise `h_j` in metres:
+starting pose. The ideal work estimate assumes a supported stance from the
+selected compressed pose `q_c` to the selected extended pose `q_e`, then one
+locked relative pose in flight. Without a travel override these are the full
+mechanical stops. With positive extension magnitude `Δq_j=(q_c−q_e)π/180`, stance
+rise `s_j=h(q_e)−h(q_c)` in metres, and target airborne rise `h_j` in metres:
 
 `τ_jump = max[0, (ΔUg_j + Mflight*g*h_j − S_j − C_j) / Δq_j]`
 
