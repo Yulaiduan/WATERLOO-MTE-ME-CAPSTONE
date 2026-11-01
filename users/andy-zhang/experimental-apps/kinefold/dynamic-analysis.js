@@ -101,7 +101,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}';
     return JSON.stringify(value);
   }
-  function snapshotKey(snapshot) { return stable({springConvention:Kinefold.springConvention,params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null,terrain:snapshot.terrainConfig||null}); }
+  function snapshotKey(snapshot) { snapshot=globalThis.KinefoldContactUI?.capture?KinefoldContactUI.capture(snapshot):snapshot;return stable({springConvention:Kinefold.springConvention,params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null,terrain:snapshot.terrainConfig||null}); }
   function integralRow(result,row) {
     const since=row.sinceContact, impact=result.events?.find(e=>e.type==='first-contact')?.state;
     const fields={};
@@ -195,6 +195,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
       terminationA: a.diagnostics.termination, terminationP: b.diagnostics.termination};
   }
   function inputAtDistance(config, distance, side = 'right') {
+    if(config.inputHeightMm===0)return {requested:0,applied:0};
     const height = config.inputHeightMm, high = config.inputPlateauMm, period = high + config.inputGapMm;
     const tolerance = config.inputSpeedMmS * 1e-10, startTolerance = config.inputSpeedMmS * 1e-12;
     if (distance < -startTolerance || (Math.abs(distance) < startTolerance && side === 'left')) return {requested: 0, applied: 0};
@@ -207,6 +208,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     return {requested, applied: height * u ** 3 * (10 + u * (-15 + 6 * u))};
   }
   function floor(config, row, wheelX, minX, maxX) {
+    if(config.inputHeightMm===0)return {requested:[[minX,0],[maxX,0]],applied:[[minX,0],[maxX,0]],atWheel:{requested:0,applied:0},distance:0,dense:false};
     const distance = config.inputSpeedMmS * (row.t - config.inputDelayS);
     const period = config.inputPlateauMm + config.inputGapMm, positions = [minX, maxX, wheelX];
     const start = Math.max(0, Math.floor((distance + minX - wheelX) / period) - 1);

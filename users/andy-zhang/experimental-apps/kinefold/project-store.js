@@ -79,7 +79,6 @@ function validateConfig(v,legacy=false){const defaults=legacy?legacyDefaults:sol
  return out;
 }
 function validateFixture(value){
- if(value.solverConfig.inputSpeedMmS===0&&value.contactConfig?.mode!=='terrain-contact')throw Error('Zero terrain speed requires actual wheel contact; the prescribed-height bench needs positive input speed.');
  if(value.solverConfig.fixture==='pinned-chassis'&&(value.contactConfig?.mode!=='terrain-contact'||(value.caseConfig?.kind||'terrain-stability')!=='terrain-stability'))throw Error('Pinned chassis requires actual terrain contact and the terrain-stability case. Select floating chassis before changing interaction or case; the wheel is never pinned to terrain.');
  return value;
 }

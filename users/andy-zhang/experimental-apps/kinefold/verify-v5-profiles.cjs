@@ -6,7 +6,7 @@
  */
 'use strict';
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict');
-const {build,context,statistics,passiveStatistics}=require('./build-v5-profiles.cjs');
+const {build,context,statistics,passiveStatistics,frozen}=require('./build-v5-profiles.cjs');
 const c=context(),M=c.Kinefold,V=c.KinefoldV4,P=c.KinefoldProjects,A=c.KinefoldSuspensionFit,R=Math.PI/180;
 const clone=v=>JSON.parse(JSON.stringify(v));
 const realm=v=>{c.raw=JSON.stringify(v);return vm.runInContext('JSON.parse(raw)',c);};
@@ -25,6 +25,9 @@ for(let j=0;j<2;j++){
  for(const key of ['springK','p0','rs','nu'])near(p[key],baseline[key],key+' remains locked',0);
  if(p.alpha===0)near(p.Su,baseline.Su,'alpha0 Su locked',0);
  ok(profile.contactConfig.mode==='terrain-contact'&&profile.contactConfig.drive==='free','actual freely backdrivable wheel contact');near(profile.solverConfig.inputRiseMm,0,'contact transition');near(profile.solverConfig.dt,.000125,'contact timestep');
+ for(const key of ['initialVelocityDegS','hipTorqueNm','dampingNms','hipRotorInertiaKgM2'])near(profile.solverConfig[key],0,key+' has no hidden input',0);
+ ok(!profile.motorConfig.enabled,'no hidden motor controller or motor drag');
+ for(const [key,value] of Object.entries(frozen[p.alpha]))near(p[key],value,'unmodified full-travel minimax '+key,0);
  near(profile.params.m1,8.75,'chassis corner mass');near(p.m2,1,'upper mass');near(p.m3,1,'lower mass');near(p.m6,.5,'wheel mass');near(profile.torqueTargetConfig.jumpHeightMm,2000,'jump target');near(profile.caseConfig.landingDropMm,2000,'drop target');
  const projection=M.evaluate(p);near(projection.S[0],-p.Su,'fixed chassis spring x');near(projection.S[2],p.Sv,'fixed chassis spring z');
  const r=M.reference(p),report=A.massBasis(p);near(report.totalMassKg,11.25,'all masses included');near(report.totalWeightN,110.3625,'total weight');near(report.resolvedWheelForceN.z,110.3625,'automatic support reaction');ok(report.automaticWeightReference,'weight reference is explicit');
@@ -38,10 +41,17 @@ for(let j=0;j<2;j++){
  }
  for(const key of ['m1','m2','m3','m5']){const changed={...p,[key]:p[key]+1},q=135;ok(Math.abs(V.VSLUnassisted.solve(M.reference(changed),q,false).tau2-V.VSLUnassisted.solve(r,q,false).tau2)>.01,key+' gravity affects hip demand');}
  const unchanged=JSON.stringify(p),global={...p,loadMode:'global',Fx:0,Fz:120};const globalBasis=A.massBasis(global);near(globalBasis.resolvedWheelForceN.z,120,'prescribed global force retained',0);ok(!globalBasis.automaticWeightReference,'prescribed load is not relabelled as automatic weight');near(A.massBasis({...global,m6:2}).resolvedWheelForceN.z,120,'prescribed load not silently scaled',0);ok(JSON.stringify(p)===unchanged,'audit pure');
- const passive=passiveStatistics(c,p);ok(profile.name.includes('calibrated g-comp'),'profile label states ride calibration');near(passive.rideHoldingTorqueNm,0,'exact135ride balance',1e-6);near(passive.netPotentialCurvatureNmPerRad,passive.independentPotentialCurvatureNmPerRad,'independent net-potential curvature',.001);ok(passive.equivalentLiftN[0]>0,'upward assist throughout6501workingposes');
- ok(result.evidence.fits[j].after.maxTorqueNm<.15,'calibrated fullstroke gravity residual below0.15Nm');ok(result.evidence.fits[j].after.maxEquivalentForceErrorN<2,'calibrated equivalent force error below2N');
+ const passive=passiveStatistics(c,p);ok(profile.name.includes('fitted g-comp')&&!profile.name.includes('calibrated'),'profile label states approximate full-travel fit');
+ const expectedResidual=p.alpha===0?-.034188162961172:-.027187724098531874;
+ near(passive.rideHoldingTorqueNm,expectedResidual,'initial residual is retained',1e-12);ok(passive.rideHoldingTorqueNm<-.02,'negative holding residual predicts initial compression/downward drift from rest');
+ const eps=.0001,totalPotential=q=>potential(p,q)+V.VSLSpring.state(r,q).energy;
+ near((totalPotential(135+eps)-totalPotential(135-eps))/(2*eps*R),passive.rideHoldingTorqueNm,'initial imbalance independently follows all-body plus spring potential',2e-7);
+ ok(result.evidence.fits[j].initialState.postFitRideCalibrationApplied===false&&!('rideCalibration' in result.evidence.fits[j]),'evidence does not claim a post-fit balance');
+ near(result.evidence.fits[j].initialState.holdingResidualNm,passive.rideHoldingTorqueNm,'evidence reports actual initial residual',0);
+ near(passive.netPotentialCurvatureNmPerRad,passive.independentPotentialCurvatureNmPerRad,'independent net-potential curvature',.001);ok(passive.equivalentLiftN[0]>0,'upward assist throughout6501workingposes');
+ ok(result.evidence.fits[j].after.maxTorqueNm<.1,'fitted fullstroke gravity residual below0.1Nm');ok(result.evidence.fits[j].after.maxEquivalentForceErrorN<2,'fitted equivalent force error below2N');
  ok(Math.abs(passive.rideTangentStiffnessNPerM)<2,'near-neutral compensation is not reported as strong restoring support');
 }
 near(result.evidence.fits[0].after.requiredEquivalentLiftN[0],95.6475,'alpha0 effective gravity support');ok(result.evidence.fits[1].after.requiredEquivalentLiftN[1]-result.evidence.fits[1].after.requiredEquivalentLiftN[0]>20,'tilted finite-link COM makes target support pose-dependent');
-const refitted=build({refit:true});for(let j=0;j<2;j++){assert.deepEqual(refitted.profiles[j],result.profiles[j]);checks++;near(refitted.evidence.fits[j].passiveSupport.rideHoldingTorqueNm,0,'refit repeats horn-only ride calibration',1e-6);}ok(result.evidence.rejectedRestoringStudy.promoted===false,'failed restoring trials are not promoted as final designs');
+const refitted=build({refit:true});for(let j=0;j<2;j++){assert.deepEqual(refitted.profiles[j],result.profiles[j]);checks++;near(refitted.evidence.fits[j].passiveSupport.rideHoldingTorqueNm,result.evidence.fits[j].passiveSupport.rideHoldingTorqueNm,'deterministic refit retains the same nonzero initial residual',0);}ok(result.evidence.rejectedRestoringStudy.promoted===false,'failed restoring trials are not promoted as final designs');
 console.log(JSON.stringify({status:'PASS',checks,maxIndependentWorkErrorNm:maxWorkErrorNm,maxWheelTorqueDifferenceNm,profiles:files}));

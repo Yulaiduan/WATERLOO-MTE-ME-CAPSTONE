@@ -1,5 +1,25 @@
 # Kinefold context
 
+## Latest — 2026-11-01 stationary ground check and imperfect g-comp from rest
+
+Owner clarified prescribed-height is only a no-terrain floating-chassis support
+check, and initial velocity must be0: drift should come from imperfect spring
+compensation. This supersedes the one-pose calibration described below.
+The extra135° horn root is removed. Full-travel fits now use horn66.462290/64.017026mm
+forα0/20, unchanged Sv/Su from the prior fit, fixed k/preload and zero commanded
+torque/damping. Initial holding residuals−0.034188/−0.027188Nm drive compression.
+Flat mode resolves height/speed/rise/delay0 for single/paired/desktop runs and
+exports; stored terrain inputs remain untouched for returning to actual contact,
+reload and project export. No new persistent schema field or automatic friction.
+Actual contact hasμ0.8/zero restitution; both V5 motor blocks remain disabled.
+Enabled Coulomb/viscous losses use the existing shared motor model and are not
+static stiction. Native space damping1 and sleep∞ add no global velocity damping
+or sleeping hold; impulse/projection energy accounting is not measured absorption.
+Use zero-velocity captures from the current revision, not the earlier kick study
+or superseded exact-start calibration. Read v5-suspension-designs.md for outcomes.
+Keep all user run settings and unrelated designs; update only approved geometry
+after revision-checked snapshots. No Notion report; durable4191launcher retained.
+
 ## Latest — 2026-11-01 V5 geometry-only gravity compensation
 
 Owner requested two V5 designs with2:1 wheel-drive reductions at both stages,

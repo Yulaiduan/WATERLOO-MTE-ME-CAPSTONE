@@ -113,8 +113,8 @@ class Model:
         validate(params, config)
         if config['fixture']!='floating-chassis':
             raise ValueError('Pinned chassis requires actual terrain-contact terrain-stability mode; the prescribed-height bench is unsupported.')
-        if config['inputSpeedMmS']<=0:
-            raise ValueError('The prescribed-height bench requires positive input speed; stationary ground is supported in actual contact mode.')
+        if config['inputSpeedMmS']<=0 and config['inputHeightMm']>0:
+            raise ValueError('A nonzero prescribed height input requires positive input speed; use zero height for the stationary flat-ground check.')
         self.motor = Motor.resolve(motorConfig)
         self.motor_config_supplied = motorConfig is not None
         self.p, self.c = dict(params), dict(config)
@@ -237,6 +237,8 @@ class Model:
         returned here apply only to the open intervals on either side.
         """
         c = self.c
+        if c['inputHeightMm'] == 0:
+            return dict(requested=0, applied=0, velocity=0, acceleration=0, distance=0)
         speed = c['inputSpeedMmS'] / 1000
         high, period = c['inputPlateauMm'] / c['inputSpeedMmS'], (c['inputPlateauMm'] + c['inputGapMm']) / c['inputSpeedMmS']
         elapsed = t - c['inputDelayS']
@@ -266,6 +268,8 @@ class Model:
 
     def input_breaks(self):
         c = self.c
+        if c['inputHeightMm'] == 0:
+            return []
         high = c['inputPlateauMm'] / c['inputSpeedMmS']
         period = (c['inputPlateauMm'] + c['inputGapMm']) / c['inputSpeedMmS']
         rise = c['inputRiseMm'] / c['inputSpeedMmS']

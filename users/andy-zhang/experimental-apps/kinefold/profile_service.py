@@ -187,7 +187,7 @@ def _case_config(value):
 def _config(config, legacy=False):
     limits = {"duration": (.05, 30), "dt": (.0001, .01), "outputHz": (1, 1000), "initialVelocityDegS": (-720, 720), "hipTorqueNm": (-10000, 10000), "dampingNms": (0, 10000), "hipRotorInertiaKgM2": (0, 1000), "I2": (0, 1000), "I3": (0, 1000), "I5": (0, 1000), "I6": (0, 1000), "iterations": (10, 500)}
     if not legacy:
-        limits.update(inputHeightMm=(0, 1000), inputPlateauMm=(.1, 10000), inputGapMm=(.1, 10000), inputSpeedMmS=(.1, 10000), inputRiseMm=(0, 1000), inputDelayS=(0, 30))
+        limits.update(inputHeightMm=(0, 1000), inputPlateauMm=(.1, 10000), inputGapMm=(.1, 10000), inputSpeedMmS=(0, 10000), inputRiseMm=(0, 1000), inputDelayS=(0, 30))
     if not isinstance(config, dict) or set(config) != set(limits) | {"fixture", "inertiaModel"} or config.get("fixture") != ("fixed-hip" if legacy else "floating-chassis") or config.get("inertiaModel") not in ("uniform-rods-discs", "custom"):
         raise StorageError("Unknown or missing solver settings.")
     for key, (low, high) in limits.items():
@@ -196,7 +196,7 @@ def _config(config, legacy=False):
     if config["iterations"] != int(config["iterations"]) or math.ceil(config["duration"] / config["dt"]) > 100000 or config["outputHz"] > 1 / config["dt"]:
         raise StorageError("Invalid iteration count, integration length or sample rate.")
     if not legacy:
-        period = (config["inputPlateauMm"] + config["inputGapMm"]) / config["inputSpeedMmS"]
+        period = (config["inputPlateauMm"] + config["inputGapMm"]) / config["inputSpeedMmS"] if config["inputSpeedMmS"] else math.inf
         if 2 * config["inputRiseMm"] > config["inputPlateauMm"] or 4 * math.ceil(max(0, config["duration"] - config["inputDelayS"]) / period) > 10000:
             raise StorageError("Invalid transition distance or excessive input boundaries.")
 

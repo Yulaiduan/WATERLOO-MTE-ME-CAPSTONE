@@ -1,7 +1,7 @@
 # V5 gravity-compensation designs
 
 Andy Zhang / Codex, 2026-11-01. Experimental member-app designs based on
-`a75e195`. These are ideal mechanism/simulation configurations, not selected
+`48b1a9e`, updated to the owner's zero-initial-velocity ground check. These are ideal mechanism/simulation configurations, not selected
 hardware or a certified suspension.
 
 ## Two portable designs
@@ -28,19 +28,21 @@ Spring rate8N/mm, reference force330.869282809N atθ2=90°, idler radius10mm
 and horn offset0° remain fixed. α0 changes horn radius and Sv. α20 also
 changes Su with the owner's explicit approval. Idler and horizontal spring
 body stay fixed to the chassis; only the horn follows the leg. See
-[mount convention](spring-mounting.md). Geometry fitting is followed by a small
-horn-radius calibration for zero static holding torque at the135° start pose.
-The exact JSON/evidence records the resulting full-stroke residual; it is not
-silently replaced by a motor holding bias.
+[mount convention](spring-mounting.md). The bounded fit minimizes residual
+holding torque across the whole working travel. The extra horn-radius root
+previously added to cancel the135° starting residual has been removed: it made
+an unperturbed test appear stationary and did not test imperfect compensation.
+There is no motor holding bias or initial velocity.
 
 | Design | Horn radius, mm | Su, mm | Sv, mm | Peak / RMS holding error, N·m |
 | --- | ---: | ---: | ---: | ---: |
-| α0° | 66.492398 | 9.387777 | 103.678515 | 0.100953 / 0.042697 |
-| α20° | 64.041472 | 45.479600 | 91.651684 | 0.073670 / 0.044306 |
+| α0° | 66.462290 | 9.387777 | 103.678515 | 0.084261 / 0.049103 |
+| α20° | 64.017026 | 45.479600 | 91.651684 | 0.041829 / 0.030794 |
 
-Both balance the135° ride pose to about1e−14N·m in the static equations.
-This numerical root is a calibration at one pose, not perfect compensation
-throughout the stroke. Peak equivalent support errors are1.496N and0.737N.
+At the135° starting pose the required holding torques are−0.034188N·m and
+−0.027188N·m. With zero applied torque and zero initial velocity, the remaining
+imbalance initially drives compression/downward chassis motion. This is the
+intended test of imperfect gravity compensation; no kick is added.
 
 ## Mass audit
 
@@ -71,15 +73,19 @@ stops,80° travel**, with the135° starting pose. The theoretical90° limit stay
 available as an explicitly labelled Energy study; it is not substituted into
 these runnable profiles. Singular guards were not weakened.
 
-Mode switching previously changed only contactConfig. That could leave a10mm
-prescribed-height transition in a contact run, or a zero transition with finite
-moving masses in the prescribed bench. The UI now switches atomically to0mm
-for actual contact and restores the prior positive bench transition (10mm on
-first use), preserving the design and explicitly updating the visible settings.
+The former prescribed-height UI could drive the wheel through a150mm square.
+The owner clarified that this mode is only a **flat-ground support check**.
+Terrain editors are now disabled/hidden there and the exact effective capture
+has height, speed, transition and delay all0, with a floating chassis. Both
+engines, comparisons, run exports and desktop requests use that same capture.
+Stored square/periodic terrain settings remain available when returning to
+actual contact and survive saved-design reload/project export. The serialized
+mode remains `prescribed-height` for compatibility. Legacy standalone Python
+moving-height inputs remain explicitly separate from this app mode.
 
 Saved defaults: floating chassis; free wheel; μ0.8; zero restitution;3s;
 dt0.000125s;50Hz output;150mm-high,150mm-wide square terrain with150mm gaps,
-100mm/s translation and0.5s delay. The bench uses a10mm finite transition.
+100mm/s translation and0.5s delay. The bench uses a stationary flat input.
 Jump/drop targets are2m, with50mm underside offset and50mm minimum-clearance
 target. Entered250Nm jump and300Nm landing commands are **ideal joint commands**;
 the500Nm search ceiling is not a hardware rating. Terrain torque/damping stay0.
@@ -94,8 +100,8 @@ prescribed bench; it was rejected. Three upward-assist alternatives did not
 avoid terrain endstops while retaining bench compatibility. A separate explicit
 damping diagnostic was not installed as a saved design.
 
-The delivered designs preserve upward gravity compensation and correct ride
-balance. They **do not claim passive chassis-height regulation**. The150mm
+The delivered designs preserve approximate upward gravity compensation and
+their measured residual error. They **do not claim passive chassis-height regulation**. The150mm
 terrain input can reach an operating stop, especially atα20. A spring-only
 geometry search is not an active height controller. The negative results remain
 documented rather than changing contact constraints, inputs or losses to hide them.
@@ -111,7 +117,55 @@ these effects are not concealed. A smooth Coulomb approximation need not
 provide exact stiction. Long-term position holding requires a separately
 declared friction/restoring/control model, not more digits in the spring fit.
 
-## Measured outcomes
+## Current zero-velocity ground checks
+
+All eight current runs start at135° with **zero hip and chassis velocity**.
+Duration6.5s, dt0.000125s and20Hz output are explicit diagnostic settings;
+the portable profiles retain their3s default. Height/speed/rise/delay are0.
+No motor, holding or braking torque, hip damping or enabled motor loss model
+acts in these runs. The chassis is not pinned. Each cell is analytical / Pymunk.
+
+| Downward chassis movement after6.5s, mm | α0° | α20° |
+| --- | ---: | ---: |
+| Ideal flat-ground support check | 175.617 / 175.613 | 97.300 / 97.302 |
+| Actual wheel/flat-floor contact | 175.948 / 176.498 | 97.219 / 97.581 |
+
+All eight finish without travel stops. Both contact runs are still moving at
+the end; this is residual-driven drift, not a recovery/settling test. The two
+modes have different wheel-drive boundary conditions, so agreement between
+engines within one mode is distinct from equality between modes.
+
+For α0 actual contact, the initial net compression torque is0.034188N·m and
+the grounded effective inertia is1.725kg·m². Thus initial hip acceleration is
+0.019819rad/s² (1.13556°/s²), giving chassis acceleration−8.4086mm/s².
+The short-time estimate `Δh ≈ ½ a₀ t²` gives−177.63mm at6.5s, close to the
+full nonlinear result. No initial velocity is needed to explain this motion.
+The static fit reference remains110.3625N; actual normal force is solved from
+accelerating masses and need not equal the static weight at every sample.
+
+Actual contact retainsμ0.8 and zero restitution, with free wheel spin. Motor
+Coulomb and viscous terms are implemented but disabled in these profiles.
+The existing smooth Coulomb law does not model exact static stiction. Pymunk
+global damping is1 and its sleep threshold is infinite; neither introduces
+automatic settling or a sleeping hold. Analytical contact/projection terms
+and native signed constraint/residual terms can nearly cancel even at rest;
+their individual magnitudes must not be called measured physical absorption.
+
+Passed861mass/fit/profile assertions including deterministic refit,82mode and
+capture checks,35project groups,48dynamic comparisons,4,090Plotly exact-sample
+checks,7Python dynamics tests and19temporary profile-storage tests. A separate
+48-assertion replay regression uses existing actual landing/jump/terrain bundles;
+it does not claim new executions of those scenarios. Eight new exact compressed
+captures total2,859,044bytes with profile and11source hashes. No initial-velocity
+kick is used as evidence for this check. The actual Pymunk desktop request is
+checked with the same flat snapshot; a desktop window is not opened in QA.
+
+## Historical one-pose calibration results — superseded
+
+The numbers in this section belong to commit `48b1a9e` and its now-superseded
+one-pose-calibrated geometry. They must not be presented as current full-travel
+fit results. The previous initial-velocity diagnostic is also separate from
+the owner's requested zero-velocity check and is not used as its evidence.
 
 The final exact-profile matrix completed16three-second engine runs plus four
 one-second stationary-floor diagnostics, with finite rows and frames. These are
@@ -141,7 +195,7 @@ height differences reach7.377 /5.710mm. Do not use first-apex agreement as
 evidence of complete contact-model equivalence. Native rigid-contact energy
 residuals and sub-millimetre penetration remain reported numerical limitations.
 
-Passed838V5 mass/profile/calibration assertions,26,214existing fitter assertions,
+That revision passed838V5 mass/profile/calibration assertions,26,214existing fitter assertions,
 35project/library groups and22interaction-mode assertions. Headless browser QA
 checks both saved profiles, exact captured requests, both animations, Energy
 plots, mass disclosure and desktop/phone layouts; it does not mutate the live

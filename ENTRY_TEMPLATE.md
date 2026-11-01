@@ -6059,3 +6059,60 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Mat
 Load the two V5 calibrated g-comp profiles or import their portable JSONs; use95–175 operating stops and read v5-suspension-designs.md for exact mass/work assumptions and measured outcomes.
 Keep gravity-fit error, lossless drift, static friction, restoring stiffness and controlled terrain response distinct; alpha20 terrain stops and post-jump impact differences remain open, with no hidden stabilization installed.
 Retain revision-checked named-profile saves and concurrent local UI work, use the project-local Start Kinefold.cmd at4191, and keep the bounded hashed captures/PNG previews in ignored app output.
+---
+
+## Entry: 2026-11-01 — Andy Zhang / Codex — Flat-ground support mode and residual-driven drift from rest
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated Kinefold ground-check, saved-fit and dynamic comparison workspace.
+- **Associated Issue/Task:** Owner clarifies prescribed bench is only a no-terrain floating-chassis support check and initial velocity is zero; expose drift from imperfect gravity compensation instead of using a kick or cancelling the initial residual.
+
+Disable terrain in the app's prescribed mode, retain the actual-contact terrain setup, and capture exact effective settings consistently. Remove the extra135-degree horn-root calibration previously added by this agent, retaining the whole-travel bounded geometry fit, fixed k/preload, masses and approved Su freedom at alpha20. Pure-fit initial holding residuals are−0.034188/−0.027188Nm at alpha0/20; no added velocity, motor holding command, damping or friction conceals them. Both V5 portable designs keep their stable IDs and now say fitted g-comp. Preserve user run settings and unrelated local UI work.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions or new schema fields.
+
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/build-v5-profiles.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/case-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/profile_service.py`
+- `users/andy-zhang/experimental-apps/kinefold/project-store.js`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/v5-alpha0-4to1.json`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/v5-alpha20-4to1.json`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/v5-fit-evidence.json`
+- `users/andy-zhang/experimental-apps/kinefold/solvers.js`
+- `users/andy-zhang/experimental-apps/kinefold/terrain-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/v5-suspension-designs.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-contact-mode.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-v5-profiles.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_profiles.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_v5_scenarios.py`
+
+- **API/Interface Changes:** App-local Contact.capture resolves prescribed mode to a floating chassis and zero input height/speed/rise/delay, while original stored terrain fields remain inactive and survive mode toggle/reload/project export. Single/paired/desktop requests, run exports and normalized comparison keys use that exact effective snapshot. Controls and terrain/case sections are disabled/hidden for flat mode; floor is stationary with no moving arrow. The serialized prescribed-height mode remains compatible. JavaScript/Python storage accepts inactive zero speed; backend supports stationary prescribed input before divisions/events while still rejecting nonzero-height zero-speed moving commands. No mechanical force/inertia/loss law changes. Stationary runs report stationary-flat-ground and no invented t=0 square event. V5 generator/refit no longer applies a post-fit starting-pose root; evidence/tests report nonzero initial residuals. Conventional dictionary and reproduction runner match the new boundary condition. No canonical/shared interface, dependency, vendor or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS861V5 independent mass/fit/profile/refit assertions; worker26,214existing fitter assertions; parent82flat-mode/capture/persistence/floor assertions,35project groups,48dynamic comparison assertions,4,090Plotly exact-sample assertions,7Python dynamics and19temporary-storage tests. Spring-off zero-velocity negative control confirms free chassis fall; native position error matches its first-order dt bound rather than an incorrect exact-position expectation. Existing landing/jump/terrain replay bundles pass48handoff/mirror/clock/API assertions; those scenarios are not newly executed. Parent's initial replay invocation omitted its required --bundle arguments, then corrected it with the three retained actual bundles and passed. Eight fresh exact-profile rest-only runs (two designs x ideal flat/actual contact x two engines) complete6.5s atdt.000125/output20Hz, all initial velocities and applied/hold/passive motor/damping torques0, no stops or failures. Ideal flat drop A/P175.6165/175.6134mm(alpha0),97.30035/97.30166mm(alpha20); actual flat contact175.9481/176.4977mm and97.2187/97.5813mm. Initial actual alpha0 acceleration matches residual torque/inertia prediction; half-a-t-squared gives177.63mm versus measured~176mm. All8 compressed/uncompressed capture hashes,11reviewed source hashes and both new profile hashes verified; gzs total2,859,044bytes under ignored app output. Earlier kick diagnostics are excluded from this zero-velocity evidence. Parent real headlessEdge1440/390px QA passes both profiles/modes,8exact captured requests, play/scrub synchronization, hidden/disabled terrain, terrain return/reload preservation,2exact run exports and2mocked desktop requests, zero page errors and unchanged live-library bytes. PNG layout inspected/corrected before handoff. Combined source whitespace/syntax/doc links and fetched-base/staged/exact-push scoped gates apply before publication. Durable launcher restart/readiness and field-wise revision-checked live fit updates follow source installation; app-local before/after recovery records preserve original data.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Flat mode is an ideal bilateral wheel-height support constraint with a freely heaving chassis and held wheel-drive input, not realistic tire/ground friction. Actual contact retains mu0.8/restitution0/free wheel; V5 motor losses are disabled, not automatically estimated. Smooth Coulomb loss is not true stiction. Native damping1/sleep infinity introduces no global velocity damping/sleep hold. Large individual contact/projection or signed native constraint/residual ledger terms can cancel and are not measured physical absorption. No hardware, impact survival, terrain stability, convergence or actual desktop GUI operation is newly certified; historical one-pose results are explicitly superseded in app docs. A copied worker build script initially had CRLF reported as whitespace; normalized only that owned script to LF and preserved portable-profile hashes. Foreign app.js/style.css edits remain preserved. No private libraries, raw runs, PNGs, QA helpers, Notion writes, Computer skill, Downloads or boot automation enter Git.
+
+## 4. Compute Saving Handoff State
+
+Use Flat-ground support check in02/03 for a stationary floor and floating chassis; terrain is disabled in the effective capture while saved terrain settings remain ready for actual-contact mode.
+Both V5 profiles now retain their minimax fit residual and zero initial velocity, so interpret their measured drift from rest rather than the superseded extra135-degree balance root or a kick test.
+Read v5-suspension-designs.md and exact profile/evidence JSONs, preserve user run settings and local UI work, and restart the durable4191app with its project-local launcher; hashed rest-only captures and PNGs stay ignored app-locally.

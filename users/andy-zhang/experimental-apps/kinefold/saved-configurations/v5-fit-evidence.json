@@ -575,7 +575,7 @@
         "Tef0": 0,
         "springEnabled": true,
         "springK": 8,
-        "hornR": 66.49239802034252,
+        "hornR": 66.46229020513717,
         "Sv": 103.67851472091354,
         "rs": 10,
         "p0": 330.8692828089511,
@@ -603,44 +603,44 @@
       },
       "after": {
         "samples": 6501,
-        "maxTorqueNm": 0.10095307116715269,
-        "peakThetaDeg": 105.53538461538461,
-        "rmsTorqueNm": 0.042696939375839536,
-        "maxEquivalentForceErrorN": 1.4963759544135482,
-        "rmsEquivalentForceErrorN": 0.27914219833486853,
+        "maxTorqueNm": 0.08426076419068096,
+        "peakThetaDeg": 105.06769230769231,
+        "rmsTorqueNm": 0.04910300456082324,
+        "maxEquivalentForceErrorN": 1.6112112784528247,
+        "rmsEquivalentForceErrorN": 0.25400188637128696,
         "springEquivalentLiftN": [
-          94.15112404558646,
-          96.34742742631312
+          94.03628872154718,
+          96.23872837809226
         ],
         "requiredEquivalentLiftN": [
           95.64749999999988,
           95.64750000000018
         ]
       },
-      "rideCalibration": {
+      "initialState": {
         "thetaDeg": 135,
-        "rootIterations": 45,
-        "hornBracketMm": [
-          65,
-          68
-        ],
-        "onlyHornChangedAfterMinimax": true
+        "velocityDegS": 0,
+        "appliedHipTorqueNm": 0,
+        "dampingNms": 0,
+        "postFitRideCalibrationApplied": false,
+        "holdingResidualNm": -0.034188162961172,
+        "predictedInitialDrift": "Increasing hip angle / leg compression / chassis down, from the negative unbalanced holding torque; initial velocity remains zero."
       },
       "passiveSupport": {
         "rideThetaDeg": 135,
-        "rideHoldingTorqueNm": -7.105427357601002e-15,
-        "netPotentialCurvatureNmPerRad": -0.018022393160795683,
-        "independentPotentialCurvatureNmPerRad": -0.01802220594981918,
-        "rideTangentStiffnessNPerM": -0.10012440644886492,
+        "rideHoldingTorqueNm": -0.034188162961172,
+        "netPotentialCurvatureNmPerRad": -0.03919649108209464,
+        "independentPotentialCurvatureNmPerRad": -0.03919637947547017,
+        "rideTangentStiffnessNPerM": -0.21775828378941467,
         "restoringAllSampledTravel": false,
-        "minNetPotentialDeltaJ": -0.030865303618270445,
+        "minNetPotentialDeltaJ": -0.03397164918374074,
         "cableForceN": [
-          335.67577627516397,
-          973.5145804711058
+          335.66988041748937,
+          973.1604968566248
         ],
         "equivalentLiftN": [
-          94.15112404558646,
-          96.34742742631312
+          94.03628872154718,
+          96.23872837809226
         ],
         "samples": 6501
       },
@@ -648,650 +648,650 @@
         {
           "thetaDeg": 95,
           "hipHeightMm": 797.7168188550473,
-          "holdingTorqueNm": -0.07825065464198921,
-          "springEquivalentLiftN": 94.15112404558646,
+          "holdingTorqueNm": -0.08425578941817591,
+          "springEquivalentLiftN": 94.03628872154718,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.02944276951900804
+          "netPotentialDeltaJ": -0.013532311840918965
         },
         {
           "thetaDeg": 96,
           "hipHeightMm": 796.713137220964,
-          "holdingTorqueNm": -0.03946531569711542,
-          "springEquivalentLiftN": 95.01824052267051,
+          "holdingTorqueNm": -0.04666634582137874,
+          "springEquivalentLiftN": 94.90342283092811,
           "gravityEquivalentLiftN": 95.6475,
-          "netPotentialDeltaJ": -0.030461548946931316
+          "netPotentialDeltaJ": -0.014666388130862629
         },
         {
           "thetaDeg": 97,
           "hipHeightMm": 795.5276909847933,
-          "holdingTorqueNm": -0.006370485662809955,
-          "springEquivalentLiftN": 95.5603782037548,
+          "holdingTorqueNm": -0.014731902012002251,
+          "springEquivalentLiftN": 95.44602874124072,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.030853489240897147
+          "netPotentialDeltaJ": -0.0151941882414377
         },
         {
           "thetaDeg": 98,
           "hipHeightMm": 794.1608412449422,
-          "holdingTorqueNm": 0.02136533317070377,
-          "springEquivalentLiftN": 95.90336042397702,
+          "holdingTorqueNm": 0.011879137751290791,
+          "springEquivalentLiftN": 95.78975854552526,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.030715108906719024
+          "netPotentialDeltaJ": -0.015211609340454402
         },
         {
           "thetaDeg": 99,
           "hipHeightMm": 792.6130043570827,
-          "holdingTorqueNm": 0.044128401967515885,
-          "springEquivalentLiftN": 96.11764790886146,
+          "holdingTorqueNm": 0.033552683393624605,
+          "springEquivalentLiftN": 96.00497326508255,
           "gravityEquivalentLiftN": 95.6475,
-          "netPotentialDeltaJ": -0.030136635810492862
+          "netPotentialDeltaJ": -0.014808260320677391
         },
         {
           "thetaDeg": 100,
           "hipHeightMm": 790.8846518073248,
-          "holdingTorqueNm": 0.06234180505293274,
-          "springEquivalentLiftN": 96.24585357800788,
+          "holdingTorqueNm": 0.050711122013943566,
+          "springEquivalentLiftN": 96.13422285436833,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.029201209906673853
+          "netPotentialDeltaJ": -0.014066671457271696
         },
         {
           "thetaDeg": 101,
           "hipHeightMm": 788.9763100685984,
-          "holdingTorqueNm": 0.07644916599118545,
-          "springEquivalentLiftN": 96.31526346891052,
+          "holdingTorqueNm": 0.06379712788612757,
+          "springEquivalentLiftN": 96.20475122532638,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.02798438545447368
+          "netPotentialDeltaJ": -0.013061801826935948
         },
         {
           "thetaDeg": 102,
           "hipHeightMm": 786.8885604402833,
-          "holdingTorqueNm": 0.08690046695545561,
-          "springEquivalentLiftN": 96.34411360081664,
+          "holdingTorqueNm": 0.07325956343724904,
+          "springEquivalentLiftN": 96.23476506390854,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.026553899566863493
+          "netPotentialDeltaJ": -0.01186081152481222
         },
         {
           "thetaDeg": 103,
           "hipHeightMm": 784.6220388711412,
-          "holdingTorqueNm": 0.09414019572603216,
-          "springEquivalentLiftN": 96.34498651175569,
+          "holdingTorqueNm": 0.0795416942748286,
+          "springEquivalentLiftN": 96.23682593512282,
           "gravityEquivalentLiftN": 95.64750000000006,
-          "netPotentialDeltaJ": -0.024969668126686884
+          "netPotentialDeltaJ": -0.010523059942002533
         },
         {
           "thetaDeg": 104,
           "hipHeightMm": 782.1774357655979,
-          "holdingTorqueNm": 0.09859786024244954,
-          "springEquivalentLiftN": 96.32676785487284,
+          "holdingTorqueNm": 0.0830717582302043,
+          "springEquivalentLiftN": 96.21980425563791,
           "gravityEquivalentLiftN": 95.64750000000004,
-          "netPotentialDeltaJ": -0.02328396786001008
+          "netPotentialDeltaJ": -0.00910028913177996
         },
         {
           "thetaDeg": 105,
           "hipHeightMm": 779.555495773441,
-          "holdingTorqueNm": 0.10068077019824351,
-          "springEquivalentLiftN": 96.29583437430108,
+          "holdingTorqueNm": 0.08425578885260876,
+          "springEquivalentLiftN": 96.19006561644731,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.021541763950125414
+          "netPotentialDeltaJ": -0.0076369518773447
         },
         {
           "thetaDeg": 106,
           "hipHeightMm": 776.7570175629913,
-          "holdingTorqueNm": 0.10076888822637109,
-          "springEquivalentLiftN": 96.25680836658962,
+          "holdingTorqueNm": 0.08347249739179574,
+          "springEquivalentLiftN": 96.15222414587622,
           "gravityEquivalentLiftN": 95.64749999999997,
-          "netPotentialDeltaJ": -0.019781145236862585
+          "netPotentialDeltaJ": -0.006170646712803318
         },
         {
           "thetaDeg": 107,
           "hipHeightMm": 773.7828535778212,
-          "holdingTorqueNm": 0.09921149513481353,
-          "springEquivalentLiftN": 96.21305572656448,
+          "holdingTorqueNm": 0.08106995946959472,
+          "springEquivalentLiftN": 96.10963979305602,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.018033833051234183
+          "netPotentialDeltaJ": -0.004732626126198625
         },
         {
           "thetaDeg": 108,
           "hipHeightMm": 770.6339097770922,
-          "holdingTorqueNm": 0.09632538752139652,
-          "springEquivalentLiftN": 96.16702583663051,
+          "holdingTorqueNm": 0.07736382654448448,
+          "springEquivalentLiftN": 96.06475766949586,
           "gravityEquivalentLiftN": 95.64750000000011,
-          "netPotentialDeltaJ": -0.016325734463364938
+          "netPotentialDeltaJ": -0.0033483488706025355
         },
         {
           "thetaDeg": 109,
           "hipHeightMm": 767.31114535959,
-          "holdingTorqueNm": 0.09239432430986838,
-          "springEquivalentLiftN": 96.12049018165095,
+          "holdingTorqueNm": 0.07263678037659815,
+          "springEquivalentLiftN": 96.01934626005429,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.014677515684539344
+          "netPotentialDeltaJ": -0.0020380522414171764
         },
         {
           "thetaDeg": 110,
           "hipHeightMm": 763.815572471545,
-          "holdingTorqueNm": 0.0876694540248053,
-          "springEquivalentLiftN": 96.07471389239605,
+          "holdingTorqueNm": 0.06713896378283835,
+          "springEquivalentLiftN": 95.97466866288443,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.013105176197029778
+          "netPotentialDeltaJ": -0.0008173249839273922
         },
         {
           "thetaDeg": 111,
           "hipHeightMm": 760.148255898321,
-          "holdingTorqueNm": 0.08237048063890029,
-          "springEquivalentLiftN": 96.03058150763026,
+          "holdingTorqueNm": 0.06108914675699495,
+          "springEquivalentLiftN": 95.93160812050628,
           "gravityEquivalentLiftN": 95.64750000000004,
-          "netPotentialDeltaJ": -0.011620608651256248
+          "netPotentialDeltaJ": 0.0003023340628800497
         },
         {
           "thetaDeg": 112,
           "hipHeightMm": 756.3103127400725,
-          "holdingTorqueNm": 0.07668735749266631,
-          "springEquivalentLiftN": 95.98869063768278,
+          "holdingTorqueNm": 0.054676418461401255,
+          "springEquivalentLiftN": 95.89076150608122,
           "gravityEquivalentLiftN": 95.64749999999992,
-          "netPotentialDeltaJ": -0.010232133525022391
+          "netPotentialDeltaJ": 0.0013129825447890653
         },
         {
           "thetaDeg": 113,
           "hipHeightMm": 752.3029120714641,
-          "holdingTorqueNm": 0.07078233228863695,
-          "springEquivalentLiftN": 95.94942258873898,
+          "holdingTorqueNm": 0.04806222887890854,
+          "springEquivalentLiftN": 95.8525098109866,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.008945000921116275
+          "netPotentialDeltaJ": 0.002209733985395701
         },
         {
           "thetaDeg": 114,
           "hipHeightMm": 748.1272745855605,
-          "holdingTorqueNm": 0.06479219883731702,
-          "springEquivalentLiftN": 95.91299611376441,
+          "holdingTorqueNm": 0.04138263639679707,
+          "springEquivalentLiftN": 95.81707179008946,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.007761854681831437
+          "netPotentialDeltaJ": 0.0029902947960636084
         },
         {
           "thetaDeg": 115,
           "hipHeightMm": 743.7846722219899,
-          "holdingTorqueNm": 0.058830641382932924,
-          "springEquivalentLiftN": 95.87950859463027,
+          "holdingTorqueNm": 0.03475064758344004,
+          "springEquivalentLiftN": 95.7845450622125,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.00668315624959348
+          "netPotentialDeltaJ": 0.003654541463063765
         },
         {
           "thetaDeg": 116,
           "hipHeightMm": 739.2764277795002,
-          "holdingTorqueNm": 0.05299058403005219,
-          "springEquivalentLiftN": 95.84896773047677,
+          "holdingTorqueNm": 0.028258561981854058,
+          "springEquivalentLiftN": 95.75493773546246,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.005707567457108098
+          "netPotentialDeltaJ": 0.004204138724986706
         },
         {
           "thetaDeg": 117,
           "hipHeightMm": 734.6039145130208,
-          "holdingTorqueNm": 0.04734648063764979,
-          "springEquivalentLiftN": 95.8213159743608,
+          "holdingTorqueNm": 0.021980257488500854,
+          "springEquivalentLiftN": 95.72819279533796,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.004832292752880107
+          "netPotentialDeltaJ": 0.004642198234492412
         },
         {
           "thetaDeg": 118,
           "hipHeightMm": 729.7685557153561,
-          "holdingTorqueNm": 0.041956499545516834,
-          "springEquivalentLiftN": 95.79644938221091,
+          "holdingTorqueNm": 0.015973370807632392,
+          "springEquivalentLiftN": 95.70420691643479,
           "gravityEquivalentLiftN": 95.64750000000004,
-          "netPotentialDeltaJ": -0.004053382323604637
+          "netPotentialDeltaJ": 0.004972976246392591
         },
         {
           "thetaDeg": 119,
           "hipHeightMm": 724.7718242836374,
-          "holdingTorqueNm": 0.036864572887413516,
-          "springEquivalentLiftN": 95.77423212792506,
+          "holdingTorqueNm": 0.010281342805324556,
+          "springEquivalentLiftN": 95.68284494908228,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.003365998233789469
+          "netPotentialDeltaJ": 0.005201608216722775
         },
         {
           "thetaDeg": 120,
           "hipHeightMm": 719.6152422706632,
-          "holdingTorqueNm": 0.03210229240051987,
-          "springEquivalentLiftN": 95.75450764133512,
+          "holdingTorqueNm": 0.004935310703356066,
+          "springEquivalentLiftN": 95.66395103567791,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.002764646118350811
+          "netPotentialDeltaJ": 0.005333877782547347
         },
         {
           "thetaDeg": 121,
           "hipHeightMm": 714.3003804212674,
-          "holdingTorqueNm": 0.027690642998383197,
-          "springEquivalentLiftN": 95.73710710656589,
+          "holdingTorqueNm": -0.000044161616166604745,
+          "springEquivalentLiftN": 95.64735709271369,
           "gravityEquivalentLiftN": 95.64749999999997,
-          "netPotentialDeltaJ": -0.0022433751963149007
+          "netPotentialDeltaJ": 0.005376017360774199
         },
         {
           "thetaDeg": 122,
           "hipHeightMm": 708.8288576938556,
-          "holdingTorqueNm": 0.023641572376138953,
-          "springEquivalentLiftN": 95.72185589397553,
+          "holdingTorqueNm": -0.004645516939511651,
+          "springEquivalentLiftN": 95.63288923048268,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.0017959494601313963
+          "netPotentialDeltaJ": 0.005334537517185822
         },
         {
           "thetaDeg": 123,
           "hipHeightMm": 703.2023407672544,
-          "holdingTorqueNm": 0.01995939999114782,
-          "springEquivalentLiftN": 95.7085783739564,
+          "holdingTorqueNm": -0.008864798363507731,
+          "springEquivalentLiftN": 95.6203725578056,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.0014159928797283783
+          "netPotentialDeltaJ": 0.005216082272113454
         },
         {
           "thetaDeg": 124,
           "hipHeightMm": 697.422543533025,
-          "holdingTorqueNm": 0.016642072279026365,
-          "springEquivalentLiftN": 95.69710146482473,
+          "holdingTorqueNm": -0.012704396419508157,
+          "springEquivalentLiftN": 95.60963472327516,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.0010971113693187817
+          "netPotentialDeltaJ": 0.005027307600414588
         },
         {
           "thetaDeg": 125,
           "hipHeightMm": 691.491226573395,
-          "holdingTorqueNm": 0.013682273270326561,
-          "springEquivalentLiftN": 95.6872571924832,
+          "holdingTorqueNm": -0.0161719405438987,
+          "springEquivalentLiftN": 95.60050847013287,
           "gravityEquivalentLiftN": 95.64749999999994,
-          "netPotentialDeltaJ": -0.0008329941225184712
+          "netPotentialDeltaJ": 0.004774780524243738
         },
         {
           "thetaDeg": 126,
           "hipHeightMm": 685.4101966249684,
-          "holdingTorqueNm": 0.011068401133371708,
-          "springEquivalentLiftN": 95.67888448123765,
+          "holdingTorqueNm": -0.01927932439939184,
+          "springEquivalentLiftN": 95.59283342371734,
           "gravityEquivalentLiftN": 95.6475000000001,
-          "netPotentialDeltaJ": -0.000617496749882207
+          "netPotentialDeltaJ": 0.004464896369199778
         },
         {
           "thetaDeg": 127,
           "hipHeightMm": 679.1813060283756,
-          "holdingTorqueNm": 0.008785421829372808,
-          "springEquivalentLiftN": 95.67183034928065,
+          "holdingTorqueNm": -0.022041853888843832,
+          "springEquivalentLiftN": 95.58645728465592,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.00044470846124511354
+          "netPotentialDeltaJ": 0.004103811944773383
         },
         {
           "thetaDeg": 128,
           "hipHeightMm": 672.8064521640332,
-          "holdingTorqueNm": 0.006815611203251137,
-          "springEquivalentLiftN": 95.66595064611103,
+          "holdingTorqueNm": -0.024477506563975737,
+          "springEquivalentLiftN": 95.5812365648034,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.0003090053389911418
+          "netPotentialDeltaJ": 0.003697392606113681
         },
         {
           "thetaDeg": 129,
           "hipHeightMm": 666.2875768741826,
-          "holdingTorqueNm": 0.005139196609647456,
-          "springEquivalentLiftN": 95.66111044041251,
+          "holdingTorqueNm": -0.026606291351825462,
+          "springEquivalentLiftN": 95.57703697424976,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.00020509155184811334
+          "netPotentialDeltaJ": 0.003251171350655113
         },
         {
           "thetaDeg": 130,
           "hipHeightMm": 659.6266658713869,
-          "holdingTorqueNm": 0.003734908692742067,
-          "springEquivalentLiftN": 95.65718414407415,
+          "holdingTorqueNm": -0.028449698000606816,
+          "springEquivalentLiftN": 95.57373354492253,
           "gravityEquivalentLiftN": 95.64750000000006,
-          "netPotentialDeltaJ": -0.00012803016956297597
+          "netPotentialDeltaJ": 0.002770318291382523
         },
         {
           "thetaDeg": 131,
           "hipHeightMm": 652.8257481336632,
-          "holdingTorqueNm": 0.002580453302108765,
-          "springEquivalentLiftN": 95.65405543985143,
+          "holdingTorqueNm": -0.030030226279833983,
+          "springEquivalentLiftN": 95.57121055816418,
           "gravityEquivalentLiftN": 95.64750000000004,
-          "netPotentialDeltaJ": -0.00007326505776461545
+          "netPotentialDeltaJ": 0.0022596190292034635
         },
         {
           "thetaDeg": 132,
           "hipHeightMm": 645.8868952864366,
-          "holdingTorqueNm": 0.0016529127944124866,
-          "springEquivalentLiftN": 95.65161706568368,
+          "holdingTorqueNm": -0.031370985699467724,
+          "springEquivalentLiftN": 95.56936132920998,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.00003663516574192727
+          "netPotentialDeltaJ": 0.0017234606140590358
         },
         {
           "thetaDeg": 133,
           "hipHeightMm": 638.8122209715023,
-          "holdingTorqueNm": 0.0009290851967449498,
-          "springEquivalentLiftN": 95.64977049714281,
+          "holdingTorqueNm": -0.032495357284972215,
+          "springEquivalentLiftN": 95.56808788997189,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.000014382364241782852
+          "netPotentialDeltaJ": 0.0011658239389902292
         },
         {
           "thetaDeg": 134,
           "hipHeightMm": 631.6038802031907,
-          "holdingTorqueNm": 0.000385768926811636,
-          "springEquivalentLiftN": 95.64842556030226,
+          "holdingTorqueNm": -0.033426709723748615,
+          "springEquivalentLiftN": 95.56730060236498,
           "gravityEquivalentLiftN": 95.64749999999997,
-          "netPotentialDeltaJ": -0.000003153849007730969
+          "netPotentialDeltaJ": 0.0005902815522773608
         },
         {
           "thetaDeg": 135,
           "hipHeightMm": 624.2640687119285,
-          "holdingTorqueNm": -7.105427357601002e-15,
-          "springEquivalentLiftN": 95.64749999999997,
+          "holdingTorqueNm": -0.034188162961172,
+          "springEquivalentLiftN": 95.5669177271128,
           "gravityEquivalentLiftN": 95.64749999999998,
           "netPotentialDeltaJ": 0
         },
         {
           "thetaDeg": 136,
           "hipHeightMm": 616.7950222753983,
-          "holdingTorqueNm": -0.00025075207133085087,
-          "springEquivalentLiftN": 95.64691902266682,
+          "holdingTorqueNm": -0.03480239304895605,
+          "springEquivalentLiftN": 95.56686496717185,
           "gravityEquivalentLiftN": 95.64750000000004,
-          "netPotentialDeltaJ": -0.0000023684686283331757
+          "netPotentialDeltaJ": -0.0006022540736125848
         },
         {
           "thetaDeg": 137,
           "hipHeightMm": 609.1990160374992,
-          "holdingTorqueNm": -0.0003884241665801369,
-          "springEquivalentLiftN": 95.64661482828417,
+          "holdingTorqueNm": -0.03529147273189892,
+          "springEquivalentLiftN": 95.56707500031848,
           "gravityEquivalentLiftN": 95.64750000000004,
-          "netPotentialDeltaJ": -0.000008095166634802808
+          "netPotentialDeltaJ": -0.0012141047395317628
         },
         {
           "thetaDeg": 138,
           "hipHeightMm": 601.478363815315,
-          "holdingTorqueNm": -0.00043423034376388614,
-          "springEquivalentLiftN": 95.64652614239553,
+          "holdingTorqueNm": -0.03567674288860445,
+          "springEquivalentLiftN": 95.5674870118057,
           "gravityEquivalentLiftN": 95.64750000000012,
-          "netPotentialDeltaJ": -0.000015392736173680532
+          "netPotentialDeltaJ": -0.0018335550906130038
         },
         {
           "thetaDeg": 139,
           "hipHeightMm": 593.6354173943043,
-          "holdingTorqueNm": -0.000408559211528825,
-          "springEquivalentLiftN": 95.64659775622707,
+          "holdingTorqueNm": -0.035978710516971546,
+          "springEquivalentLiftN": 95.56804623513524,
           "gravityEquivalentLiftN": 95.64750000000011,
-          "netPotentialDeltaJ": -0.000022837002916276106
+          "netPotentialDeltaJ": -0.002458973542204035
         },
         {
           "thetaDeg": 140,
           "hipHeightMm": 585.6725658119236,
-          "holdingTorqueNm": -0.00033089409807729453,
-          "springEquivalentLiftN": 95.64678008072057,
+          "holdingTorqueNm": -0.03621696948091113,
+          "springEquivalentLiftN": 95.56870350673678,
           "gravityEquivalentLiftN": 95.64749999999995,
-          "netPotentialDeltaJ": -0.00002935184194541307
+          "netPotentialDeltaJ": -0.0030890785559591905
         },
         {
           "thetaDeg": 141,
           "hipHeightMm": 577.5922346299024,
-          "holdingTorqueNm": -0.00021975269918073081,
-          "springEquivalentLiftN": 95.64702871852032,
+          "holdingTorqueNm": -0.03641014070243642,
+          "springEquivalentLiftN": 95.56941483859269,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.00003419282484173891
+          "netPotentialDeltaJ": -0.0037229221548074065
         },
         {
           "thetaDeg": 142,
           "hipHeightMm": 569.396885195395,
-          "holdingTorqueNm": -0.0000926433079087019,
-          "springEquivalentLiftN": 95.64730405659125,
+          "holdingTorqueNm": -0.03657582890537725,
+          "springEquivalentLiftN": 95.57014101147949,
           "gravityEquivalentLiftN": 95.6475,
-          "netPotentialDeltaJ": -0.0000369299619933372
+          "netPotentialDeltaJ": -0.004359872541996879
         },
         {
           "thetaDeg": 143,
           "hipHeightMm": 561.0890138912289,
-          "holdingTorqueNm": 0.000033964893610516356,
-          "springEquivalentLiftN": 95.64757088109074,
+          "holdingTorqueNm": -0.036730593392626076,
+          "springEquivalentLiftN": 95.57084719044647,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.00003742980733534296
+          "netPotentialDeltaJ": -0.004999596091622038
         },
         {
           "thetaDeg": 144,
           "hipHeightMm": 552.6711513754839,
-          "holdingTorqueNm": 0.00014465967105081745,
-          "springEquivalentLiftN": 95.64779801531172,
+          "holdingTorqueNm": -0.03688993066860036,
+          "springEquivalentLiftN": 95.57150256334728,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.000035837150818451846
+          "netPotentialDeltaJ": -0.005642038934965399
         },
         {
           "thetaDeg": 145,
           "hipHeightMm": 544.1458618106276,
-          "holdingTorqueNm": 0.00022509359866518253,
-          "springEquivalentLiftN": 95.64795798090888,
+          "holdingTorqueNm": -0.0370682670134741,
+          "springEquivalentLiftN": 95.5720800026342,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.00003255648928757182
+          "netPotentialDeltaJ": -0.006287408333250255
         },
         {
           "thetaDeg": 146,
           "hipHeightMm": 535.5157420824481,
-          "holdingTorqueNm": 0.0002619835826180861,
-          "springEquivalentLiftN": 95.648026682166,
+          "holdingTorqueNm": -0.037278959371533915,
+          "springEquivalentLiftN": 95.57255575017423,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.000028233435443780763
+          "netPotentialDeltaJ": -0.006936153995397376
         },
         {
           "thetaDeg": 147,
           "hipHeightMm": 526.7834210090164,
-          "holdingTorqueNm": 0.0002431034593826098,
-          "springEquivalentLiftN": 95.64798311273557,
+          "holdingTorqueNm": -0.037534303143210934,
+          "springEquivalentLiftN": 95.57290912451646,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.00002373619693685214
+          "netPotentialDeltaJ": -0.007588949473515072
         },
         {
           "thetaDeg": 148,
           "hipHeightMm": 517.9515585399229,
-          "holdingTorqueNm": 0.00015727088293715497,
-          "springEquivalentLiftN": 95.64780908404772,
+          "holdingTorqueNm": -0.03784554566770737,
+          "springEquivalentLiftN": 95.57312224980863,
           "gravityEquivalentLiftN": 95.6475,
-          "netPotentialDeltaJ": -0.000020137236518280588
+          "netPotentialDeltaJ": -0.00824667374557464
         },
         {
           "thetaDeg": 149,
           "hipHeightMm": 509.0228449460326,
-          "holdingTorqueNm": -0.000005670455891504389,
-          "springEquivalentLiftN": 95.64748897442804,
+          "holdingTorqueNm": -0.038222904354405784,
+          "springEquivalentLiftN": 95.57317980540272,
           "gravityEquivalentLiftN": 95.64750000000008,
-          "netPotentialDeltaJ": -0.0000186952029537224
+          "netPotentialDeltaJ": -0.008910393075538536
         },
         {
           "thetaDeg": 150,
           "hipHeightMm": 499.99999999999994,
-          "holdingTorqueNm": -0.00025487238618637775,
-          "springEquivalentLiftN": 95.64700949786402,
+          "holdingTorqueNm": -0.03867558857207598,
+          "springEquivalentLiftN": 95.57306879508941,
           "gravityEquivalentLiftN": 95.64749999999994,
-          "netPotentialDeltaJ": -0.000020837206619717108
+          "netPotentialDeltaJ": -0.009581343223757699
         },
         {
           "thetaDeg": 151,
           "hipHeightMm": 490.8857721478023,
-          "holdingTorqueNm": -0.000598506829241785,
-          "springEquivalentLiftN": 95.64635949130354,
+          "holdingTorqueNm": -0.039211824536387496,
+          "springEquivalentLiftN": 95.57277833484595,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.00002814149851815273
+          "netPotentialDeltaJ": -0.010260912066755168
         },
         {
           "thetaDeg": 152,
           "hipHeightMm": 481.68293767153443,
-          "holdingTorqueNm": -0.001043792735387683,
-          "springEquivalentLiftN": 95.645529719348,
+          "holdingTorqueNm": -0.03983888254556689,
+          "springEquivalentLiftN": 95.57229945796,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.00004232059963271695
+          "netPotentialDeltaJ": -0.010950622672524446
         },
         {
           "thetaDeg": 153,
           "hipHeightMm": 472.39429984372805,
-          "holdingTorqueNm": -0.0015970248370322793,
-          "springEquivalentLiftN": 95.64451269520536,
+          "holdingTorqueNm": -0.04056310601674795,
+          "springEquivalentLiftN": 95.57162493639572,
           "gravityEquivalentLiftN": 95.64749999999997,
-          "netPotentialDeltaJ": -0.00006520491734818279
+          "netPotentialDeltaJ": -0.011652116867864493
         },
         {
           "thetaDeg": 154,
           "hipHeightMm": 463.0226880734464,
-          "holdingTorqueNm": -0.002263603750499499,
-          "springEquivalentLiftN": 95.64330251679127,
+          "holdingTorqueNm": -0.041389941856401435,
+          "springEquivalentLiftN": 95.57074911729075,
           "gravityEquivalentLiftN": 95.64750000000006,
-          "netPotentialDeltaJ": -0.00009872687535050773
+          "netPotentialDeltaJ": -0.0123671393245246
         },
         {
           "thetaDeg": 155,
           "hipHeightMm": 453.5709570444197,
-          "holdingTorqueNm": -0.0030480670334043225,
-          "springEquivalentLiftN": 95.64189471689977,
+          "holdingTorqueNm": -0.04232397177203495,
+          "springEquivalentLiftN": 95.56966777350664,
           "gravityEquivalentLiftN": 95.64750000000006,
-          "netPotentialDeltaJ": -0.0001449055788214082
+          "netPotentialDeltaJ": -0.013097522184509103
         },
         {
           "thetaDeg": 156,
           "hipHeightMm": 444.0419858454802,
-          "holdingTorqueNm": -0.0039541208678031126,
-          "springEquivalentLiftN": 95.64028612641421,
+          "holdingTorqueNm": -0.04336894419677151,
+          "springEquivalentLiftN": 95.56837796720289,
           "gravityEquivalentLiftN": 95.64750000000004,
-          "netPotentialDeltaJ": -0.00020583202662294298
+          "netPotentialDeltaJ": -0.013845170237104298
         },
         {
           "thetaDeg": 157,
           "hipHeightMm": 434.43867709356425,
-          "holdingTorqueNm": -0.004984672092660958,
-          "springEquivalentLiftN": 95.6384747495736,
+          "holdingTorqueNm": -0.044527806550007654,
+          "springEquivalentLiftN": 95.56687792545216,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.0002836548803770711
+          "netPotentialDeltaJ": -0.014612046657020983
         },
         {
           "thetaDeg": 158,
           "hipHeightMm": 424.7639560495473,
-          "holdingTorqueNm": -0.006141860355526774,
-          "springEquivalentLiftN": 95.63645965036989,
+          "holdingTorqueNm": -0.0458027376056549,
+          "springEquivalentLiftN": 95.56516692697099,
           "gravityEquivalentLiftN": 95.64750000000006,
-          "netPotentialDeltaJ": -0.00038056679390763293
+          "netPotentialDeltaJ": -0.015400159306238947
         },
         {
           "thetaDeg": 159,
           "hipHeightMm": 415.02076972718015,
-          "holdingTorqueNm": -0.0074270901931470235,
-          "springEquivalentLiftN": 95.63424084920389,
+          "holdingTorqueNm": -0.047195179777723695,
+          "springEquivalentLiftN": 95.5632451990955,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.0004987913032294955
+          "netPotentialDeltaJ": -0.016211547600832432
         },
         {
           "thetaDeg": 160,
           "hipHeightMm": 405.21208599540125,
-          "holdingTorqueNm": -0.008841062886162376,
-          "springEquivalentLiftN": 95.6318192289858,
+          "holdingTorqueNm": -0.048705871168884585,
+          "springEquivalentLiftN": 95.56111382418833,
           "gravityEquivalentLiftN": 95.6475,
-          "netPotentialDeltaJ": -0.0006405702751663966
+          "netPotentialDeltaJ": -0.01704826993913855
         },
         {
           "thetaDeg": 161,
           "hipHeightMm": 395.34089267429397,
-          "holdingTorqueNm": -0.010383807958959324,
-          "springEquivalentLiftN": 95.62919644992193,
+          "holdingTorqueNm": -0.05033487725406616,
+          "springEquivalentLiftN": 95.55877465471856,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.0008081519083020794
+          "netPotentialDeltaJ": -0.017912391686067508
         },
         {
           "thetaDeg": 162,
           "hipHeightMm": 385.4101966249685,
-          "holdingTorqueNm": -0.012054714223388885,
-          "springEquivalentLiftN": 95.6263748722835,
+          "holdingTorqueNm": -0.052081622098029356,
+          "springEquivalentLiftN": 95.55623023631142,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.0010037792806230073
+          "netPotentialDeltaJ": -0.018805973707216594
         },
         {
           "thetaDeg": 163,
           "hipHeightMm": 375.423022833642,
-          "holdingTorqueNm": -0.013852560285918969,
-          "springEquivalentLiftN": 95.62335748650467,
+          "holdingTorqueNm": -0.053944919026669425,
+          "springEquivalentLiftN": 95.55348373811579,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.001229679433805586
+          "netPotentialDeltaJ": -0.019731061442016085
         },
         {
           "thetaDeg": 164,
           "hipHeightMm": 365.3824134901995,
-          "holdingTorqueNm": -0.015775544452161228,
-          "springEquivalentLiftN": 95.62014785001001,
+          "holdingTorqueNm": -0.055923000687243984,
+          "springEquivalentLiftN": 95.55053888988895,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.001488052985109789
+          "netPotentialDeltaJ": -0.020689674508091116
         },
         {
           "thetaDeg": 165,
           "hipHeightMm": 355.29142706151254,
-          "holdingTorqueNm": -0.0178213139834682,
-          "springEquivalentLiftN": 95.61675003021556,
+          "holdingTorqueNm": -0.058013548451832264,
+          "springEquivalentLiftN": 95.54739992524463,
           "gravityEquivalentLiftN": 95.64750000000005,
-          "netPotentialDeltaJ": -0.0017810642553826028
+          "netPotentialDeltaJ": -0.021683796823808166
         },
         {
           "thetaDeg": 166,
           "hipHeightMm": 345.15313735980067,
-          "holdingTorqueNm": -0.01998699366736645,
-          "springEquivalentLiftN": 95.61316855319448,
+          "holdingTorqueNm": -0.06021372112667933,
+          "springEquivalentLiftN": 95.54407153055496,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.0021108319020584076
+          "netPotentialDeltaJ": -0.022715367238347994
         },
         {
           "thetaDeg": 167,
           "hipHeightMm": 334.9706326063191,
-          "holdingTorqueNm": -0.022269213678328015,
-          "springEquivalentLiftN": 95.60940835754101,
+          "holdingTorqueNm": -0.0625201829442048,
+          "springEquivalentLiftN": 95.54055879904062,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.002479420044295466
+          "netPotentialDeltaJ": -0.02378627065662897
         },
         {
           "thetaDeg": 168,
           "hipHeightMm": 324.7470144906556,
-          "holdingTorqueNm": -0.02466413671179879,
-          "springEquivalentLiftN": 95.60547475300373,
+          "holdingTorqueNm": -0.06492913082082907,
+          "springEquivalentLiftN": 95.53686718962096,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.0028888298682119284
+          "netPotentialDeltaJ": -0.02489832964617733
         },
         {
           "thetaDeg": 169,
           "hipHeightMm": 314.48539722592693,
-          "holdingTorqueNm": -0.027167484383184615,
-          "springEquivalentLiftN": 95.60137338349821,
+          "holdingTorqueNm": -0.06743632087309237,
+          "springEquivalentLiftN": 95.53300249013373,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.0033409916993605293
+          "netPotentialDeltaJ": -0.02605329651349564
         },
         {
           "thetaDeg": 170,
           "hipHeightMm": 304.1889066001582,
-          "holdingTorqueNm": -0.029774562889066658,
-          "springEquivalentLiftN": 95.59711019414193,
+          "holdingTorqueNm": -0.07003709418906823,
+          "springEquivalentLiftN": 95.52897078456876,
           "gravityEquivalentLiftN": 95.64749999999998,
-          "netPotentialDeltaJ": -0.003837757529396413
+          "netPotentialDeltaJ": -0.027252845836500228
         },
         {
           "thetaDeg": 171,
           "hipHeightMm": 293.86067902413856,
-          "holdingTorqueNm": -0.0324802879330619,
-          "springEquivalentLiftN": 95.59269140198703,
+          "holdingTorqueNm": -0.0727264018583611,
+          "springEquivalentLiftN": 95.52477842399061,
           "gravityEquivalentLiftN": 95.6475,
-          "netPotentialDeltaJ": -0.004380893984176737
+          "netPotentialDeltaJ": -0.028498567440649936
         },
         {
           "thetaDeg": 172,
           "hipHeightMm": 283.50386057603924,
-          "holdingTorqueNm": -0.035279208922354144,
-          "springEquivalentLiftN": 95.58812347015594,
+          "holdingTorqueNm": -0.07549882926655727,
+          "springEquivalentLiftN": 95.52043200085625,
           "gravityEquivalentLiftN": 95.6475,
-          "netPotentialDeltaJ": -0.004972075720729663
+          "netPotentialDeltaJ": -0.029791959804981616
         },
         {
           "thetaDeg": 173,
           "hipHeightMm": 273.1216060430885,
-          "holdingTorqueNm": -0.03816553244560339,
-          "springEquivalentLiftN": 95.583413085112,
+          "holdingTorqueNm": -0.07834861966563977,
+          "springEquivalentLiftN": 95.51593832645958,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.00561287923997611
+          "netPotentialDeltaJ": -0.03113442388637111
         },
         {
           "thetaDeg": 174,
           "hipHeightMm": 262.7170779605922,
-          "holdingTorqueNm": -0.04113314504350285,
-          "springEquivalentLiftN": 95.57856713682379,
+          "holdingTorqueNm": -0.08126969703136666,
+          "springEquivalentLiftN": 95.51130441126224,
           "gravityEquivalentLiftN": 95.64750000000001,
-          "netPotentialDeltaJ": -0.006304777103096626
+          "netPotentialDeltaJ": -0.03252725734846251
         },
         {
           "thetaDeg": 175,
           "hipHeightMm": 252.2934456485949,
-          "holdingTorqueNm": -0.04417563528743784,
-          "springEquivalentLiftN": 95.573592701604,
+          "holdingTorqueNm": -0.08425568822362806,
+          "springEquivalentLiftN": 95.50653744789211,
           "gravityEquivalentLiftN": 95.64750000000002,
-          "netPotentialDeltaJ": -0.0070491325394641535
+          "netPotentialDeltaJ": -0.03397164918374074
         }
       ],
       "massBasis": {
@@ -1311,7 +1311,7 @@
         "loadMode": "weight",
         "wheelTreatment": "With fixed world wheel height and zero contact moment, wheel gravity has zero stance work. Its weight remains in the ground reaction and in dynamic wheel mass/inertia. Moving link/compound gravity is included at each actual COM; alpha changes its world-height work."
       },
-      "method": "Bounded sampled minimax geometry fit followed by a horn-only root of static holding torque at135deg. This balances the saved ride pose; it is not a height controller or terrain stability guarantee.",
+      "method": "Bounded sampled minimax static holding-torque fit over the full95..175deg working range, with no post-fit ride-pose root. The initial135deg residual is retained, so zero-input drift is expected. Not a guaranteed global optimum, height controller or terrain stability guarantee.",
       "springConvention": "chassis-fixed-v1"
     },
     {
@@ -1478,7 +1478,7 @@
         "Tef0": 0,
         "springEnabled": true,
         "springK": 8,
-        "hornR": 64.04147211847342,
+        "hornR": 64.01702612917234,
         "Sv": 91.6516837588036,
         "rs": 10,
         "p0": 330.8692828089511,
@@ -1506,44 +1506,44 @@
       },
       "after": {
         "samples": 6501,
-        "maxTorqueNm": 0.07366977644672801,
-        "peakThetaDeg": 166.90153846153845,
-        "rmsTorqueNm": 0.044306231831883584,
-        "maxEquivalentForceErrorN": 0.737219548519771,
-        "rmsEquivalentForceErrorN": 0.1710591469458924,
+        "maxTorqueNm": 0.041829223275465566,
+        "peakThetaDeg": 102.77846153846154,
+        "rmsTorqueNm": 0.03079399386252065,
+        "maxEquivalentForceErrorN": 0.8509890483293157,
+        "rmsEquivalentForceErrorN": 0.14245486689126083,
         "springEquivalentLiftN": [
-          95.92522479965561,
-          115.31605563567572
+          95.86883819275896,
+          115.20228613586617
         ],
         "requiredEquivalentLiftN": [
           95.80369123620673,
           116.05327518419548
         ]
       },
-      "rideCalibration": {
+      "initialState": {
         "thetaDeg": 135,
-        "rootIterations": 45,
-        "hornBracketMm": [
-          63,
-          65
-        ],
-        "onlyHornChangedAfterMinimax": true
+        "velocityDegS": 0,
+        "appliedHipTorqueNm": 0,
+        "dampingNms": 0,
+        "postFitRideCalibrationApplied": false,
+        "holdingResidualNm": -0.027187724098531874,
+        "predictedInitialDrift": "Increasing hip angle / leg compression / chassis down, from the negative unbalanced holding torque; initial velocity remains zero."
       },
       "passiveSupport": {
         "rideThetaDeg": 135,
-        "rideHoldingTorqueNm": -2.1316282072803006e-14,
-        "netPotentialCurvatureNmPerRad": 0.1709786358216728,
-        "independentPotentialCurvatureNmPerRad": 0.17097869431381696,
-        "rideTangentStiffnessNPerM": 1.0757162016181618,
+        "rideHoldingTorqueNm": -0.027187724098531874,
+        "netPotentialCurvatureNmPerRad": 0.15441915227216813,
+        "independentPotentialCurvatureNmPerRad": 0.1544190126878675,
+        "rideTangentStiffnessNPerM": 0.9715318123871556,
         "restoringAllSampledTravel": false,
-        "minNetPotentialDeltaJ": -0.0070754447657037645,
+        "minNetPotentialDeltaJ": -0.0021523971954593435,
         "cableForceN": [
-          337.62621639698835,
-          955.8590225238073
+          337.619516769774,
+          955.5707681475797
         ],
         "equivalentLiftN": [
-          95.92522479965561,
-          115.31605563567572
+          95.86883819275896,
+          115.20228613586617
         ],
         "samples": 6501
       },
@@ -1551,650 +1551,650 @@
         {
           "thetaDeg": 95,
           "hipHeightMm": 761.6700839977156,
-          "holdingTorqueNm": -0.03622679536136708,
-          "springEquivalentLiftN": 115.31605563567572,
+          "holdingTorqueNm": -0.04181740184520333,
+          "springEquivalentLiftN": 115.20228613586617,
           "gravityEquivalentLiftN": 116.05327518419548,
-          "netPotentialDeltaJ": -0.006593304000801936
+          "netPotentialDeltaJ": 0.0062181435672670204
         },
         {
           "thetaDeg": 96,
           "hipHeightMm": 760.726931772549,
-          "holdingTorqueNm": -0.01238468550676508,
-          "springEquivalentLiftN": 112.4231052412579,
+          "holdingTorqueNm": -0.01886355648472282,
+          "springEquivalentLiftN": 112.31317233765844,
           "gravityEquivalentLiftN": 112.6332474778539,
-          "netPotentialDeltaJ": -0.007011014801605597
+          "netPotentialDeltaJ": 0.005695070681454695
         },
         {
           "thetaDeg": 97,
           "hipHeightMm": 759.612976692081,
-          "holdingTorqueNm": 0.007142231100158547,
-          "springEquivalentLiftN": 110.2913346197765,
+          "holdingTorqueNm": -0.0002001218792848647,
+          "springEquivalentLiftN": 110.18447743677383,
           "gravityEquivalentLiftN": 110.18738991732843,
-          "netPotentialDeltaJ": -0.007050723800631431
+          "netPotentialDeltaJ": 0.005534712742104375
         },
         {
           "thetaDeg": 98,
           "hipHeightMm": 758.3285580778198,
-          "holdingTorqueNm": 0.02269112237630111,
-          "springEquivalentLiftN": 108.639561465482,
+          "holdingTorqueNm": 0.014509923979389328,
+          "springEquivalentLiftN": 108.53529982504826,
           "gravityEquivalentLiftN": 108.35038455918314,
-          "netPotentialDeltaJ": -0.006784852366976679
+          "netPotentialDeltaJ": 0.00566508002162891
         },
         {
           "thetaDeg": 99,
           "hipHeightMm": 756.8740671761179,
-          "holdingTorqueNm": 0.034626374479113764,
-          "springEquivalentLiftN": 107.31186486117242,
+          "holdingTorqueNm": 0.025630591931056657,
+          "springEquivalentLiftN": 107.20987207853756,
           "gravityEquivalentLiftN": 106.91927641577428,
-          "netPotentialDeltaJ": -0.006279680303478585
+          "netPotentialDeltaJ": 0.006020319721031342
         },
         {
           "thetaDeg": 100,
           "hipHeightMm": 755.2499470389939,
-          "holdingTorqueNm": 0.043326976122163074,
-          "springEquivalentLiftN": 106.21483049793486,
+          "holdingTorqueNm": 0.03354032423601261,
+          "springEquivalentLiftN": 106.11487036067984,
           "gravityEquivalentLiftN": 105.77229197399443,
-          "netPotentialDeltaJ": -0.005594982962577433
+          "netPotentialDeltaJ": 0.006541075367763938
         },
         {
           "thetaDeg": 101,
           "hipHeightMm": 753.456692389175,
-          "holdingTorqueNm": 0.0491754640324622,
-          "springEquivalentLiftN": 105.28903992524731,
+          "holdingTorqueNm": 0.03862099130938823,
+          "springEquivalentLiftN": 105.19093278194121,
           "gravityEquivalentLiftN": 104.83193852155244,
-          "netPotentialDeltaJ": -0.004783875292190487
+          "netPotentialDeltaJ": 0.0071746402413879196
         },
         {
           "thetaDeg": 102,
           "hipHeightMm": 751.4948494693988,
-          "holdingTorqueNm": 0.05254860870613598,
-          "springEquivalentLiftN": 104.49482955874717,
+          "holdingTorqueNm": 0.04124862085740055,
+          "springEquivalentLiftN": 104.39843289589338,
           "gravityEquivalentLiftN": 104.04655380972079,
-          "netPotentialDeltaJ": -0.003892833790544614
+          "netPotentialDeltaJ": 0.007874933717303634
         },
         {
           "thetaDeg": 103,
           "hipHeightMm": 749.3650158760239,
-          "holdingTorqueNm": 0.05380988752471616,
-          "springEquivalentLiftN": 103.80463603964375,
+          "holdingTorqueNm": 0.04178590634217194,
+          "springEquivalentLiftN": 103.70983279790113,
           "gravityEquivalentLiftN": 103.38037125598332,
-          "netPotentialDeltaJ": -0.002961865412217435
+          "netPotentialDeltaJ": 0.00860233134572752
         },
         {
           "thetaDeg": 104,
           "hipHeightMm": 747.0678403769946,
-          "holdingTorqueNm": 0.053303688766000334,
-          "springEquivalentLiftN": 103.19863433738435,
+          "holdingTorqueNm": 0.04057643872621419,
+          "springEquivalentLiftN": 103.1053255957103,
           "gravityEquivalentLiftN": 102.80784291663025,
-          "netPotentialDeltaJ": -0.002024792594923497
+          "netPotentialDeltaJ": 0.009323379359784667
         },
         {
           "thetaDeg": 105,
           "hipHeightMm": 744.6040227142212,
-          "holdingTorqueNm": 0.051351115719764806,
-          "springEquivalentLiftN": 102.66213109830966,
+          "holdingTorqueNm": 0.037940531478787065,
+          "springEquivalentLiftN": 102.57023133323433,
           "gravityEquivalentLiftN": 102.31023326998223,
-          "netPotentialDeltaJ": -0.0011096252502085235
+          "netPotentialDeltaJ": 0.010010422642537264
         },
         {
           "thetaDeg": 106,
           "hipHeightMm": 741.9743133904316,
-          "holdingTorqueNm": 0.04824721271394239,
-          "springEquivalentLiftN": 102.18394420697625,
+          "holdingTorqueNm": 0.034172461609315974,
+          "springEquivalentLiftN": 102.0933781246306,
           "gravityEquivalentLiftN": 101.8734903305903,
-          "netPotentialDeltaJ": -0.0002389932950563889
+          "netPotentialDeltaJ": 0.010641172465042814
         },
         {
           "thetaDeg": 107,
           "hipHeightMm": 739.17951344056,
-          "holdingTorqueNm": 0.04425941034892844,
-          "springEquivalentLiftN": 101.75536128876765,
+          "holdingTorqueNm": 0.029538925043027575,
+          "springEquivalentLiftN": 101.6660616460551,
           "gravityEquivalentLiftN": 101.48686813458863,
-          "netPotentialDeltaJ": 0.0005693833445121754
+          "netPotentialDeltaJ": 0.011198236970187736
         },
         {
           "thetaDeg": 108,
           "hipHeightMm": 736.2204741877454,
-          "holdingTorqueNm": 0.03962698083601168,
-          "springEquivalentLiftN": 101.36945086151556,
+          "holdingTorqueNm": 0.024278498219526767,
+          "springEquivalentLiftN": 101.28135692526493,
           "gravityEquivalentLiftN": 101.14200839630254,
-          "netPotentialDeltaJ": 0.0013022067112302693
+          "netPotentialDeltaJ": 0.0116686337799905
         },
         {
           "thetaDeg": 109,
           "hipHeightMm": 733.0980969840086,
-          "holdingTorqueNm": 0.03456130123306167,
-          "springEquivalentLiftN": 101.02059516398324,
+          "holdingTorqueNm": 0.01860190460164901,
+          "springEquivalentLiftN": 100.933651591008,
           "gravityEquivalentLiftN": 100.83231216774757,
-          "netPotentialDeltaJ": 0.0019501106225447984
+          "netPotentialDeltaJ": 0.012043300512715405
         },
         {
           "thetaDeg": 110,
           "hipHeightMm": 729.8133329356934,
-          "holdingTorqueNm": 0.02924673819799395,
-          "springEquivalentLiftN": 100.70416615824203,
+          "holdingTorqueNm": 0.012692900488616488,
+          "springEquivalentLiftN": 100.61832215907383,
           "gravityEquivalentLiftN": 100.55250000000014,
-          "netPotentialDeltaJ": 0.002507180751834426
+          "netPotentialDeltaJ": 0.012316615612235182
         },
         {
           "thetaDeg": 111,
           "hipHeightMm": 726.367182613749,
-          "holdingTorqueNm": 0.023841988974705686,
-          "springEquivalentLiftN": 100.41629620932635,
+          "holdingTorqueNm": 0.00670961549077731,
+          "springEquivalentLiftN": 100.3315049071908,
           "gravityEquivalentLiftN": 100.29829777247446,
-          "netPotentialDeltaJ": 0.00297049435600627
+          "netPotentialDeltaJ": 0.012485938827737186
         },
         {
           "thetaDeg": 112,
           "hipHeightMm": 722.7606957489471,
-          "holdingTorqueNm": 0.018481736809487614,
-          "springEquivalentLiftN": 100.1537126866937,
+          "holdingTorqueNm": 0.0007862063788586227,
+          "springEquivalentLiftN": 100.06993061376961,
           "gravityEquivalentLiftN": 100.06620820485821,
-          "netPotentialDeltaJ": 0.0033396863409649313
+          "netPotentialDeltaJ": 0.012551178012245146
         },
         {
           "thetaDeg": 113,
           "hipHeightMm": 718.9949709121232,
-          "holdingTorqueNm": 0.013278502756154609,
-          "springEquivalentLiftN": 99.91361653170486,
+          "holdingTorqueNm": -0.004965293334876719,
+          "springEquivalentLiftN": 99.83080322407854,
           "gravityEquivalentLiftN": 99.85334197436627,
-          "netPotentialDeltaJ": 0.0036165460876418365
+          "netPotentialDeltaJ": 0.012514386648518894
         },
         {
           "thetaDeg": 114,
           "hipHeightMm": 715.0711551795426,
-          "holdingTorqueNm": 0.008324598421545204,
-          "springEquivalentLiftN": 99.69359158004502,
+          "holdingTorqueNm": -0.01045302323322872,
+          "springEquivalentLiftN": 99.61170924526667,
           "gravityEquivalentLiftN": 99.65729105341923,
-          "netPotentialDeltaJ": 0.0038046476027489007
+          "netPotentialDeltaJ": 0.01237939465688953
         },
         {
           "thetaDeg": 115,
           "hipHeightMm": 710.9904437834879,
-          "holdingTorqueNm": 0.0036941047371215063,
-          "springEquivalentLiftN": 99.49153573629114,
+          "holdingTorqueNm": -0.015603319946670524,
+          "springEquivalentLiftN": 99.41054897560734,
           "gravityEquivalentLiftN": 99.47603244602375,
-          "netPotentialDeltaJ": 0.0039090140731872225
+          "netPotentialDeltaJ": 0.01215147356070645
         },
         {
           "thetaDeg": 116,
           "hipHeightMm": 706.7540797481812,
-          "holdingTorqueNm": -0.0005551801404273249,
-          "springEquivalentLiftN": 99.30560790510724,
+          "holdingTorqueNm": -0.02035877196983904,
+          "springEquivalentLiftN": 99.22548347784048,
           "gravityEquivalentLiftN": 99.30785413857663,
-          "netPotentialDeltaJ": 0.003935816758399824
+          "netPotentialDeltaJ": 0.011837035941638874
         },
         {
           "thetaDeg": 117,
           "hipHeightMm": 702.3633535111462,
-          "holdingTorqueNm": -0.004379865360384372,
-          "springEquivalentLiftN": 99.13418644522343,
+          "holdingTorqueNm": -0.024676346804895388,
+          "springEquivalentLiftN": 99.05489306637845,
           "gravityEquivalentLiftN": 99.15129750579126,
-          "netPotentialDeltaJ": 0.0038921072981565885
+          "netPotentialDeltaJ": 0.011443368263940101
         },
         {
           "thetaDeg": 118,
           "hipHeightMm": 697.8196025301286,
-          "holdingTorqueNm": -0.007749193181208369,
-          "springEquivalentLiftN": 98.97583616639476,
+          "holdingTorqueNm": -0.02852561921286423,
+          "springEquivalentLiftN": 98.8973443310101,
           "gravityEquivalentLiftN": 99.0051120579565,
-          "netPotentialDeltaJ": 0.003785581903741786
+          "netPotentialDeltaJ": 0.010978395537975416
         },
         {
           "thetaDeg": 119,
           "hipHeightMm": 693.1242108756935,
-          "holdingTorqueNm": -0.010643384595105942,
-          "springEquivalentLiftN": 98.82928174613794,
+          "holdingTorqueNm": -0.03188711909150754,
+          "springEquivalentLiftN": 98.7515635755704,
           "gravityEquivalentLiftN": 98.8682195505771,
-          "netPotentialDeltaJ": 0.0036243754893376945
+          "netPotentialDeltaJ": 0.010450475882819887
         },
         {
           "thetaDeg": 120,
           "hipHeightMm": 688.2786088096242,
-          "holdingTorqueNm": -0.013052115197396574,
-          "springEquivalentLiftN": 98.69338603557468,
+          "holdingTorqueNm": -0.034750809392075865,
+          "springEquivalentLiftN": 98.61641514206224,
           "gravityEquivalentLiftN": 98.73968527183088,
-          "netPotentialDeltaJ": 0.003416883551636829
+          "netPotentialDeltaJ": 0.009868222799511273
         },
         {
           "thetaDeg": 121,
           "hipHeightMm": 683.2842723492504,
-          "holdingTorqueNm": -0.014973125468582538,
-          "springEquivalentLiftN": 98.56713213829798,
+          "holdingTorqueNm": -0.03711469824491331,
+          "springEquivalentLiftN": 98.49088350496363,
           "gravityEquivalentLiftN": 98.61869488703567,
-          "netPotentialDeltaJ": 0.0031716094795513072
+          "netPotentialDeltaJ": 0.00924035284047875
         },
         {
           "thetaDeg": 122,
           "hipHeightMm": 678.1427228178393,
-          "holdingTorqueNm": -0.016410964958424756,
-          "springEquivalentLiftN": 98.44960843934194,
+          "holdingTorqueNm": -0.03898358479381869,
+          "springEquivalentLiftN": 98.37405831338664,
           "gravityEquivalentLiftN": 98.50453562452019,
-          "netPotentialDeltaJ": 0.0028970349470966994
+          "netPotentialDeltaJ": 0.00857555633172069
         },
         {
           "thetaDeg": 123,
           "hipHeightMm": 672.8555263811851,
-          "holdingTorqueNm": -0.017375866477426172,
-          "springEquivalentLiftN": 98.33999597071441,
+          "holdingTorqueNm": -0.0403679348600221,
+          "springEquivalentLiftN": 98.26512176797654,
           "gravityEquivalentLiftN": 98.3965808819859,
-          "netPotentialDeltaJ": 0.0026015110823465193
+          "netPotentialDeltaJ": 0.007882388843867716
         },
         {
           "thetaDeg": 124,
           "hipHeightMm": 667.4242935705408,
-          "holdingTorqueNm": -0.017882744065087053,
-          "springEquivalentLiftN": 98.23755765090198,
+          "holdingTorqueNm": -0.0412828802225782,
+          "springEquivalentLiftN": 98.16333787028259,
           "gravityEquivalentLiftN": 98.29427754913037,
-          "netPotentialDeltaJ": 0.0022931681949813765
+          "netPotentialDeltaJ": 0.007169181197284047
         },
         {
           "thetaDeg": 125,
           "hipHeightMm": 661.8506787920343,
-          "holdingTorqueNm": -0.017950306991032505,
-          "springEquivalentLiftN": 98.14162904560413,
+          "holdingTorqueNm": -0.04174733378959061,
+          "springEquivalentLiftN": 98.06804319210352,
           "gravityEquivalentLiftN": 98.19713550326854,
-          "netPotentialDeltaJ": 0.0019798419677385937
+          "netPotentialDeltaJ": 0.006443965909909366
         },
         {
           "thetaDeg": 126,
           "hipHeightMm": 656.1363798227197,
-          "holdingTorqueNm": -0.01760028117337953,
-          "springEquivalentLiftN": 98.05161037761368,
+          "holdingTorqueNm": -0.041783212062320274,
+          "springEquivalentLiftN": 97.97863889291764,
           "gravityEquivalentLiftN": 98.10471885541513,
-          "netPotentialDeltaJ": 0.001669014161379323
+          "netPotentialDeltaJ": 0.005714418138850874
         },
         {
           "thetaDeg": 127,
           "hipHeightMm": 650.2831372934187,
-          "holdingTorqueNm": -0.01685672900784141,
-          "springEquivalentLiftN": 97.96695957353629,
+          "holdingTorqueNm": -0.04141475590189714,
+          "springEquivalentLiftN": 97.89458377324569,
           "gravityEquivalentLiftN": 98.01663861564694,
-          "netPotentialDeltaJ": 0.0013677660363953237
+          "netPotentialDeltaJ": 0.004987809321676195
         },
         {
           "thetaDeg": 128,
           "hipHeightMm": 644.2927341585075,
-          "holdingTorqueNm": -0.01574545856879439,
-          "springEquivalentLiftN": 97.88718617975681,
+          "holdingTorqueNm": -0.040667940575005446,
+          "springEquivalentLiftN": 97.81538819647952,
           "gravityEquivalentLiftN": 97.93254651628885,
-          "netPotentialDeltaJ": 0.0010827428529154304
+          "netPotentialDeltaJ": 0.004270971880359298
         },
         {
           "thetaDeg": 129,
           "hipHeightMm": 638.1669951528113,
-          "holdingTorqueNm": -0.014293513363170973,
-          "springEquivalentLiftN": 97.81184601382853,
+          "holdingTorqueNm": -0.03956996627228904,
+          "springEquivalentLiftN": 97.7406087454581,
           "gravityEquivalentLiftN": 97.85212978509459,
-          "netPotentialDeltaJ": 0.0008201279664632466
+          "netPotentialDeltaJ": 0.0035702735069662594
         },
         {
           "thetaDeg": 130,
           "hipHeightMm": 631.9077862357726,
-          "holdingTorqueNm": -0.012528734216154191,
-          "springEquivalentLiftN": 97.74053644321341,
+          "holdingTorqueNm": -0.03814882069000447,
+          "springEquivalentLiftN": 97.66984350580682,
           "gravityEquivalentLiftN": 97.77510670216358,
-          "netPotentialDeltaJ": 0.0005856251880800301
+          "netPotentialDeltaJ": 0.002891599700973302
         },
         {
           "thetaDeg": 131,
           "hipHeightMm": 625.5170140230616,
-          "holdingTorqueNm": -0.01047938537391957,
-          "springEquivalentLiftN": 97.67289220314184,
+          "holdingTorqueNm": -0.03643290576977165,
+          "springEquivalentLiftN": 97.60272788788384,
           "gravityEquivalentLiftN": 97.70122280676982,
-          "netPotentialDeltaJ": 0.0003844482189521159
+          "netPotentialDeltaJ": 0.002240343369678044
         },
         {
           "thetaDeg": 132,
           "hipHeightMm": 618.9966252058034,
-          "holdingTorqueNm": -0.008173837482758017,
-          "springEquivalentLiftN": 97.60858168080676,
+          "holdingTorqueNm": -0.034450721264477124,
+          "springEquivalentLiftN": 97.5389309146118,
           "gravityEquivalentLiftN": 97.63024764577264,
-          "netPotentialDeltaJ": 0.00022131610485587316
+          "netPotentialDeltaJ": 0.001621400437429088
         },
         {
           "thetaDeg": 133,
           "hipHeightMm": 612.3486059575962,
-          "holdingTorqueNm": -0.0056403007076966105,
-          "springEquivalentLiftN": 97.54730360525271,
+          "holdingTorqueNm": -0.03223059839979925,
+          "springEquivalentLiftN": 97.47815191461214,
           "gravityEquivalentLiftN": 97.56197197542949,
-          "netPotentialDeltaJ": 0.00010045377609912975
+          "netPotentialDeltaJ": 0.0010391705307455368
         },
         {
           "thetaDeg": 134,
           "hipHeightMm": 605.5749813295035,
-          "holdingTorqueNm": -0.002906601860246383,
-          "springEquivalentLiftN": 97.48878409198403,
+          "holdingTorqueNm": -0.029800477507329504,
+          "springEquivalentLiftN": 97.42011756971341,
           "gravityEquivalentLiftN": 97.496205344465,
-          "netPotentialDeltaJ": 0.000025596853404863396
+          "netPotentialDeltaJ": 0.0004975619202554071
         },
         {
           "thetaDeg": 135,
           "hipHeightMm": 598.6778146332049,
-          "holdingTorqueNm": -2.1316282072803006e-14,
-          "springEquivalentLiftN": 97.43277399907565,
+          "holdingTorqueNm": -0.027187724098531874,
+          "springEquivalentLiftN": 97.36457927365927,
           "gravityEquivalentLiftN": 97.43277399907569,
           "netPotentialDeltaJ": 0
         },
         {
           "thetaDeg": 136,
           "hipHeightMm": 591.6592068124901,
-          "holdingTorqueNm": 0.0030529644593428884,
-          "springEquivalentLiftN": 97.37904655787266,
+          "holdingTorqueNm": -0.024418978414068704,
+          "springEquivalentLiftN": 97.3113107651387,
           "gravityEquivalentLiftN": 97.37151906086252,
-          "netPotentialDeltaJ": 0.000026448192940620174
+          "netPotentialDeltaJ": -0.000450561321528653
         },
         {
           "thetaDeg": 137,
           "hipHeightMm": 584.5212958032926,
-          "holdingTorqueNm": 0.006226591574538531,
-          "springEquivalentLiftN": 97.32739524653398,
+          "holdingTorqueNm": -0.021520034017193268,
+          "springEquivalentLiftN": 97.26010600342548,
           "gravityEquivalentLiftN": 97.31229493702747,
-          "netPotentialDeltaJ": 0.00010727036818991564
+          "netPotentialDeltaJ": -0.0008516258645414609
         },
         {
           "thetaDeg": 138,
           "hipHeightMm": 577.2662558824518,
-          "holdingTorqueNm": 0.009496118566595158,
-          "springEquivalentLiftN": 97.27763187895424,
+          "holdingTorqueNm": -0.018515741494603333,
+          "springEquivalentLiftN": 97.21077725918866,
           "gravityEquivalentLiftN": 97.25496792894765,
-          "netPotentialDeltaJ": 0.00024435496739272367
+          "netPotentialDeltaJ": -0.0012011395262305768
         },
         {
           "thetaDeg": 139,
           "hipHeightMm": 569.8962970054088,
-          "holdingTorqueNm": 0.01283779487178549,
-          "springEquivalentLiftN": 97.2295848851733,
+          "holdingTorqueNm": -0.015429933779415705,
+          "springEquivalentLiftN": 97.1631533966085,
           "gravityEquivalentLiftN": 97.19941501076472,
-          "netPotentialDeltaJ": 0.00043916697853774167
+          "netPotentialDeltaJ": -0.001497473142038075
         },
         {
           "thetaDeg": 140,
           "hipHeightMm": 562.4136641330322,
-          "holdingTorqueNm": 0.016228938619768485,
-          "springEquivalentLiftN": 97.18309776239873,
+          "holdingTorqueNm": -0.012285370028088494,
+          "springEquivalentLiftN": 97.11707832594362,
           "gravityEquivalentLiftN": 97.14552275417485,
-          "netPotentialDeltaJ": 0.0006927661202809077
+          "netPotentialDeltaJ": -0.001739404209487816
         },
         {
           "thetaDeg": 141,
           "hipHeightMm": 554.8206365477806,
-          "holdingTorqueNm": 0.019647977238193448,
-          "springEquivalentLiftN": 97.13802767832196,
+          "holdingTorqueNm": -0.009103695353530838,
+          "springEquivalentLiftN": 97.0724096082487,
           "gravityEquivalentLiftN": 97.09318637932968,
-          "netPotentialDeltaJ": 0.0010058258697256406
+          "netPotentialDeltaJ": -0.0019260977745574337
         },
         {
           "thetaDeg": 142,
           "hipHeightMm": 547.1195271594121,
-          "holdingTorqueNm": 0.02307447454582956,
-          "springEquivalentLiftN": 97.09424421059894,
+          "holdingTorqueNm": -0.005905414053344771,
+          "springEquivalentLiftN": 97.02901719613052,
           "gravityEquivalentLiftN": 97.04230891485405,
-          "netPotentialDeltaJ": 0.0013786530778787665
+          "netPotentialDeltaJ": -0.002057086736499514
         },
         {
           "thetaDeg": 143,
           "hipHeightMm": 539.3126818004482,
-          "holdingTorqueNm": 0.026489146397622676,
-          "springEquivalentLiftN": 97.05162820824917,
+          "holdingTorqueNm": -0.0027098742713604906,
+          "springEquivalentLiftN": 96.9867822963092,
           "gravityEquivalentLiftN": 96.99280045254673,
-          "netPotentialDeltaJ": 0.0018112079552423666
+          "netPotentialDeltaJ": -0.0021322517874153846
         },
         {
           "thetaDeg": 144,
           "hipHeightMm": 531.4024785116123,
-          "holdingTorqueNm": 0.02987386667612668,
-          "springEquivalentLiftN": 97.0100707623534,
+          "holdingTorqueNm": 0.00046473770182586804,
+          "springEquivalentLiftN": 96.94559634137927,
           "gravityEquivalentLiftN": 96.94457748447071,
-          "netPotentialDeltaJ": 0.0023031242437241417
+          "netPotentialDeltaJ": -0.002151801171251577
         },
         {
           "thetaDeg": 145,
           "hipHeightMm": 523.3913268174538,
-          "holdingTorqueNm": 0.03321166519049967,
-          "springEquivalentLiftN": 96.96947227485124,
+          "holdingTorqueNm": 0.0036013950488396063,
+          "springEquivalentLiftN": 96.90536005958049,
           "gravityEquivalentLiftN": 96.8975623119226,
-          "netPotentialDeltaJ": 0.002853729420493778
+          "netPotentialDeltaJ": -0.002116250415582499
         },
         {
           "thetaDeg": 146,
           "hipHeightMm": 515.2816669923845,
-          "holdingTorqueNm": 0.03648671883262722,
-          "springEquivalentLiftN": 96.92974161547333,
+          "holdingTorqueNm": 0.006684221315644834,
+          "springEquivalentLiftN": 96.86598263262431,
           "gravityEquivalentLiftN": 96.85168251727389,
-          "netPotentialDeltaJ": 0.0034620648043954816
+          "netPotentialDeltaJ": -0.002026402165583363
         },
         {
           "thetaDeg": 147,
           "hipHeightMm": 507.0759693173474,
-          "holdingTorqueNm": 0.03968433715801467,
-          "springEquivalentLiftN": 96.89079535792996,
+          "holdingTorqueNm": 0.009698475738431966,
+          "springEquivalentLiftN": 96.8273809327057,
           "gravityEquivalentLiftN": 96.80687049093787,
-          "netPotentialDeltaJ": 0.0041269054577668385
+          "netPotentialDeltaJ": -0.0018833262272295315
         },
         {
           "thetaDeg": 148,
           "hipHeightMm": 498.77673332734435,
-          "holdingTorqueNm": 0.04279094339756995,
-          "springEquivalentLiftN": 96.85255708743192,
+          "holdingTorqueNm": 0.012630534012942007,
+          "springEquivalentLiftN": 96.7894788307832,
           "gravityEquivalentLiftN": 96.76306300678297,
-          "netPotentialDeltaJ": 0.0048467797956419645
+          "netPotentialDeltaJ": -0.0016883399074316685
         },
         {
           "thetaDeg": 149,
           "hipHeightMm": 490.38648705005477,
-          "holdingTorqueNm": 0.045794051763792254,
-          "springEquivalentLiftN": 96.81495677245928,
+          "holdingTorqueNm": 0.015467865369394929,
+          "springEquivalentLiftN": 96.75220656905005,
           "gravityEquivalentLiftN": 96.72020084021844,
-          "netPotentialDeltaJ": 0.005619988829565159
+          "netPotentialDeltaJ": -0.0014429887235820615
         },
         {
           "thetaDeg": 150,
           "hipHeightMm": 481.90778623577245,
-          "holdingTorqueNm": 0.04868224179444525,
-          "springEquivalentLiftN": 96.77793019444115,
+          "holdingTorqueNm": 0.01819900669529062,
+          "springEquivalentLiftN": 96.71550019126434,
           "gravityEquivalentLiftN": 96.67822842394351,
-          "netPotentialDeltaJ": 0.0064446249888732154
+          "netPotentialDeltaJ": -0.001149027539682379
         },
         {
           "thetaDeg": 151,
           "hipHeightMm": 473.34321357890093,
-          "holdingTorqueNm": 0.051445130365479486,
-          "springEquivalentLiftN": 96.74141842966654,
+          "holdingTorqueNm": 0.02081353433780464,
+          "springEquivalentLiftN": 96.67930102526394,
           "gravityEquivalentLiftN": 96.63709353701094,
-          "netPotentialDeltaJ": 0.007318590472948472
+          "netPotentialDeltaJ": -0.0008084021753944626
         },
         {
           "thetaDeg": 152,
           "hipHeightMm": 464.6953779312379,
-          "holdingTorqueNm": 0.054073341915035655,
-          "springEquivalentLiftN": 96.70536737833281,
+          "holdingTorqueNm": 0.02330203412701337,
+          "springEquivalentLiftN": 96.64355521257711,
           "gravityEquivalentLiftN": 96.59674702340862,
-          "netPotentialDeltaJ": 0.008239615098361242
+          "netPotentialDeltaJ": -0.0004232315233849704
         },
         {
           "thetaDeg": 153,
           "hipHeightMm": 455.9669135072953,
-          "holdingTorqueNm": 0.05655847733617492,
-          "springEquivalentLiftN": 96.66972733616065,
+          "holdingTorqueNm": 0.02565607007709758,
+          "springEquivalentLiftN": 96.60821328056106,
           "gravityEquivalentLiftN": 96.5571425368498,
-          "netPotentialDeltaJ": 0.009205273614540488
+          "netPotentialDeltaJ": 0.000004209798049714664
         },
         {
           "thetaDeg": 154,
           "hipHeightMm": 447.1604790818913,
-          "holdingTorqueNm": 0.05889308192720222,
-          "springEquivalentLiftN": 96.63445260446599,
+          "holdingTorqueNm": 0.027868152154432835,
+          "springEquivalentLiftN": 96.57322975296337,
           "gravityEquivalentLiftN": 96.5182363088686,
-          "netPotentialDeltaJ": 0.010213002467523324
+          "netPotentialDeltaJ": 0.00047150823731101354
         },
         {
           "thetaDeg": 155,
           "hipHeightMm": 438.2787571802618,
-          "holdingTorqueNm": 0.061070612727583296,
-          "springEquivalentLiftN": 96.59950113499534,
+          "holdingTorqueNm": 0.029931703439487478,
+          "springEquivalentLiftN": 96.53856279521438,
           "gravityEquivalentLiftN": 96.47998693767414,
-          "netPotentialDeltaJ": 0.011260115998439346
+          "netPotentialDeltaJ": 0.0009761275334057018
         },
         {
           "thetaDeg": 156,
           "hipHeightMm": 429.3244532609369,
-          "holdingTorqueNm": 0.06308540551351882,
-          "springEquivalentLiftN": 96.56483420619887,
+          "holdingTorqueNm": 0.031841026957131646,
+          "springEquivalentLiftN": 96.5041738911294,
           "gravityEquivalentLiftN": 96.44235519552406,
-          "netPotentialDeltaJ": 0.012343822068757504
+          "netPotentialDeltaJ": 0.0015154243638164644
         },
         {
           "thetaDeg": 157,
           "hipHeightMm": 420.3002948916327,
-          "holdingTorqueNm": 0.06493264168269519,
-          "springEquivalentLiftN": 96.53041612794652,
+          "holdingTorqueNm": 0.03359127240386783,
+          "springEquivalentLiftN": 96.47002754802686,
           "gravityEquivalentLiftN": 96.40530385264147,
-          "netPotentialDeltaJ": 0.01346123710828806
+          "netPotentialDeltaJ": 0.0020866634121716743
         },
         {
           "thetaDeg": 158,
           "hipHeightMm": 411.2090309184078,
-          "holdingTorqueNm": 0.0666083152192769,
-          "springEquivalentLiftN": 96.49621397198726,
+          "holdingTorqueNm": 0.03517840296299113,
+          "springEquivalentLiftN": 96.43609102756571,
           "gravityEquivalentLiftN": 96.36879751592824,
-          "netPotentialDeltaJ": 0.014609400585342769
+          "netPotentialDeltaJ": 0.002687031855273858
         },
         {
           "thetaDeg": 159,
           "hipHeightMm": 402.0534306283372,
-          "holdingTorqueNm": 0.06810919989555941,
-          "springEquivalentLiftN": 96.4621973257166,
+          "holdingTorqueNm": 0.03659916236376404,
+          "springEquivalentLiftN": 96.40233409986858,
           "gravityEquivalentLiftN": 96.33280248092906,
-          "netPotentialDeltaJ": 0.015785288902563366
+          "netPotentialDeltaJ": 0.0033136532735795754
         },
         {
           "thetaDeg": 160,
           "hipHeightMm": 392.83628290596187,
-          "holdingTorqueNm": 0.06943281683791014,
-          "springEquivalentLiftN": 96.4283380670528,
+          "holdingTorqueNm": 0.037851042311984884,
+          "springEquivalentLiftN": 96.36872881873335,
           "gravityEquivalentLiftN": 96.29728659567292,
-          "netPotentialDeltaJ": 0.016985828722923202
+          "netPotentialDeltaJ": 0.003963600989081328
         },
         {
           "thetaDeg": 161,
           "hipHeightMm": 383.56039538376615,
-          "holdingTorqueNm": 0.07057740256136924,
-          "springEquivalentLiftN": 96.39461015843676,
+          "holdingTorqueNm": 0.03893225039588799,
+          "springEquivalentLiftN": 96.33524931594921,
           "gravityEquivalentLiftN": 96.26221913516983,
-          "netPotentialDeltaJ": 0.018207909734044847
+          "netPotentialDeltaJ": 0.004633910839501709
         },
         {
           "thetaDeg": 162,
           "hipHeightMm": 374.2285935869472,
-          "holdingTorqueNm": 0.07154187755517682,
-          "springEquivalentLiftN": 96.3609894581581,
+          "holdingTorqueNm": 0.03984167854952858,
+          "springEquivalentLiftN": 96.30187161292164,
           "gravityEquivalentLiftN": 96.22757068547222,
-          "netPotentialDeltaJ": 0.019448396858948058
+          "netPotentialDeltaJ": 0.005321593396516278
         },
         {
           "thetaDeg": 163,
           "hipHeightMm": 364.84372007273134,
-          "holdingTorqueNm": 0.0723258154834383,
-          "springEquivalentLiftN": 96.3274535473832,
+          "holdingTorqueNm": 0.040578872137423616,
+          "springEquivalentLiftN": 96.26857344798285,
           "gravityEquivalentLiftN": 96.19331303632795,
-          "netPotentialDeltaJ": 0.02070414192395731
+          "netPotentialDeltaJ": 0.006023645639032793
         },
         {
           "thetaDeg": 164,
           "hipHeightMm": 355.4086335645043,
-          "holdingTorqueNm": 0.0729294130511704,
-          "springEquivalentLiftN": 96.29398157141236,
+          "holdingTorqueNm": 0.0411439997106271,
+          "springEquivalentLiftN": 96.23533411791644,
           "gravityEquivalentLiftN": 96.15941908155015,
-          "netPotentialDeltaJ": 0.021971994794910188
+          "netPotentialDeltaJ": 0.006737062092994961
         },
         {
           "thetaDeg": 165,
           "hipHeightMm": 345.92620808101645,
-          "holdingTorqueNm": 0.07335346057166703,
-          "springEquivalentLiftN": 96.26055409383218,
+          "holdingTorqueNm": 0.04153782346974566,
+          "springEquivalentLiftN": 96.20213433236337,
           "gravityEquivalentLiftN": 96.12586272632063,
-          "netPotentialDeltaJ": 0.023248813993177464
+          "netPotentialDeltaJ": 0.007458845449065166
         },
         {
           "thetaDeg": 166,
           "hipHeightMm": 336.39933206092803,
-          "holdingTorqueNm": 0.07359931326221414,
-          "springEquivalentLiftN": 96.22715296235174,
+          "holdingTorqueNm": 0.04176167046171031,
+          "springEquivalentLiftN": 96.16895607989825,
           "gravityEquivalentLiftN": 96.09261880071742,
-          "netPotentialDeltaJ": 0.024531476804682484
+          "netPotentialDeltaJ": 0.00818601667147334
         },
         {
           "thetaDeg": 167,
           "hipHeightMm": 326.83090748296394,
-          "holdingTorqueNm": 0.07366886328399147,
-          "springEquivalentLiftN": 96.19376118522304,
+          "holdingTorqueNm": 0.041817404526064195,
+          "springEquivalentLiftN": 96.13578250467832,
           "gravityEquivalentLiftN": 96.05966297883013,
-          "netPotentialDeltaJ": 0.02581688889422651
+          "netPotentialDeltaJ": 0.008915624610281725
         },
         {
           "thetaDeg": 168,
           "hipHeightMm": 317.22384898194184,
-          "holdingTorqueNm": 0.07356451253581753,
-          "springEquivalentLiftN": 96.16036281724479,
+          "holdingTorqueNm": 0.04170739900008158,
+          "springEquivalentLiftN": 96.10259779266407,
           "gravityEquivalentLiftN": 96.02697170288243,
-          "netPotentialDeltaJ": 0.02710199343833608
+          "netPotentialDeltaJ": 0.00964475513120533
         },
         {
           "thetaDeg": 169,
           "hipHeightMm": 307.581082960947,
-          "holdingTorqueNm": 0.07328914620515548,
-          "springEquivalentLiftN": 96.12694285443958,
+          "holdingTorqueNm": 0.04143451018573785,
+          "springEquivalentLiftN": 96.06938706650267,
           "gravityEquivalentLiftN": 95.99452211183589,
-          "netPotentialDeltaJ": 0.028383779789933783
+          "netPotentialDeltaJ": 0.010370539775095722
         },
         {
           "thetaDeg": 170,
           "hipHeightMm": 297.9055466999209,
-          "holdingTorqueNm": 0.07284610707392858,
-          "springEquivalentLiftN": 96.09348713657366,
+          "holdingTorqueNm": 0.04100205157632075,
+          "springEquivalentLiftN": 96.03613628824414,
           "gravityEquivalentLiftN": 95.96229197399437,
-          "netPotentialDeltaJ": 0.02965929168816217
+          "netPotentialDeltaJ": 0.011090163961384292
         },
         {
           "thetaDeg": 171,
           "hipHeightMm": 288.2001874609377,
-          "holdingTorqueNm": 0.07223917057253004,
-          "springEquivalentLiftN": 96.05998225676036,
+          "holdingTorqueNm": 0.040413768835392716,
+          "springEquivalentLiftN": 96.0028321691319,
           "gravityEquivalentLiftN": 95.93025962316953,
-          "netPotentialDeltaJ": 0.03092563502589485
+          "netPotentialDeltaJ": 0.011800874748104206
         },
         {
           "thetaDeg": 172,
           "hipHeightMm": 278.4679615904394,
-          "holdingTorqueNm": 0.07147252057286124,
-          "springEquivalentLiftN": 96.02641547745488,
+          "holdingTorqueNm": 0.039673815519172706,
+          "springEquivalentLiftN": 95.96946208577603,
           "gravityEquivalentLiftN": 95.89840389800258,
-          "netPotentialDeltaJ": 0.03217998518884713
+          "netPotentialDeltaJ": 0.012499988161863484
         },
         {
           "thetaDeg": 173,
           "hipHeightMm": 268.7118336187046,
-          "holdingTorqueNm": 0.07055072590741673,
-          "springEquivalentLiftN": 95.99277465220314,
+          "holdingTorqueNm": 0.03878672952870943,
+          "springEquivalentLiftN": 95.93601400207228,
           "gravityEquivalentLiftN": 95.8667040840679,
-          "netPotentialDeltaJ": 0.03341959397802441
+          "netPotentialDeltaJ": 0.013184896110104205
         },
         {
           "thetaDeg": 174,
           "hipHeightMm": 258.93477535682297,
-          "holdingTorqueNm": 0.06947871759987123,
-          "springEquivalentLiftN": 95.95904815256252,
+          "holdingTorqueNm": 0.03775741027772028,
+          "springEquivalentLiftN": 95.90247639628558,
           "gravityEquivalentLiftN": 95.83513985841257,
-          "netPotentialDeltaJ": 0.03464179612889495
+          "netPotentialDeltaJ": 0.013853072889190798
         },
         {
           "thetaDeg": 175,
           "hipHeightMm": 249.1397649914536,
-          "holdingTorqueNm": 0.06826176679087581,
-          "springEquivalentLiftN": 95.92522479965561,
+          "holdingTorqueNm": 0.036591096558886704,
+          "springEquivalentLiftN": 95.86883819275896,
           "gravityEquivalentLiftN": 95.80369123620673,
-          "netPotentialDeltaJ": 0.03584401543929516
+          "netPotentialDeltaJ": 0.014502081299696101
         }
       ],
       "massBasis": {
@@ -2214,9 +2214,9 @@
         "loadMode": "weight",
         "wheelTreatment": "With fixed world wheel height and zero contact moment, wheel gravity has zero stance work. Its weight remains in the ground reaction and in dynamic wheel mass/inertia. Moving link/compound gravity is included at each actual COM; alpha changes its world-height work."
       },
-      "method": "Bounded sampled minimax geometry fit followed by a horn-only root of static holding torque at135deg. This balances the saved ride pose; it is not a height controller or terrain stability guarantee.",
+      "method": "Bounded sampled minimax static holding-torque fit over the full95..175deg working range, with no post-fit ride-pose root. The initial135deg residual is retained, so zero-input drift is expected. Not a guaranteed global optimum, height controller or terrain stability guarantee.",
       "springConvention": "chassis-fixed-v1"
     }
   ],
-  "limits": "Supported-stance gravity compensation only. Both saved designs balance the135deg ride pose and retain upward spring-equivalent assist, but near-neutral support is not passive world-height regulation. Geometry-only trials did not solve the150mm terrain case without other failures; no hidden motor bias, damping or changes to k/preload are used. At alpha20 finite-link COM gravity makes the equivalent support target pose-dependent. Working stops are inset from the singular ideal90-degree endpoint. Prescribed-height bench requires explicit10mm transition; contact requires0. Entered250/300Nm commands are illustrative ideal joint torques, not certified actuator capability. Actual outcomes, impact losses, packaging and strength require separate validation."
+  "limits": "Supported-stance gravity compensation only. Both saved designs retain their actual nonzero135deg fit residual, zero initial velocity and upward spring-equivalent assist. No post-fit ride balancing is applied; initial downward drift is expected. Near-neutral support is not passive world-height regulation. Geometry-only trials did not solve the150mm terrain case without other failures; no hidden motor bias, damping or changes to k/preload are used. At alpha20 finite-link COM gravity makes the equivalent support target pose-dependent. Working stops are inset from the singular ideal90-degree endpoint. The app bench uses a stationary flat input; actual contact uses zero prescribed transition. Entered250/300Nm commands are illustrative ideal joint torques, not certified actuator capability. Actual outcomes, impact losses, packaging and strength require separate validation."
 }

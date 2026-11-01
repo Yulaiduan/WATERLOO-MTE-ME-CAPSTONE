@@ -35,19 +35,22 @@ globalThis.KinefoldCaseUI = (() => {
   function update(project) {
     const config = {...P.caseDefaults, ...project.caseConfig}, contact = KinefoldContactUI.isContact(project);
     for (const panel of document.querySelectorAll('[data-case-panel]')) {
+      panel.hidden=!contact;
       for (const field of panel.querySelectorAll('[data-case-key]')) {
         const key = field.dataset.caseKey;
         if (field.type === 'checkbox') field.checked = config[key]; else field.value = config[key] ?? '';
         field.disabled = !contact || (key==='landingBrakeTorqueNm'&&config.brakeStrategy==='energy-sized');
       }
       for (const group of panel.querySelectorAll('[data-case-for]')) group.hidden = group.dataset.caseFor !== config.kind;
-      for(const input of panel.closest('[role=tabpanel]').querySelectorAll('[data-run-key^=input]'))input.disabled=contact&&config.kind!=='terrain-stability';
+      for(const input of panel.closest('[role=tabpanel]').querySelectorAll('[data-run-key^=input]'))input.disabled=!contact||config.kind!=='terrain-stability';
       const workspace=panel.closest('[role=tabpanel]'),scenario=contact&&config.kind!=='terrain-stability';
-      for(const key of ['inputHeightMm','inputPlateauMm','inputGapMm','inputRiseMm'])workspace.querySelector(`[data-run-key="${key}"]`).disabled=scenario||(contact&&Boolean(project.terrainConfig));
+      workspace.querySelector('[data-run-key="inputHeightMm"]').closest('details').hidden=!contact;
+      workspace.querySelector('.dyn-settings-panel > summary').textContent=contact?'Wheel input, actuation & numerics':'Actuation & numerics';
+      for(const key of ['inputHeightMm','inputPlateauMm','inputGapMm','inputRiseMm'])workspace.querySelector(`[data-run-key="${key}"]`).disabled=!contact||scenario||Boolean(project.terrainConfig);
       for(const key of ['hipTorqueNm','initialVelocityDegS'])workspace.querySelector(`[data-run-key="${key}"]`).disabled=scenario;
       workspace.querySelector('[data-release]').disabled=scenario;
       workspace.querySelector('[data-run-key="hipTorqueNm"]').closest('details').querySelector('p').textContent=scenario?'This case starts at zero speed and uses the explicit motor/hold/braking commands in Case controls. Constant hip torque and Release are overridden; damping remains active.':'These actions set one constant torque; they do not add a feedback controller.';
-      workspace.querySelector('[data-run-key="inputHeightMm"]').closest('details').querySelector('p').textContent=!contact?'Width and gap map to time through the entered speed. Positive transition distance applies smooth ramps inside the square plateau; requested and applied inputs are plotted separately.':scenario?'Jump and landing use a stationary flat collision floor. Terrain dimensions, translation speed, transition and initial rim delay are unused by these cases.':project.terrainConfig?'The active periodic surface controls height and spacing. Square height/plateau/gap are retained but unused; translation speed and delay remain active.':'Actual square polygons translate at the entered speed. Width, gap and rim-clearance delay define world collision geometry; zero transition is required. Wheel height is solved by contact.';
+      workspace.querySelector('[data-run-key="inputHeightMm"]').closest('details').querySelector('p').textContent=!contact?'Flat stationary floor. Terrain inputs are retained for actual contact but are disabled and explicitly zero in this support-check capture.':scenario?'Jump and landing use a stationary flat collision floor. Terrain dimensions, translation speed, transition and initial rim delay are unused by these cases.':project.terrainConfig?'The active periodic surface controls height and spacing. Square height/plateau/gap are retained but unused; translation speed and delay remain active.':'Actual square polygons translate at the entered speed. Width, gap and rim-clearance delay define world collision geometry; zero transition is required. Wheel height is solved by contact.';
       panel.querySelector('[data-case-search]').disabled = searching||!contact||config.kind==='terrain-stability';
       panel.querySelector('[data-target-actions]').hidden=config.kind==='terrain-stability';
       panel.querySelector('[data-copy-energy]').hidden=config.kind!=='landing';

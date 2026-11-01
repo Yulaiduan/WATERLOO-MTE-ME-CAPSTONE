@@ -100,6 +100,24 @@ class ProfileTests(unittest.TestCase):
         invalid = dict(value, motorConfig=None)
         self.call('working', status=400, expectedRevision=result['revision'], project=invalid)
 
+    def test_flat_mode_retains_inactive_terrain_and_zero_speed_roundtrip(self):
+        state, _ = self.migrate()
+        value = project('Flat support / retained terrain')
+        value['contactConfig'] = dict(mode='prescribed-height',friction=.8,restitution=0,drive='free')
+        value['solverConfig'].update(inputHeightMm=150,inputSpeedMmS=0,inputRiseMm=10,inputDelayS=.5)
+        saved = self.call('save',expectedRevision=state['revision'],project=value)
+        self.assertEqual(self.call('read',id=value['id'])['project'],value)
+        working = self.call('working',expectedRevision=saved['revision'],project=json.loads(json.dumps(value)))
+        reloaded = ProfileService(self.root).handle({'action':'list'})[0]
+        self.assertEqual(reloaded['working'],value)
+        self.assertEqual(reloaded['designs'],working['designs'])
+        self.assertEqual(reloaded['working']['solverConfig']['inputHeightMm'],150,'inactive terrain is retained, not erased')
+        effective=copy.deepcopy(value)
+        effective['solverConfig'].update(inputHeightMm=0,inputSpeedMmS=0,inputRiseMm=0,inputDelayS=0)
+        stored=self.call('working',expectedRevision=working['revision'],project=effective)
+        self.assertEqual(stored['working'],effective)
+        self.assertEqual(stored['designs'],working['designs'])
+
     def test_migration_exact_working_pose_two_saved_designs_and_reload(self):
         state, raw = self.migrate()
         self.assertEqual(len(state["designs"]), 2)

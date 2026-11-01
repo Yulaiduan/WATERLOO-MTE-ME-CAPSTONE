@@ -85,6 +85,45 @@ class Checks(unittest.TestCase):
             self.assertLess(max(abs(row['inputReactionN']) for row in r['rows']),1e-8)
             m=Model(self.base,defaults());r=self.run_model(engine,duration=.2,inputHeightMm=0,hipTorqueNm=-m.generalized(m.q0))
             self.assertLess(max(abs(row['theta2']-self.base['theta2']) for row in r['rows']),1e-8)
+    def test_stationary_flat_ground_input_and_free_chassis(self):
+        c={**defaults(),'inputHeightMm':0,'inputSpeedMmS':0,'inputRiseMm':0,'inputDelayS':0,'duration':.05,'initialVelocityDegS':0}
+        p={**self.base,'springEnabled':False}
+        m=Model(p,c)
+        for t in (-1,0,.5,4,30):
+            for side in ('left','right'):
+                self.assertEqual(m.input(t,side),dict(requested=0,applied=0,velocity=0,acceleration=0,distance=0))
+        self.assertEqual(m.input_breaks(),[])
+        trajectories={}
+        for engine in ('analytical','pymunk'):
+            result=self.run_model(engine,p,**{k:v for k,v in c.items() if k not in ('fixture','inertiaModel')})
+            trajectories[engine]=result
+            self.assertEqual(result['diagnostics']['termination'],'duration')
+            self.assertEqual(result['diagnostics']['inputLaw'],'stationary-flat-ground')
+            self.assertEqual(result['events'],[])
+            self.assertEqual(result['runConfig'],c)
+            self.assertEqual(result['params'],p)
+            for row in result['rows']:
+                self.assertEqual(row['requestedInputMm'],0)
+                self.assertEqual(row['appliedInputMm'],0)
+                self.assertEqual(row['inputWorkJ'],0)
+                self.assertAlmostEqual(row['wheelZMm'],p['rw'],delta=1e-10)
+            self.assertAlmostEqual(result['rows'][-1]['chassisVelocityMmS'],-490.5,delta=1e-5)
+            self.assertLess(result['rows'][-1]['chassisZMm'],result['rows'][0]['chassisZMm']-10,'chassis must remain free to fall')
+            self.assertFalse(any('Exact square events' in warning or 'C2 quintic' in warning for warning in result['warnings']))
+        # Native first-order positions lag exact constant-acceleration free fall
+        # by g*T*dt/2; equal final speed does not imply identical positions.
+        error=max(abs(a['chassisZMm']-b['chassisZMm']) for a,b in zip(trajectories['analytical']['rows'],trajectories['pymunk']['rows']))
+        self.assertLessEqual(error,.5*p['g']*c['duration']*c['dt']*1000+1e-8)
+        self.report['stationary_flat_freefall_heave_difference_mm']=error
+        finite={**self.base,'m2':1,'m3':1,'m6':.5,'te':95,'tc':175,'theta2':135}
+        for engine in ('analytical','pymunk'):
+            result=self.run_model(engine,finite,duration=.1,inputHeightMm=0,inputSpeedMmS=0,inputRiseMm=0,inputDelayS=0,initialVelocityDegS=0)
+            self.assertEqual(result['diagnostics']['termination'],'duration')
+            self.assertEqual(result['events'],[])
+            self.assertTrue(all(row['appliedInputMm']==row['requestedInputMm']==row['inputWorkJ']==0 for row in result['rows']))
+        with self.assertRaisesRegex(ValueError,'nonzero prescribed height'):
+            Model(self.base,{**c,'inputHeightMm':1})
+        self.report['stationary_flat_ground_engines']=['analytical','pymunk']
     def test_nonzero_mass_finite_rise_convergence(self):
         p={**self.base,'m2':.5,'m3':.4,'m5':.2,'m6':1};c=dict(duration=.85,inputHeightMm=30,inputRiseMm=20,inputDelayS=.2,dampingNms=.1,initialVelocityDegS=1)
         ref=self.run_model('analytical',p,**c);self.assertEqual(ref['diagnostics']['termination'],'duration');self.assertLess(ref['diagnostics']['maxWorkEnergyResidualJ'],1e-7)

@@ -1,7 +1,7 @@
 {
   "schema": "kinefold/project-v3",
   "id": "design-v5-alpha20-4to1",
-  "name": "V5 · α 20° · 4:1 free wheel · calibrated g-comp",
+  "name": "V5 · α 20° · 4:1 free wheel · fitted g-comp",
   "params": {
     "L2": 300,
     "L3": 300,
@@ -32,7 +32,7 @@
     "Tef0": 0,
     "springEnabled": true,
     "springK": 8,
-    "hornR": 64.04147211847342,
+    "hornR": 64.01702612917234,
     "Sv": 91.6516837588036,
     "rs": 10,
     "p0": 330.8692828089511,

@@ -166,8 +166,8 @@ const extras=[
 ["demandTorqueNm","Stopping demand estimate","N·m","Remaining-work-based estimate under declared energy assumptions, not impact peak.","demandTorqueNm"],
 ["chassisClearanceMm","Underside-floor clearance","mm","Hip height minus underside offset and floor height; null if unassessed.","chassisClearanceMm"],
 
-['contactConfig','Saved contact configuration','object','Optional project-v3 mode, friction, restitution and drive block. Absent means the original prescribed-height bench.'],
-['contactConfig.mode','Interaction model','choice','terrain-contact solves actual circular-wheel/mesh collision in Pymunk; prescribed-height retains the original locked-drive bilateral input bench.'],
+['contactConfig','Saved contact configuration','object','Optional project-v3 mode, friction, restitution and drive block. Absent selects the ideal flat-ground support check.'],
+['contactConfig.mode','Interaction model','choice','terrain-contact solves actual circular-wheel/mesh collision in both engines; prescribed-height is the ideal locked-drive flat-ground support check. Its captured height, speed, transition and delay are zero, with the chassis free to heave. Stored terrain settings remain available for actual contact.'],
 ['μ','Effective Coulomb friction','1','Saved friction coefficient of the wheel/terrain pair, 0–2; editable demo 0.8. Actual Pymunk shape coefficients multiply to this value.','friction'],
 ['restitution','Contact restitution','1','Zero in this bounded contact model: no elastic bounce is added.'],
 ['drive','Wheel-drive boundary condition','choice','Contact mode uses free: actual wheel spin backdrives massless drive pulley c and compound pulleys, preserving ideal belt ratios.'],

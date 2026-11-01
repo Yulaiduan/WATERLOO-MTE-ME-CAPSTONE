@@ -5,7 +5,7 @@ no canonical robot or hardware acceptance is implied.
 
 Two [V5 gravity-compensation designs](v5-suspension-designs.md) provide α0/20,
 1kg links,0.5kg wheel and2:1 reductions on both wheel-drive stages. Their80°
-operating range avoids the ideal90° singular endpoint. The mass audit, calibrated
+operating range avoids the ideal90° singular endpoint. The mass audit, fitted
 support, mode-switch fix and actual engine limits are recorded with the profiles.
 
 The [coupling validation](coupling-validation.md) checks the saved1:6 drive-train
@@ -91,6 +91,12 @@ manual snapshot, while the live profile library remains local.
   its zero vertical Jacobian even after removing an Energy override.
 - **02 Analytical / 03 Pymunk:** shared quarter-model case controls, playback,
   categorized result charts and exact-snapshot engine comparison described below.
+  **Flat-ground support check** disables terrain and fixes the ideal wheel-height
+  input at zero while the chassis floats vertically. Saved terrain settings stay
+  available for actual contact; both engines, exports and desktop playback use
+  the same explicit effective flat configuration. This support check has no
+  realistic wheel/ground friction. Actual-contact mode provides unilateral ground
+  friction; joint/motor Coulomb and viscous losses require their own enabled inputs.
   The top mechanism viewer has a compact run/replay/navigation rail; all detailed
   parameter groups and results span the page below it. Before running, the viewer
   labels the saved geometry-only pose; captured simulation playback is labelled separately.

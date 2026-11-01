@@ -161,7 +161,7 @@ def pymunk_run(model):
     # Infinite moment enforces the explicitly locked pitch; no artificial
     # rotational inertia or moving link mass is inserted.
     body = pymunk.Body(p['m1'], math.inf)
-    initial_side = 'left' if model.exact_square and c['inputDelayS'] == 0 else 'right'
+    initial_side = 'left' if model.exact_square and c['inputHeightMm'] > 0 and c['inputDelayS'] == 0 else 'right'
     h, hd, _ = model.chassis(0, model.q0, c['initialVelocityDegS'] * R, side=initial_side)
     body.position, body.velocity = (0, h), (0, hd)
     space.add(body)
@@ -281,7 +281,9 @@ def simulate(payload):
                 'Wheel height is a prescribed actuator input. Signed inputReactionN can be negative; no unilateral tire/terrain contact or rod vertical support is modeled.',
                 'Weight-reference static Fn is not reapplied dynamically: gravity acts once on every builder mass. Explicit global/contact loads are additional applied loads.',
                 'Ideal massless nonslip belts and cable; fixed drive shaft theta4=0; no collisions, compliance or hardware validation.']
-    if model.exact_square:
+    if model.c['inputHeightMm'] == 0:
+        warnings.append('Stationary flat-ground support check: wheel height is constrained to a fixed floor and the chassis is free to heave. Terrain height, speed, transition and delay are inactive; this is not a wheel-contact/friction simulation.')
+    elif model.exact_square:
         warnings.append('Exact square events preserve chassis position/velocity. Massless transmission angles jump; angular velocity and finite reaction at the event itself are undefined. Rows report one-sided states and events report source work.')
     else:
         warnings.append('Applied input uses finite C2 quintic rises inside the nominal square high interval; requested and applied inputs are both returned.')
@@ -295,7 +297,7 @@ def simulate(payload):
                                'initialStaticTorqueNm': -model.generalized(model.q0),
                                'initialGeneralizedInertiaKgM2': model.mass(model.q0)[0], 'resolvedInertiasKgM2': model.I,
                                'builderMassesKg': {key: model.p['m' + key] for key in ('1', '2', '3', '5', '6')},
-                               'wheelCoefficientK': model.K, 'inputLaw': 'exact-spatial-square' if model.exact_square else 'C2-quintic-spatial-square',
+                               'wheelCoefficientK': model.K, 'inputLaw': 'stationary-flat-ground' if model.c['inputHeightMm'] == 0 else 'exact-spatial-square' if model.exact_square else 'C2-quintic-spatial-square',
                                'inputSpeedIsStudyAssumption': True}, warnings=warnings,
                   scope=dict(springConvention='chassis-fixed-v1',quarterModel=True, fixture='floating-chassis',
                              coordinates='+x front / left in preview; +z up; +y toward viewer',

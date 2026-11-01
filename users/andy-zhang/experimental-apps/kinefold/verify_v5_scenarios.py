@@ -3,8 +3,8 @@
 Run with the app's installed Python environment:
   python verify_v5_scenarios.py --profile saved-configurations/v5-alpha0-4to1.json --profile saved-configurations/v5-alpha20-4to1.json --output .preview/v5-scenarios
 Inputs: one or two complete project-v3 JSONs (builder mm/deg/kg/N, solver s/Nm), SciPy,
-  NumPy and Pymunk. The prescribed bench uses a declared 10mm finite transition;
-  actual contact uses zero prescribed transition and saved terrain/jump/landing
+  NumPy and Pymunk. The prescribed bench is a stationary flat-ground support
+  check with zero height/speed/transition/delay; actual contact uses saved terrain/jump/landing
   commands. Every override and exact request is captured with source hashes.
 Outputs: eight core captures plus two one-second flat-support diagnostics per profile, a compact
   summary and per-engine comparison in
@@ -49,7 +49,9 @@ def make_request(project, kind, engine):
     p = copy.deepcopy(project)
     c = p['solverConfig']
     c['fixture'] = 'floating-chassis'
-    c['inputRiseMm'] = min(10., c['inputPlateauMm']/2) if kind == 'prescribed-height' else 0.
+    c['inputRiseMm'] = 0.
+    if kind == 'prescribed-height':
+        c.update(inputHeightMm=0., inputSpeedMmS=0., inputDelayS=0.)
     request = dict(engine=engine, params=p['params'], runConfig=c)
     if 'motorConfig' in p:
         request['motorConfig'] = p['motorConfig']
@@ -75,8 +77,10 @@ def summarize(result, request, flat_support=False):
     assert diag['termination'] == 'duration', 'Unexpected early termination: ' + diag['termination']
     assert abs(rows[-1]['t']-request['runConfig']['duration']) < 1e-7
     if kind == 'prescribed-height':
-        assert max(r['appliedInputMm'] for r in rows) > 100, 'The finite square input was not crossed.'
-        assert diag['inputLaw'] == 'C2-quintic-spatial-square'
+        assert diag['inputLaw'] == 'stationary-flat-ground'
+        assert all(r['requestedInputMm'] == r['appliedInputMm'] == 0 for r in rows), 'Ground-check input must remain flat.'
+        assert all(r['inputVelocityMmS'] == r['inputAccelerationMmS2'] == 0 for r in rows)
+        assert all(abs(r['inputWorkJ']) < 1e-12 for r in rows), 'Stationary prescribed ground supplies no input work.'
         assert abs(diag['wheelCoefficientK']+.25) < 1e-12, 'Expected both1:2 wheel-drive stages.'
     else:
         assert diag['finiteLinkDynamics'] and diag['rigidBodies'] == 4
