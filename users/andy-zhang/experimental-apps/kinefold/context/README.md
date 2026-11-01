@@ -1,5 +1,28 @@
 # Kinefold context
 
+## Latest — 2026-11-01 V5 geometry-only gravity compensation
+
+Owner requested two V5 designs with2:1 wheel-drive reductions at both stages,
+1kg links and0.5kg wheel, atα0/20. Only horn radius/Sv vary forα0; Su is also
+explicitly allowed forα20. k/preload/nu/rs stay fixed and the spring stays
+chassis-mounted. Final clarification accepts lossless drift: gravity-compensation
+accuracy is separate from friction, position holding and terrain regulation.
+Read [V5 equations and measured outcomes](../v5-suspension-designs.md) and exact
+portable profiles/evidence in saved-configurations. No missing-mass math bug:
+independent COM work agrees within7.35e−9Nm; grounded-wheel gravity cancels hip
+stance work while remaining in the ground reaction and dynamic mass/inertia.
+Both calibrate135° with peak whole-stroke residual0.100953/0.073670Nm.
+Use95–175° nonsingular dynamic stops; ideal90° Energy travel remains available
+and explicitly disables dynamics. Mode changes now atomically set contact
+transition0 or restore/init finite bench transition10mm; guards stay strict.
+Sixteen real engine cases plus4stationary-floor diagnostics complete, butα20
+terrain reaches compression stop and post-jump re-landing differs substantially.
+No hidden holding torque, motor damping or restoring trial was promoted.
+Fit/profile/mode regressions and isolated desktop/phone replay QA are recorded
+with qualified outcomes; ignored20captures are retained compressed app-locally.
+Save the two new stable IDs without replacing existing V4/V4.5 named designs.
+Use the durable4191launcher; no Notion report or canonical hardware claim.
+
 ## Latest — 2026-11-01 full90° Energy travel
 
 Owner requests90° total hip rotation. Energy now caps its mechanical span at90°

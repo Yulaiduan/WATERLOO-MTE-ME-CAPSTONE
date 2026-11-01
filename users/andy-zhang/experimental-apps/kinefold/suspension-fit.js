@@ -13,11 +13,17 @@ globalThis.KinefoldSuspensionFit=(()=>{
  const names={springK:['Spring rate','k','N/mm'],hornR:['Horn radius','rₕ','mm'],Sv:['Idler chassis v','Sᵥ','mm'],rs:['Idler radius','rₛ','mm'],p0:['Reference force','p₀','N'],nu:['Horn offset','ν','°'],Su:['Idler chassis u','Sᵤ','mm']};
  const settings=Object.freeze({samples:181,iterations:240,verification:6501,starts:6});
  const signature=p=>JSON.stringify(Object.keys(p).sort().filter(k=>k!=='theta2').map(k=>[k,p[k]]));
+ function massBasis(p){
+  const r=M.reference(p),massesKg=Object.fromEntries(['m1','m2','m3','m5','m6'].map(k=>[k,p[k]])),totalMassKg=Object.values(massesKg).reduce((a,b)=>a+b,0);
+  return {massesKg,totalMassKg,gravityMS2:p.g,totalWeightN:totalMassKg*p.g,loadMode:p.loadMode,automaticWeightReference:p.loadMode==='weight',resolvedWheelForceN:{x:-r.Fy,z:r.Fz},
+   explanation:'All body masses are included at their actual static centres of mass. For a grounded wheel at fixed world height and zero contact moment, wheel gravity has zero stance work; its weight remains in the ground reaction and its mass/inertia remain in dynamics. Tilted finite-link gravity can make the required equivalent support pose-dependent. The fit minimizes residual hip torque, not variation of cable force or gross-weight lift ratio. Minimizing holding torque can remove restoring stiffness; test terrain response separately.'};
+ }
  function peak(p,count){
   if(M.validate(p).length)return null;
-  const r=M.reference(p);let maximum=0,at=p.te;
-  for(let i=0;i<count;i++){const theta=p.te+(p.tc-p.te)*i/(count-1),z=KinefoldV4.VSLStatic.solve(r,theta,false);if(!z.valid||!Number.isFinite(z.tau2))return null;if(Math.abs(z.tau2)>maximum){maximum=Math.abs(z.tau2);at=theta;}}
-  return {maxTorqueNm:maximum,thetaDeg:at};
+  const r=M.reference(p);let maximum=0,at=p.te,sum=0,maxForce=0,sumForce=0,forceCount=0;
+  for(let i=0;i<count;i++){const theta=p.te+(p.tc-p.te)*i/(count-1),z=KinefoldV4.VSLStatic.solve(r,theta,false);if(!z.valid||!Number.isFinite(z.tau2))return null;if(Math.abs(z.tau2)>maximum){maximum=Math.abs(z.tau2);at=theta;}sum+=z.tau2*z.tau2;
+   if(Number.isFinite(z.spring?.Jz)&&Math.abs(z.spring.Jz)>1e-7){const f=z.tau2/(z.spring.Jz/1000);maxForce=Math.max(maxForce,Math.abs(f));sumForce+=f*f;forceCount++;}}
+  return {maxTorqueNm:maximum,thetaDeg:at,rmsTorqueNm:Math.sqrt(sum/count),maxEquivalentResidualForceN:forceCount===count?maxForce:null,rmsEquivalentResidualForceN:forceCount===count?Math.sqrt(sumForce/count):null,samples:count};
  }
  // At nonzero alpha an independent source-S lock is not a chassis-S lock.
  // This bounded multistart Nelder–Mead adapter searches the stored chassis
@@ -61,7 +67,7 @@ globalThis.KinefoldSuspensionFit=(()=>{
   const proposed={...captured};for(const key of keys)proposed[key]=driving[key]?captured[key]:fit.parameters[key];
   const errors=M.validate(proposed);if(errors.length)return {valid:false,reason:'Fitted design is invalid in Kinefold: '+errors.join(' ')};
   return {schema:'kinefold/suspension-fit-v1',springConvention:M.springConvention,valid:true,inputParams:captured,params:proposed,locks:driving,free:fit.free,
-   before:peak(captured,fit.verification),after:{maxTorqueNm:fit.maxTorque,thetaDeg:fit.peakTheta},bounds:fit.bounds,
+   before:peak(captured,fit.verification),after:{...peak(proposed,fit.verification),maxTorqueNm:fit.maxTorque,thetaDeg:fit.peakTheta},massBasis:massBasis(captured),bounds:fit.bounds,
    settings:{samples:fit.samples,verification:fit.verification,iterations:run.iterations,starts:run.starts},evaluations:fit.evaluations,
    sampledObjectiveNm:fit.sampledObjective,warnings:fit.warnings,method:fit.method,
    objective:'Minimize peak |static residual hip torque| over working θ₂ at current α, loads and masses.',
@@ -81,7 +87,7 @@ globalThis.KinefoldSuspensionFit=(()=>{
   function invalidate(message){stop();candidate=null;capturedKey='';applied=false;result.innerHTML='';status.textContent=message;}
   function render(){
    const c=candidate;
-   result.innerHTML=`<div class="fit-peaks"><span>Current peak <b>${fmt(c.before?.maxTorqueNm)} N·m</b></span><span>Proposed peak <b>${fmt(c.after.maxTorqueNm)} N·m</b></span></div><p class="hint">Checked ${c.settings.verification.toLocaleString('en-CA')} poses, ${fmt(c.inputParams.te)}–${fmt(c.inputParams.tc)}°. Peak at ${fmt(c.after.thetaDeg)}°.</p><details class="fit-values"><summary>Proposed parameter values</summary><table><thead><tr><th>Variable</th><th>Current</th><th>Proposed</th></tr></thead><tbody>${keys.map(k=>`<tr><th>${names[k][1]} · ${names[k][2]}</th><td>${fmt(c.inputParams[k])}</td><td>${fmt(c.params[k])}${c.locks[k]?' · locked':''}</td></tr>`).join('')}</tbody></table></details>${c.warnings.map(w=>`<p class="notice">${esc(w)}</p>`).join('')}<div class="fit-actions"><button data-fit-apply class="primary" ${c.free.length?'':'disabled'}>Apply fit</button><button data-fit-export>Export fit JSON</button></div><p class="hint">Apply updates the working design and all its plots. Save the named profile separately. ${esc(c.limitations)}</p>`;
+   result.innerHTML=`<div class="fit-peaks"><span>Current peak <b>${fmt(c.before?.maxTorqueNm)} N·m</b></span><span>Proposed peak <b>${fmt(c.after.maxTorqueNm)} N·m</b></span></div><p class="hint">Checked ${c.settings.verification.toLocaleString('en-CA')} poses, ${fmt(c.inputParams.te)}–${fmt(c.inputParams.tc)}°. Peak at ${fmt(c.after.thetaDeg)}°.</p><details class="fit-mass"><summary>Mass &amp; load basis</summary><table><tbody>${Object.entries(c.massBasis.massesKg).map(([k,v])=>`<tr><th>${k}</th><td>${fmt(v)} kg</td></tr>`).join('')}<tr><th>Total weight</th><td>${fmt(c.massBasis.totalWeightN)} N</td></tr><tr><th>Static wheel force · x / z</th><td>${fmt(c.massBasis.resolvedWheelForceN.x)} / ${fmt(c.massBasis.resolvedWheelForceN.z)} N · ${esc(c.massBasis.loadMode)}</td></tr><tr><th>Proposed torque · RMS</th><td>${fmt(c.after.rmsTorqueNm)} N·m</td></tr><tr><th>Equivalent residual force · max / RMS</th><td>${fmt(c.after.maxEquivalentResidualForceN)} / ${fmt(c.after.rmsEquivalentResidualForceN)} N</td></tr></tbody></table><p>${esc(c.massBasis.explanation)}</p></details><details class="fit-values"><summary>Proposed parameter values</summary><table><thead><tr><th>Variable</th><th>Current</th><th>Proposed</th></tr></thead><tbody>${keys.map(k=>`<tr><th>${names[k][1]} · ${names[k][2]}</th><td>${fmt(c.inputParams[k])}</td><td>${fmt(c.params[k])}${c.locks[k]?' · locked':''}</td></tr>`).join('')}</tbody></table></details>${c.warnings.map(w=>`<p class="notice">${esc(w)}</p>`).join('')}<div class="fit-actions"><button data-fit-apply class="primary" ${c.free.length?'':'disabled'}>Apply fit</button><button data-fit-export>Export fit JSON</button></div><p class="hint">Apply updates the working design and all its plots. Save the named profile separately. ${esc(c.limitations)}</p>`;
    $('[data-fit-apply]').onclick=async()=>{
     const current=S.getSnapshot();if(signature(current.params)!==capturedKey){invalidate('Design changed. Solve again before applying.');return;}
     const next={...current,params:{...current.params}};for(const k of keys)next.params[k]=c.params[k];
@@ -110,5 +116,5 @@ globalThis.KinefoldSuspensionFit=(()=>{
   refreshBounds(S.getSnapshot().params);busy(false);
   return {destroy(){stop();unsubscribe();host.innerHTML='';},getState:()=>({locks:{...locks},candidate,running:!!worker})};
  }
- return {keys,defaults,names,settings,signature,solve,mount};
+ return {keys,defaults,names,settings,signature,massBasis,solve,mount};
 })();

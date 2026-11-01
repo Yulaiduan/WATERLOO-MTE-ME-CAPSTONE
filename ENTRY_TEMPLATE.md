@@ -6009,3 +6009,53 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Ful
 The working nominal design now has90degrees total ideal travel, with direct Energy angle controls and independent case bands.
 Use the explicit full90 action to repeat this on another design, save named profiles deliberately, and retain strict dynamic singularity guards.
 Read energy-calculator.md for endpoint limits and restart using app-root Start Kinefold.cmd at4191; current PNGs and guarded API evidence remain ignored app-local.
+
+---
+
+## Entry: 2026-11-01 — Andy Zhang / Codex — V5 mass-aware geometry compensation and runnable profiles
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated Kinefold mechanism/suspension workspace.
+- **Associated Issue/Task:** Audit leg/wheel mass accounting; create alpha0/20 V5 designs with two2:1 wheel-drive reductions; keep k/preload fixed and tune only allowed geometry; resolve singular-boundary/mode setup errors and test both engines.
+
+Owner explicitly allows Su adjustment for alpha20, retains k/preload, and accepts that near-neutral gravity compensation drifts without declared friction/restoring/control. The initial alpha20 two-variable fit leaves9.21Nm peak residual; adding the approved Su freedom then calibrating horn radius at the135-degree ride pose gives0.073670Nm peak whole-stroke residual. Alpha0 peak is0.100953Nm. No leg/wheel mass omission was found: independent COM work verifies the existing statics. Two new portable IDs preserve V4/V4.5 designs. Ideal full90 Energy travel remains available but dynamic stops are95–175 to avoid its singular endpoint. No hidden holding torque/damping or rejected restoring geometry is promoted.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/contact-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/energy-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/suspension-fit.js`
+- `users/andy-zhang/experimental-apps/kinefold/build-v5-profiles.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-v5-profiles.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-contact-mode.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_v5_scenarios.py`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/v5-alpha0-4to1.json`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/v5-alpha20-4to1.json`
+- `users/andy-zhang/experimental-apps/kinefold/saved-configurations/v5-fit-evidence.json`
+- `users/andy-zhang/experimental-apps/kinefold/v5-suspension-designs.md`
+
+- **API/Interface Changes:** App-local suspension-fit reports add massBasis, torque RMS and nonsingular equivalent-force peak/RMS with a closed mass/load disclosure. Existing force equations remain unchanged. New deterministic builder/audit create two project-v3 JSONs and compact fit evidence; no persistence schema change. Contact UI atomically saves contact transition0 or restores/initializes finite bench transition10mm and a compatible floating fixture, with clearer singularity errors; server/engine guards and physical laws stay unchanged. New bounded scenario runner records exact profile/request/result/source hashes for both actual engines. Full90 Energy action label now explicitly states it disables dynamics. No dependency, canonical asset, shared interface, enforcement or vendor changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** PASS838V5 profile/mass/calibration assertions,26,214existing fitter assertions,35project/library groups and22contact-mode transition assertions in the combined review copy. Independent grounded-wheel COM work error<=7.35e-9Nm; adding1kg wheel changes reaction by9.81N and static hip torque by<=5.68e-14Nm. Refit reproduction verified by fit worker. Simulation worker runs16actual three-second cases (two designs x bench/terrain/jump/landing x two engines) plus4one-second stationary-floor diagnostics atdt.000125; all finite and full duration with source/profile/capture hashes verified. Both stationary normal reactions match110.3625N. Flat maximum drift A/P0.004569/0.000028mm(alpha0),0.003907/0.000069mm(alpha20); these short diagnostics do not certify long-term holding. First-flight COM rise250Nm2040.023/2039.715mm and2003.005/2002.720mm;2m drop/300Nm minimum clearance377.010/375.648mm and370.475/369.136mm. Bench max same-time A/P height difference0.010363/0.007371mm. Actual alpha0 terrain spans~2.4mm; alpha20 reaches compression stop near1.19s and max A/P trajectory difference83.606mm. Post-jump unbraked re-landing differs589.316/543.381mm over3s; no complete contact equivalence claimed. Three upward-assist geometry trials did not solve terrain stops; strong-restoring trial had downward assist and failed bench, so all were rejected. Parent headlessEdge1440/390px reviews both exact profiles,16captured requests, mode changes, both playing/scrubbing animations, Energy plots, closed mass disclosure and named-library preservation; zero page errors and no live-library writes. Concurrent inline fit-checkbox UI is included only as read-only QA input, not in this publication. Final Plotly mass/support/residual figure and actual app screenshots visually inspected. Twenty exact captures retain46,468,334decoded bytes in5,123,441gzip bytes under ignored app-local output. Whitespace/syntax/doc links and fetched-base/staged/exact-push scoped gates apply before publication. Durable project-local4191launcher and its previously verified start/restart workflow retained; readiness/reuse checked before handoff.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Matrix completion is an execution pass, not a terrain-stability, target-optimization or hardware acceptance certificate. Commands250/300Nm are illustrative ideal joint torques; entered brakes, not the unsupported tilted energy-sized mode, are exercised. Native energy residuals are numerical/accounting uncertainty, not physical spring absorption; no timestep convergence or actual desktop Pymunk GUI operation newly claimed. Coarse dt.0005 landing anddt.00025 jump trials failed penetration guards and were refined without changing guards. Parent QA initially assumed the hidden canonical fit-lock select and enabled prescribed case selector; helper corrected to actual inline controls/disabled-case behavior and then passed. Other local app.js/style.css edits, live user data and unrelated named designs remain preserved. Raw captures, PNGs, private libraries and QA helpers are ignored, not committed; no Notion, Downloads, Computer skill or boot automation.
+
+## 4. Compute Saving Handoff State
+
+Load the two V5 calibrated g-comp profiles or import their portable JSONs; use95–175 operating stops and read v5-suspension-designs.md for exact mass/work assumptions and measured outcomes.
+Keep gravity-fit error, lossless drift, static friction, restoring stiffness and controlled terrain response distinct; alpha20 terrain stops and post-jump impact differences remain open, with no hidden stabilization installed.
+Retain revision-checked named-profile saves and concurrent local UI work, use the project-local Start Kinefold.cmd at4191, and keep the bounded hashed captures/PNG previews in ignored app output.

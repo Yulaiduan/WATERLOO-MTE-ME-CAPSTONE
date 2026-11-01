@@ -3,6 +3,11 @@
 Owner: Andy Zhang. Created 2026-10-22. Experimental mechanism design and solver workspace;
 no canonical robot or hardware acceptance is implied.
 
+Two [V5 gravity-compensation designs](v5-suspension-designs.md) provide α0/20,
+1kg links,0.5kg wheel and2:1 reductions on both wheel-drive stages. Their80°
+operating range avoids the ideal90° singular endpoint. The mass audit, calibrated
+support, mode-switch fix and actual engine limits are recorded with the profiles.
+
 The [coupling validation](coupling-validation.md) checks the saved1:6 drive-train
 test: exact2:1 straight-leg geometry,two1:6 wheel-drive stages,free-input backdrive
 and ideal AB reactions in both engines. Loaded-drive and physical belt-span loads
@@ -79,7 +84,7 @@ manual snapshot, while the live profile library remains local.
   mechanism views. Their height-plot inspection ranges are also independent.
   Explicit travel overrides are Energy-only; dynamic handoff is disabled until
   the case default is restored, since the engines retain their existing strokes.
-  **Use full 90° · update working stops** sets a full quarter-turn envelope
+  **90° Energy limit · disables dynamics** sets a full quarter-turn envelope
   (θ₂90–180° at φ₀0), without retuning the spring or overwriting a named design.
   Compressed/extended angle inputs edit each Energy band directly. The exact
   extension boundary is an ideal energy endpoint; contact dynamics still reject

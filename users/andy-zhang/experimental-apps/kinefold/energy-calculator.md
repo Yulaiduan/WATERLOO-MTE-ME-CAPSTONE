@@ -46,7 +46,7 @@ Custom Energy strokes are not implemented in the dynamic engines, so copying a
 command is disabled while the selected mode has an explicit travel override.
 Restore its default before using the existing dynamic handoff.
 
-**Use full 90° · update working stops** is the explicit exception: it updates the
+**90° Energy limit · disables dynamics** is the explicit exception: it updates the
 working design's extension/compression stops to a full quarter turn and sets
 the active Energy band to that envelope. At φ₀0, θ₂ runs from90° at extension
 to180° at compression. With nonzero φ₀, the extension endpoint is

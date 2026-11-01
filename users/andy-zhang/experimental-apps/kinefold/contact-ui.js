@@ -9,6 +9,40 @@ globalThis.KinefoldContactUI = (() => {
   const S = KinefoldStudio, P = KinefoldProjects;
   const esc = text => String(text).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const isContact = project => project.contactConfig?.mode === 'terrain-contact';
+  const benchRises = new Map();
+  const needsFiniteRise = project => {
+    const p=project.params,c=project.solverConfig,m=project.motorConfig;
+    return c.inputHeightMm>0&&(['m2','m3','m5','m6'].some(k=>p[k]!==0)||['hipRotorInertiaKgM2','I2','I3','I5','I6','dampingNms'].some(k=>c[k]!==0)||(m?.enabled&&['rotorInertiaKgM2','gearboxInputInertiaKgM2','coulombFrictionNm','viscousFrictionNms'].some(k=>m[k]!==0)));
+  };
+  function branchError(project){
+    const p=project.params;
+    if(Math.abs(p.L2-p.L3)>1e-10||Math.abs(p.ra/p.rb-2)>1e-12)return null;
+    const mean=(180+p.phi0)/2;
+    return Array.from({length:6},(_,i)=>mean+(i-2)*180).some(q=>q>=p.te-1e-8&&q<=p.tc+1e-8)?'Working travel must stay on a nonsingular monotonic branch. Exact full extension is an Energy-only endpoint; choose interior working stops before dynamics (for φ₀ = 0°, for example 95–175°).':null;
+  }
+  function transition(project,mode){
+    if(!['terrain-contact','prescribed-height'].includes(mode))throw Error('Choose a known interaction mode.');
+    const currentContact=isContact(project),c={...project.solverConfig};
+    if(!currentContact&&c.inputRiseMm>0)benchRises.set(project.id,c.inputRiseMm);
+    let note='';
+    if(mode==='terrain-contact'){
+      if(c.inputRiseMm!==0)note='Actual contact uses the collision surface; prescribed-height transition is set to 0 mm.';
+      c.inputRiseMm=0;
+    }else{
+      if(c.fixture==='pinned-chassis'){c.fixture='floating-chassis';note='Prescribed-height uses the floating chassis. ';}
+      if(currentContact&&benchRises.has(project.id))c.inputRiseMm=Math.min(benchRises.get(project.id),c.inputPlateauMm/2);
+      if(c.inputRiseMm===0&&needsFiniteRise({...project,solverConfig:c}))c.inputRiseMm=Math.min(10,c.inputPlateauMm/2);
+      if(c.inputRiseMm>0)note+=`Prescribed-height uses a ${c.inputRiseMm} mm smooth transition for the saved moving inertia/damping.`;
+    }
+    const next={...project,solverConfig:P.validateConfig(c),contactConfig:P.validateContact({...P.contactDefaults,...project.contactConfig,mode})};
+    P.validateFixture(next);return {project:next,note};
+  }
+  function prescribedGuards(project){
+    const errors=[];try{P.validateFixture(project);}catch(error){errors.push(error.message);}
+    const branch=branchError(project);if(branch)errors.push(branch);
+    if(project.solverConfig.inputRiseMm===0&&needsFiniteRise(project))errors.push('Moving inertia or damping needs a positive prescribed-height transition. Re-select this mode to initialize a 10 mm smooth rise, or enter another finite transition.');
+    return errors;
+  }
   function guards(project) {
     const p = project.params, c = project.solverConfig, errors = [];
     try { P.validateFixture(project); } catch (error) { errors.push(error.message); }
@@ -23,7 +57,7 @@ globalThis.KinefoldContactUI = (() => {
     if(p.loadMode==='contact')errors.push('Prescribed contact loads are unsupported with actual terrain contact; use weight reference or explicit global additional loads.');
     if(p.te===p.tc)errors.push('Contact mode requires a nonempty working range.');
     const mean=(180+p.phi0)/2,R=Math.PI/180;
-    if(Array.from({length:6},(_,i)=>mean+(i-2)*180).some(q=>q>=p.te-1e-8&&q<=p.tc+1e-8))errors.push('Working travel must stay on a nonsingular monotonic branch of the straight path.');
+    const branch=branchError(project);if(branch)errors.push(branch);
     const kind=project.caseConfig?.kind||'terrain-stability',axisZ=Math.sin((p.alpha-mean)*R),J=-2*p.L2/1000*Math.sin(((p.te+p.tc)/2-mean)*R);
     if(kind!=='terrain-stability'&&axisZ*J<=0)errors.push('Jump/landing require θ_c to be the geometrically compressed endpoint; this branch reverses that convention.');
     if(kind==='landing'&&project.caseConfig?.brakeStrategy==='energy-sized'&&Math.abs(Math.cos((mean-p.alpha)*R))>1e-10)errors.push('Energy-sized braking requires a vertical guide on flat ground. Entered torque and dynamic search remain available for tilted geometry.');
@@ -64,8 +98,8 @@ globalThis.KinefoldContactUI = (() => {
     root.querySelector('.quarter-scope').before(panel);
     {
       panel.querySelector('[data-contact-demo]').onclick = demo;
-      panel.querySelector('[data-contact-mode]').onchange = event => {
-        try { const current = S.getSnapshot(); S.setContactConfig({...P.contactDefaults, ...(current.contactConfig || {}), mode: event.target.value}); }
+      panel.querySelector('[data-contact-mode]').onchange = async event => {
+        try { const next=transition(S.getSnapshot(),event.target.value);if(await S.applySnapshot(next.project)===null)throw Error('The working-copy save failed.');if(next.note)S.toast(next.note); }
         catch (error) { S.toast(error.message); update(S.getSnapshot()); }
       };
       panel.querySelector('[data-contact-fixture]').onchange = event => {
@@ -83,11 +117,11 @@ globalThis.KinefoldContactUI = (() => {
     for (const id of ['analytical', 'pymunk']) {
       const panel = document.querySelector(`[data-contact-panel="${id}"]`); if (!panel) continue;
       const description = panel.querySelector('[data-contact-description]');
-      const errors = contact ? guards(project) : [], pinned=project.solverConfig.fixture==='pinned-chassis';
+      const errors = contact ? guards(project) : prescribedGuards(project), pinned=project.solverConfig.fixture==='pinned-chassis';
       description.innerHTML = contact ? `<p><strong>Actual unilateral wheel / terrain collision · ¼ model</strong>. The wheel can spin, slip, separate and bridge gaps. Terrain stability moves the saved world mesh toward −x; jump and landing use a stationary flat floor. Wheel height is solved by contact. θ₄ is freely backdriven through the ideal belts. This bounded straight-path model supports either massless links or two finite uniform rods. V4.5 uses 1 kg per rod and a 0.5 kg freely spinning wheel.</p><p>Both engines now solve this same actual-contact model: independent generalized-mass impulse dynamics and native Pymunk rigid bodies. Finite-link mode has chassis, two rods and wheel with pivot and belt constraints. Run both captures one exact saved mechanism, material and case.</p>${errors.length ? '<div class="notice error"><strong>Unsupported contact setup</strong><ul>' + errors.map(error => '<li>' + esc(error) + '</li>').join('') + '</ul></div>' : '<p>Geometry guards pass. Solver validation also checks the complete route, stops, initial separation and numerical limits.</p>'}<p>Plateau and gap settings are actual terrain dimensions, not commanded wheel travel. Terrain-stability first-contact delay includes circular-rim clearance; the wheel is never forced down into every gap.</p>` : '<p><strong>Prescribed wheel-height bench</strong> · no wheel/terrain collision. The original analytical/Pymunk comparison remains available. The belt drive is locked and the baseline wheel index can remain stationary (K = 0). Use the separate saved contact demo for frictional wheel spin and collision.</p>';
-      const guardHtml=errors.length?'<div class="notice error"><strong>Unsupported contact setup</strong><ul>'+errors.map(error=>'<li>'+esc(error)+'</li>').join('')+'</ul></div>':'';
+      const guardHtml=errors.length?'<div class="notice error"><strong>Unsupported '+(contact?'contact':'prescribed-height')+' setup</strong><ul>'+errors.map(error=>'<li>'+esc(error)+'</li>').join('')+'</ul></div>':'';
       const modelNotes=guardHtml?description.innerHTML.replace(guardHtml,''):description.innerHTML;
-      description.innerHTML=guardHtml+'<details class="contact-model-notes"><summary>Contact model, masses &amp; constraints</summary>'+modelNotes+'</details>';
+      description.innerHTML=guardHtml+'<details class="contact-model-notes"><summary>Contact model, masses &amp; constraints</summary>'+modelNotes+'<p>Changing interaction mode saves matching input settings: contact uses zero prescribed transition; the moving-mass bench restores its previous positive transition or initializes 10 mm, capped at half the plateau width. Physical angle stops and named designs are unchanged.</p></details>';
       if(contact)description.insertAdjacentHTML('beforeend',pinned?'<p><strong>Chassis pinned at its initial hip height.</strong> Only the chassis fixture is fixed; the wheel is free to rotate, separate and recontact the terrain. Pin force is an interval mean, positive upward from the fixture onto the chassis. Positive means the fixture supplies missing support; negative means it holds down excess suspension force. The unchanged height controller sees no chassis-height error here: this is a force-transmission diagnostic, not a direct rise-time test.</p>':'<p><strong>Chassis floats vertically.</strong> Its height, tracking delay and settling follow the actual coupled dynamics. The wheel is never pinned to terrain.</p>');
       const legacyScope = document.getElementById(id).querySelector('.quarter-scope');
       legacyScope.hidden = contact;
@@ -104,5 +138,5 @@ globalThis.KinefoldContactUI = (() => {
       }
     }
   }
-  return {isContact, guards, payload, mount, update, demo};
+  return {isContact, guards, prescribedGuards, transition, payload, mount, update, demo};
 })();

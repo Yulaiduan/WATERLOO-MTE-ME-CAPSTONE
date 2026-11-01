@@ -1,5 +1,15 @@
 # Saved Kinefold configurations
 
+## V5 gravity compensation · 2026-11-01
+
+[V5 α0°](v5-alpha0-4to1.json) and [V5 α20°](v5-alpha20-4to1.json) are independent
+portable designs with1kg per link,0.5kg wheel and2:1 reductions on both wheel-drive
+stages (4:1 overall with the leg held). Both have95–175° operating stops and
+ride-pose spring calibration; spring rate/preload stay fixed. α20 also adjusts
+Su with owner approval. See [equations, validation and terrain limitations](../v5-suspension-designs.md)
+and [exact fit evidence](v5-fit-evidence.json). Import either file on another PC;
+the original V4/V4.5 profiles retain their original identities and values.
+
 ## 2026-11-01 coupling-test snapshot
 
 [test-1-6-drive-train-coupling.json](test-1-6-drive-train-coupling.json) preserves
