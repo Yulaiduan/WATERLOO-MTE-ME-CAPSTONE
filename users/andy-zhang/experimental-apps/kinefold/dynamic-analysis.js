@@ -73,8 +73,11 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     ['motor','motor-speed','Motor shaft speed','rad/s',series(['motorVelocityRadS','Shaft angular speed'])],
     ['motor','motor-command','Motor and joint electromagnetic torque','N·m',series(['shaftCommandNm','Motor shaft command'],['jointElectromagneticNm','Joint electromagnetic command'])],
     ['motor','motor-passive','Joint-side cogging and friction','N·m',series(['jointCoggingNm','Conservative cogging'],['jointFrictionNm','Motor friction'],['jointPassiveNm','Total motor passive torque'])],
+    ['motor','motor-friction','Static holding / sliding dry torque','N·m',series(['jointStaticFrictionNm','Static holding torque'],['jointSlidingFrictionNm','Sliding dry torque'],['jointStaticFrictionCapacityNm','Static capacity'],['jointViscousFrictionNm','Viscous torque'])],
+    ['motor','motor-friction-state','Dry friction state · gaps for legacy captures','state',series(['frictionStateCode','0 off · 1 sticking · 2 sliding'])],
     ['motor','motor-energy','Drive inertia kinetic and detent potential energy','J',series(['rotorKineticJ','Motor + gearbox input inertia kinetic'],['legacyJointRotorKineticJ','Additional joint inertia kinetic'],['coggingPotentialJ','Cogging potential'])],
-    ['motor','motor-loss','Motor dissipated energy','J',series(['motorDissipatedJ','Total motor losses'],['motorCoulombDissipatedJ','Coulomb / lumped cogging loss'],['motorViscousDissipatedJ','Viscous loss'])],
+    ['motor','motor-loss','Motor dissipated energy','J',series(['motorDissipatedJ','Total motor losses'],['motorCoulombDissipatedJ','Dry sliding loss · legacy field name'],['motorViscousDissipatedJ','Viscous loss'])],
+    ['motor','motor-dry-numerical','Dry-friction numerical work · separate from heat','J',series(['dryFrictionNumericalWorkJ','Positive discrete torque/displacement discrepancy'])],
     ['motor','motor-constraint','Rotor kinematic constraint residual','rad/s',series(['rotorConstraintVelocityErrorRadS','Rotor speed residual'])]
     ,['motor','motor-position-residual','Rotor joint-angle constraint residual','rad',series(['rotorConstraintPositionResidualRad','Native rotor − ideal q'])]
     ,['motor','motor-numerical-work','Native rotor constraint work · numerical','J',series(['rotorConstraintImpulseWorkJ','Signed native constraint impulse work'],['coupledConstraintKineticLossJ','Signed coupled free-to-solved KE change'])]
@@ -101,7 +104,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     if (value && typeof value === 'object') return '{' + Object.keys(value).sort().map(k => JSON.stringify(k) + ':' + stable(value[k])).join(',') + '}';
     return JSON.stringify(value);
   }
-  function snapshotKey(snapshot) { snapshot=globalThis.KinefoldContactUI?.capture?KinefoldContactUI.capture(snapshot):snapshot;return stable({springConvention:Kinefold.springConvention,params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null,terrain:snapshot.terrainConfig||null}); }
+  function snapshotKey(snapshot) { snapshot=globalThis.KinefoldContactUI?.capture?KinefoldContactUI.capture(snapshot):snapshot;return stable({springConvention:Kinefold.springConvention,frictionConvention:'set-valued-static-breakaway-v1',params: snapshot.params, config: snapshot.solverConfig,contact:snapshot.contactConfig||null,case:snapshot.caseConfig||null,motor:snapshot.motorConfig||null,terrain:snapshot.terrainConfig||null}); }
   function integralRow(result,row) {
     const since=row.sinceContact, impact=result.events?.find(e=>e.type==='first-contact')?.state;
     const fields={};
@@ -146,7 +149,7 @@ globalThis.KinefoldDynamicAnalysis = (() => {
       const driveRate=contact?ratios.qdc*ratios.qfe*(row.wheelAngularVelocityDegS-k6*row.velocityDegS):0;
       const structuralRotor=!contact||result.engine==='analytical'||!(config.hipRotorInertiaKgM2+(result.motorConfig?.enabled?KinefoldProjects.totalMotorRatio(result.motorConfig)**2*(result.motorConfig.rotorInertiaKgM2+(result.motorConfig.gearboxInputInertiaKgM2??0)):0));
       const integralFields=contact?integralRow(result,row):{};
-      return {...row,...integralFields, chassisDisplacementMm: row.chassisZMm - first.chassisZMm,
+      return {...row,...integralFields, frictionStateCode:({disabled:0,off:0,sticking:1,sliding:2})[row.frictionState]??null, chassisDisplacementMm: row.chassisZMm - first.chassisZMm,
         wheelDisplacementXMm: row.CxMm - first.CxMm,
         theta3: pose.t3, theta4:contact?row.theta4:0,theta5: contact?row.theta5:pose.t5, theta6: contact?row.theta6:pose.t6,
         rate3: k3 * row.velocityDegS,rate4:driveRate, rate5: k5 * row.velocityDegS+driveRate/ratios.qdc, rate6: contact?row.wheelAngularVelocityDegS:k6 * row.velocityDegS,
@@ -168,7 +171,9 @@ globalThis.KinefoldDynamicAnalysis = (() => {
     if(stable(a.motorConfig||null)!==stable(b.motorConfig||null))return {valid:false,reason:'Motor/gear profiles differ. Run both from the same captured design.'};
     if (a.scope?.mode !== b.scope?.mode || stable(a.contactConfig||null)!==stable(b.contactConfig||null) || stable(a.caseConfig||null)!==stable(b.caseConfig||null)) return {valid:false,reason:'Interaction, material or case profiles differ. Run both on the same captured snapshot.'};
     if((a.scope?.springConvention||'legacy-leg-v1')!==(b.scope?.springConvention||'legacy-leg-v1'))return {valid:false,reason:'Spring mounting conventions differ. Rerun both engines using the same convention.'};
-    const fields=a.scope?.mode==='terrain-contact'?contactComparisonFields:comparisonFields;
+    if((a.scope?.frictionConvention||a.diagnostics?.frictionConvention||'legacy-smooth-coulomb-v1')!==(b.scope?.frictionConvention||b.diagnostics?.frictionConvention||'legacy-smooth-coulomb-v1'))return {valid:false,reason:'Dry friction laws differ (legacy smooth versus static/breakaway). Rerun both engines using the same convention.'};
+    const fields=[...(a.scope?.mode==='terrain-contact'?contactComparisonFields:comparisonFields)];
+    if((a.scope?.frictionConvention||a.diagnostics?.frictionConvention)==='set-valued-static-breakaway-v1')fields.push(['jointDryFrictionNm','Actual dry torque','N·m'],['jointStaticFrictionCapacityNm','Static/breakaway capacity','N·m'],['jointViscousFrictionNm','Motor viscous torque','N·m']);
     if (!a.designHash || a.designHash !== b.designHash || stable(a.params) !== stable(b.params))
       return {valid: false, reason: 'Mechanism snapshots differ. Run both again from one captured design.'};
     if (stable(a.runConfig) !== stable(b.runConfig)) return {valid: false, reason: 'Input or numerical profiles differ. Run both again with the same profile.'};

@@ -40,6 +40,13 @@ near(curve.strokeTimeS,exactTime,2e-7,'Independent viscous ramp time');near(curv
 const variable=A.integrateStroke(p,{...constant,motorPeakNm:40},zero,{steps:1200});
 ok(variable.complete,'Variable-inertia stroke completes');for(const row of variable.rows){near(row.kineticJ,40*row.sRad,2e-11,'Variable-J work identity');near(.5*row.totalInertiaKgM2*row.speedRadS**2,row.kineticJ,2e-11);near(row.lowerAbsoluteVelocityRadS,-row.hipVelocityRadS,1e-10);near(row.relativeKneeVelocityRadS,-2*row.hipVelocityRadS,1e-10);}
 const stalled=A.integrateStroke(rod,{...constant,motorPeakNm:0},zero);ok(stalled.status==='stalled-at-start'&&stalled.rows.length===1,'Zero drive remains at rest');
+// A requested drive at rest must be balanced inside capacity in both signs.
+const dry={name:'Static threshold',coulombNm:3,viscousNms:.2};
+for(const net of [-3,-1,0,1,3]){const response=A.frictionResponse(dry,0,net);near(response.netNm,0);near(response.resistanceNm,net);near(response.lossPowerW,0);ok(response.frictionState==='sticking','subthreshold requested drive is held');}
+near(A.frictionResponse(dry,0,4).netNm,1);near(A.frictionResponse(dry,0,-4).netNm,-1);
+near(A.frictionResponse(dry,2,4).resistanceNm,3.4);near(A.frictionResponse(dry,-2,-4).resistanceNm,-3.4);near(A.frictionResponse(dry,-2,-4).lossPowerW,6.8);
+const staticHeld=A.integrateStroke(rod,constant,dry,{steps:100});ok(staticHeld.status==='stalled-at-start'&&staticHeld.start.frictionState==='sticking','stroke stays at rest below breakaway');near(staticHeld.initialAccelerationRadS2,0);near(staticHeld.end.lossWorkJ,0);
+const slidingStroke=A.integrateStroke(rod,{...constant,motorPeakNm:4},{...dry,viscousNms:0},{steps:100});ok(slidingStroke.complete,'above-breakaway stroke starts');near(slidingStroke.end.lossWorkJ,3*length,1e-10,'sliding work is magnitude times actual angular travel');
 const cut=A.integrateStroke(rod,{...constant,gearboxOutputMaxRpm:10},zero);ok(cut.status==='speed-limit'&&!cut.complete,'Speed limit terminates without extrapolation');near(cut.end.speedRadS,10*2*Math.PI/60,1e-10);
 const gravityP={...p,springEnabled:false},jumpHardware={...constant,motorPeakNm:200,rotorInertiaKgM2:.001,ratio:4};
 const jump=A.estimateJump(gravityP,jumpHardware,zero,{steps:1200});ok(jump.complete&&jump.estimatedJumpHeightM>0,'Jump screen yields conditional apex');

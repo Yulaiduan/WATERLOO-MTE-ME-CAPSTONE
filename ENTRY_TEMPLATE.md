@@ -6116,3 +6116,68 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Fla
 Use Flat-ground support check in02/03 for a stationary floor and floating chassis; terrain is disabled in the effective capture while saved terrain settings remain ready for actual-contact mode.
 Both V5 profiles now retain their minimax fit residual and zero initial velocity, so interpret their measured drift from rest rather than the superseded extra135-degree balance root or a kick test.
 Read v5-suspension-designs.md and exact profile/evidence JSONs, preserve user run settings and local UI work, and restart the durable4191app with its project-local launcher; hashed rest-only captures and PNGs stay ignored app-locally.
+---
+
+## Entry: 2026-11-01 — Andy Zhang / Codex — Static-friction breakaway and coupled holding
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Andy's isolated Kinefold motor-loss controls, calculators and two dynamic engines.
+- **Associated Issue/Task:** Owner changes Coulomb friction to a static-friction value after clarifying imperfect g-comp drifts from rest without losses.
+
+Use the existing motor-shaft value as a genuine bounded holding threshold. Assume equal sliding resistance because no separate kinetic value is supplied; retain viscous drag independently. Preserve numeric values, enabled flags, V5 geometry and named/working profiles; no nonzero hardware estimate or hold controller is silently added.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:** Exact paths below; no deletions.
+
+- `ENTRY_TEMPLATE.md`
+- `users/andy-zhang/experimental-apps/kinefold/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.js`
+- `users/andy-zhang/experimental-apps/kinefold/actuator-calculator.md`
+- `users/andy-zhang/experimental-apps/kinefold/analytical_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/automatic-comparison.js`
+- `users/andy-zhang/experimental-apps/kinefold/contact_cases.py`
+- `users/andy-zhang/experimental-apps/kinefold/contact_dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/context/README.md`
+- `users/andy-zhang/experimental-apps/kinefold/conventions.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic-results.js`
+- `users/andy-zhang/experimental-apps/kinefold/dynamic_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/dynamics.py`
+- `users/andy-zhang/experimental-apps/kinefold/energy-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/motor-model.md`
+- `users/andy-zhang/experimental-apps/kinefold/motor-ui.js`
+- `users/andy-zhang/experimental-apps/kinefold/motor_model.py`
+- `users/andy-zhang/experimental-apps/kinefold/motor_rotor_constraint.py`
+- `users/andy-zhang/experimental-apps/kinefold/parametric-presets.md`
+- `users/andy-zhang/experimental-apps/kinefold/preset-analysis.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-flow.js`
+- `users/andy-zhang/experimental-apps/kinefold/preset-workbench.js`
+- `users/andy-zhang/experimental-apps/kinefold/v5-suspension-designs.md`
+- `users/andy-zhang/experimental-apps/kinefold/verify-actuator-calculator.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-dynamic-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-motor-ui.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify-preset-analysis.cjs`
+- `users/andy-zhang/experimental-apps/kinefold/verify_motor_bench.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_motor_contact.py`
+- `users/andy-zhang/experimental-apps/kinefold/verify_static_friction.py`
+
+- **API/Interface Changes:** No persistent schema/key additions. Compatibility key motorConfig.coulombFrictionNm now denotes shaft static/breakaway torque; hide/ignore legacy frictionVelocityScaleRadS without deleting it from snapshots. New result convention set-valued-static-breakaway-v1 separates current/legacy comparisons. Actual rows expose phase, signed resolved dry reaction/capacity, static/sliding/viscous torque and separate positive-only dryFrictionNumericalWorkJ where resolved; missing legacy samples remain gaps. Contact solvers use bounded impulses in coupled contact/stop dynamics; native finite rods use an internal zero-rate bounded motor and the massless guide a bounded bias-free axial constraint. Signed impulse observation requires the pinned Windows AMD64 Pymunk7.3.0/Munk2D private callback ABI even with no rotor inertia; unsupported builds reject. Native active dry uses500 sweeps; analytical budget500 exits at projected convergence. Initial supported native tangency uses one inward machine ULP for contact registration, never a finite penetration or flight adjustment. Zero-capacity/disabled paths stay numerically unchanged. Ideal flat bench uses bounded scalar impulse/event integration and independently transformed native heave. Static work is0; actual sliding heat, viscous loss and numerical terms are separate. N scales dry capacity; N² scales motor/input inertia and viscous coefficient. Pose/actuator screens show holding/breakaway and acceleration demand consistently, with their own pre-existing output-side placeholder values preserved. No canonical/shared interface, dependency, vendor or enforcement changes.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** Parent combined54Python tests pass in125.5s:9static-friction,19bench/contact motor,7dynamics and19temporary-profile-storage groups. Parent seven Node suites pass20motor UI,115preset analysis,6192actuator/77chart mounts,55dynamic comparison,4330Plotly exact-sample,35project and55preset assertions/groups. Worker additionally passes21contact/rotor/work regressions and its9UI suites. Independent bounded18case matrix (alpha0/20 x ideal bench/actual contact x two engines x0/.05Nm capacity, plus two+.20Nm breakaway cases) starts from rest with zero other loss/inertia/damping. At.05Nm ideal bench movement0 and actual-contact movement≤1.46e−7mm; reactions−.034188/−.027188Nm, electromagnetic command/work0 and physical dry work0. Zero-capacity actual controls drift4.143/4.220mm(alpha0) and3.271/3.338mm(alpha20). Breakaway movements22.531/22.593mm with dryloss.00258943/.00259640J equal capacity times travel. Active-friction vertical-momentum closure≤4.6e−13Ns; unchanged cap0 control max5.3131e−5Ns. Seven independent unit groups check gearing, insufficient/subthreshold capacity, internal reaction and zero static work. All18compressed/uncompressed capture hashes,12pre-erratum source hashes and both profile hashes verified; gzip total449333bytes. Only analytical diagnostic prose changed after capture: minimum500 corrected to500budget/earlyexit, with normalized AST equivalence and a current-source smoke pass; authentic captures remain untouched. Bench energy refinement residual1.03646e−4→5.07793e−5→2.51270e−5J atdt.0005/.00025/.000125 confirms convergence; retained.03J bound passes. HeadlessEdge desktop1440/phone390 QA passes eight exact captured requests, friction-key roundtrip/hidden smoothing, four exports, four same-snapshot mocked desktop requests, synchronized play/scrub and phase/torque charts, no page errors or live-library writes. Parent's initial QA helper wrongly expected top-level export motorConfig and bench-only caseConfig; corrected to projectSnapshot and actual dispatch shape, then passed. A smoke initially called the bench function on contact input and correctly rejected; corrected contact entry passed. PNG Plotly proof/control/phone previews visually inspected. Whitespace/source checks and fetched-base/staged/exact-push workspace gates apply before publication. Durable project-local4191launcher start/restart/readiness retained and checked at delivery.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Hardware friction coefficients, separate kinetic value and non-Windows/private-ABI compatibility remain unverified. Finite dt/contact numerical work is reported, not called heat or spring absorption. This does not newly certify moving-terrain stability, jump/drop survival, target optimization or desktop GUI operation. Existing saved motor blocks remain off/value0 until the user explicitly enables/edits them; no live coefficient or model is changed. Foreign durable app.js/style.css work is preserved and excluded from this publication. Raw runs, private libraries, PNGs and QA helpers remain ignored app-local output; no Notion writes, Computer skill, Downloads or boot automation.
+
+## 4. Compute Saving Handoff State
+
+Use Static friction torque in the shared motor panel; it is a motor-shaft breakaway threshold with the same magnitude assumed for sliding, while viscous drag remains separate.
+Read motor-model.md and v5-suspension-designs.md for the bound, reaction/work plots, actual zero-start proof and pinned native ABI; keep old compatibility keys and inspect numerical terms separately from heat.
+Keep existing enabled flags, profiles and foreign UI edits unchanged, restart4191with the project-local launcher, and retain the bounded hashed captures and PNG proofs under ignored app output.

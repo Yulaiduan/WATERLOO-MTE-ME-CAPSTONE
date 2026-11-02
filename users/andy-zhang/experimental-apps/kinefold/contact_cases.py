@@ -10,7 +10,7 @@ import hashlib
 import json
 from terrain_profiles import validate_terrain, periodic_spec, surface_height
 from dynamic_model import Model, R, mul, validate, finite, spring_parameters, SPRING_CONVENTION
-from motor_model import Motor
+from motor_model import Motor, FRICTION_CONVENTION
 
 CASE_DEFAULTS = dict(kind='terrain-stability',jumpTorqueNm=20.,landingDropMm=100.,
     landingOpenFraction=2/3,landingBrakeTorqueNm=20.,landingBrakeLimitNm=200.,
@@ -221,7 +221,7 @@ def terrain_spec(m,case):
 
 
 def model_identity(m,contact,case):
-    return hashlib.sha256(json.dumps(dict(springConvention=SPRING_CONVENTION,params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'terrainConfig':m.terrain_config} if getattr(m,'terrain_config',None) is not None else {}),**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {}),**({'actuatorConfig':m.actuator_config} if getattr(m,'actuator_config',None) is not None else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
+    return hashlib.sha256(json.dumps(dict(springConvention=SPRING_CONVENTION,frictionConvention=FRICTION_CONVENTION,params=m.p,runConfig=m.c,contactConfig=contact,caseConfig=case,**({'terrainConfig':m.terrain_config} if getattr(m,'terrain_config',None) is not None else {}),**({'motorConfig':m.motor.config} if getattr(m,'motor_config_present',False) else {}),**({'actuatorConfig':m.actuator_config} if getattr(m,'actuator_config',None) is not None else {})),sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
 def usable_compression(m,q,case):
@@ -431,14 +431,14 @@ def floor_under_hip(spec,t):
 
 
 def check_motor_step(m,qd,dt):
-    """Bound explicit regularized-friction decay and resolve cogging phase."""
+    """Bound explicit viscous decay and resolve cogging phase; dry is implicit."""
     m.motor.check_step(qd,dt)
     if not m.motor.enabled:return
     c=m.motor.config;n=m.motor.total_ratio
-    slope=n*n*(c['coulombFrictionNm']/c['frictionVelocityScaleRadS']+c['viscousFrictionNms'])
+    slope=n*n*c['viscousFrictionNms']
     mu=m.p['m6']-(m.p['m6']*m.axis[1])**2/(m.p['m1']+m.p['m6'])
     inertia=m.Jref+mu*m.jacobian_min**2
     if m.finite_links:
         inertia=min((lambda a:a['C']-a['B']**2/a['A'])(m.mass_terms(m.lo+(m.hi-m.lo)*i/32)) for i in range(33))
     if slope>0 and dt*slope/inertia>.5:
-        raise ValueError(f'Motor friction is underresolved; reduce dt below {(.5*inertia/slope):.8g} s for the regularized friction slope.')
+        raise ValueError(f'Motor viscous friction is underresolved; reduce dt below {(.5*inertia/slope):.8g} s.')

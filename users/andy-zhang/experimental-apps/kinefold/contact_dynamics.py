@@ -13,6 +13,7 @@ import argparse
 import json
 import math
 import sys
+from motor_model import FRICTION_CONVENTION
 
 from torque_targets import TargetObservation
 from contact_cases import check_motor_step
@@ -43,7 +44,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     case=resolve_case(payload);controller=CaseController(m,case);observation=TargetObservation(case,c['dt'])
     com_observation=COMObservation()
     qinitial,hinitial,xinitial,zinitial=initial_conditions(m,case);m.q0=qinitial
-    space=pymunk.Space();space.gravity=(0,-p['g']);space.iterations=int(c['iterations'])
+    space=pymunk.Space();space.gravity=(0,-p['g']);space.iterations=max(500,int(c['iterations'])) if m.motor.static_capacity else int(c['iterations'])
     # SI tolerances are explicit, not epsilon masses or tire compliance.
     space.collision_slop=1e-6
     space.collision_bias=(1-.2)**60
@@ -55,6 +56,11 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
     motion=initial_motion(m,case,m.q0)
     chassis.velocity=(0,motion['chassisVelocity'])
     wheel=pymunk.Body(p['m6'],m.I['6']);wheel.position=(xinitial,zinitial)
+    if m.motor.static_capacity and case['kind']!='landing':
+        # Munk2D's exact-tangency test is strict. Choose the inward adjacent
+        # representable coordinate (one ULP, not finite contact preload/slop)
+        # so an initially supported circle participates in the first solve.
+        wheel.position=(xinitial,math.nextafter(zinitial,-math.inf))
     wheel.angle=(m.K*(p['theta2']-p['te'])-p['alpha'])*R
     # qdot is independent guide motion. Legacy flat initialization uses wheel vz=0;
     # v2 follows the conveyor incline normal velocity. Spin remains unlocked.
@@ -70,6 +76,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         from motor_rotor_constraint import attach
         rotor=attach(space,chassis,wheel,m,m.Jref,m.q0,qd0)
         _rotors.append(rotor)
+    dry=None;dry_torque=0.;dry_state='unresolved' if m.motor.static_capacity else None;dry_numerical_work=0.
     heave=(pymunk.PivotJoint(space.static_body,chassis,(0,hinitial),(0,0)) if m.pinned
            else pymunk.GrooveJoint(space.static_body,chassis,(0,-1000),(0,1000),(0,0)))
     # Infinite straight guide, terminated at declared working travel; endpoints
@@ -105,6 +112,12 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
             v=wheel.velocity_at_world_point(point)-ground.velocity_at_world_point(point)
             slips.append(v.dot(pymunk.Vec2d(-n.y,n.x))*1000)
     space.on_collision(1,2,post_solve=post_solve)
+    if m.motor.static_capacity:
+        # Last constraint in each native sweep closes the dry velocity inclusion;
+        # later heave/pivot sweeps must not reopen a solved sticking hip rate.
+        from motor_rotor_constraint import NativeDryFriction
+        dry=NativeDryFriction(space,chassis,wheel,m,linkage)
+        _rotors.append(dry)
     terrain=spec['terrain']
     bounds=sorted((m.distance(m.lo),m.distance(m.hi)))
     rows=[];frames=[];events=[];t=0.;next_sample=1/c['outputHz'];steps=0;termination='duration'
@@ -198,9 +211,12 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         row.update(comZMm=sum(b.mass*b.position.y for b in bodies)/m.total_mass*1000,
             comVelocityZMmS=sum(b.mass*b.velocity.y for b in bodies)/m.total_mass*1000)
         # Sample actual native rotor state, not the previous step's held controller diagnostics.
-        sample_motor=m.motor.motor_state(rotor.angle if rotor else q,rotor.omega if rotor else qd,control['motorTorqueNm'])
+        sample_motor=m.motor.motor_state(rotor.angle if rotor else q,rotor.omega if rotor else qd,control['motorTorqueNm'],dry_torque,dry_state if dry else None)
         if controller.actuator:sample_motor.pop('shaftCommandNm')  # keep bounded transmission conversion
         row.update(sample_motor)
+        row['dryFrictionNumericalWorkJ']=dry_numerical_work
+        row['tauApplied']=control['motorTorqueNm']+sample_motor['jointFrictionNm']-c['dampingNms']*qd
+        row['guideForceN']=(spring['torque']+control['motorTorqueNm']+sample_motor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q)
         if controller.actuator:row['rideTargetHeightMm']=controller.actuator.target_height(t)*1000
         if rotor is not None:row.update(legacyJointRotorKineticJ=.5*c['hipRotorInertiaKgM2']*rotor.omega**2,idealMotorVelocityRadS=m.motor.total_ratio*qd,rotorConstraintPositionResidualRad=rotor.position_residual,rotorConstraintVelocityResidualRadS=rotor.velocity_residual)
         row['chassisClearanceMm']=A[2]-case['undersideOffsetMm']-floor_under_hip(spec,t)*1000 if case['undersideOffsetMm'] is not None else None
@@ -252,6 +268,7 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         f=(m.spring(q)['torque']+control['motorTorqueNm']+control['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q);force=pymunk.Vec2d(*m.axis)*f
         check_motor_step(m,rotor.omega if rotor is not None else qd,step)
         motor_angle_before=rotor.angle if rotor is not None else q
+        if dry:dry.prepare(step,q)
         if rotor is not None:
             rotor.prepare(step,m.spring(q)['torque']+control['motorTorqueNm']+control['jointPassiveNm']-c['dampingNms']*qd)
             force=pymunk.Vec2d(0,0)
@@ -292,6 +309,14 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
             max_rotor_position=max(max_rotor_position,abs(rotor.position_residual))
             max_rotor_velocity=max(max_rotor_velocity,abs(rotor.velocity_residual))
         q2,qd2,residual=state()
+        if dry:
+            dry_torque=dry.torque;dry_state=dry.state
+            # Actual generalized displacement gives dry work. A discrete native
+            # position-first reversal can have positive torque/displacement
+            # work; expose it as numerical work, never physical dissipation.
+            signed_work=dry_torque*(q2-q)
+            dry_loss=max(0.,-signed_work);dry_numerical_work+=max(0.,signed_work)
+            motor_loss+=dry_loss;motor_coulomb_loss+=dry_loss
         motor_work+=control['motorTorqueNm']*((rotor.angle if rotor is not None else q2)-motor_angle_before)
         damping_work-=c['dampingNms']*.5*(qd*qd+qd2*qd2)*step
         motor_loss+=control['motorLossPowerW']*step
@@ -304,8 +329,8 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
         terrain_work+=terrain_increment;contact_dissipation+=max(0.,terrain_increment-contact_work)
         if rotor is not None:
             solved_ke=.5*p['m1']*chassis.velocity.length_squared+.5*p['m6']*wheel.velocity.length_squared+.5*wheel.moment*wheel.angular_velocity**2+.5*m.Jref*rotor.omega**2
-            coupled_loss+=free_ke+terrain_increment-solved_ke
-        if linkage:coupled_loss+=free_ke+terrain_increment-linkage.kinetic()
+            coupled_loss+=free_ke+terrain_increment-solved_ke-(dry_loss if dry else 0.)
+        if linkage:coupled_loss+=free_ke+terrain_increment-linkage.kinetic()-(dry_loss if dry else 0.)
         if rotor is not None:actuator_work=motor_work+damping_work
         else:actuator_work+=.5*(before_power+(control['motorTorqueNm']-c['dampingNms']*qd2)*qd2)*step
         spos2=m.distance(q2);sd2=qd2*m.jacobian(q2)
@@ -435,6 +460,13 @@ def _simulate_contact(payload, *, stop_at_assessment=False, _rotors):
                           'Contact forces are interval-averaged impulses; force peaks and penetration require timestep refinement.',
                           'B, horn and belts are exact massless reconstruction; A/C and wheel angle are actual Pymunk transforms.'])
     result['caseConfig']=case
+    diagnostics['requestedIterations']=int(c['iterations'])
+    diagnostics['dryFrictionNumericalWorkJ']=dry_numerical_work
+    diagnostics['dryFrictionSolver']='Passive native bounded angular/axial constraint; minimum 500 simultaneous sweeps when active to resolve cold contact/link coupling.' if dry else 'inactive'
+    diagnostics['initialContactBoundaryRounding']='One inward adjacent representable wheel-centre z (ULP) for an initially tangent dry-friction case; no finite preload.' if dry and case['kind']!='landing' else 'none'
+    result['scope']['frictionConvention']=FRICTION_CONVENTION
+    diagnostics['frictionConvention']=FRICTION_CONVENTION
+    result['warnings'].append('Motor coulombFrictionNm is the shaft static/breakaway threshold; equal sliding resistance is assumed and legacy smoothing speed ignored. Native passive bounded friction constraints preserve coupled reactions. Dry work uses actual hip displacement; static friction performs zero work. Native integration/constraint work remains numerical accounting.')
     result['caseMetrics']=case_metrics(rows,events,m,case)
     result['energyEstimate']=result['caseMetrics']['energyEstimate']
     diagnostics['energyBalanceResidualJ']=rows[-1]['energyJ']-rows[0]['energyJ']-motor_work-damping_work-terrain_work-external_work+motor_loss+stop_dissipation+contact_dissipation

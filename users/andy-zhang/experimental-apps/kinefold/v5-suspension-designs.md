@@ -113,8 +113,9 @@ Viscous friction slows that motion but supplies no holding torque at rest;
 true static friction can hold while residual torque is below breakaway.
 An ideal neutral balance also has no restoring force after a displacement.
 The saved profiles deliberately use zero motor losses and zero hip damping so
-these effects are not concealed. A smooth Coulomb approximation need not
-provide exact stiction. Long-term position holding requires a separately
+these effects are not concealed. The current optional static-friction model can
+hold within its entered threshold, but remains disabled in these profiles.
+Long-term position holding requires a separately
 declared friction/restoring/control model, not more digits in the spring fit.
 
 ## Current zero-velocity ground checks
@@ -144,8 +145,8 @@ The static fit reference remains110.3625N; actual normal force is solved from
 accelerating masses and need not equal the static weight at every sample.
 
 Actual contact retainsμ0.8 and zero restitution, with free wheel spin. Motor
-Coulomb and viscous terms are implemented but disabled in these profiles.
-The existing smooth Coulomb law does not model exact static stiction. Pymunk
+static/sliding and viscous terms are implemented but disabled in these profiles.
+The current bounded static law replaces the historical smooth approximation. Pymunk
 global damping is1 and its sleep threshold is infinite; neither introduces
 automatic settling or a sleeping hold. Analytical contact/projection terms
 and native signed constraint/residual terms can nearly cancel even at rest;
@@ -159,6 +160,24 @@ it does not claim new executions of those scenarios. Eight new exact compressed
 captures total2,859,044bytes with profile and11source hashes. No initial-velocity
 kick is used as evidence for this check. The actual Pymunk desktop request is
 checked with the same flat snapshot; a desktop window is not opened in QA.
+
+## Optional static-friction proof — separate settings
+
+Eighteen one-second rest-only cases check both designs, ideal flat bench/actual
+flat contact, both engines, and shaft threshold0/.05Nm at reduction1, with zero
+other motor losses/inertias, initial velocity, motor command and hip damping.
+The .05Nm cases hold: ideal bench displacement is0; actual-contact displacement
+is at most1.46e−7mm. Resolved static reactions are−.034188/−.027188Nm, with zero
+motor work and zero physical dry loss. Zero-threshold actual-contact controls
+still drift4.143/4.220mm atα0 and3.271/3.338mm atα20 (analytical/Pymunk).
+A separateα0 actual-contact +.20Nm command exceeds the .05Nm threshold: both
+engines slide22.531/22.593mm, with dry work.002589/.002596J, exactly threshold
+times angular travel. Active-friction momentum closure is within4.6e−13Ns;
+the unchanged zero-threshold control's largest residual is5.31e−5Ns.
+These isolated assumptions do not enable friction or rewrite either saved
+profile. The reaction is coupled through the leg/chassis dynamics, not a hidden
+height pin or electromagnetic holding command. Read [motor-model.md](motor-model.md)
+for gearing, phase/work outputs, native ABI limits and numerical terms.
 
 ## Historical one-pose calibration results — superseded
 

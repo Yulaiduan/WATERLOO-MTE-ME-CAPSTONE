@@ -1,6 +1,6 @@
 # Hip motor, reduction and losses
 
-Andy Zhang / Codex, updated 2026-10-30. Experimental quarter-model assumptions; no
+Andy Zhang / Codex, updated 2026-11-01. Experimental quarter-model assumptions; no
 measured motor, gearbox efficiency or hardware rating is inferred.
 
 The optional `motorConfig` is saved with project-v3, captured by both engines,
@@ -43,8 +43,9 @@ and constrained by the converted ceiling; required shaft torque is reported
 separately. Static-balance copy compensates cogging and converts to the selected
 basis. Electromagnetic command, passive torques and net actuation are distinct.
 
-Motor properties use SI units: J in kg·m², cogging/Coulomb amplitudes in N·m,
-viscous coefficient in N·m·s/rad and smoothing speed in rad/s. Zero values are
+Motor properties use SI units: J in kg·m², cogging/static-friction torques in N·m,
+and viscous coefficient in N·m·s/rad. The static threshold is a torque, not the
+wheel/ground friction coefficient μ or spring cable force. Zero values are
 compatibility settings, not motor estimates. All signed torques follow +y.
 
 ## Conservative and dissipative laws
@@ -54,36 +55,63 @@ rotor revolution and phase φ:
 
 - τ_cog,motor = A sin(kθ_motor + φ)
 - U_cog = A/k cos(kθ_motor + φ)
-- τ_friction,motor = −F_c tanh(ω_motor/ω_epsilon) − bω_motor
+- Static joint capacity: T_s = N τ_s,m
+- At rest: τ_dry is solved within [−T_s, +T_s] to maintain zero hip rate when feasible
+- Sliding: τ_dry = −T_s sign(qdot), using the same magnitude by explicit assumption
+- Joint viscous torque: τ_viscous = −N² b qdot
 - T_drive = ½ (J_motor + J_gear,input) (N qdot)²
 
-The owner's October30 comparison explicitly **lumps cogging into constant
-Coulomb resistance**, independent of angle, and sets the separate periodic
-amplitude to zero. This is a dissipative engineering approximation, not a
-measured cogging waveform. The dynamic tabs' explicit Apply buttons offer:
+The owner changed the former Coulomb input to **static/breakaway friction** on
+November1. Its saved compatibility key remains `coulombFrictionNm`, with the
+same entered value and motor-shaft units. It includes the earlier lumped cogging
+estimate, independent of angle; leave the separate periodic amplitude zero to
+avoid counting that estimate twice. No separate kinetic value was supplied, so
+the sliding dry magnitude equals the static threshold. Static holding does
+zero work; this is not viscous damping or a motor holding command. The dynamic
+tabs' explicit Apply buttons offer these unmeasured assumptions:
 
 | Editable shaft assumption | Low | Medium | High |
 | --- | ---: | ---: | ---: |
-| Coulomb resistance, including cogging estimate (N·m) | 0.02 | 0.05 | 0.10 |
+| Static/breakaway torque, also used for sliding (N·m) | 0.02 | 0.05 | 0.10 |
 | Viscous coefficient (N·m·s/rad) | 0.0002 | 0.0008 | 0.002 |
 
 Applying an example enables the physical motor block, preserves entered gearing
-and inertia, sets periodic cogging amplitude to zero, and uses shaft smoothing
-speed10rad/s for a broad, stable illustrative transition. All fields remain
-editable. The retained [nonideal study](nonideal-study.md) explicitly narrows
-that transition to0.5rad/s with a checked0.25ms timestep; resistance approaches
-constant magnitude away from zero. It opposes motion rather than changing sign
-with angle. No static stiction or breakaway model is added.
+and inertia, and sets periodic cogging amplitude to zero. It preserves the old
+`frictionVelocityScaleRadS` value solely for file compatibility; that hidden
+field no longer smooths or changes the dry law. No existing profile is enabled,
+given a new coefficient, or rewritten automatically. The retained
+[nonideal study](nonideal-study.md) used the older smooth law and retains its
+historical settings/results; it is not evidence for current static holding.
 
 For legacy designs, the optional advanced periodic cogging model remains a
 conservative sinusoidal detent. Its potential reference can
-be negative; it is not lost energy. Smooth Coulomb regularization does not solve
-static stiction, breakaway or a Stribeck curve. Friction loss power is nonnegative
-−τ_friction,motor ω_motor; cumulative motor loss stays separate from joint
-damping, wheel contact loss and numerical constraint/projection work.
+be negative; it is not lost energy. Sliding dry loss is the negative work of
+the resolved dry reaction over actual physical angular travel; sticking loss
+is zero. Viscous loss integrates N²b qdot² separately. Discrete positive dry
+torque/displacement work is reported as `dryFrictionNumericalWorkJ`, an explicitly
+numerical discrepancy rather than heat. Contact/projection and native constraint
+accounting stay separate; their large individual terms may cancel.
+
+Both contact engines solve bounded hip friction together with ground/stop
+constraints. Analytical inverse mass couples the equal/opposite reaction into
+chassis heave. Native finite rods use a passive zero-rate SimpleMotor; the
+massless/rotor guide uses a bounded PinJoint with positional bias disabled.
+These constrain relative motion only up to the entered torque capacity; neither
+pins chassis height or binds the wheel to terrain. Signed native impulse
+observation uses the verified Windows AMD64 Pymunk7.3.0/Munk2D ABI even when
+rotor inertia is zero; unsupported native builds reject this path explicitly.
+The ideal flat bench uses a bounded scalar impulse/event integration with its
+transformed chassis equation. Breakaway and re-sticking are dynamical outcomes.
+
+Active dry contact uses a500-sweep numerical budget. Native solves500 sweeps;
+analytical projected-residual convergence can exit earlier. Requested and
+resolved iteration information is reported. Native exact initial supported
+tangency is rounded inward by one machine ULP to register contact immediately;
+this is not a finite tire penetration or invented support force. Zero-capacity
+and disabled-motor trajectories retain their previous numerical paths.
 
 Integration rejects cogging phase advances above0.25rad per step, and rejects
-underresolved explicit drag relaxation using the reflected near-zero slope and
+underresolved explicit viscous relaxation using the reflected coefficient and
 available effective inertia. Reducing output sample spacing alone does not fix
 an underresolved integration step. Ripple and force plots are finite samples.
 
@@ -129,8 +157,24 @@ spring/gravity/cogging work; it remains an average-work screen, not a guaranteed
 arrest or peak motor rating. Dynamic first-arrest search includes the full motor
 model and retains its bounded-sampling limitations.
 
+## Focused verification — 2026-11-01
+
+Nine static-law groups check bound, exact-threshold sticking, breakaway, gearing,
+work and coupled reaction. Nineteen bench/contact motor groups include dt-refined
+bench work balance and passive landing. Twenty-one contact/rotor/work regressions
+retain native ABI and contact-accounting checks. Eighteen independent actual V5
+captures exercise both alpha values, modes and engines; measured hold/breakaway
+outcomes are in [V5 designs](v5-suspension-designs.md). No profile is mutated.
+The analytical capture diagnostic originally said minimum500sweeps; only that
+caption was corrected to a500-sweep budget with projected-residual early exit.
+The authentic captures are untouched and the single-literal source transition
+is documented separately with an AST-equivalence check. A new diagnostic smoke
+checks the corrected caption. Positive-only numerical dry work remains separate
+from physical heat, not a signed correction invented to close the ledger.
+
 ## Sources
 
 - [Modern Robotics8.9](https://modernrobotics.northwestern.edu/nu-gm-book-resource/8-9-actuation-gearing-and-friction/): ideal gearing, power transformation and N² reflected inertia.
 - [MathWorks Rotational Friction](https://www.mathworks.com/help/simscape/ref/rotationalfriction.html): separate Coulomb/viscous units and smooth tanh regularization. This app omits its Stribeck term.
+- [Pymunk constraints](https://www.pymunk.org/en/latest/pymunk.constraints.html): bounded constraint force/torque, zero-rate motors, positional bias and impulse reporting. The previous MathWorks smooth-law reference describes the historical implementation, not the current static constraint.
 - Native engine/header provenance and tested ABI are recorded in `motor_rotor_constraint.py`; these do not imply compatibility with other Pymunk builds.

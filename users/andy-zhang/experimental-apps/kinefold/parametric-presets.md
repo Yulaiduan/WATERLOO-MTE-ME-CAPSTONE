@@ -58,13 +58,20 @@ acceleration and signed joint speeds. Its inertial demand includes
 `J(q) qddot + 0.5 J'(q) qdot²`. Rotor inertia adds `N² J_motor qddot`.
 This reference screen differs from actual floating-chassis inverse dynamics.
 
-**Constant cogging** is interpreted as constant entered amplitude A, with
-conservative angle-dependent detent torque `A sin(k N q + phase)`. A constant
-resisting magnitude belongs to the separate regularized Coulomb-friction term.
+The owner's constant resisting cogging estimate is lumped into the **static/breakaway
+threshold**, independent of angle. Its joint capacity is `N tau_static,motor`;
+sliding uses the same magnitude. The optional advanced periodic detent
+`A sin(k N q + phase)` remains conservative and should be zero when that
+cogging estimate is already included, to avoid double counting. The saved
+`coulombFrictionNm` key keeps its motor-shaft units and entered value.
 Viscous friction is `-b omega_motor` in N·m, with b in N·m·s/rad; it is zero
 at rest. The existing full laws and numerical guards remain in
 [motor-model.md](motor-model.md). Neither motor nor gearbox electrical
-efficiency, compliance, backlash, stiction or a measured loss map is invented.
+efficiency, compliance, backlash or a measured loss map is invented. At zero
+rate and acceleration the pose screen reports the holding interval
+`[tau_load-N tau_static,motor, tau_load+N tau_static,motor]` and the smallest
+command magnitude reaching that interval. A requested acceleration from rest
+uses the impending motion direction, rather than claiming friction helps it.
 
 ## Three different calculation scopes
 

@@ -11,7 +11,7 @@ massless belts/cable; no friction, tire compliance or hardware validation.
 import hashlib
 import json
 import math
-from motor_model import Motor
+from motor_model import Motor, FRICTION_CONVENTION
 
 R = math.pi / 180
 TAU = 2 * math.pi
@@ -399,22 +399,26 @@ class Model:
                 - self.force[1] * r - self.Mw * self.K * q
                 + self.motor.motor_state(q, 0, 0)['coggingPotentialJ'])
 
-    def actuation(self, q, velocity):
+    def actuation(self, q, velocity, dry_torque=0.):
         command = self.motor.joint_command(self.c['hipTorqueNm'])
-        friction = self.motor.motor_state(q, velocity, command)['jointFrictionNm']
+        friction = self.motor.motor_state(q, velocity, command,dry_torque)['jointFrictionNm']
         return command - self.c['dampingNms'] * velocity + friction
 
-    def acceleration(self, q, velocity, t=0, side='right'):
+    def driving_torque(self,q,velocity,t=0,side='right'):
+        """Complete reduced-coordinate drive excluding set-valued dry torque."""
+        _,derivative,B,_=self.coefficients(q)
+        return (self.generalized(q)+self.actuation(q,velocity)-.5*derivative*velocity*velocity
+                -B*self.input(t,side)['acceleration'])
+
+    def acceleration(self, q, velocity, t=0, side='right', dt=None):
         self.motor.check_step(velocity, self.c['dt'])
         M, derivative, B, _ = self.coefficients(q)
         self.motor.check_friction_step(M, self.c['dt'])
-        if not self.motor.enabled:
-            return (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity
-                    - .5 * derivative * velocity * velocity - B * self.input(t, side)['acceleration']) / M
-        return (self.generalized(q) + self.actuation(q, velocity)
-                - .5 * derivative * velocity * velocity - B * self.input(t, side)['acceleration']) / M
+        drive=self.driving_torque(q,velocity,t,side)
+        dry=self.motor.dry_torque(velocity,drive,M,dt)
+        return (drive+dry)/M
 
-    def heave_acceleration(self, t, height, speed, side='right'):
+    def heave_acceleration(self, t, height, speed, side='right',dt=None):
         """Independently transformed h-coordinate equation used by Pymunk."""
         q = self.q_from_chassis(t, height, side)
         C = self.sites(q)['6']
@@ -431,6 +435,16 @@ class Model:
         if not self.motor.enabled:
             force = (self.generalized(q) + self.c['hipTorqueNm'] - self.c['dampingNms'] * velocity) / a
         acceleration = (force - cross * base['acceleration'] - .5 * dH / a * (speed - base['velocity']) ** 2) / H
+        if self.motor.static_capacity:
+            # Same inclusion transformed to the independently integrated heave
+            # coordinate. This is an internal joint torque through exact inertial
+            # condensation, not a chassis velocity clamp or added ground pin.
+            demand=H*a*(acceleration-base['acceleration'])
+            if dt is not None:demand+=H*a*(speed-base['velocity'])/dt
+            dry=self.motor.dry_torque(velocity,demand) if dt is None else -max(-self.motor.static_capacity,min(self.motor.static_capacity,demand))
+            acceleration+=dry/(H*a)
+            if dt is not None or not hasattr(self,'last_dry_torque'):
+                self.last_dry_torque=dry
         return q, velocity, acceleration
 
     def reaction(self, t, q, velocity, acceleration, side='right'):
@@ -439,7 +453,7 @@ class Model:
                 + B * acceleration + dB * velocity * velocity - self.force[1])
 
     def hash(self):
-        identity = dict(springConvention=SPRING_CONVENTION,params=self.p,**({'motorConfig':self.motor.config} if self.motor_config_supplied else {}))
+        identity = dict(springConvention=SPRING_CONVENTION,frictionConvention=FRICTION_CONVENTION,params=self.p,**({'motorConfig':self.motor.config} if self.motor_config_supplied else {}))
         return hashlib.sha256(json.dumps(identity, sort_keys=True, separators=(',', ':')).encode()).hexdigest()
 
     def observe(self, t, q, velocity, acceleration, actual=None, side='right'):
@@ -470,6 +484,9 @@ class Model:
                    inputVelocityMmS=base['velocity'] * 1000, inputAccelerationMmS2=base['acceleration'] * 1000,
                    inputReactionN=self.reaction(t, q, velocity, acceleration, side))
         if self.motor_config_supplied or self.c['hipRotorInertiaKgM2']>0:
-            row.update(self.motor.motor_state(q, velocity, self.motor.joint_command(self.c['hipTorqueNm'])))
+            dry=getattr(self,'last_dry_torque',self.motor.dry_torque(velocity,self.driving_torque(q,velocity,t,side)))
+            state=('sticking' if velocity==0. or abs(dry)<self.motor.static_capacity*(1-1e-10) else 'sliding') if self.motor.static_capacity else None
+            row.update(self.motor.motor_state(q, velocity, self.motor.joint_command(self.c['hipTorqueNm']),dry,state))
+            row['tauApplied']=self.actuation(q,velocity,dry)
             row['legacyJointRotorKineticJ'] = .5 * self.c['hipRotorInertiaKgM2'] * velocity ** 2
         return row, frame

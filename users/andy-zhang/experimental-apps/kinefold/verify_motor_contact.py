@@ -60,6 +60,8 @@ class MotorContactChecks(unittest.TestCase):
     def test_phase_and_friction_resolution_guards(self):
         req=self.request(gearRatio=50,rotorInertiaKgM2=0,coulombFrictionNm=.01)
         m=validate_contact_request(req)
+        check_motor_step(m,1,.00025)  # dry bound is implicit, independent of smoothing
+        req['motorConfig']['viscousFrictionNms']=.1;m=validate_contact_request(req)
         with self.assertRaisesRegex(ValueError,'friction is underresolved'):check_motor_step(m,1,.00025)
         check_motor_step(m,1,1e-8)
         req=self.request(gearRatio=100,coggingAmplitudeNm=.1,coggingPeriodsPerRev=100)
@@ -104,7 +106,11 @@ class MotorContactChecks(unittest.TestCase):
                     for row in rows:
                         speed=row['motorVelocityRadS']
                         self.assertAlmostEqual(row['viscousLossPowerW'],.002*speed*speed,delta=1e-9)
-                        self.assertAlmostEqual(row['coulombLossPowerW'],.05*math.tanh(speed/10)*speed,delta=1e-9)
+                        qd=speed/r['motorConfig']['gearRatio']
+                        expected=0. if row['frictionState']=='sticking' else max(0.,-row['jointDryFrictionNm']*qd)
+                        self.assertAlmostEqual(row['coulombLossPowerW'],expected,delta=1e-9)
+                        self.assertLessEqual(abs(row['jointDryFrictionNm']),.05*4+1e-9)
+                        self.assertAlmostEqual(row['jointFrictionNm'],row['jointDryFrictionNm']+row['jointViscousFrictionNm'],delta=1e-9)
                         self.assertAlmostEqual(row['rotorKineticJ'],.5*.003*speed*speed,delta=1e-8)
                         if limited:
                             n=4;eta=.9
@@ -126,6 +132,20 @@ class MotorContactChecks(unittest.TestCase):
         estimate=energy_estimate(model,req['caseConfig'])
         expected_cog=model.motor.motor_state(model.hi,0,0)['coggingPotentialJ']-model.motor.motor_state(model.lo,0,0)['coggingPotentialJ']
         self.assertAlmostEqual(estimate['coggingReleaseToExtensionJ'],expected_cog)
+
+    def test_passive_landing_contact_keeps_source_work_separate(self):
+        req=self.request('landing',rotorInertiaKgM2=.003,gearRatio=3,
+            coulombFrictionNm=.05,viscousFrictionNms=.001)
+        for solver in (analytical,pymunk):
+            result=solver(req);last=result['rows'][-1]
+            contact=next(e for e in result['events'] if e['type']=='first-contact')
+            self.assertAlmostEqual(contact['t'],math.sqrt(2*.1/9.81),delta=.001)
+            self.assertEqual(last['motorWorkJ'],0.)
+            self.assertEqual(last['terrainWorkJ'],0.)
+            self.assertGreater(last['motorCoulombDissipatedJ'],0.)
+            self.assertGreater(last['motorViscousDissipatedJ'],0.)
+            self.assertAlmostEqual(last['motorDissipatedJ'],last['motorCoulombDissipatedJ']+last['motorViscousDissipatedJ'],delta=1e-12)
+            self.assertLess(result['diagnostics']['maxPenetrationMm'],1.)
 
     def test_legacy_joint_inertia_matches_reflected_motor(self):
         req=self.request(rotorInertiaKgM2=.02,gearRatio=3)

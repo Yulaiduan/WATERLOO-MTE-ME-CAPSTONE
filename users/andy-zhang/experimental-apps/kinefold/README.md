@@ -96,7 +96,7 @@ manual snapshot, while the live profile library remains local.
   available for actual contact; both engines, exports and desktop playback use
   the same explicit effective flat configuration. This support check has no
   realistic wheel/ground friction. Actual-contact mode provides unilateral ground
-  friction; joint/motor Coulomb and viscous losses require their own enabled inputs.
+  friction; motor static/sliding and viscous losses require their own enabled inputs.
   The top mechanism viewer has a compact run/replay/navigation rail; all detailed
   parameter groups and results span the page below it. Before running, the viewer
   labels the saved geometry-only pose; captured simulation playback is labelled separately.
@@ -384,10 +384,15 @@ engines' matching Plotly traces.
 
 Both dynamic tabs share a saved **Hip motor, gearing & losses** section and
 Plotly result category. Enable explicit motor-side rotor inertia, conservative
-sinusoidal cogging, smooth Coulomb friction and viscous losses; choose joint-side
+sinusoidal cogging, static/breakaway friction and viscous losses; choose joint-side
 or motor-shaft torque inputs. Reduction converts speed by N, torque by N and
 inertia by N². Existing profiles retain their ideal actuator until edited.
 Legacy joint inertia/damping stay additive, and the wheel drive remains free.
+Static friction supplies only the reaction needed up to its entered threshold;
+at rest it does zero work. The same magnitude resists sliding, with viscous drag
+separate. The saved `coulombFrictionNm` key remains compatible; its previous
+smoothing field is hidden and ignored. See [motor-model.md](motor-model.md) for
+the law, native-build limitation and verified hold/breakaway cases.
 Read [motor-model.md](motor-model.md) for phase/units, coupled contact inertia,
 numerical guards, energy accounting and native ABI limitations.
 

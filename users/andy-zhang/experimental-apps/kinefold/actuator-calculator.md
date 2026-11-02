@@ -93,16 +93,18 @@ fit, mounting, backlash and backdrive/regenerative capability remain unverified.
 ## Preliminary nonideal cases
 
 Three low/medium/high loss scenarios are editable study assumptions. Initial
-Coulomb magnitudes are 1%, 3% and 8% of the usable selected joint peak torque;
+Static/breakaway magnitudes are 1%, 3% and 8% of the usable selected joint peak torque;
 viscous coefficients produce the same respective torque fractions at 10 rad/s.
 For a 50 N m joint cap these are `(0.5 N m, 0.05 N m s/rad)`,
 `(1.5 N m, 0.15 N m s/rad)` and `(4 N m, 0.4 N m s/rad)`.
 The model
-uses joint-output Coulomb torque in N m and viscous coefficient in N m s/rad:
+uses joint-output static torque in N m and viscous coefficient in N m s/rad.
+It holds from rest when the available net drive is within the threshold, and
+uses the same magnitude as sliding resistance after breakaway:
 
 ```text
-tau_loss = tau_C + b |qdot|       during forward motion
-motor-side Coulomb contribution scales with N
+tau_loss = tau_static + b |qdot|       during forward motion
+motor-side static/sliding contribution scales with N
 motor-side viscous contribution scales with N²
 ```
 

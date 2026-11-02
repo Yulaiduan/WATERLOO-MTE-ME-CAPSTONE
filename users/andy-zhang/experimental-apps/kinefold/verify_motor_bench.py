@@ -67,7 +67,7 @@ class Checks(unittest.TestCase):
     def test_friction_sign_dissipation_and_disabled(self):
         motor = Motor.resolve({**DEFAULTS, 'enabled': True, 'gearRatio': 10, 'coulombFrictionNm': .2, 'viscousFrictionNms': .03})
         for v in (-3, -.01, 0, .01, 3):
-            s = motor.motor_state(2, v, 20)
+            s = motor.motor_state(2, v, 20,motor.dry_torque(v,0))
             self.assertGreaterEqual(s['motorLossPowerW'], 0)
             self.assertAlmostEqual(s['jointFrictionNm']*v, -s['motorLossPowerW'])
             self.assertAlmostEqual(s['shaftCommandNm'], 2)
@@ -78,6 +78,9 @@ class Checks(unittest.TestCase):
 
     def test_friction_resolution_guard(self):
         motor=Motor.resolve(dict(DEFAULTS,enabled=True,gearRatio=50,coulombFrictionNm=.01))
+        # Bounded dry friction has no fictitious near-zero viscous stiffness.
+        motor.check_friction_step(.1,.001)
+        motor=Motor.resolve({**motor.config,'viscousFrictionNms':.1})
         with self.assertRaisesRegex(ValueError,'friction is underresolved'):
             motor.check_friction_step(.1,.001)
         motor.check_friction_step(.1,1e-7)
@@ -94,7 +97,18 @@ class Checks(unittest.TestCase):
             self.assertGreater(result['rows'][-1]['motorFrictionLossJ'], 0)
             self.assertTrue(all(b['motorFrictionLossJ'] >= a['motorFrictionLossJ'] for a,b in zip(result['rows'], result['rows'][1:])))
             self.assertLess(result['diagnostics']['maxWorkEnergyResidualJ'], .03)
-        self.assertLess(results[0]['diagnostics']['maxWorkEnergyResidualJ'], 1e-7)
+        # The active dry law uses event-split bounded impulses, rather than the
+        # old smooth DOP853 ODE. Verify its measured timestep convergence while
+        # preserving the .03 J absolute safety bound above for both engines.
+        residuals=[results[0]['diagnostics']['maxWorkEnergyResidualJ']]
+        heaves=[results[0]['rows'][-1]['chassisZMm']]
+        for dt in (.00025,.000125):
+            fine=simulate(dict(engine='analytical',params=self.p,runConfig={**c,'dt':dt},motorConfig=motor))
+            residuals.append(fine['diagnostics']['maxWorkEnergyResidualJ']);heaves.append(fine['rows'][-1]['chassisZMm'])
+        self.assertLess(residuals[1],.6*residuals[0])
+        self.assertLess(residuals[2],.6*residuals[1])
+        self.assertLess(abs(heaves[2]-heaves[1]),abs(heaves[1]-heaves[0]))
+        print('bounded dry bench refinement residual J:',residuals,'final heave mm:',heaves)
         error = max(abs(a['chassisZMm']-b['chassisZMm']) for a,b in zip(results[0]['rows'],results[1]['rows']))
         self.assertLess(error, .2)
         print('motor finite-rise max heave difference mm:', error, 'ledger J:', [r['diagnostics']['maxWorkEnergyResidualJ'] for r in results])

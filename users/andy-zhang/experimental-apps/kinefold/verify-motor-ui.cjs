@@ -16,12 +16,12 @@ for(const basis of ['joint','motor']){
  ok(A.snapshotKey(p)!==A.snapshotKey(base),'motor model makes results stale');
 }
 ok(U.balanceCommand({...base,motorConfig:{...P.motorDefaults,coggingAmplitudeNm:10,gearRatio:50,commandBasis:'motor'}},required)===required,'disabled retained values have no conversion effect');
-const saved={...base,motorConfig:{...P.motorDefaults,enabled:true,gearRatio:20,rotorInertiaKgM2:.0008,gearboxInputInertiaKgM2:.0001,coggingAmplitudeNm:.3}};
+const saved={...base,motorConfig:{...P.motorDefaults,enabled:true,gearRatio:20,rotorInertiaKgM2:.0008,gearboxInputInertiaKgM2:.0001,coggingAmplitudeNm:.3,frictionVelocityScaleRadS:.37}};
 const original=JSON.stringify(saved);
 for(const name of ['low','medium','high']){
  const c=U.withLossPreset(saved,name);
  ok(c.gearRatio===20&&c.rotorInertiaKgM2===.0008&&c.gearboxInputInertiaKgM2===.0001,'loss example preserves drive inertia/gearing');
- ok(c.coggingAmplitudeNm===0&&c.coulombFrictionNm>0&&c.viscousFrictionNms>0&&c.frictionVelocityScaleRadS===10,'constant resistance lumps cogging without double-count');
+ ok(c.coggingAmplitudeNm===0&&c.coulombFrictionNm>0&&c.viscousFrictionNms>0&&c.frictionVelocityScaleRadS===.37,'static preset lumps cogging and preserves unused legacy smoothing');
  P.validateMotor(c);
 }
 ok(JSON.stringify(saved)===original,'presets do not mutate captured project');
@@ -34,4 +34,7 @@ ok(Math.abs(U.balanceCommand({...belted,motorConfig:{...belted.motorConfig,coggi
 const old={...legacy};delete old.hipBeltRatio;ok(!Object.hasOwn(P.validateMotor(P.clone(old)),'hipBeltRatio'),'legacy missing belt key preserved');
 for(const value of [0,3.01,NaN,true,null])assert.throws(()=>P.validateMotor({...saved.motorConfig,hipBeltRatio:value}));
 ok(A.snapshotKey(belted)!==A.snapshotKey(saved),'belt ratio invalidates captured result identity');
+const disabled={...saved,motorConfig:{...saved.motorConfig,enabled:false}};
+const roundtrip=P.validate(P.clone(disabled));ok(JSON.stringify(roundtrip.motorConfig)===JSON.stringify(disabled.motorConfig),'disabled saved motor values roundtrip unchanged');
+ok(!roundtrip.motorConfig.enabled,'validation never enables saved model');
 console.log('PASS '+checks+' motor UI conversion assertions');

@@ -10,6 +10,7 @@ import argparse
 import json
 import math
 import sys
+from motor_model import FRICTION_CONVENTION
 from contact_cases import (validate_contact_request, resolve_case, initial_conditions,
     terrain_spec, CaseController, energy_fields, case_metrics, model_identity,
     stopping_demand, world, energy_estimate, annotate_contact_work)
@@ -59,7 +60,8 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     sl,sh=sorted((m.distance(m.lo),m.distance(m.hi)))
     t=0.;steps=0;rows=[];frames=[];events=[];next_sample=1/c['outputHz'];sample_t=0.
     sumJ=[0.,0.];sumN=sumT=0.;points=[];slips=[];work=stoploss=stabilization=dampingwork=terrainwork=contactloss=motorloss=externalwork=0.;maxpen=0.;contacted=False;previous_contact=False
-    motorcoulombloss=motorviscousloss=0.
+    motorcoulombloss=motorviscousloss=0.;dry_torque=0.;dry_state='unresolved' if m.motor.static_capacity else None
+    dry_numerical_work=0.;max_dry_residual=0.;max_dry_sweeps=0
     pin_baseline=None;sample_momentum=total_vertical_momentum()
     termination='duration';first_raised=None;maxnf=0.;maxtf=0.;tor=ctl.torques(q,qd,time=0.,state=dict(h=h,vh=v[0],contacted=False))
     penetration_limit_mm=1.;prepen=postpen=maxpre=maxpost=0.;max_stop_position_error=0.
@@ -89,9 +91,12 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         if p['springEnabled']:frame.update(D=translate(mul(m.rotate(spring['D']),.001)),Q=translate(mul(m.rotate(spring['Q']),.001)))
         row=dict(t=t,theta2=q/R,velocityDegS=qd/R,accelerationDegS2=None,Fs=spring['force'],tauStatic=None,tauApplied=tor['motorTorqueNm']+tor['jointFrictionNm']-c['dampingNms']*qd,kineticJ=ke,potentialJ=pe,energyJ=ke+pe,CxMm=C[0],CzMm=C[2],chassisZMm=A[2],chassisVelocityMmS=v[0]*1000,chassisAccelerationMmS2=None,wheelZMm=C[2],wheelVelocityXMmS=-ax*v[1]*1000,wheelVelocityZMmS=(v[0]+az*v[1])*1000,wheelAngle=u[2]/R,wheelAngularVelocityDegS=v[2]/R,theta4=theta4,theta5=theta5,theta6=theta6,requestedInputMm=None,appliedInputMm=None,inputVelocityMmS=None,inputAccelerationMmS2=None,inputReactionN=None,contactNormalForceN=nf,contactTangentialForceN=tf,contactForceXN=-sumJ[0]/elapsed if elapsed else 0.,contactForceZN=sumJ[1]/elapsed if elapsed else 0.,contactNormalImpulseNs=sumN,contactTangentialImpulseNs=sumT,contactCount=len(points),slipMmS=slip,gapMm=gap,penetrationMm=max(0,-gap),guideResidualMm=0.,guideForceN=(spring['torque']+tor['motorTorqueNm']+tor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q),actuatorDampingWorkJ=work+dampingwork,motorWorkJ=work,dampingWorkJ=dampingwork,motorDissipatedJ=motorloss,motorCoulombDissipatedJ=motorcoulombloss,motorViscousDissipatedJ=motorviscousloss,motorDissipationJ=motorloss,motorFrictionLossJ=motorloss,contactDissipationJ=contactloss,stopDissipationJ=stoploss,positionStabilizationJ=stabilization,terrainWorkJ=terrainwork,inputWorkJ=terrainwork,externalWorkJ=externalwork,stoppingDemandTorqueNm=stopping_demand(m,q,qd,v[0],case),**e,**tor)
         # Refresh state diagnostics at this sample; integrated losses still use the held step torque.
-        sample_motor=m.motor.motor_state(q,qd,tor['motorTorqueNm'])
+        sample_motor=m.motor.motor_state(q,qd,tor['motorTorqueNm'],dry_torque,dry_state)
         if ctl.actuator:sample_motor.pop('shaftCommandNm')  # bounded transmission efficiency is already resolved
         row.update(sample_motor)
+        row['dryFrictionNumericalWorkJ']=dry_numerical_work
+        row['tauApplied']=tor['motorTorqueNm']+sample_motor['jointFrictionNm']-c['dampingNms']*qd
+        row['guideForceN']=(spring['torque']+tor['motorTorqueNm']+sample_motor['jointPassiveNm']-c['dampingNms']*qd)/m.jacobian(q)
         if ctl.actuator:row['rideTargetHeightMm']=ctl.actuator.target_height(t)*1000
         row.update(comZMm=(u[0]+sum(p['m'+k]*m.sites(q)[k][0][1] for k in ('2','3','6'))/m.total_mass)*1000,
             comVelocityZMmS=(v[0]+m.mass_terms(q)['B']/m.total_mass*qd)*1000)
@@ -148,9 +153,14 @@ def simulate_contact(payload, *, stop_at_assessment=False):
         check_motor_step(m,qd,dt)
         beforeq=q;beforevh=v[0];beforewheelvh=v[0]+az*v[1];before_position=(ax*u[1],u[0]+az*u[1],u[2]);event_start=len(events)
         vertical_momentum=(terms['A']*v[0]+terms['H']*v[1]) if m.finite_links else None
-        # Exact constant-force drift/kick; contacts use the physical velocity only.
-        for k in range(3):u[k]+=v[k]*dt+.5*acc[k]*dt*dt;v[k]+=acc[k]*dt
-        if m.finite_links and not m.pinned:
+        # Dry-friction branch solves the velocity complementarity before drift.
+        # Drifting the unconstrained kick first would create O(dt²) creep even
+        # when the bounded static impulse balances the complete coupled load.
+        dry_active=bool(m.motor.static_capacity)
+        for k in range(3):
+            if not dry_active:u[k]+=v[k]*dt+.5*acc[k]*dt*dt
+            v[k]+=acc[k]*dt
+        if m.finite_links and not m.pinned and not dry_active:
             # h is cyclic apart from external gravity/load: integrate its
             # canonical momentum exactly through the changing finite geometry.
             # This prevents internal leg motion creating vertical COM impulse.
@@ -193,7 +203,10 @@ def simulate_contact(payload, *, stop_at_assessment=False):
                 a=m.mass_terms(m.inverse(max(sl,min(sh,u[1]))))
                 return a['A']*v[0]+a['H']*v[1]
             return mt*v[0]+mw*az*v[1]
-        for _ in range(max(10,int(c['iterations']))):
+        dry_impulse=0.;dry_constraint_ke=0.;dry_jac=m.jacobian(q)
+        dry_row=(0.,1/dry_jac,0.);dry_inverse=inverse(dry_row);dry_inverse_mass=product(dry_row,dry_inverse)
+        dry_limit=m.motor.static_capacity*dt
+        for sweep in range(max(500 if dry_active else 10,int(c['iterations']))):
             for con in contacts:
                 gap,n,pt,jn,jt,ln,lt=con;wn=product(jn,inverse(jn));target=max(0,gap/dt)
                 new=max(0,ln-(product(jn,v)-n[0]*speed+target)/wn);dv=inverse([a*(new-ln) for a in jn]);v[:]=[a+b for a,b in zip(v,dv)];con[5]=new
@@ -205,6 +218,29 @@ def simulate_contact(payload, *, stop_at_assessment=False):
                 before=kinetic(v);momentum_before=vertical_momentum_now();dv=inverse([a*(new-old) for a in js]);v[:]=[a+b for a,b in zip(v,dv)]
                 stoploss+=before-kinetic(v);con[1]=new
                 if new-old>1e-12:stop_momentum[js]=(momentum_before,vertical_momentum_now())
+            if dry_active:
+                trial=dry_impulse-product(dry_row,v)/dry_inverse_mass
+                resolved=max(-dry_limit,min(dry_limit,trial));before=kinetic(v)
+                delta=resolved-dry_impulse;v[:]=[a+b*delta for a,b in zip(v,dry_inverse)]
+                dry_constraint_ke+=before-kinetic(v);dry_impulse=resolved
+            if dry_active and sweep%8==7:
+                # Projected velocity residuals check the coupled inclusion,
+                # including saturated/sliding constraints. This ends iteration
+                # on convergence, never by replacing a velocity with zero.
+                residual=abs(dry_impulse-max(-dry_limit,min(dry_limit,dry_impulse-product(dry_row,v)/dry_inverse_mass)))*dry_inverse_mass
+                for gap,n,pt,jn,jt,ln,lt in contacts:
+                    wn=product(jn,inverse(jn));wt=product(jt,inverse(jt))
+                    normal=product(jn,v)-n[0]*speed+max(0,gap/dt)
+                    tangent=product(jt,v)-n[1]*speed;limit=cc['friction']*ln
+                    residual=max(residual,abs(ln-max(0.,ln-normal/wn))*wn,
+                        abs(lt-max(-limit,min(limit,lt-tangent/wt)))*wt)
+                for js,old in stop_constraints:
+                    ws=product(js,inverse(js));residual=max(residual,abs(old-max(0.,old-product(js,v)/ws))*ws)
+                if residual<1e-12:break
+        if dry_active:
+            max_dry_residual=max(max_dry_residual,residual);max_dry_sweeps=max(max_dry_sweeps,sweep+1)
+        dry_torque=dry_impulse/dt if dry_active else 0.
+        dry_state=('sliding' if product(dry_row,v)!=0. and abs(dry_impulse)>=dry_limit*(1-1e-10) else 'sticking') if dry_active else None
         for js,impulse in stop_constraints:
             # Same 1e-12 Ns meaningful-impulse cutoff used by wheel contact.
             # No velocity/force clamp or change to the constraint solve occurs.
@@ -225,7 +261,18 @@ def simulate_contact(payload, *, stop_at_assessment=False):
             if ln>1e-12:
                 active=True;step_terrain_work+=speed*(n[0]*ln+n[1]*lt);sumN+=ln;sumT+=abs(lt);sumJ[0]+=n[0]*ln+n[1]*lt;sumJ[1]+=n[1]*ln-n[0]*lt;points.append(world(pt));slips.append((product(jt,v)-n[1]*speed)*1000)
                 if first_raised is None and raised_contact(terrain,t,pt):first_raised=t;events.append(dict(t=t,type='first-raised-terrain-contact'))
-        terrainwork+=step_terrain_work;contactloss+=contact_ke_before+step_terrain_work-kinetic(v)-(stoploss-stop_loss_before)
+        terrainwork+=step_terrain_work;contactloss+=contact_ke_before+step_terrain_work-kinetic(v)-(stoploss-stop_loss_before)-dry_constraint_ke
+        if dry_active:
+            for k in range(3):u[k]+=v[k]*dt
+            # Preserve the cyclic vertical momentum through geometry changes;
+            # the internal dry impulse has already used the full inverse mass.
+            if m.finite_links and not m.pinned:
+                drift_terms=m.mass_terms(m.inverse(max(sl,min(sh,u[1]))))
+                v[0]=(vertical_momentum+(-drift_terms['A']*p['g']+fz)*dt+sum(n[1]*ln-n[0]*lt for _,n,_,_,_,ln,lt in contacts)-drift_terms['H']*v[1])/drift_terms['A']
+            physical_q=m.inverse(max(sl,min(sh,u[1])))
+            signed_work=dry_torque*(physical_q-beforeq)
+            dry_loss=max(0.,-signed_work);dry_numerical_work+=max(0.,signed_work)
+            motorloss+=dry_loss;motorcoulombloss+=dry_loss
         if active and not contacted:contacted=True;events.append(dict(t=t,type='first-contact',chassisVelocityMmS=beforevh*1000,preImpulseChassisVelocityMmS=pre_contact_vh*1000,preImpulseWheelVelocityZMmS=pre_contact_wheel_vh*1000,postImpulseChassisVelocityMmS=v[0]*1000,postImpulseWheelVelocityZMmS=(v[0]+az*v[1])*1000,contactGapMm=min(g[0] for g in geometry(t))*1000,contactDetection='First unilateral impulse; positive gap uses speculative gap/step contact'))
         if previous_contact and not active and case['kind']=='jump' and not any(e['type']=='takeoff' for e in events):events.append(dict(t=t,type='takeoff'))
         previous_contact=active
@@ -303,6 +350,13 @@ def simulate_contact(payload, *, stop_at_assessment=False):
     result['scope']['fixture']=c['fixture']
     result['scope']['wheelTerrainBound']=False
     result['scope']['springConvention']='chassis-fixed-v1'
+    result['scope']['frictionConvention']=FRICTION_CONVENTION
+    result['diagnostics']['frictionConvention']=FRICTION_CONVENTION
+    result['diagnostics']['requestedIterations']=int(c['iterations'])
+    result['diagnostics']['iterations']=max(500,int(c['iterations'])) if m.motor.static_capacity else int(c['iterations'])
+    result['diagnostics'].update(maxDryFrictionSolverSweeps=max_dry_sweeps,maxDryFrictionProjectedVelocityResidual=max_dry_residual,dryFrictionNumericalWorkJ=dry_numerical_work)
+    result['diagnostics']['dryFrictionSolver']='Bounded hip impulse in simultaneous full-inverse-mass normal/tangent/stop PGS; 500-sweep budget with projected-residual early exit when active.' if m.motor.static_capacity else 'inactive'
+    result['warnings'].append('Motor coulombFrictionNm is the shaft static/breakaway threshold; the same magnitude is assumed during sliding. The legacy smoothing speed is ignored. Static friction is a bounded coupled impulse, not damping or a position lock; zero relative displacement performs zero dry-friction work.')
     result['diagnostics']['springConvention']='chassis-fixed-v1'
     result['scope']['rideTargetStepEnabled']=case['kind']=='terrain-stability' and bool((m.actuator_config or {}).get('rideTargetStepMm',0))
     result['scope']['rideTargetStepMeaning']='Desired chassis-height step applies only to floating terrain-stability; saved step fields are inactive in jump and landing. No position or wheel contact is prescribed.'

@@ -184,3 +184,82 @@ class NativeRotor:
 def attach(space, chassis, wheel, geometry, inertia, q0, qd0):
     """Attach a positive reflected hip inertia; caller owns close() in finally."""
     return NativeRotor(space, chassis, wheel, geometry, inertia, q0, qd0)
+
+
+class NativeDryFriction:
+    """Passive bounded native constraint; signed impulse observed per solver call.
+
+    Uses public SimpleMotor for finite rods or a centre-to-centre PinJoint with
+    zero positional bias for the straight massless guide. No servo target or
+    position correction is applied. The pinned ABI callback table is the same
+    guarded table used by NativeRotor; native allocation and solving stay owned
+    by Pymunk. Signed impulses are measured from this constraint's own velocity
+    increment, rather than inferred from a near-zero velocity sign.
+    """
+    def __init__(self,space,chassis,wheel,m,linkage=None):
+        import pymunk
+        from pymunk._chipmunk_cffi import ffi
+        if (pymunk.version!='7.3.0' or pymunk.chipmunk_version!=_ENGINE_VERSION
+                or ctypes.sizeof(ctypes.c_void_p)!=8 or ffi.sizeof('cpFloat')!=8
+                or platform.system()!='Windows' or platform.machine().lower() not in ('amd64','x86_64')):
+            raise ValueError('Native dry friction requires the verified Windows AMD64 Pymunk 7.3.0 / Munk2D ABI.')
+        self.space,self.m,self.linkage=space,m,linkage
+        self.body=linkage.upper if linkage else wheel
+        self.chassis,self.wheel=chassis,wheel
+        self.constraint=(pymunk.SimpleMotor(chassis,self.body,0.) if linkage
+                         else pymunk.PinJoint(chassis,wheel,(0,0),(0,0)))
+        con=self.constraint;con.collide_bodies=False;con.max_bias=0.;con.error_bias=1.
+        address=int(ffi.cast('uintptr_t',con._constraint))
+        self._slot=ctypes.cast(address,ctypes.POINTER(ctypes.c_void_p));self._original=self._slot[0]
+        self._native=ctypes.cast(self._original,ctypes.POINTER(_Class)).contents
+        self._callbacks=(_STEP(self._pre),_STEP(self._cached),_STEP(self._solve),_GET(self._get))
+        self._class=_Class(*self._callbacks);self._slot[0]=ctypes.addressof(self._class)
+        con._dry_friction_owner=self
+        self.signed_impulse=0.;self.dt=0.;self.jacobian=1.;self.error=None;self.closed=False
+        space.add(con)
+
+    def prepare(self,dt,q):
+        self.dt=dt;self.jacobian=self.m.jacobian(q)
+        self.radial_sign=math.copysign(1.,self.m.distance(q))
+        self.constraint.max_force=(self.m.motor.static_capacity if self.linkage
+                                   else self.m.motor.static_capacity/abs(self.jacobian))
+
+    def _coordinate_momentum(self):
+        if self.linkage:return self.body.moment*self.body.angular_velocity
+        relative=self.wheel.position-self.chassis.position
+        # Public PinJoint normal points from chassis to wheel, including signed s.
+        axis=relative.normalized()
+        return self.body.mass*self.body.velocity.dot(axis)
+
+    def _pre(self,ptr,dt):
+        self.signed_impulse=0.
+        self._native.pre(ptr,dt)
+
+    def _capture(self,fn,ptr,dt):
+        try:
+            before=self._coordinate_momentum();fn(ptr,dt)
+            self.signed_impulse+=self._coordinate_momentum()-before
+        except BaseException as error:self.error=str(error)
+
+    def _cached(self,ptr,dt):self._capture(self._native.cached,ptr,dt)
+    def _solve(self,ptr,dt):self._capture(self._native.solve,ptr,dt)
+    def _get(self,ptr):return abs(self.signed_impulse)
+
+    @property
+    def torque(self):
+        if self.error:raise ValueError('Native dry friction callback failed: '+self.error)
+        factor=1. if self.linkage else self.jacobian*self.radial_sign
+        return self.signed_impulse*factor/self.dt if self.dt else 0.
+
+    @property
+    def state(self):
+        # Saturation alone can also mean static balance exactly at capacity.
+        # This exact-zero comparison is diagnostic only; no velocity is changed.
+        rate=(self.body.angular_velocity-self.chassis.angular_velocity if self.linkage
+              else (self.wheel.velocity-self.chassis.velocity).dot(self.m.axis)/self.jacobian)
+        return 'sliding' if rate!=0. and abs(self.torque)>=self.m.motor.static_capacity*(1-1e-10) else 'sticking'
+
+    def close(self):
+        if self.closed:return
+        if self.constraint in self.space.constraints:self.space.remove(self.constraint)
+        self._slot[0]=self._original;self.constraint._dry_friction_owner=None;self.closed=True

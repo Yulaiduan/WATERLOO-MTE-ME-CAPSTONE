@@ -40,6 +40,18 @@ near(gearPoint.rotorAccelerationNm-sample.rotorAccelerationNm,49*.0004*3);
 near(gearPoint.jointTorqueNm-sample.jointTorqueNm,49*.0004*3);
 near(gearPoint.gearboxOutputTorqueNm,sample.gearboxOutputTorqueNm);
 near(gearAnalysis.inertia.gearboxReflectedJointKgM2,49*.0004);
+// Independently check a set-valued holding interval, not a zero-speed tanh.
+const holdFixture=fixture(p=>{p.motorConfig={...P.motorDefaults,enabled:true,gearRatio:10,hipBeltRatio:2,coulombFrictionNm:.05,viscousFrictionNms:.001,frictionVelocityScaleRadS:.000001};});
+const hs=A.analyze(holdFixture.project,holdFixture.actuator,realm({...sweep,jointAccelerationRadS2:0})),hz=hs.staticRows[5],net=hz.staticJointNm-hz.coggingJointNm;
+near(hz.staticFrictionCapacityNm,1);near(hz.holdingMinJointNm,net-1);near(hz.holdingMaxJointNm,net+1);
+near(hz.holdingMinShaftNm,(net-1)/20);near(hz.holdingMaxShaftNm,(net+1)/20);
+near(hz.jointTorqueNm,Math.sign(net)*Math.max(0,Math.abs(net)-1));
+const canHold=command=>Math.abs(command+hz.coggingJointNm-hz.staticJointNm)<=1+1e-12;
+ok(canHold(net)&&!canHold(net+1.01)&&!canHold(net-1.01),'opposing requested drive can exceed capacity even with zero speed');
+const tiny=hs.rows.find(r=>r.jointSpeedRadS>0);near(tiny.coulombJointNm,1);near(tiny.viscousJointNm,.4*tiny.jointSpeedRadS);
+const altered=realm(holdFixture.project);altered.motorConfig.frictionVelocityScaleRadS=500;const alteredActuator=realm(holdFixture.actuator);alteredActuator.values.motorConfig.frictionVelocityScaleRadS=500;
+const alteredScreen=A.analyze(altered,alteredActuator,realm({...sweep,jointAccelerationRadS2:0}));near(alteredScreen.staticRows[5].shaftTorqueNm,hz.shaftTorqueNm);near(alteredScreen.rows.find(r=>r.jointSpeedRadS>0).shaftTorqueNm,tiny.shaftTorqueNm);
+ok(hs.frictionConvention==='set-valued-static-breakaway-v1','screen law tagged');
 const custom=fixture(p=>{p.params.m2=1;p.solverConfig.inertiaModel='custom';p.solverConfig.I2=.21;p.solverConfig.I3=.13;p.solverConfig.I5=.07;p.solverConfig.I6=.04;Object.assign(p.params,{ra:48,rb:20,rc:30,rd:40,re:18,rf:30});p.solverConfig.hipRotorInertiaKgM2=.09;});
 const cj=A.fixedHipInertia(custom.project.params,custom.project.solverConfig,130),k3=1-48/20,k5=1-30/40,K=1-48/20+(48/20-30/40)*18/30;
 near(cj.legInertiaKgM2,.25*(custom.project.params.L2/1000)**2+.21+.13*k3*k3+.07*k5*k5+.04*K*K+.09);

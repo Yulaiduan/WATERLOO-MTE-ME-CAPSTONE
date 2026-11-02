@@ -1,5 +1,25 @@
 # Kinefold context
 
+## Latest — 2026-11-01 static/breakaway friction
+
+Owner renamed the Coulomb value to static friction. Both engines now solve a
+bounded dry reaction: sticking below breakaway and equal-magnitude sliding
+resistance, with separate viscous drag and zero physical dry work at rest.
+Reuse `coulombFrictionNm` as the motor-shaft threshold; preserve old values and
+enabled flags. Hide/ignore the old smoothing scale, retain it in saved files.
+Cogging estimate stays lumped in this constant threshold; periodic detent stays
+advanced/separate. N scales capacity, N² scales input inertia/viscous drag.
+Read motor-model.md for exact law,500-sweep budget, native pinned-ABI restriction,
+actual phase/reaction plots and separate positive numerical-work account. Legacy
+results without the convention tag cannot compare as the same current law.
+Eighteen zero-start V5 cases plus focused motor/contact/browser checks prove
+holding and breakaway without a chassis pin, motor hold command or profile edits.
+The .05Nm threshold balances.034188/.027188Nm residual; zero threshold drifts;
++.20Nm command breaks away. All defaults and named designs remain unchanged.
+Saved V5 motor losses stay disabled; no new coefficient is invented or enabled.
+Raw hashed captures/PNG/UI proofs stay ignored in app-local .preview/exports.
+
+
 ## Latest — 2026-11-01 stationary ground check and imperfect g-comp from rest
 
 Owner clarified prescribed-height is only a no-terrain floating-chassis support
@@ -12,8 +32,8 @@ Flat mode resolves height/speed/rise/delay0 for single/paired/desktop runs and
 exports; stored terrain inputs remain untouched for returning to actual contact,
 reload and project export. No new persistent schema field or automatic friction.
 Actual contact hasμ0.8/zero restitution; both V5 motor blocks remain disabled.
-Enabled Coulomb/viscous losses use the existing shared motor model and are not
-static stiction. Native space damping1 and sleep∞ add no global velocity damping
+At that revision enabled Coulomb/viscous losses used a smooth dry law; the
+current static-friction implementation is described above. Native space damping1 and sleep∞ add no global velocity damping
 or sleeping hold; impulse/projection energy accounting is not measured absorption.
 Use zero-velocity captures from the current revision, not the earlier kick study
 or superseded exact-start calibration. Read v5-suspension-designs.md for outcomes.

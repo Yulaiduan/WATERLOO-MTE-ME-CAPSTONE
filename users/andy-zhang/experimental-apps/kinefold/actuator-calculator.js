@@ -83,9 +83,18 @@
   }
   function defaultLosses(h){return [1,3,8].map((percent,i)=>({id:['low','medium','high'][i],name:['Low','Medium','High'][i],
     coulombNm:h.jointPeakNm*percent/100,viscousNms:h.jointPeakNm*percent/100/10,referenceSpeedRadS:10,percent,
-    meaning:'Assumed output-side envelope: '+percent+'% peak Coulomb plus '+percent+'% peak viscous drag at 10 rad/s; not measured.'}));}
-  function validateLoss(loss){finite(loss.coulombNm,'Output Coulomb torque',0,1e9);finite(loss.viscousNms,'Output viscous coefficient',0,1e9);return {...loss};}
+    meaning:'Assumed output-side envelope: '+percent+'% peak static/breakaway (also sliding) plus '+percent+'% peak viscous drag at 10 rad/s; not measured.'}));}
+  function validateLoss(loss){finite(loss.coulombNm,'Output static/breakaway torque',0,1e9);finite(loss.viscousNms,'Output viscous coefficient',0,1e9);return {...loss};}
   function lossTorque(loss,speed){return loss.coulombNm+loss.viscousNms*Math.abs(speed);}
+  // Independent output-side calculator; no simulation configuration is read.
+  // netDriveNm includes all forces except dry/viscous drag in this coordinate.
+  function frictionResponse(loss,speed,netDriveNm){
+    const dry=validateLoss(loss).coulombNm;
+    if(speed===0){const held=Math.abs(netDriveNm)<=dry;const dryNm=held?netDriveNm:Math.sign(netDriveNm)*dry;
+      return {frictionState:held?'sticking':'sliding',dryResistanceNm:dryNm,resistanceNm:dryNm,netNm:netDriveNm-dryNm,lossPowerW:0};}
+    const resistanceNm=Math.sign(speed)*dry+loss.viscousNms*speed;
+    return {frictionState:'sliding',dryResistanceNm:Math.sign(speed)*dry,resistanceNm,netNm:netDriveNm-resistanceNm,lossPowerW:resistanceNm*speed};
+  }
   function potential(p,q,fixture,balance='profile'){
     const z=geometry(p,q,fixture);let gravity=0,gravityQ=0,spring=0,springQ=0;
     for(const x of Object.values(z.sites)){gravity+=x.mass*p.g*x.site[0][1];gravityQ+=x.mass*p.g*x.site[1][1];}
@@ -127,10 +136,11 @@
     const rk=(s,y,ds)=>{const a=deriv(s,y),b=deriv(s+ds/2,y.map((v,i)=>v+ds*a[i]/2)),c=deriv(s+ds/2,y.map((v,i)=>v+ds*b[i]/2)),d=deriv(s+ds,y.map((v,i)=>v+ds*c[i]));return y.map((v,i)=>v+ds*(a[i]+2*b[i]+2*c[i]+d[i])/6);};
     let state=[0,0,0,0],s=0,time=0,status='complete',rows=[];
     const row=()=>{const z=at(s),u=U(s),omega=Math.sqrt(2*Math.max(0,state[0])/z.totalKgM2),drive=torque(h,omega),drag=lossTorque(f,omega),jprime=dir*z.derivativeKgM2Rad;
-      const acceleration=(drive-drag-dir*u.appliedDerivativeNm-.5*jprime*omega*omega)/z.totalKgM2;
+      const response=frictionResponse(f,omega,drive-dir*u.appliedDerivativeNm),actualDrag=response.resistanceNm;
+      const acceleration=(response.netNm-.5*jprime*omega*omega)/z.totalKgM2;
       const wheel=z.sites.wheel.site,com=z.com;
       return {sRad:s,qDeg:(q0+dir*s)/RAD,timeS:time,speedRadS:omega,speedDegS:omega/RAD,motorRpm:omega*h.totalRatio*60/TAU,
-        accelerationRadS2:acceleration,hipAccelerationRadS2:dir*acceleration,driveNm:drive,lossNm:drag,potentialResistingNm:dir*u.appliedDerivativeNm,
+        accelerationRadS2:acceleration,hipAccelerationRadS2:dir*acceleration,driveNm:drive,lossNm:actualDrag,frictionState:response.frictionState,staticFrictionCapacityNm:f.coulombNm,lossPowerW:response.lossPowerW,potentialResistingNm:dir*u.appliedDerivativeNm,
         hipVelocityRadS:dir*omega,lowerAbsoluteVelocityRadS:z.lowerRate*dir*omega,relativeKneeVelocityRadS:(z.lowerRate-1)*dir*omega,
         lowerAbsoluteAccelerationRadS2:z.lowerRate*dir*acceleration,relativeKneeAccelerationRadS2:(z.lowerRate-1)*dir*acceleration,
         totalInertiaKgM2:z.totalKgM2,legInertiaKgM2:z.legKgM2,motorInertiaKgM2:z.motorKgM2,gearboxInertiaKgM2:z.gearboxKgM2,
@@ -179,8 +189,8 @@
   }
   function accelerationCurve(p,h,loss,qDeg=p.theta2,options={}){
     const z=inertia(p,qDeg*RAD,h,'fixed-hip'),u=potential(p,qDeg*RAD,'fixed-hip',options.balance||'ideal-balance'),dir=-1;
-    return Array.from({length:121},(_,i)=>{const speed=h.jointSpeedCapRadS*i/120,drive=torque(h,speed),drag=lossTorque(loss,speed);
-      return {speedRadS:speed,motorRpm:speed*h.totalRatio*60/TAU,driveNm:drive,lossNm:drag,accelerationRadS2:(drive-drag-dir*u.appliedDerivativeNm-.5*dir*z.derivativeKgM2Rad*speed*speed)/z.totalKgM2};});
+    return Array.from({length:121},(_,i)=>{const speed=h.jointSpeedCapRadS*i/120,drive=torque(h,speed),response=frictionResponse(loss,speed,drive-dir*u.appliedDerivativeNm);
+      return {speedRadS:speed,motorRpm:speed*h.totalRatio*60/TAU,driveNm:drive,lossNm:response.resistanceNm,frictionState:response.frictionState,accelerationRadS2:(response.netNm-.5*dir*z.derivativeKgM2Rad*speed*speed)/z.totalKgM2};});
   }
   function idealRatioSweep(p,h,qDeg=p.theta2){
     const z=inertia(p,qDeg*RAD,h),J=z.legKgM2+h.gearboxOutputInertiaKgM2,j=h.rotorInertiaKgM2+h.gearboxInputInertiaKgM2;
@@ -197,7 +207,7 @@
     const cases=losses.map(loss=>{
       const free=integrateStroke(p,h,loss,{balance:fixedBalance,steps:options.steps||1000});let jump,jumpError=null;
       try{jump=estimateJump(p,h,loss,{balance:jumpBalance,steps:options.steps||1000});}catch(e){jumpError=e.message;jump=null;}
-      const zeroSpeedPoses=poses.map(z=>{const u=potential(p,z.qDeg*RAD,'fixed-hip',fixedBalance);return {qDeg:z.qDeg,accelerationRadS2:(h.jointPeakNm-loss.coulombNm+u.appliedDerivativeNm)/z.totalKgM2};});
+      const zeroSpeedPoses=poses.map(z=>{const u=potential(p,z.qDeg*RAD,'fixed-hip',fixedBalance);return {qDeg:z.qDeg,frictionState:frictionResponse(loss,0,h.jointPeakNm+u.appliedDerivativeNm).frictionState,accelerationRadS2:frictionResponse(loss,0,h.jointPeakNm+u.appliedDerivativeNm).netNm/z.totalKgM2};});
       return {loss,free,jump,jumpError,zeroSpeedPoses,accelerationCurve:accelerationCurve(p,h,loss,p.theta2,{balance:fixedBalance})};});
     const targetJumpHeightM=options.targetJumpHeightM??2;finite(targetJumpHeightM,'Target jump height',0,100);
     const compare=[];
@@ -207,7 +217,7 @@
         compare.push({name:candidate.name||ch.name||'Candidate',ratio:ch.totalRatio,peakJointNm:ch.jointPeakNm,totalInertiaKgM2:z.totalKgM2,motorInertiaKgM2:z.motorKgM2,gearboxInertiaKgM2:z.gearboxKgM2,initialAccelerationRadS2:free.initialAccelerationRadS2,strokeTimeS:free.complete?free.strokeTimeS:null,terminalSpeedRadS:free.end.speedRadS,jumpHeightM:jump?.estimatedJumpHeightM??null,status:free.status,hardware:ch});
       }catch(e){compare.push({name:candidate.name||'Candidate',error:e.message});}
     }
-    return {schema:'kinefold/actuator-calculator-v1',profile:{id:project.id||null,name:project.name||'Mechanism snapshot',params:p},hardware:h,
+    return {schema:'kinefold/actuator-calculator-v1',frictionConvention:'set-valued-static-breakaway-v1',profile:{id:project.id||null,name:project.name||'Mechanism snapshot',params:p},hardware:h,
       options:{fixedBalance,jumpBalance,targetJumpHeightM,steps:options.steps||1000},current,poses,cases,compare,idealRatioSweep:idealRatioSweep(p,h),
       assumptions:clone(options.assumptions||[]),warning:'Independent preliminary calculator. Peak ratings plus illustrative torque-speed/loss assumptions do not establish a safe continuous actuator envelope or simulated jump.'};
   }
@@ -225,7 +235,7 @@
       {id:'actuator-jump-work',title:'Jump work and kinetic energy · medium losses',xLabel:'Extension progress · rad',yLabel:'Energy · J',traces:[]}
     ];
     const middle=result.cases[Math.min(1,result.cases.length-1)].jump;
-    if(middle)specs.at(-1).traces=[['motorWorkJ','Motor delivered','#5875a0'],['lossWorkJ','Coulomb + viscous loss','#a84a49'],['gravityDeltaJ','Gravity increase','#c68b24'],['springDeltaJ','Spring change','#198475'],['kineticJ','Total kinetic','#263c33']].map(([k,n,c])=>trace(middle.rows.map(r=>r.sRad),middle.rows.map(r=>r[k]),n,c));
+    if(middle)specs.at(-1).traces=[['motorWorkJ','Motor delivered','#5875a0'],['lossWorkJ','Sliding dry + viscous loss','#a84a49'],['gravityDeltaJ','Gravity increase','#c68b24'],['springDeltaJ','Spring change','#198475'],['kineticJ','Total kinetic','#263c33']].map(([k,n,c])=>trace(middle.rows.map(r=>r.sRad),middle.rows.map(r=>r[k]),n,c));
     const free=result.cases[Math.min(1,result.cases.length-1)].free;
     specs.push({id:'actuator-link-rates',title:'Hip, lower-link absolute and relative-knee speeds · medium losses',xLabel:'Time · s',yLabel:'Signed angular velocity · rad/s',traces:[['hipVelocityRadS','Hip θ₂','#5875a0'],['lowerAbsoluteVelocityRadS','Lower absolute θ₃','#198475'],['relativeKneeVelocityRadS','Relative knee θ₃−θ₂','#c68b24']].map(([k,n,c])=>trace(free.rows.map(r=>r.timeS),free.rows.map(r=>r[k]),n,c))});
     const jumpSpec=specs.find(s=>s.id==='actuator-jump-height'),maxS=Math.max(0,...result.cases.filter(c=>c.jump).map(c=>c.jump.angularTravelRad));
@@ -233,5 +243,5 @@
     if(result.compare.length){const rows=result.compare.filter(c=>!c.error);specs.push({id:'actuator-comparison',title:'Exact catalog combinations · inertia and acceleration',xLabel:'Total reduction N',yLabel:'Initial extension acceleration · rad/s²',traces:[{type:'scatter',mode:'markers',x:rows.map(r=>r.ratio),y:rows.map(r=>r.initialAccelerationRadS2),text:rows.map(r=>r.name),name:'Selected catalog combinations',marker:{color:'#5875a0',size:10},hovertemplate:'%{text}<br>N=%{x}<br>%{y:.3f} rad/s²<extra></extra>'}]});}
     return specs;
   }
-  return {RAD,hardware,fromCombination,validateParams,geometry,inertia,torque,defaultLosses,lossTorque,potential,straightBranch,integrateStroke,estimateJump,accelerationCurve,idealRatioSweep,calculate,plotSpecs};
+  return {RAD,hardware,fromCombination,validateParams,geometry,inertia,torque,defaultLosses,lossTorque,frictionResponse,potential,straightBranch,integrateStroke,estimateJump,accelerationCurve,idealRatioSweep,calculate,plotSpecs};
 });

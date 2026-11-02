@@ -15,10 +15,14 @@ import math
 import sys
 
 from dynamic_model import Model, R, defaults
+from motor_model import FRICTION_CONVENTION
 
 
 def state_observation(model, t, q, v, side='right', actual=None):
-    return model.observe(t, q, v, model.acceleration(q, v, t, side), actual, side)
+    a=model.acceleration(q,v,t,side)
+    if model.motor.static_capacity and hasattr(model,'last_dry_torque'):
+        a=(model.driving_torque(q,v,t,side)+model.last_dry_torque)/model.mass(q)[0]
+    return model.observe(t,q,v,a,actual,side)
 
 
 def jump(model, t, q, v):
@@ -56,6 +60,7 @@ def finish_diagnostics(model, rows, diagnostics):
 
 
 def analytical(model):
+    if model.motor.static_capacity:return analytical_dry(model)
     import numpy as np
     from scipy.integrate import solve_ivp
     c = model.c
@@ -152,6 +157,52 @@ def analytical(model):
     return rows, frames, events, finish_diagnostics(model, rows, diagnostics)
 
 
+def analytical_dry(model):
+    """Reduced-coordinate bounded impulses with resolved zero-speed events.
+
+    Inputs SI model and configured dt; output usual rows/frames/work. The full
+    prescribed-wheel mass matrix is condensed exactly by Model. A sliding step
+    ends at zero speed before solving the static inclusion; no velocity band,
+    holding controller or position projection is introduced. Frozen-force
+    midpoint drift is a numerical approximation; refine dt for changing loads.
+    """
+    c=model.c;q=model.q0;v=c['initialVelocityDegS']*R;t=wa=wi=loss=0.;next_sample=1/c['outputHz']
+    rows=[];frames=[];events=[];steps=0;termination='duration'
+    boundaries=sorted(set(model.input_breaks()+[c['duration']]))
+    def append(side='right'):
+        row,frame=state_observation(model,t,q,v,side)
+        row.update(actuatorDampingWorkJ=wa,terrainWorkJ=wi,inputWorkJ=wi,motorFrictionLossJ=loss,motorDissipatedJ=loss)
+        rows.append(row);frames.append(frame)
+    append()
+    for end in boundaries:
+        while t<end-1e-12:
+            step=min(c['dt'],end-t,next_sample-t)
+            drive=model.driving_torque(q,v,t);M=model.mass(q)[0]
+            dry=model.motor.dry_torque(v,drive)
+            a=(drive+dry)/M;stopping=False
+            if v and a*v<0 and -v/a<=step:
+                step=-v/a;stopping=True
+            else:dry=model.motor.dry_torque(v,drive,M,step);a=(drive+dry)/M
+            nv=0. if stopping else v+a*step
+            nq=q+.5*(v+nv)*step
+            if nq<model.lo or nq>model.hi:termination='travel-limit';break
+            model.last_dry_torque=dry
+            pa,pi=powers(model,t,q,v);qa,qin=powers(model,t+step,nq,nv)
+            wa+=.5*(pa+qa)*step;wi+=.5*(pi+qin)*step
+            loss+=max(0.,-dry*(nq-q))+.5*(model.motor.motor_state(q,v,0)['viscousLossPowerW']+model.motor.motor_state(nq,nv,0)['viscousLossPowerW'])*step
+            q,v=nq,nv;t+=step;steps+=1
+            if abs(t-next_sample)<1e-10:t=next_sample
+            if abs(t-end)<1e-10:t=end
+            if t>=next_sample-1e-10 or t>=end-1e-10:
+                append('left' if end in model.input_breaks() and t==end else 'right')
+                if t>=next_sample-1e-10:next_sample+=1/c['outputHz']
+        if termination!='duration':break
+    if t>rows[-1]['t']+1e-10:append()
+    diagnostics=dict(termination=termination,elapsedSeconds=t,steps=steps,maxConstraintPositionErrorMm=0,maxConstraintAngleErrorDeg=0,
+        integrator='Reduced-coordinate bounded dry-friction impulse / zero-speed event split / midpoint drift',frameSource='exact floating analytical kinematics')
+    return rows,frames,events,finish_diagnostics(model,rows,diagnostics)
+
+
 def pymunk_run(model):
     import pymunk
     c, p = model.c, model.p
@@ -221,6 +272,9 @@ def pymunk_run(model):
         while t < end - 1e-12:
             step = min(c['dt'], end - t, max(1e-12, next_sample - t))
             q, v, ha = read()
+            if model.motor.static_capacity:
+                q,v,ha=model.heave_acceleration(t,body.position.y,body.velocity.y,dt=step)
+            dry=getattr(model,'last_dry_torque',0.)
             if (q <= model.lo + 1e-11 and v < 0) or (q >= model.hi - 1e-11 and v > 0):
                 termination = 'travel-limit'
                 break
@@ -244,6 +298,7 @@ def pymunk_run(model):
             if model.motor_config_supplied:
                 motor_loss += .5 * (model.motor.motor_state(q, v, 0)['motorLossPowerW']
                                     + model.motor.motor_state(nq, nv, 0)['motorLossPowerW']) * step
+                motor_loss+=max(0.,-dry*(nq-q))
             t = new_t
             if t >= next_sample - 1e-10 or t >= end - 1e-10:
                 append(side)
@@ -309,7 +364,9 @@ def simulate(payload):
         result['diagnostics'].update(reflectedMotorInertiaKgM2=model.motor.reflected_inertia,
                                      legacyJointRotorInertiaKgM2=model.c['hipRotorInertiaKgM2'],
                                      jointCommandNm=model.motor.joint_command(model.c['hipTorqueNm']))
-        warnings.append('Optional ideal geared motor: fixed theta_motor=N*q; conservative sinusoidal cogging and regularized Coulomb/viscous drag. Zero defaults are compatibility settings, not hardware measurements.')
+        warnings.append('Optional ideal geared motor: fixed theta_motor=N*q; conservative periodic detent and separate viscous drag. The stored shaft coulombFrictionNm is the static/breakaway threshold, with equal sliding resistance assumed. Legacy smoothing speed is ignored. Bounded dry friction at rest performs zero work; zero defaults are compatibility settings, not measurements.')
+    result['scope']['frictionConvention']=FRICTION_CONVENTION
+    result['diagnostics']['frictionConvention']=FRICTION_CONVENTION
     json.dumps(result, allow_nan=False)
     return result
 
