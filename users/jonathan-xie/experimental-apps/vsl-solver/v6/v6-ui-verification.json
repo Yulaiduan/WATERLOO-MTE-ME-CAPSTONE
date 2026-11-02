@@ -1,0 +1,28 @@
+{
+  "checks": 8290,
+  "charts": 32,
+  "grid": {
+    "rows": [
+      "tau2",
+      "aG",
+      "vz",
+      "dz",
+      "time",
+      "deltaTab",
+      "vab",
+      "Pab"
+    ],
+    "columns": [
+      "theta",
+      "time",
+      "alpha",
+      "height"
+    ]
+  },
+  "brakingTorqueNm": -18.91155765470654,
+  "holdingTorqueNm": 0.06274113617364208,
+  "brakingEndAccelerationG": 0.38141137960646754,
+  "holdingAccelerationG": 0,
+  "wheelTorqueNm": 0,
+  "scope": "data and SVG contracts; data/SVG checks only; browser layout not checked in this run"
+}

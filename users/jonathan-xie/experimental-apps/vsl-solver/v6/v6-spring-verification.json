@@ -1,0 +1,73 @@
+{
+  "checks": 12766,
+  "catalogueRows": 6839,
+  "eligible": 6638,
+  "geometryFixtures": 48,
+  "results": {
+    "C": [
+      {
+        "worstNm": 0.2850215815461965,
+        "parts": [
+          "96485K342",
+          "2006N469",
+          "96485K182"
+        ],
+        "geometry": {
+          "hornR": 62.22694951186731,
+          "rs": 10,
+          "nu": 0,
+          "Sv": 70.3635665763311,
+          "Su": 7.79903966797338
+        }
+      },
+      {
+        "worstNm": 1.755602861582716,
+        "parts": [
+          "96485K397",
+          "8969T876",
+          "96485K315"
+        ],
+        "geometry": {
+          "hornR": 62.22694951186731,
+          "rs": 10,
+          "nu": 0,
+          "Sv": 129.85435552705502,
+          "Su": 14.214448620638185
+        }
+      }
+    ],
+    "E": [
+      {
+        "worstNm": 63.351413105240624,
+        "parts": [
+          "9654K825",
+          "9640K124",
+          "5108N917"
+        ],
+        "geometry": {
+          "hornR": 62.22694951186731,
+          "rs": 10,
+          "nu": 0,
+          "Sv": 350.50096256742,
+          "Su": 83.65972288414653
+        }
+      },
+      {
+        "worstNm": 63.363428589991,
+        "parts": [
+          "9654K825",
+          "9654K643",
+          "5108N917"
+        ],
+        "geometry": {
+          "hornR": 62.22694951186731,
+          "rs": 10,
+          "nu": 0,
+          "Sv": 203.69496518104054,
+          "Su": 25.047885742041583
+        }
+      }
+    ]
+  },
+  "scope": "Numerical gravity-compensation screening; limits exact over continuous cable travel, torque extrema sampled at 4001+ poses; no fatigue or hardware certification."
+}

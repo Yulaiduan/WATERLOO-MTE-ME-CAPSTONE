@@ -23,8 +23,9 @@ Fz, Fy=0 and beta=0. Switching back restores manual loads/beta. The spring optim
 retains its static prescribed-load objective. With a manual mode selected, changing
 h leaves the original static graphs unchanged.
 
-The collapsible Fall recovery section is always a **5×4 grid**, regardless of
-Analysis Mode. Rows are τ₂, net a_z/g (with Fz in N), v_z, d_z, and elapsed time. Columns are
+The collapsible Fall recovery section is always a **8×4 grid**, regardless of
+Analysis Mode. Rows are τ₂, net a_z/g (with Fz in N), v_z, d_z, elapsed time, AB tension
+difference, AB relative belt speed and AB relative power. Columns are
 θ₂, time, peak magnitude versus alpha, and peak magnitude versus h. Both sweep
 columns use master bounds and braking-stroke peaks. Displacement versus h is
 constant; velocity versus alpha is constant when the catch decelerates monotonically.
@@ -87,7 +88,7 @@ The fall checks use independent constant-acceleration and time-domain integratio
 references, conservation of energy, signs, geometry, alpha/height/mass sweeps,
 invalid regimes, nonmutation and exact V4 static-model preservation.
 Excel checks mutate temporary workbooks only. The current grid checks render all
-twenty SVG charts in both analysis modes and all four scale/magnitude combinations,
+thirty-two SVG charts in both analysis modes and all four scale/magnitude combinations,
 verify the holding switch against independent static equilibrium, and check the
 restored displacement/velocity sweeps. See [fall checks](v5-verification.json),
 [analysis checks](v5-analysis-verification.json) and [grid checks](v5-ui-verification.json).
@@ -103,3 +104,14 @@ No dependency installation is required.
 The fifth fall row plots elapsed contact time versus theta2 and time (y=x),
 and total catch time versus alpha and fall height using their master bounds.
 Time uses seconds and remains available in every Analysis Mode.
+
+## Belt AB fall signals
+
+The final three rows plot deltaTab=TU-TL (N), belt circulation speed relative
+to Link2 (m/s), and their pointwise product Pab (W). Their four columns follow
+theta2/time/peak versus alpha/peak versus h. Read the [belt handoff](v5-belt-ab-handoff.md)
+for reference-frame signs, sizing limits and the expanded fall CSV (both span
+tensions and geometry metadata included). Peaks are maxima of pointwise signals.
+
+Run `node verify-belt.cjs` for the force-balance and relative-power checks;
+see [results](v5-belt-verification.json).

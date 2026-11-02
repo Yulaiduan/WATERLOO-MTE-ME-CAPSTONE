@@ -1,0 +1,13 @@
+{
+  "preservedSourceFiles": 27,
+  "sourceChanges": [],
+  "defaultConfigurations": 6,
+  "defaultSolutions": [
+    "S0001",
+    "S0002",
+    "S0003"
+  ],
+  "nextSolveId": 9,
+  "bundledWorkbookWriterWithoutPath": true,
+  "allSeedLimitsValid": true
+}

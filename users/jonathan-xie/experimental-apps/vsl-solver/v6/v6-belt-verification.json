@@ -1,0 +1,26 @@
+{
+  "checks": 15007,
+  "defaultPeaks": {
+    "tau2": 18.91155765470654,
+    "aG": 2.1133414030123734,
+    "aSigned": 2.1133414030123734,
+    "Fz": 267.2414426810746,
+    "vz": 2.2147234590350102,
+    "dz": 435.5932247458122,
+    "deltaTab": 1374.4378731866586,
+    "vab": 1.062840340351382,
+    "Pab": 591.865892332136
+  },
+  "peakPoses": {
+    "aG": 100,
+    "vz": 100,
+    "Fz": 100,
+    "deltaTab": 165,
+    "vab": 100,
+    "Pab": 100
+  },
+  "brakingEndDeltaN": 1374.4378731866586,
+  "holdingDeltaN": 994.9518973690548,
+  "frame": "Link2 relative; compression-positive belt circulation; TU-TL signed difference",
+  "scope": "massless-link vertical point-mass approximation; not a manufacturer belt rating"
+}

@@ -1,0 +1,27 @@
+{
+  "checks": [
+    "Initial 45kg robot / 11.25kg leg and S0001 context",
+    "Mass slider changes robot mass and follows per-leg xg load",
+    "Height slider changes fall height without coupling static load",
+    "Moving mass redistribution retains robot total",
+    "Hard catalogue limit rejected on bulk preload change",
+    "Manual preload edits save as new immutable ID",
+    "Favorite, preload and solution reload from XLSX",
+    "Delete persists with ID counter retained",
+    "Actual Solve searches catalogue, saves workbook and selects new monotonic ID",
+    "Config row saves Spring lab snapshot and robot-mass totals to a separate test workbook",
+    "Arrow-key solution navigation",
+    "Pinned ribbon, independent lab placement, ideal calculator and all 32 fall graphs"
+  ],
+  "errors": [],
+  "layout": {
+    "ribbonPinned": true,
+    "labAfter": "masterRibbonStart",
+    "fallCharts": 32,
+    "idealCalculator": true
+  },
+  "manualSavedId": "S0007",
+  "solveSavedId": "S0008",
+  "seedWorstNm": 0.28502098354314853,
+  "scope": "Isolated headless Chrome, actual localhost UI and explicit Excel writes; test solution additions deleted; copied original config workbook untouched."
+}

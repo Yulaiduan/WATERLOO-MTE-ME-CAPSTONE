@@ -8,6 +8,23 @@
 function VSLFallModel(){
  const R=Math.PI/180;
  const mass=p=>VSLSpring.totalMass(p);
+ // Signed circulation is positive for increasing theta2; pulley a is chassis-fixed.
+ function beltState(p,row){
+  const qdot=-row.vz/row.J,vab=p.ra/1000*qdot,geom=VSL.state(p,row.theta);
+  if(!(p.ra>0&&p.rb>0&&p.L2>p.ra+p.rb))return {qdot,vab:null,deltaTab:null,Pab:null,TabU:null,TabL:null,beltReason:'AB pitch circles overlap or have invalid radii.'};
+  const delta=-row.Fz*(geom.Pg[0]-geom.Bg[0])/p.rb;
+  const ab=VSLStatic.belt([0,0],geom.B,p.ra,p.rb,1,delta,p.Tab0,'ab');
+  if(!ab)return {qdot,vab:null,deltaTab:null,Pab:null,TabU:null,TabL:null,beltReason:'AB tangent geometry unavailable.'};
+  return {qdot,vab,deltaTab:ab.delta,Pab:ab.delta*vab,TabU:ab.U,TabL:ab.L,beltReason:null};
+ }
+ function withBelts(p,result){
+  if(!result.valid)return result;
+  const rows=result.rows.map(row=>({...row,...beltState(p,row)})),last=rows.at(-1),mg=result.massKg*p.g,holdingBelt=beltState(p,{...last,Fz:mg,vz:0});
+  const peaks={...result.peaks},peakPoses={...result.peakPoses};
+  for(const key of ['deltaTab','vab','Pab']){const finite=rows.filter(row=>Number.isFinite(row[key])),best=finite.reduce((a,r)=>!a||Math.abs(r[key])>Math.abs(a[key])?r:a,null);peaks[key]=best?Math.abs(best[key]):null;peakPoses[key]=best?.theta??null;}
+  const warnings=[...result.warnings];if(rows.some(r=>r.beltReason))warnings.push('AB belt plots unavailable: '+rows.find(r=>r.beltReason).beltReason);
+  return {...result,rows,peaks,peakPoses,holdingBelt,warnings};
+ }
  function solve(input,heightM,options={}){
   const p={...input,beta:0},m=mass(p),g=p.g,n=Math.max(80,Math.floor(options.samples??800)),Q=(p.tc-p.te)*R;
   const invalid=(reason,extra={})=>({valid:false,reason,rows:[],warnings:[],heightM,massKg:m,impactSpeed:Number.isFinite(g*heightM)&&g*heightM>=0?Math.sqrt(2*g*heightM):null,...extra});
@@ -72,18 +89,18 @@ function VSLFallModel(){
   return {valid:true,theta,time:a.time+(b.time-a.time)*f,tau2:-T,aG:Fz/(m*p.g)-1,Fz,Fy:0,vz:theta===p.tc?0:-Math.sqrt(2*Math.max(0,K)/m),dz:dz*1000,K:theta===p.tc?0:Math.max(0,K),Fs:spring.force,J};
  }
  function study(p,heightM,alphaRange,options={}){
-  const current=solve(p,heightM,{samples:options.samples??800}),count=alphaRange.min===alphaRange.max?1:61,sweep=[];
+  const current=withBelts(p,solve(p,heightM,{samples:options.samples??800})),count=alphaRange.min===alphaRange.max?1:61,sweep=[];
   for(let i=0;i<count;i++){
-   const alpha=count===1?alphaRange.min:alphaRange.min+(alphaRange.max-alphaRange.min)*i/(count-1),result=solve({...p,alpha},heightM,{samples:options.sweepSamples??240});
+   const alpha=count===1?alphaRange.min:alphaRange.min+(alphaRange.max-alphaRange.min)*i/(count-1),result=withBelts({...p,alpha},solve({...p,alpha},heightM,{samples:options.sweepSamples??240}));
    const travel=VSL.envelope({...p,alpha}).values.dz,geometricPeak=Math.max(Math.abs(travel.min),Math.abs(travel.max));
    sweep.push({alpha,valid:result.valid,reason:result.reason??'',peaks:result.peaks??null,catchTimeS:result.catchTimeS??null,strokeMm:Number.isFinite(geometricPeak)?geometricPeak:null,impactSpeed:result.impactSpeed,brakingTorqueNm:result.brakingTorqueNm});
   }
   const travel=VSL.envelope(p).values.dz,heightPeak=Math.max(Math.abs(travel.min),Math.abs(travel.max));
   const heightRange=options.heightRange??{min:heightM,max:heightM},heightSweep=[],nh=heightRange.min===heightRange.max?1:51;
-  for(let i=0;i<nh;i++){const h=nh===1?heightRange.min:heightRange.min+(heightRange.max-heightRange.min)*i/(nh-1),r=solve(p,h,{samples:options.sweepSamples??160});heightSweep.push({height:h,strokeMm:Number.isFinite(heightPeak)?heightPeak:null,valid:r.valid,reason:r.reason??'',peaks:r.peaks??null,catchTimeS:r.catchTimeS??null});}
+  for(let i=0;i<nh;i++){const h=nh===1?heightRange.min:heightRange.min+(heightRange.max-heightRange.min)*i/(nh-1),r=withBelts(p,solve(p,h,{samples:options.sweepSamples??160}));heightSweep.push({height:h,strokeMm:Number.isFinite(heightPeak)?heightPeak:null,valid:r.valid,reason:r.reason??'',peaks:r.peaks??null,catchTimeS:r.catchTimeS??null});}
   return {current,sweep,heightSweep,heightRange:{...heightRange},alphaRange:{...alphaRange}};
  }
- return {solve,sample,study};
+ return {solve,sample,study,beltState,withBelts};
 }
 const VSLFall=VSLFallModel();
 if(typeof module!=='undefined')module.exports={VSLFallModel,VSLFall};

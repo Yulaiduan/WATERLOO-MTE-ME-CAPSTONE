@@ -5,7 +5,7 @@
  * Numerical fall assumptions apply; moving-link inertia and motor ratings excluded.
  */
 const VSLFallAnalysis=(()=>{
- const key=(p,h)=>JSON.stringify([['L2','L3','ra','rb','phi0','te','tc','alpha','g','m1','m2','m3','m5','m6','springEnabled','springK','hornR','Sv','rs','p0','nu','Su'].map(k=>p[k]),h]);
+ const key=(p,h)=>JSON.stringify([['L2','L3','ra','rb','phi0','te','tc','alpha','g','m1','m2','m3','m5','m6','Tab0','springEnabled','springK','hornR','Sv','rs','p0','nu','Su'].map(k=>p[k]),h]);
  function create(){
   const cache=new Map();
   function trajectory(p,h){const k=key(p,h);if(cache.has(k))return cache.get(k);const r=VSLFall.solve(p,h,{samples:80});if(cache.size>512)cache.clear();cache.set(k,r);return r;}

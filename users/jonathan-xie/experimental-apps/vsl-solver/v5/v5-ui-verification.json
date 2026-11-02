@@ -1,13 +1,16 @@
 {
-  "checks": 7210,
-  "charts": 20,
+  "checks": 8290,
+  "charts": 32,
   "grid": {
     "rows": [
       "tau2",
       "aG",
       "vz",
       "dz",
-      "time"
+      "time",
+      "deltaTab",
+      "vab",
+      "Pab"
     ],
     "columns": [
       "theta",

@@ -43,7 +43,7 @@
     "Torsion mounting / linkage model required": 558
   },
   "force_rating_review_rows": 521,
-  "workbook_sha256": "5316ca1b12b6e72e4b5af71a63638ca9714f85353f7707f5f1a1b1d7c2e42b95",
+  "workbook_sha256": "8c0a9802cc3dae0e34da0a02081751a25f9a0de19ba8495791435f001d0d06a2",
   "native_excel_ui_tested": false,
   "all_prices_and_pack_quantities_present": true,
   "normalized_exports_match_payload": true,
@@ -54,5 +54,28 @@
     "ME",
     "MT"
   ],
-  "assortment_descriptions_not_coerced_to_dimensions": true
+  "assortment_descriptions_not_coerced_to_dimensions": true,
+  "energy_column_update": {
+    "date": "2026-10-30",
+    "header": "E_T",
+    "column": "D",
+    "unit": "J",
+    "preserved_cells": 830544,
+    "preserved_hyperlinks": 7397,
+    "counts": {
+      "MC": {
+        "numeric_energies": 2107,
+        "blank_unrated_or_nonlinear": 13
+      },
+      "ME": {
+        "numeric_energies": 4531,
+        "blank_unrated_or_nonlinear": 188
+      },
+      "MT": {
+        "numeric_energies": 558,
+        "blank_unrated_or_nonlinear": 0
+      }
+    },
+    "basis": "Nominal linear energy from free position to first rated force or travel limit; unknown or nonlinear entries blank"
+  }
 }

@@ -88,8 +88,9 @@ Peaks and feasibility are sampled, not a certified continuous global bound.
 
 ## Plot interpretation
 
-The 5×4 grid shows signed tau2, signed net upward az/g with Fz on the right axis,
-signed vz (downward negative), and dz in mm. Columns are q, elapsed contact time,
+The 8×4 grid shows signed tau2, signed net upward az/g with Fz on the right axis,
+signed vz (downward negative), dz in mm, elapsed seconds, AB tension difference
+in N, AB relative speed in m/s and AB relative power in W. Columns are q, elapsed contact time,
 peak magnitude versus the user alpha range and peak magnitude versus the user h
 range at current alpha. Every row retains its signal across all four columns; there are no duration
 substitutions. The alpha velocity peak is constant for a monotonically decelerating
@@ -163,3 +164,14 @@ zero-horizontal-force derivation and the endpoint controller switch.
 The fifth fall row plots elapsed contact time versus theta2 and time (y=x),
 and total catch time versus alpha and fall height using their master bounds.
 Time uses seconds and remains available in every Analysis Mode.
+
+## Belt AB fall signals
+
+The final three rows plot deltaTab=TU-TL (N), belt circulation speed relative
+to Link2 (m/s), and their pointwise product Pab (W). Their four columns follow
+theta2/time/peak versus alpha/peak versus h. Read the [belt handoff](v5-belt-ab-handoff.md)
+for reference-frame signs, sizing limits and the expanded fall CSV (both span
+tensions and geometry metadata included). Peaks are maxima of pointwise signals.
+
+Run `node verify-belt.cjs` for the force-balance and relative-power checks;
+see [results](v5-belt-verification.json).
