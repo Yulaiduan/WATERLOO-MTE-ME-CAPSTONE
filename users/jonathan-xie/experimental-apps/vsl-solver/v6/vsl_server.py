@@ -67,7 +67,6 @@ def validate_document(doc):
             if snapshot.get('schema') not in ('general-vsl/v4-pulley','general-vsl/v5-fall','general-vsl/v6-springlab') or not isinstance(snapshot.get('parameters'),dict):raise LibraryError(f'DP {dp}: invalid solver snapshot.')
             for key,value in snapshot['parameters'].items():
                 if isinstance(value,(int,float)) and not math.isfinite(value):raise LibraryError(f'DP {dp}: {key} is not finite.')
-            if len(json.dumps(snapshot,ensure_ascii=False))>30000:raise LibraryError(f'DP {dp}: saved design is too large for an Excel cell.')
         if row.get('savedAt') is not None:
             try:dt.datetime.fromisoformat(row['savedAt'].replace('Z','+00:00'))
             except (ValueError,TypeError):raise LibraryError(f'DP {dp}: invalid saved time.')
@@ -148,7 +147,11 @@ def load_library(path):
         if dp is None:continue
         if isinstance(dp,bool) or not isinstance(dp,(int,float)) or int(dp)!=dp:raise LibraryError(f'Excel row {index}: DP# must be a positive whole number.')
         dp=int(dp)
-        try:original=json.loads(meta.get('DP:'+str(dp),'null'))
+        state_key='DP:'+str(dp)
+        parts=[meta.get(state_key,'null')]
+        while f'{state_key}:{len(parts)}' in meta:
+            parts.append(meta[f'{state_key}:{len(parts)}'])
+        try:original=json.loads(''.join(parts))
         except (ValueError,TypeError):raise LibraryError(f'DP {dp}: invalid app state JSON.')
         row=copy.deepcopy(original) if original else {'dp':dp,'name':'Design '+str(dp),'savedAt':None,'color':'none','snapshot':None}
         row['dp']=dp;row['name']=str(cells.get(positions['Name']) or 'Design '+str(dp))
@@ -171,12 +174,15 @@ def load_library(path):
             if key in ('name','dp','save','load'):continue
             if key in ('savedAt','color'):row[key]=value;continue
             if row['snapshot'] is not None and not close(value,original_values[key]):changes[key]=value
-            if c.get('path') and row['snapshot'] is not None:put_at(row['snapshot'],c['path'],value)
+            if key in changes and c.get('path'):put_at(row['snapshot'],c['path'],value)
         if row['snapshot']:
             p=row['snapshot']['parameters']
             if 'totalMass' in changes:
                 p['m1']=changes['totalMass']/4-sum(p[k] for k in ('m2','m3','m5','m6'))
                 if p['m1']<0:raise LibraryError(f'DP {dp}: total mass is less than the entered moving masses.')
+            if ('mc' in p or 'mp' in p) and ('m1' in changes or 'totalMass' in changes):
+                p['mc']=4*p['m1']-p.get('mp',0)
+                if p['mc']<0:raise LibraryError(f'DP {dp}: mass edit leaves a negative chassis mass.')
             for key,a,b in [('qab','ra','rb'),('qdc','rd','rc'),('qfe','rf','re')]:
                 if key in changes:
                     if changes[key]<=0:raise LibraryError(f'DP {dp}: {key} must be positive.')
@@ -255,7 +261,13 @@ def _write_library(path,doc,expected_revision):
     # Refuse other spreadsheets even when a guessed revision is supplied.
     if path.exists():load_library(path)
     main=[[c['label'] for c in COLUMNS]]+[[cell_value(row,c) for c in COLUMNS] for row in doc['rows']]
-    meta=[['Key','Value'],['schema',SCHEMA],['loadedDp',doc.get('loadedDp')]]+[['DP:'+str(row['dp']),json.dumps(row,ensure_ascii=False,separators=(',',':'))] for row in doc['rows']]
+    meta=[['Key','Value'],['schema',SCHEMA],['loadedDp',doc.get('loadedDp')]]
+    for row in doc['rows']:
+        key='DP:'+str(row['dp'])
+        state=json.dumps(row,ensure_ascii=True,separators=(',',':'))
+        # Excel cells hold up to 32,767 UTF-16 units. ASCII chunks fit exactly.
+        for index,start in enumerate(range(0,len(state),30000)):
+            meta.append([key if index==0 else f'{key}:{index}',state[start:start+30000]])
     files[sheets['Designs']]=make_sheet(main,date_columns=[4],row_colors={i+1:row.get('color','none') for i,row in enumerate(doc['rows'])},widths={0:8,1:28,2:10,3:10,4:23},freeze=True)
     files[sheets['VSL state']]=make_sheet(meta,widths={0:22,1:110},state=True)
     files['xl/styles.xml']=styles_xml()

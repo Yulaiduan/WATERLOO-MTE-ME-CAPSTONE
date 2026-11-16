@@ -1,0 +1,38 @@
+{
+  "date": "2026-11-11",
+  "rows": {
+    "ST": 187,
+    "BT": 33,
+    "MI": 35,
+    "SW": 127
+  },
+  "energyComparisons": 382,
+  "recalculation": {
+    "ST": {
+      "before": 62.336,
+      "changedForceEnergy": 15.584,
+      "expected": 15.584,
+      "restored": 62.336
+    },
+    "BT": {
+      "before": 60.192,
+      "changedForceEnergy": 15.048,
+      "expected": 15.048,
+      "restored": 60.192
+    },
+    "MI": {
+      "before": 67.64556521739131,
+      "changedForceEnergy": 16.911391304347827,
+      "expected": 16.911391304347827,
+      "restored": 67.64556521739131
+    },
+    "SW": {
+      "before": 123.57715674895576,
+      "changedForceEnergy": 37.18814943994698,
+      "expected": 37.18814943994698,
+      "restored": 123.57715674895576
+    }
+  },
+  "sourceWorkbookDataPreservation": "Verified in package-merge step",
+  "errorScan": "{\"kind\":\"notice\",\"message\":\"Cell search matched 0 entries.\"}"
+}

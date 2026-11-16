@@ -111,3 +111,21 @@ dynamic spring behavior and a physical installation remain unvalidated.
 All changes for this request are local to this folder. No commit or push is part
 of this delivery. Generated workbooks, captures and local dependencies are ignored
 by Git; source data and scripts can be reviewed before publication.
+
+## Small pulley research — 2026-11-11
+
+[SG20, compact sheaves and VSL v6](research/2026-11-11-pulleys/README.md) records supplier load ratings, the current saved spring/horn geometry references, rope-centreline radius, Dyneema bend constraints and shaft support calculations. Preliminary screening only; all existing workbooks and solver files remain unchanged.
+
+## Additional suppliers — 2026-11-11
+
+The expanded copy at `outputs/2026-11-11-suppliers/spring-catalogue-expanded.xlsx` includes ST (STEINEL,187), BT (Berger/Special Springs,33), MI (MISUMI,35) and SW (Swift,127):382 selected compression springs with nominal operating-envelope energy >=60 J and free length <=254 mm. [Research and DP9/v6 context](research/2026-11-11-suppliers/README.md) explain travel/life limits, dimension provenance and reproduction. New records/IDs are in data/additional-springs.json and data/additional-id-registry.json. The original builder still regenerates only MMC; preserve the pre-expansion backup and use the supplier addition scripts for a complete rebuild. V6 currently reads only MC/ME; these new tabs require an explicit future importer update before V6 searches them.
+
+The original MMC workbook was locked during delivery and remains unchanged. Open the expanded copy above to see the new supplier tabs.
+
+## MD and RF additions — 2026-11-13
+
+Latest expanded workbook: `outputs/2026-11-13-md-rf/spring-catalogue-expanded.xlsx`.
+Adds MD (52 McMaster die-spring part/package entries) and RF (164 FOX rear-shock
+springs), keeping nominal E_T >=60 J. All eight previous tabs are preserved.
+FOX force is derived from rate and marked travel; energy is a nominal ceiling,
+with preload/stroke margin still required. [Coverage, sources and limitations](research/2026-11-13-md-rf/README.md).

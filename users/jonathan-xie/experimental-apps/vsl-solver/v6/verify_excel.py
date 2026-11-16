@@ -34,6 +34,21 @@ class V6ExcelTests(unittest.TestCase):
         self.write();before=self.doc['rows'][0]['snapshot']['parameters'];target=4*v.weight(before)+8;self.edit('totalMass',target);after=v.load_library(self.path)['rows'][0]['snapshot']['parameters'];self.assertAlmostEqual(v.weight(after),target/4)
         if v.weight(before)>0:
             for key in ('Fy','Fz') if before['loadMode']=='yz' else ('Fn','Ft'):self.assertAlmostEqual(after[key],before[key]*target/(4*v.weight(before)))
+    def test_mass_split_roundtrip_and_total_edit(self):
+        p=self.doc['rows'][0]['snapshot']['parameters'];p.update(mc=35,mp=4,m1=9.75,m2=2.5,m3=2,m5=1.5,m6=2)
+        self.write();self.assertEqual(v.load_library(self.path)['rows'][0]['snapshot']['parameters'],p)
+        self.edit('totalMass',79);after=v.load_library(self.path)['rows'][0]['snapshot']['parameters']
+        self.assertEqual((after['mc'],after['mp'],after['m1']),(43,4,11.75))
+    def test_large_complete_snapshot_roundtrip(self):
+        s=self.doc['rows'][0]['snapshot']
+        s['springLab']={'settings':{'payloads':[0,70]},'record':{'notes':'Ω🔧' * 10000}}
+        s['layout']={'details':[True,False],'cards':{'fall':False}}
+        s['outputs']={}
+        s['outputIssue']='Contact would lift'
+        s['parameters']['te']=109.125
+        s['parameters']['tc']=166.75
+        self.write()
+        self.assertEqual(v.load_library(self.path)['rows'][0]['snapshot'],s)
     def test_revision_and_backup(self):
         rev=self.write();v.write_library(self.path,self.doc,rev);self.assertTrue(self.path.with_name('test.vsl-backup.xlsx').exists())
         with self.assertRaises(v.LibraryError):v.write_library(self.path,self.doc,'stale')

@@ -1,0 +1,12 @@
+{
+  "checks": 1976,
+  "brakingTorqueNm": 18.91155765470654,
+  "brakingEndAccelerationG": 0.38141137960646754,
+  "brakingEndLoadG": 1.3814113796064675,
+  "holdingAccelerationG": 0,
+  "holdingLoadG": 1,
+  "finalVelocityMps": 0,
+  "alphaSamples": 61,
+  "heightSamples": 51,
+  "scope": "analytical vertical point-mass fall reconstruction; no hardware rating"
+}

@@ -1,0 +1,28 @@
+{
+  "original_sha256": "6fc8701c3bf807c8e5e235b7d3840da24be90ed8356307c52016809a765104ef",
+  "expanded_sha256": "bd726c6e18ee326708367b75b5986e482d4cbba1a632d6eef5d33176aa424106",
+  "new_rows": {
+    "ST": 187,
+    "BT": 33,
+    "MI": 35,
+    "SW": 127
+  },
+  "new_native_links": 604,
+  "original_package_parts_preserved_byte_identical": 17,
+  "original_package_parts_extended": [
+    "[Content_Types].xml",
+    "xl/workbook.xml",
+    "xl/_rels/workbook.xml.rels",
+    "xl/styles.xml"
+  ],
+  "original_sheet_XML_and_native_links": "byte-identical",
+  "formula_errors": [],
+  "energy_rows_checked": 382,
+  "total_spring_rows": 7779,
+  "total_native_links": 8001,
+  "delivery_workbook": "outputs/2026-11-11-suppliers/spring-catalogue-expanded.xlsx",
+  "delivery_status": "Saved validated expanded copy; original replacement blocked by file lock",
+  "original_backup": "outputs/2026-10-28-mmc-springs/mmc-spring-catalogue.xlsx.before-suppliers-20261111.bak",
+  "reimport": "Successful artifact-tool import of all eight sheets; new values and final rendering checked",
+  "scope": "Supplier catalogue only; no V6 fits or solver edits"
+}

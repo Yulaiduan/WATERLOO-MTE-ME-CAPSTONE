@@ -28,8 +28,32 @@ for(const includeZero of [false,true])for(const absolute of [false,true])for(con
 }
 near(plot.bounds([2,3],true).min,0);near(plot.bounds([-3,-2],true).max,0);ok(plot.bounds([2,3],false).min>0);ok(plot.bounds([-3,-2],false).max<0);ok(plot.ticks(-2,3,[0,1]).includes(0));ok(plot.ticks(-2,3,[0,1]).includes(1));
 const css=fs.readFileSync(path.join(dir,'v6-ui.css'),'utf8'),source=fs.readFileSync(path.join(dir,'fall-ui.js'),'utf8');ok(css.includes('repeat(4,minmax(230px,1fr))'));ok(css.includes('#masterControls.is-pinned{position:fixed;top:0;'));ok(!css.includes('force-column:not(.driving)'));ok(source.includes("input.type='radio';input.name='vsl-analysis-mode'"));ok(source.includes('Plot absolute magnitudes'));ok(source.includes("const value=$(id).valueAsNumber;try{pause();"));
-for(const name of ['plot-utils.js','fall-ui.js','fall-model.js','fall-analysis.js','v6-ui.css'])ok(html.includes(name+'?v=20261030-springlab'));
+for(const name of ['plot-utils.js','fall-ui.js','fall-model.js','fall-analysis.js','v6-ui.css'])ok(html.includes(name+'?v='+(name==='fall-ui.js'?'fall-peak-point':name==='fall-model.js'?'fall-power-rows':name==='fall-analysis.js'?'distributed-masses':'20261030-springlab')));
+const headline=ui.brakingHeadlines(study.current,p), peak=study.current.peaks;
+near(headline[0],peak.tau2);near(headline[1],peak.omega2);
+near(headline[2],peak.tau2*peak.omega2*2*Math.PI/60);
+near(headline[3],peak.deltaTab*p.rb/1000);near(headline[4],peak.omega2*p.ra/p.rb);
+near(headline[5],peak.deltaTab);
+const pointCase={valid:true,rows:[
+ {time:0,tau2:-10,vz:-2,J:1,Pab:2,tauAB:-1,omega32:-6,deltaTab:4},
+ {time:.1,tau2:-10,vz:-1,J:1,Pab:-3,tauAB:3,omega32:-3,deltaTab:-8}
+]};
+assert.deepEqual(Array.from(ui.powerPoint(pointCase,'belt').values),[10,60/(2*Math.PI),10,3,3,8]);
+near(ui.powerPoint(pointCase,'belt').time,.1);near(ui.powerPoint(pointCase,'motor').time,0);
+ok(ui.powerPoint({valid:false},'belt').values.every(value=>value===null));
+ok(ui.brakingHeadlines({valid:false},p).every(value=>value===null));
+assert.deepEqual(Array.from(ui.rows,r=>r.key).slice(0,3),['tau2','omega2','hipPower']);
+assert.deepEqual(Array.from(ui.rows,r=>r.key).slice(-3),['tauAB','omega32','Pab']);
+for(const axis of ['theta','time']){
+ const series=Object.fromEntries(['omega2','hipPower','tauAB','omega32','Pab'].map(key=>[key,ui.plotData(key,axis,study)]));
+ series.omega2.forEach((item,i)=>{
+  near(item.y,-item.source.vz/item.source.J*60/(2*Math.PI));
+  near(series.hipPower[i].y,item.source.tau2*item.y*2*Math.PI/60);
+  near(series.omega32[i].y,-item.y*p.ra/p.rb);
+  near(series.Pab[i].y,series.tauAB[i].y*series.omega32[i].y*2*Math.PI/60);
+ });
+}
 const report={checks,charts:rendered.length,grid:{rows:Array.from(ui.rows,r=>r.key),columns:Array.from(ui.axes)},brakingTorqueNm:study.current.rows.at(-1).tau2,holdingTorqueNm:held.tau2,brakingEndAccelerationG:study.current.rows.at(-1).aG,holdingAccelerationG:held.aG,wheelTorqueNm:staticHeld.tau4,scope:'data and SVG contracts; data/SVG checks only; browser layout not checked in this run'};
 if(process.argv.includes('--output'))fs.writeFileSync(path.join(dir,'v6-ui-verification.json'),JSON.stringify(report,null,2)+'\n');
-if(process.argv.includes('--svg')){let svg='<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="2100" viewBox="0 0 1440 2100"><rect width="1440" height="2100" fill="white"/><style>text{font:12px system-ui;fill:#587180}</style>';for(let i=0;i<rendered.length;i++){const c=rendered[i],title=({tau2:'τ₂',aG:'a_z/g',vz:'v_z',dz:'d_z',time:'Elapsed time',deltaTab:'ΔT_ab',vab:'v_ab',Pab:'P_ab'})[c.row],axis=({theta:'θ₂',time:'time',alpha:'α (peak)',height:'h (peak)'})[c.axis],x=(i%4)*360,y=Math.floor(i/4)*260;svg+=`<g transform="translate(${x},${y})"><text x="52" y="14" style="font-weight:bold">${title} versus ${axis}</text><g transform="translate(0,20)">${c.markup}</g></g>`;}svg+='</svg>';fs.writeFileSync(path.resolve(process.argv[process.argv.indexOf('--svg')+1]),svg);}
+if(process.argv.includes('--svg')){let svg=`<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="${ui.rows.length*260}" viewBox="0 0 1440 ${ui.rows.length*260}"><rect width="1440" height="2340" fill="white"/><style>text{font:12px system-ui;fill:#587180}</style>`;for(let i=0;i<rendered.length;i++){const c=rendered[i],title=({tau2:'τ₂',omega2:'Femur rpm',hipPower:'Hip power',tauAB:'AB torque',omega32:'Link 3 relative rpm',aG:'a_z/g',vz:'v_z',dz:'d_z',time:'Elapsed time',deltaTab:'ΔT_ab',vab:'v_ab',Pab:'P_ab'})[c.row],axis=({theta:'θ₂',time:'time',alpha:'α (peak)',height:'h (peak)'})[c.axis],x=(i%4)*360,y=Math.floor(i/4)*260;svg+=`<g transform="translate(${x},${y})"><text x="52" y="14" style="font-weight:bold">${title} versus ${axis}</text><g transform="translate(0,20)">${c.markup}</g></g>`;}svg+='</svg>';fs.writeFileSync(path.resolve(process.argv[process.argv.indexOf('--svg')+1]),svg);}
 console.log(JSON.stringify(report,null,2));

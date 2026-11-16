@@ -1,0 +1,20 @@
+[
+  {
+    "id": "110",
+    "kv": 190.53,
+    "freeSpeedRpm": 2830,
+    "comment": "7070 110KV"
+  },
+  {
+    "id": "140",
+    "kv": 242.49,
+    "freeSpeedRpm": 3601,
+    "comment": "7070 140KV"
+  },
+  {
+    "id": "170",
+    "kv": 294.45,
+    "freeSpeedRpm": 4373,
+    "comment": "7070 170KV"
+  }
+]

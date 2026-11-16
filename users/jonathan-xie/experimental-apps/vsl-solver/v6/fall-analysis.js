@@ -1,8 +1,8 @@
-/** Reconstruct V5 massless-link forces under the fall trajectory's wheel load.
+/** Reconstruct V6 fall forces including component gravity and inertia.
  * Browser/Node; inputs geometry mm/deg, h m, mass kg; outputs VSL statics fields
- * in N/Nm with the dynamic Fz, Fy=beta=0 and all entered mass lumped at the chassis.
+ * in N/Nm with the dynamic Fz, Fy=beta=0 and per-body inertial wrenches.
  * create() caches sampled feasibility by geometry/alpha/height, never mutates inputs.
- * Numerical fall assumptions apply; moving-link inertia and motor ratings excluded.
+ * Numerical fall assumptions apply; motor ratings excluded.
  */
 const VSLFallAnalysis=(()=>{
  const key=(p,h)=>JSON.stringify([['L2','L3','ra','rb','phi0','te','tc','alpha','g','m1','m2','m3','m5','m6','Tab0','springEnabled','springK','hornR','Sv','rs','p0','nu','Su'].map(k=>p[k]),h]);
@@ -13,7 +13,8 @@ const VSLFallAnalysis=(()=>{
   function solve(p,h,theta,detail=true){
    const r=trajectory(p,h),point=VSLFall.sample(p,h,theta,r);
    if(!point.valid)return {...VSL.state(p,theta),valid:false,reason:point.reason,spring:VSLSpring.state(p,theta),analysisMode:'fall'};
-   const total=VSLSpring.totalMass(p),dynamic={...p,m1:total,m2:0,m3:0,m5:0,m6:0,loadMode:'yz',Fy:0,Fz:point.Fz,beta:0},s=VSLStatic.solve(dynamic,theta,detail);
+   const dynamic={...p,loadMode:'yz',Fy:0,Fz:point.Fz,beta:0};
+   const s=VSLStatic.solve(dynamic,theta,detail,point.motion);
    return {...s,fall:point,analysisMode:'fall'};
   }
   function globalPeaks(p,h){

@@ -10,3 +10,4 @@ engineering gates and a project-local restart launcher for any localhost server.
 | App | Purpose | Status | Verified startup |
 | --- | --- | --- | --- |
 | [VSL Solver](vsl-solver/README.md) | VSL geometry, quasi-static loads and hip spring compensation | Versioned v1/v2/v3/v4; V4 config library with explicit Excel save/load | Root Open VSL Solver v4.cmd, Python 3.10+, local port 8767 |
+| [Torque Coupling](torque-coupling/README.md) | Offline coupling surface, torque envelope and cross-sections | Analytical explorer; signed coupling, qab=2 | Open Torque Coupling.cmd, Python 3, local port 8772 |

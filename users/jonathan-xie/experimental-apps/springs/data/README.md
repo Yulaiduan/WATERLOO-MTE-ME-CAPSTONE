@@ -23,3 +23,7 @@ records individual specification-page coverage.
 Retain `id-registry.json` during refreshes. Coverage is reconciled to the three
 linked categories; the standard compression-family URL does not include other
 compression subcategories. See the app README for the VSL v5 mapping.
+
+## Additional supplier records
+
+additional-springs.json contains382 nominal >=60 J compression spring records from ST/BT/MI/SW, with explicit metric fields and original supplier attributes. additional-id-registry.json persists their IDs independently of the MMC registry. OD/ID unknowns remain null; installation hole and guide rod dimensions are separate. Scope, source snapshots and limitations are linked from ../research/2026-11-11-suppliers/README.md. Imperial spreadsheet fields are derived conversions; source_attributes retains original source units.

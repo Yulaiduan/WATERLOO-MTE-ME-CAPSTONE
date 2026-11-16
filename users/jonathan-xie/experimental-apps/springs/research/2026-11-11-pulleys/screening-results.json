@@ -1,0 +1,560 @@
+{
+  "date": "2026-11-11",
+  "status": "preliminary analytical and supplier-data screening",
+  "workbook_sha256": "a8dfe9a7bc628442266bd41b2df43308a06472aa62a9c3b3f5fe384c4fdd8a9e",
+  "saved_solution_count": 30,
+  "latest_solutions": [
+    {
+      "id": "S0027",
+      "saved_at": "2026-11-03T06:24:48.773802+00:00",
+      "geometry_mm_deg": {
+        "hornR": 92.39527384807134,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 131.13763374757855,
+        "Su": 12.989521947423922
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 0.4549248600456508,
+      "springs": [
+        {
+          "part": "2006N511",
+          "type": "C",
+          "k": 4.4482216152605,
+          "initial": 0,
+          "od": 45,
+          "free": 300,
+          "fmax": 800.6798907468899,
+          "p0": 214.3927610080335
+        },
+        {
+          "part": "96485K229",
+          "type": "C",
+          "k": 7.355327080352008,
+          "initial": 0,
+          "od": 73.8124,
+          "free": 254,
+          "fmax": 1089.8142957388225,
+          "p0": 306.43353031480825
+        }
+      ]
+    },
+    {
+      "id": "S0028",
+      "saved_at": "2026-11-03T06:24:48.784441+00:00",
+      "geometry_mm_deg": {
+        "hornR": 82.79742988194798,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 210.9624408096248,
+        "Su": 54.25238520229006
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0,
+          1
+        ],
+        [
+          0,
+          1,
+          0
+        ]
+      ],
+      "saved_peak_residual_Nm": 2.9616929149145967,
+      "springs": [
+        {
+          "part": "96485K156",
+          "type": "C",
+          "k": 5.604058727887244,
+          "initial": 0,
+          "od": 55.5752,
+          "free": 203.2,
+          "fmax": 733.9565665179824,
+          "p0": 189.43557444107253
+        },
+        {
+          "part": "96485K342",
+          "type": "C",
+          "k": 13.309639478732203,
+          "initial": 0,
+          "od": 105.56239999999998,
+          "free": 304.79999999999995,
+          "fmax": 2335.3163480117623,
+          "p0": 647.1305913129617
+        },
+        {
+          "part": "2006N495",
+          "type": "C",
+          "k": 0.26689329691562996,
+          "initial": 0,
+          "od": 17.25,
+          "free": 204.99999999999997,
+          "fmax": 44.482216152605,
+          "p0": 18.719586450799756
+        }
+      ]
+    },
+    {
+      "id": "S0029",
+      "saved_at": "2026-11-03T06:24:48.795065+00:00",
+      "geometry_mm_deg": {
+        "hornR": 119.99379088990986,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 147.86940877766898,
+        "Su": 12.07489490666853
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          1,
+          0
+        ],
+        [
+          1,
+          1,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 3.416040147278437,
+      "springs": [
+        {
+          "part": "2006N506",
+          "type": "C",
+          "k": 2.4910041045458797,
+          "initial": 0,
+          "od": 68,
+          "free": 275,
+          "fmax": 511.54548575495744,
+          "p0": 0
+        },
+        {
+          "part": "2006N518",
+          "type": "C",
+          "k": 0.9341265392047049,
+          "initial": 0,
+          "od": 54,
+          "free": 490,
+          "fmax": 351.40950760557945,
+          "p0": 100.33258625287966
+        },
+        {
+          "part": "2006N511",
+          "type": "C",
+          "k": 4.4482216152605,
+          "initial": 0,
+          "od": 45,
+          "free": 300,
+          "fmax": 800.6798907468899,
+          "p0": 163.98601923851504
+        }
+      ]
+    },
+    {
+      "id": "S0030",
+      "saved_at": "2026-11-03T06:26:34.634267+00:00",
+      "geometry_mm_deg": {
+        "hornR": 117.22677062634799,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 183.53306909700888,
+        "Su": 20.433300373641103
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 4.910465836411518,
+      "springs": [
+        {
+          "part": "5108N924",
+          "type": "E",
+          "k": 2.626902528697146,
+          "initial": 57.29309440455524,
+          "od": 50.8,
+          "free": 254,
+          "fmax": 636.6294775760828,
+          "p0": 217.04425117651513
+        },
+        {
+          "part": "9654K856",
+          "type": "E",
+          "k": 4.3781708811619096,
+          "initial": 66.7233242289075,
+          "od": 44.449999999999996,
+          "free": 228.6,
+          "fmax": 773.9905610553269,
+          "p0": 170.50780675958703
+        }
+      ]
+    },
+    {
+      "id": "S0031",
+      "saved_at": "2026-11-03T06:26:34.645741+00:00",
+      "geometry_mm_deg": {
+        "hornR": 119.99988211217145,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 156.50250766666102,
+        "Su": 15.92748827041896
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 7.335322449209912,
+      "springs": [
+        {
+          "part": "9654K985",
+          "type": "E",
+          "k": 3.1522830344365746,
+          "initial": 57.82688099838649,
+          "od": 50.8,
+          "free": 228.6,
+          "fmax": 680.5779071348564,
+          "p0": 167.43169151060155
+        },
+        {
+          "part": "5667N411",
+          "type": "E",
+          "k": 4.4482216152605,
+          "initial": 64.8995533666507,
+          "od": 44.449999999999996,
+          "free": 228.6,
+          "fmax": 721.3680993467951,
+          "p0": 82.50538054812209
+        }
+      ]
+    },
+    {
+      "id": "S0032",
+      "saved_at": "2026-11-03T06:26:34.656411+00:00",
+      "geometry_mm_deg": {
+        "hornR": 119.99894414372616,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 283.8765058265709,
+        "Su": 80.9195029993253
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 7.367695715690786,
+      "springs": [
+        {
+          "part": "9654K985",
+          "type": "E",
+          "k": 3.1522830344365746,
+          "initial": 57.82688099838649,
+          "od": 50.8,
+          "free": 228.6,
+          "fmax": 680.5779071348564,
+          "p0": 137.44252436852537
+        },
+        {
+          "part": "9654K985",
+          "type": "E",
+          "k": 3.1522830344365746,
+          "initial": 57.82688099838649,
+          "od": 50.8,
+          "free": 228.6,
+          "fmax": 680.5779071348564,
+          "p0": 226.10918631111744
+        }
+      ]
+    },
+    {
+      "id": "S0033",
+      "saved_at": "2026-11-03T06:26:59.213225+00:00",
+      "geometry_mm_deg": {
+        "hornR": 93.91146547545802,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 126.59828816655069,
+        "Su": 33.51625836630037
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 0.8649023810787639,
+      "springs": [
+        {
+          "part": "9654K851",
+          "type": "E",
+          "k": 5.428931892640767,
+          "initial": 66.7233242289075,
+          "od": 44.449999999999996,
+          "free": 203.2,
+          "fmax": 773.9905610553269,
+          "p0": 82.86699778595901
+        },
+        {
+          "part": "96485K315",
+          "type": "C",
+          "k": 13.835019984471632,
+          "initial": 0,
+          "od": 99.2124,
+          "free": 304.79999999999995,
+          "fmax": 2379.7985641643672,
+          "p0": 227.83534874592644
+        }
+      ]
+    },
+    {
+      "id": "S0034",
+      "saved_at": "2026-11-03T06:26:59.223679+00:00",
+      "geometry_mm_deg": {
+        "hornR": 93.40587224106214,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 163.62091590109554,
+        "Su": 70.97147566983436
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 1.6433430506880953,
+      "springs": [
+        {
+          "part": "96485K156",
+          "type": "C",
+          "k": 5.604058727887244,
+          "initial": 0,
+          "od": 55.5752,
+          "free": 203.2,
+          "fmax": 733.9565665179824,
+          "p0": 68.76058410770052
+        },
+        {
+          "part": "96485K315",
+          "type": "C",
+          "k": 13.835019984471632,
+          "initial": 0,
+          "od": 99.2124,
+          "free": 304.79999999999995,
+          "fmax": 2379.7985641643672,
+          "p0": 227.18142211425092
+        }
+      ]
+    },
+    {
+      "id": "S0035",
+      "saved_at": "2026-11-03T06:26:59.234505+00:00",
+      "geometry_mm_deg": {
+        "hornR": 95.69489907266438,
+        "rs": 14.2875,
+        "nu": 0,
+        "Sv": 183.95545373704863,
+        "Su": 82.53717991166496
+      },
+      "working_theta2_deg": [
+        105,
+        170
+      ],
+      "link_length_mm": 280,
+      "payloads_kg_total": [
+        0,
+        70
+      ],
+      "enabled_spring_masks": [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      "saved_peak_residual_Nm": 1.6723874018426486,
+      "springs": [
+        {
+          "part": "9654K851",
+          "type": "E",
+          "k": 5.428931892640767,
+          "initial": 66.7233242289075,
+          "od": 44.449999999999996,
+          "free": 203.2,
+          "fmax": 773.9905610553269,
+          "p0": 69.93632922267213
+        },
+        {
+          "part": "96485K229",
+          "type": "C",
+          "k": 7.355327080352008,
+          "initial": 0,
+          "od": 73.8124,
+          "free": 254,
+          "fmax": 1089.8142957388225,
+          "p0": 184.1364700789396
+        }
+      ]
+    }
+  ],
+  "load_checks": {
+    "tension_N": 3800.0,
+    "radial_at_90deg_N": 5374.011537017762,
+    "radial_at_180deg_N": 7600.0,
+    "exact_mass_scale": 2.2962962962962963,
+    "scaled_1670N": 3834.814814814815,
+    "SG20_C0_over_P": 0.3163372442150344,
+    "SG20_P_over_C0": 3.1611832570692715,
+    "ball_bearing_proposed_C0_for_s0_2_N": 10748.023074035524,
+    "rope_screen_D_over_d_8_diameter_mm": 48,
+    "SG20_approx_rope_pitch_radius_mm": 13.25,
+    "SG20_approx_pitch_D_over_d": 4.416666666666667
+  },
+  "shaft_checks": [
+    {
+      "diameter_mm": 4,
+      "single_shear_MPa": 427.65025017462546,
+      "double_shear_MPa": 213.82512508731273,
+      "illustrative_point_load_bending_MPa_span16mm": 3421.2020013970036
+    },
+    {
+      "diameter_mm": 5,
+      "single_shear_MPa": 273.69616011176026,
+      "double_shear_MPa": 136.84808005588013,
+      "illustrative_point_load_bending_MPa_span16mm": 1751.655424715266
+    },
+    {
+      "diameter_mm": 6,
+      "single_shear_MPa": 190.0667778553891,
+      "double_shear_MPa": 95.03338892769455,
+      "illustrative_point_load_bending_MPa_span16mm": 1013.6894818954086
+    },
+    {
+      "diameter_mm": 8,
+      "single_shear_MPa": 106.91256254365636,
+      "double_shear_MPa": 53.45628127182818,
+      "illustrative_point_load_bending_MPa_span16mm": 427.65025017462546
+    },
+    {
+      "diameter_mm": 10,
+      "single_shear_MPa": 68.42404002794007,
+      "double_shear_MPa": 34.21202001397003,
+      "illustrative_point_load_bending_MPa_span16mm": 218.95692808940825
+    }
+  ],
+  "limitations": [
+    "3800 N is a supplied screening envelope, not a recomputed V6 dynamic peak.",
+    "Saved solutions stop at 165 or 170 deg; no spring or routing validity to 240 deg is established.",
+    "Shaft bending uses an illustrative central point load on simply supported 16 mm span, not a modeled joint.",
+    "Energy catalogue and solution workbooks are read only."
+  ]
+}

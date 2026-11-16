@@ -53,12 +53,13 @@ def write(doc):
 
 def canonical(record):
     r=copy.deepcopy(record);lookup={x['id']:x for x in catalogue() if x['eligible']};parts=[]
+    if not r['settings'].get('rhMin',r['geometry']['hornR'])<=r['geometry']['hornR']<=r['settings'].get('rhMax',r['geometry']['hornR']):raise ValueError('Solved r_h lies outside its search bounds; solve again.')
     spring_lab.normalized({'parameters':r['parameters'],'settings':{**r['settings'],**r['geometry'],'bulk':r['bulk'],'payloads':r['payloads']}})
     if not 1<=len(r['springs'])<=12 or not 1<=len(r['payloads'])<=8 or len(r['masks'])!=len(r['payloads']):raise ValueError('Invalid spring slots/cases.')
     if any(len(row)!=len(r['springs']) or any(x not in (0,1) for x in row) or not any(row) for row in r['masks']):raise ValueError('Each case must enable at least one spring.')
     for s in r['springs']:
         part=lookup.get(s['id'])
-        if part is None or part['type']!=r['settings']['type']:raise ValueError('Part is not an eligible catalogue spring of the selected type.')
+        if part is None or (r['settings']['type']!='ANY' and part['type']!=r['settings']['type']):raise ValueError('Part is not an eligible catalogue spring of the selected type.')
         parts.append({**part,'p0':float(s['p0'])})
     r['springs']=parts;r=spring_lab.evaluate(r);r['catalogueHash']=hashlib.sha256(spring_lab.CATALOGUE.read_bytes()).hexdigest()
     if not r['metrics']['valid']:raise ValueError(' '.join(r['metrics']['violations']))

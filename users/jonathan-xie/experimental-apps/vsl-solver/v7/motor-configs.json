@@ -1,0 +1,69 @@
+[
+  {
+    "id": "110",
+    "kv": 110,
+    "freeSpeedRpm": 2830,
+    "comment": "7070 110KV 42V@48kHz",
+    "kvLNOverride": 190.53,
+    "ktOverride": null
+  },
+  {
+    "id": "140",
+    "kv": 140,
+    "freeSpeedRpm": 3601,
+    "comment": "7070 140KV 42V@48kHz",
+    "kvLNOverride": 242.49,
+    "ktOverride": null
+  },
+  {
+    "id": "170",
+    "kv": 170,
+    "freeSpeedRpm": 4373,
+    "comment": "7070 170KV 42V@48kHz",
+    "kvLNOverride": 294.45,
+    "ktOverride": null
+  },
+  {
+    "id": "motor-1794817272537",
+    "kv": 110,
+    "freeSpeedRpm": 3257,
+    "comment": "7070 110KV 42V@30kHz"
+  },
+  {
+    "id": "motor-1794817272984",
+    "kv": 140,
+    "freeSpeedRpm": 4146,
+    "comment": "7070 140KV 42V@30kHz"
+  },
+  {
+    "id": "motor-1794817273447",
+    "kv": 170,
+    "freeSpeedRpm": 5034,
+    "comment": "7070 170KV 42V@30kHz"
+  },
+  {
+    "id": "motor-1794817417852",
+    "kv": 110,
+    "freeSpeedRpm": 3375,
+    "comment": "7070 110KV 42V@25kHz"
+  },
+  {
+    "id": "motor-1794817418292",
+    "kv": 140,
+    "freeSpeedRpm": 4296,
+    "comment": "7070 140KV 42V@25kHz"
+  },
+  {
+    "id": "motor-1794817418708",
+    "kv": 170,
+    "freeSpeedRpm": 5216,
+    "comment": "7070 170KV 42V@25kHz"
+  },
+  {
+    "id": "motor-1794818385485",
+    "kv": 110,
+    "freeSpeedRpm": 2830,
+    "comment": "7070 110KV 42V@25kHz Kt-new",
+    "ktOverride": 0.0958
+  }
+]

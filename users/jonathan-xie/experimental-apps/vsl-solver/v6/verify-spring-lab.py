@@ -33,15 +33,17 @@ def verify():
  pp={**p,'hornR':60,'Sv':110,'Su':0,'rs':0,'nu':0,'te':100,'tc':165,'alpha':20,'m1':11.25,'m2':0,'m3':0,'m5':0,'m6':0};mass=11.25;k=2*mass*pp['g']*pp['L2']*math.cos(20*lab.R)/(60*110);z=lab.profile(pp);d0=abs(pp['Sv']-pp['hornR']);F=k*(d0+z['delta']);near(float(max(abs(F*z['A']-mass*pp['g']*z['J']))),0,1e-10)
  # Real C and E searches must obey every limit and share all installed data.
  results={}
- for typ in ['C','E']:
+ for typ in ['C','E','ANY']:
   request=dict(parameters={**p,'m1':11.25,'m2':0,'m3':0,'m5':0,'m6':0},settings=dict(hornR=62.22694951186731,rs=10,nu=0,Sv=100,Su=9.4,bulk=0,svMin=70,svMax=400,suMin=-100,suMax=100,type=typ,m=3,payloads=[0,70],solutions=2,trials=150))
+  if typ=='ANY':request['settings'].update(rhMin=40,rhMax=95,rs=14.2875)
   result=lab.solve(request,cat);assert result['solutions'],typ;results[typ]=[]
   for record in result['solutions']:
+   if typ=='ANY':assert 40<=record['geometry']['hornR']<=95
    lab.evaluate(record,4001);assert record['metrics']['valid'];assert len(record['springs'])<=3;assert len(record['masks'])==2
    pp={**record['parameters'],**record['geometry']};z=lab.profile(pp,4001)
    for s in record['springs']:
     assert s['id'] in eligible
-    x=s['x0']+z['delta'];F=s['initial']+s['k']*x;L=s['free']+(-x if typ=='C' else x);energy=(s['initial']*x+.5*s['k']*x*x)/1000
+    x=s['x0']+z['delta'];F=s['initial']+s['k']*x;L=s['free']+(-x if s['type']=='C' else x);energy=(s['initial']*x+.5*s['k']*x*x)/1000
     assert float(min(x))>=-1e-6 and float(max(x))<=s['travel']+1e-6
     assert float(max(F))<=s['fmax']+1e-5 and float(max(energy))<=s['energy']+1e-5
     assert float(min(L))>=s['lmin']-1e-6 and float(max(L))<=s['lmax']+1e-6

@@ -6181,3 +6181,82 @@ Canonical robot physics is NOT APPLICABLE to this isolated member workspace. Har
 Use Static friction torque in the shared motor panel; it is a motor-shaft breakaway threshold with the same magnitude assumed for sliding, while viscous drag remains separate.
 Read motor-model.md and v5-suspension-designs.md for the bound, reaction/work plots, actual zero-start proof and pinned native ABI; keep old compatibility keys and inspect numerical terms separately from heat.
 Keep existing enabled flags, profiles and foreign UI edits unchanged, restart4191with the project-local launcher, and retain the bounded hashed captures and PNG proofs under ignored app output.
+
+---
+
+## Entry: 2026-11-03 — Jonathan Xie — Bounded V6 horn and combined spring types
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Member VSL V6 Spring lab.
+- **Associated Issue/Task:** Replace fixed horn input with min/max and solved output, default new r_s to14.2875mm, add Any type; explain existing five-result ranking and future search options without changing permutation strategy.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v6/spring_lab.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v6/spring_store.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v6/spring-lab.js`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v6/v6-springlab.html`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v6/verify-spring-lab.py`
+- `users/jonathan-xie/experimental-apps/vsl-solver/v6/README.md`
+- **Pre-existing foreign workbook edits, preserved and excluded from this task:** `users/jonathan-xie/experimental-apps/springs/v6-spring-solutions.backup.xlsx`, `users/jonathan-xie/experimental-apps/springs/v6-spring-solutions.xlsx`, `users/jonathan-xie/experimental-apps/vsl-solver/v5/v5-configs.xlsx`.
+- **API/Interface Changes:** Lab settings add rhMin/rhMax (mm), searched and refined with Sv/Su; hornR becomes readonly solved output. Fresh bounds40–120mm; equal bounds fix horn. Missing legacy bounds use saved hornR to preserve old fixed behaviour. Fresh lab/ideal defaults rs14.2875mm; saved values remain. ANY searches eligible C/E parts and permits mixed cartridges. Canonical saves reject out-of-bound solved horns. Existing trial generation, nearest-eight part selection, signature deduplication, preliminary shortlist max(2N,8), minimax preloads and final dense-error ranking remain; no new permutation enumeration or seed policy is implemented. Existing workbooks, V5, catalogue and foreign edits preserved.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 12806 spring numerical/catalogue assertions pass, including mixed Any types, variable horn bounds at rs14.2875 and dense physical force/energy/travel limits;6550 preserved fall and8290 chart-contract assertions pass. Seven temporary Excel tests pass. Fresh headless Chrome localhost QA confirms new defaults, readonly horn, min/max, Any with6638 eligible entries, mixed C/E result, solved horn56.299mm within45–95mm, snapshot bound roundtrip and legacy fixed-horn migration, without page errors or solution/workbook writes. Updated launcher/server restarted on8769. Scoped whitespace check passes; canonical physics is not applicable. Complexity estimates supplied to user are analytical candidate/fit-count estimates, not measured timings for unimplemented strategies; no exhaustive/global-optimum claim.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics checks are NOT APPLICABLE to this isolated member calculator.
+
+## 4. Compute Saving Handoff State
+
+Refresh V6 on8769; widen legacy equal horn bounds when requesting a new variable-radius search, and note existing snapshots retain their original rs.
+Five requested results use the full trial budget, shortlist ten preliminary signatures, refine/verify them and return up to five ordered by peak absolute residual; the fixed seed repeats the same candidate search for identical inputs.
+No permutation-policy change was requested yet; discuss independent seeds/deeper refinement or shortlisted enumeration before implementing broader search, and preserve the independently modified workbooks.
+
+---
+## Entry: 2026-11-13 — Jonathan Xie — Local torque coupling explorer
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Isolated member analytical app.
+- **Associated Issue/Task:** Add an offline 3D coupling surface, two VSL-style ratio controls, requested-coordinate torque envelope and two linked cross-sections.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `users/jonathan-xie/experimental-apps/README.md`
+- `users/jonathan-xie/experimental-apps/torque-coupling/AGENTS.md`
+- `users/jonathan-xie/experimental-apps/torque-coupling/README.md`
+- `users/jonathan-xie/experimental-apps/torque-coupling/context/README.md`
+- `users/jonathan-xie/experimental-apps/torque-coupling/index.html`
+- `users/jonathan-xie/experimental-apps/torque-coupling/style.css`
+- `users/jonathan-xie/experimental-apps/torque-coupling/model.js`
+- `users/jonathan-xie/experimental-apps/torque-coupling/app.js`
+- `users/jonathan-xie/experimental-apps/torque-coupling/server.py`
+- `users/jonathan-xie/experimental-apps/torque-coupling/Open Torque Coupling.cmd`
+- **API/Interface Changes:** Local-only port 8772, root route and health endpoint. Fixed qab=2, signed k=qdc*(qfe-2)+1, editable positive domains initially 1–3, typed current values expand bounds. Torque plot follows the explicitly requested tauW=-c2*tau4 coordinate and explains delivered wheel torque tau4/c2. Motor limits 130/23.6 Nm. No external dependencies or VSL/workbook writes. Existing foreign edits remain outside this task.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** workspace
+- **Research/Policy Validation:** 15129 numerical checks over a 41x41 ratio grid pass for coefficients and envelope inversion. Node syntax checks and Python AST parse pass. Actual IAB browser checks confirm four plots, negative and zero coupling, live typed input, min/max, invalid-bound rejection, keyboard range input, drag orbit, scroll zoom, reset and no NaN/Infinity SVG values or browser warning/error logs. Project-local Windows launcher starts and restarts on 127.0.0.1:8772; repeated startup reuses the matching server. Source checkout HEAD at inspection was 7e371d3. This task is local delivery with no commit or remote publication.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+Canonical physics is NOT APPLICABLE to this isolated analytical member app.
+
+## 4. Compute Saving Handoff State
+
+Open the project-local launcher or visit localhost port 8772; all assets also work through index.html directly.
+The requested torque x-coordinate differs from delivered wheel torque, and positive ratios can yield negative k; both are explicit in the UI and README.
+The app is independent of VSL, uses fixed qab=2, and has no contact, spring, inertia or motor-speed model; preserve the existing unrelated repository edits.
+Whole-checkout validation was attempted with check_entry.py --base origin/main --require-passed and physics_gate.py --base origin/main, then stopped after remaining silent for over two minutes. No whole-repository pass is claimed. App-specific verification above passed; no Git publication was performed.

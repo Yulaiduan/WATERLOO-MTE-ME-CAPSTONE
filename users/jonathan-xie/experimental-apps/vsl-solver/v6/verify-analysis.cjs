@@ -6,7 +6,7 @@
 const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),assert=require('node:assert/strict'),dir=__dirname;
 const html=fs.readFileSync(path.join(dir,'v6-springlab.html'),'utf8'),scripts=[...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].filter(m=>!m[1].includes('src=')).map(m=>m[2]);for(const s of scripts)new vm.Script(s);
 const source=scripts.slice(0,2).join('\n')+'\n'+['plot-utils.js','fall-model.js','fall-analysis.js','fall-ui.js'].map(f=>fs.readFileSync(path.join(dir,f),'utf8')).join('\n');
-const {VSLFall:fall,VSLFallAnalysis:analysis,VSLFallUI:ui,VSLStatic:stat,VSLSpring:spring}=vm.runInNewContext(source+';({VSLFall,VSLFallAnalysis,VSLFallUI,VSLStatic,VSLSpring});');
+const {VSLFall:fall,VSLFallAnalysis:analysis,VSLFallUI:ui,VSLStatic:stat,VSLSpring:spring,VSL}=vm.runInNewContext(source+';({VSLFall,VSLFallAnalysis,VSLFallUI,VSLStatic,VSLSpring,VSL});');
 let checks=0;const near=(a,b,t=1e-8)=>{assert(Number.isFinite(a)&&Number.isFinite(b)&&Math.abs(a-b)<=t,`${a} != ${b}`);checks++;},ok=(x,msg)=>{assert(x,msg);checks++;};
 const p={...stat.defaults},a=analysis.create(),h=.25,r=fall.solve(p,h),original=JSON.stringify(p);a.seed(p,h,r);
 for(const alpha of [0,10,25])for(const height of [.15,.25,.6])for(let theta=100;theta<=165;theta+=2.5){
@@ -14,7 +14,19 @@ for(const alpha of [0,10,25])for(const height of [.15,.25,.6])for(let theta=100;
 }
 const start=a.solve(p,h,p.te),end=a.solve(p,h,p.tc);near(start.fall.vz,-Math.sqrt(2*p.g*h));near(end.fall.vz,0);near(end.fall.time,r.catchTimeS);ok(end.fall.aG>0,'braking acceleration does not have to vanish at first rest');near(end.Fz/(r.massKg*p.g),1+end.fall.aG);
 const held=stat.solve({...p,Fy:0,Fz:r.massKg*p.g,beta:0,loadMode:'yz'},p.tc);near(held.Fz/(r.massKg*p.g),1);near(held.Fz/r.massKg-p.g,0);
-const mixed={...p,m1:7,m2:1,m3:.5,m5:.2,m6:.3},ms=a.solve(mixed,h,130);ok(ms.valid,ms.reason);near(ms.tau2,-a.trajectory(mixed,h).brakingTorqueNm);near(ms.Fz,9*mixed.g*(1+ms.fall.aG));
+const mixed={...p,te:110,m1:7,m2:1,m3:.5,m5:.2,m6:.3,springEnabled:false},mr=a.trajectory(mixed,.5),ms=a.solve(mixed,.5,130);
+ok(ms.valid,ms.reason);near(ms.tau2,-mr.brakingTorqueNm);
+near(ms.Fz,9*mixed.g+[1,2,3,5,6].reduce((sum,i)=>sum+mixed['m'+i]*ms.fall.motion.acceleration[i][1],0));
+near(ms.maxForce,0);near(ms.maxMoment,0);near(ms.virtualWorkError,0);near(mr.energyResidualJ,0);
+ok(mr.impactEnergyJ>0&&mr.impactEnergyJ<mr.dropEnergyJ);
+const first=mr.rows[0],step=.0001;
+const before=VSL.state(mixed,mixed.te-step),after=VSL.state(mixed,mixed.te+step);
+const dB=(after.Bg[1]-before.Bg[1])/(2000*step*VSL.rad),dC=(after.Pg[1]-before.Pg[1])/(2000*step*VSL.rad);
+const projectedMomentum=mr.impactSpeed*((mixed.m1+mixed.m2+.5*mixed.m3+mixed.m5)*dC-(.5*mixed.m2+.5*mixed.m3+mixed.m5)*dB);
+near(first.H*first.qdot,projectedMomentum,1e-7);
+const defaultRobot={...p,m1:8.75,m2:2.5,m3:2,m5:1.5,m6:2,rs:14.2875};
+ok(fall.solve(defaultRobot,.25).reason.includes('Contact would lift'));
+ok(fall.solve({...defaultRobot,te:110},.25).valid);
 const differentManual=a.solve({...p,beta:80,Fy:400,Fz:2,Fn:20,Ft:-300,loadMode:'nt'},h,130);near(differentManual.tau2,a.solve(p,h,130).tau2);near(differentManual.Fz,a.solve(p,h,130).Fz);
 ok(!a.solve(p,h,95).valid);ok(!a.solve({...p,tc:270},h,130).valid);ok(!a.solve(p,0,130).valid);ok(JSON.stringify(p)===original,'input mutated');
 const peaks=a.globalPeaks(p,h);ok(peaks.valid);near(peaks.tau2.value,-r.brakingTorqueNm);near(peaks.tau4.value,0);near(peaks.Fs.value,spring.maximum(p,p.te,p.tc).value);near(peaks.dz.value,r.strokeM*1000);

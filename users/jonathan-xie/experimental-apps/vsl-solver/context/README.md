@@ -1,5 +1,44 @@
 # VSL Solver context
 
+## Nested compression group — 2026-11-11
+
+V6 now also has **Compression · nested parallel**, S0056–S0060, preserving the
+prior twenty cartridges. Catalogued outer ID exceeds inner OD by 6.35–25.4 mm.
+All five maintain the prior DP9 geometry/packaging/inversion limits and have
+<5 Nm loaded residual. Best S0056 uses 96485K436 outside 96485K249, with about
+0.0631 Nm unloaded / 1.6110 Nm loaded peak residual and 19.05 mm diametral gap.
+The outer spring is not always the unloaded spring. Per-spring IDs and explicit
+nominal gap/slot outputs appear in Spring Lab and its workbook. This verifies
+nominal dimensions only: winding direction, tolerance/growth and guides remain
+hardware decisions; independently stepped seats may be needed. See
+[V6 notes](../v6/README.md) and the read-only `v6/verify-nested.py` checks.
+
+## Spring Lab inversion campaign — 2026-11-11
+
+V6's solution workbook now contains four five-result groups based on DP9,
+“11/11 POR”, with compression/extension and parallel/swap operation. The final
+search envelope is r_h 50–95 mm, r_s 12.7 mm, S_v<=150 mm and |S_u|<=30 mm.
+Only the unloaded spring must remain taut and rated from -50 to theta2c;
+the 70 kg spring is rated over theta2e–theta2c. The catalogue and DP9 workbook
+remain input sources. See [V6 model and search notes](../v6/README.md).
+
+Use the Spring Lab group selector and arrows. Rated l_min, l_max and OD are
+shown per spring. r_clear=S_v-r_h must be >=2r_s. The achievable theta2f output
+reports the first clockwise spring/cable limit; “Full rotation” means a full
+period passes this ideal model, rather than an artificial limit at -180 deg.
+The stored campaign records contain the exact geometry, installed preload
+references, enabled masks and independent payload residuals.
+
+## V6 distributed mass and fall recovery — 2026-11-05
+
+The [V6 model and launcher notes](../v6/README.md) define the robot chassis and
+payload masses, per-leg components, legacy snapshot mapping and the zero-payload
+ideal spring fit. Fall mode projects the inelastic touchdown into the constrained
+leg motion, then includes body inertia in joint loads and FBDs during braking.
+With the new mass defaults, the inherited 100°–165° stroke loses contact for the
+0.25 m example. Use 110°–165° to reproduce a feasible example with the default
+spring and the same drop height. The contact impulse has no resolved force peak.
+
 ## Flexible spring fit and physical hip torque signs — 2026-10-21
 
 All seven spring inputs now have **Driving** checkboxes: checked values are
