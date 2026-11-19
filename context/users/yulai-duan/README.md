@@ -12,6 +12,8 @@ do not infer preferences, personal memory or ongoing tasks from a registered rol
 
 ## Conversation handoffs
 
+- [November 19 standing control](2026-11-19-standing-control.md) covers the proposed Pixhawk–STM32 feedback loop, the two motor buses and the Jetson-reboot bench test.
+
 - [October 20 Codex descent-study handoff](2026-10-20-codex-descent-studies.md):
   shared plots, new 8.75 kg/20° baseline, hip-held/heave interpretation and portable
   reproduction. Experimental results, not a final hardware or motor decision.

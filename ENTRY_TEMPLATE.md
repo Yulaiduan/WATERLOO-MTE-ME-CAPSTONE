@@ -6260,3 +6260,34 @@ Open the project-local launcher or visit localhost port 8772; all assets also wo
 The requested torque x-coordinate differs from delivered wheel torque, and positive ratios can yield negative k; both are explicit in the UI and README.
 The app is independent of VSL, uses fixed qab=2, and has no contact, spring, inertia or motor-speed model; preserve the existing unrelated repository edits.
 Whole-checkout validation was attempted with check_entry.py --base origin/main --require-passed and physics_gate.py --base origin/main, then stopped after remaining silent for over two minutes. No whole-repository pass is claimed. App-specific verification above passed; no Git publication was performed.
+
+
+## Entry: 2026-11-19 — Yulai Duan — Standing control review
+
+## 1. Scope & Objective
+
+- **Target Subsystem:** Controls documentation.
+- **Associated Issue/Task:** Share the proposed local standing loop and the bench test for a Jetson reboot.
+
+## 2. Structural Modifications
+
+- **Files Modified/Added:**
+- `ENTRY_TEMPLATE.md`
+- `context/users/yulai-duan/README.md`
+- `context/users/yulai-duan/2026-11-19-standing-control.md`
+- `docs/design/controls/assets/standing-control-loop.svg`
+- **API/Interface Changes:** Documentation of proposed wiring and message paths. No firmware change.
+
+## 3. Local Validation Checklist
+
+- **Validation Scope:** preliminary
+- **Research/Policy Validation:** Rendered the diagram, checked the summary-to-figure path and compared the physical links to the board manuals. The proposed rates and fallback still require hardware tests.
+- [ ] Executed `python simulation/run.py --headless-check` cleanly.
+- [ ] Executed `python simulation/experiments/verify_backend.py` with zero drift.
+- [ ] Physics limits (mass, joint constraints) verified against canonical `/assets/`.
+
+## 4. Compute Saving Handoff State
+
+The engineering summary links the direct Pixhawk and drive feedback paths to the STM32.
+The figure identifies the Jetson SPI link and the separate suspension and wheel buses.
+The next hardware test measures actuator response and sample age during a restrained Jetson reboot.
