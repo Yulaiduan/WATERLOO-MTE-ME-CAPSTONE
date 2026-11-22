@@ -99,7 +99,7 @@ function VSLFallModel(){
    brakingTorqueNm:T,energyTorqueNm:T,angleStrokeRad:Q};
   if(!(endDz>1e-8))return invalid('The working range must give positive upward wheel travel (downward chassis travel).',base);
   if(p.fallSolveMode!=='maximize'&&T < -eps/Q)return invalid('The spring absorbs more than the available energy. Reaching θ₂ᶜ requires motor drive, not this power-limited catch.',base);
-  const hipRpm0=Math.sqrt(2*E0/e.H)*60/(2*Math.PI),free=p.motorFreeSpeedRpm??({110:2830,140:3601,170:4373}[p.motorKV??110]??2830),motorKvLN=p.motorKvLNOverride??Math.sqrt(3)*(p.motorKV??110),Kt=p.motorKtOverride??(1.5*60/(2*Math.PI)/motorKvLN),factor=Kt*(p.motorImax??50),independent=p.motorIndependent??'sf';
+  const hipRpm0=Math.sqrt(2*E0/e.H)*60/(2*Math.PI),motorKvLN=p.motorKvLNOverride??Math.sqrt(3)*(p.motorKV??110),free=p.motorFreeSpeedOverride??(p.supplyVmaxLN!=null?p.supplyVmaxLN*motorKvLN:p.motorFreeSpeedRpm??({110:2830,140:3601,170:4373}[p.motorKV??110]??2830)),Kt=p.motorKtOverride??(1.5*60/(2*Math.PI)/motorKvLN),factor=Kt*(p.supplyIpeak??p.motorImax??50),independent=p.motorIndependent??'sf';
   if(!(free>0&&Number.isFinite(motorKvLN)&&motorKvLN>0&&Number.isFinite(Kt)&&Kt>0&&factor>0&&hipRpm0>0))return invalid('Positive motor free speed, KV, Imax and touchdown speed are required.',base);
   const gearRatio=independent==='torque'?(p.fallTorqueCeiling??200)/factor:independent==='gr'?(p.motorGR??20):free/(hipRpm0*(p.speedSF??1)),speedSafetyFactor=free/(hipRpm0*gearRatio),cap=factor*gearRatio;
   Object.assign(base,{gearRatio,speedSafetyFactor,motorKvLN,motorKt:Kt,derivedTorqueCeilingNm:cap,torqueCeilingNm:cap});
@@ -124,7 +124,7 @@ function VSLFallModel(){
   if(integrate(high)<E0-energyScale*1e-7)return invalid('The torque ceiling cannot absorb this fall within the stroke. Increase the ceiling or travel.',base);
   for(let i=0;i<42;i++){const mid=(low+high)/2;if(integrate(mid)>=E0)high=mid;else low=mid;}
   const power=(low+high)/2,energies=integrate(power,true);
-  const context={...base,gearRatio,motorKvLN,motorKt:Kt,derivedTorqueCeilingNm:Kt*(p.motorImax??50)*gearRatio,powerPath:true,powerW:power,torqueCeilingNm:cap,brakingTorqueNm:cap,energyGrid:energies};
+  const context={...base,gearRatio,motorKvLN,motorKt:Kt,derivedTorqueCeilingNm:Kt*(p.supplyIpeak??p.motorImax??50)*gearRatio,powerPath:true,powerW:power,torqueCeilingNm:cap,brakingTorqueNm:cap,energyGrid:energies};
   const first=at(p,p.te,context),last=at(p,p.tc,context);
   if(!first.valid||!last.valid)return invalid(first.reason??last.reason,base);
   if(last.Kprime>=-energyScale*1e-10)return invalid('The endpoint is not a finite-time decelerating stop under power-limited resistance.',base);
@@ -143,7 +143,7 @@ function VSLFallModel(){
    if(!Number.isFinite(dt)||dt<0)return {valid:false,reason:'No finite forward time mapping is available.'};
    return {...row,dt};
   };
-  const rows=[],warnings=[];let previous=evaluate(0),time=0;
+  const rows=[],warnings=[];if(p.supplyPowerW!=null&&power>(p.fallPowerCeiling??p.supplyPowerW)*(1+1e-8))warnings.push('Required minimum power exceeds the selected supply power ceiling.');let previous=evaluate(0),time=0;
   if(!previous.valid)return invalid(previous.reason,base);
   rows.push({...previous,time:0});
   for(let i=1;i<=n;i++){

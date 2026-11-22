@@ -42,7 +42,7 @@
 .fall-headlines td{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;}
 .fall-headlines select,.fall-headlines th small{display:block;}
 </style>
-<link rel="stylesheet" href="v7-ui.css?v=20261030-springlab">
+<link rel="stylesheet" href="v7-ui.css?v=frequency">
 <link rel="icon" href="data:,"></head>
 <body>
 <header class="topbar"><div class="identity"><div class="logo">VSL</div><div><div class="title">General VSL Solver</div><div class="subtitle">Virtual scissor lift · spring assistance + fall recovery</div></div></div><div class="header-actions"><span class="badge">V5 / FALL RECOVERY</span><button id="exportCsv">Export CSV</button><button id="reset">Reset</button></div></header>
@@ -467,9 +467,12 @@ const VSLPeaks=(()=>{
 </script>
 <script src="plot-utils.js?v=20261030-springlab"></script>
 <script src="config-library-model.js?v=20261030-springlab"></script>
-<script src="fall-model.js?v=power-modes"></script>
-<script src="fall-analysis.js?v=power-modes"></script>
-<script src="fall-ui.js?v=recovery-totals"></script>
+<script src="fall-model.js?v=supply-capacity"></script>
+<script src="fall-analysis.js?v=supply-capacity"></script>
+<script src="motor-limits.js?v=frequency"></script>
+<script src="frequency.js?v=frequency"></script>
+<script src="motor-settings.js?v=frequency"></script>
+<script src="fall-ui.js?v=supply-capacity"></script>
 <script>
 /** Browser UI for General VSL Solver. Open this self-contained HTML directly.
  * Uses the embedded VSL model (mm/deg), SVG rendering and browser-local file export.

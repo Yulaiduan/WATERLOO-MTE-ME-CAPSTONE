@@ -129,3 +129,17 @@ Adds MD (52 McMaster die-spring part/package entries) and RF (164 FOX rear-shock
 springs), keeping nominal E_T >=60 J. All eight previous tabs are preserved.
 FOX force is derived from rate and marked travel; energy is a nominal ceiling,
 with preload/stroke margin still required. [Coverage, sources and limitations](research/2026-11-13-md-rf/README.md).
+
+## DieMax additions — 2026-11-21
+
+Latest expanded workbook: `outputs/2026-11-21-dm/spring-catalogue-expanded.xlsx`.
+Adds DM (139 IEM DieMax XL springs with nominal operating E_T >=60 J), preserving
+all ten existing tabs. Includes long-life/average-life ratings and separate
+nonoperating travel-to-solid data. [Source, definitions and checks](research/2026-11-21-dm/README.md).
+
+## DP18 spring search — 2026-11-22
+
+V7 now uses `v7-spring-solutions.xlsx` separately from V6. Keeps S0075 and adds
+10 mixed-supplier and10 single-supplier one-only compression pairs for DP18,
+rh40–42 mm, rs25.4 mm, inversion-50 deg. All20 free lengths are<210 mm.
+[Ranked results, rope forces and validation](research/2026-11-22-dp18-search/README.md).

@@ -320,13 +320,28 @@ class Handler(http.server.SimpleHTTPRequestHandler):
                     rows=body.get('rows');seen=set()
                     if not isinstance(rows,list) or not 1<=len(rows)<=100:raise LibraryError('Use 1–100 motor configs.')
                     for row in rows:
-                        if not isinstance(row.get('id'),str) or not row['id'] or row['id'] in seen:raise LibraryError('Motor IDs must be unique.')
+                        if not isinstance(row,dict) or not isinstance(row.get('id'),str) or not row['id'] or row['id'] in seen:raise LibraryError('Motor IDs must be unique.')
                         seen.add(row['id'])
-                        if any(not isinstance(row.get(k),(int,float)) or not math.isfinite(row[k]) or row[k]<=0 for k in ['kv','freeSpeedRpm']):raise LibraryError('Motor KV and free speed must be positive.')
+                        if any(isinstance(row.get(k),bool) or not isinstance(row.get(k),(int,float)) or not math.isfinite(row[k]) or row[k]<=0 for k in ['kv']):raise LibraryError('Motor KV must be positive.')
                         for key in ['kvLNOverride','ktOverride']:
                             if row.get(key) is not None and (not isinstance(row[key],(int,float)) or not math.isfinite(row[key]) or row[key]<=0):raise LibraryError('Phase KV / Kt overrides must be positive or blank for automatic calculation.')
                         if not isinstance(row.get('comment'),str) or len(row['comment'])>200:raise LibraryError('Motor comment is limited to 200 characters.')
                     pending=HERE/'motor-configs.pending.json'
+                    pending.write_text(json.dumps(rows,indent=2),encoding='utf8');os.replace(pending,target)
+                return self.reply({'rows':json.loads(target.read_text(encoding='utf8'))})
+            if self.path=='/api/supplies':
+                target=HERE/'power-supply-configs.json'
+                if body.get('action') not in ['load','save']:raise LibraryError('Unknown supply config action.')
+                if body.get('action')=='save':
+                    rows=body.get('rows');seen=set()
+                    if not isinstance(rows,list) or not 1<=len(rows)<=100:raise LibraryError('Use 1–100 supply configs.')
+                    for row in rows:
+                        if not isinstance(row,dict) or not isinstance(row.get('id'),str) or not row['id'] or row['id'] in seen:raise LibraryError('Supply IDs must be unique.')
+                        seen.add(row['id'])
+                        if any(isinstance(row.get(k),bool) or not isinstance(row.get(k),(int,float)) or not math.isfinite(row[k]) or row[k]<=0 for k in ['busV','khz','vmax','power','overheat','peak','continuous']):raise LibraryError('Supply ratings must be finite and positive.')
+                        if row['continuous']>row['peak']:raise LibraryError('Continuous current cannot exceed peak current.')
+                        if not isinstance(row.get('comment'),str) or not row['comment'].strip() or len(row['comment'])>200:raise LibraryError('Supply comment must contain 1–200 characters.')
+                    pending=HERE/'power-supply-configs.pending.json'
                     pending.write_text(json.dumps(rows,indent=2),encoding='utf8');os.replace(pending,target)
                 return self.reply({'rows':json.loads(target.read_text(encoding='utf8'))})
             if self.path=='/api/springs/solve':

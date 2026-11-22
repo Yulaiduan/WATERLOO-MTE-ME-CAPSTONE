@@ -3,7 +3,7 @@ from __future__ import annotations
 import copy,datetime,hashlib,json,os,pathlib,shutil,subprocess,tempfile,threading,xml.etree.ElementTree as ET,zipfile
 import spring_lab
 HERE=pathlib.Path(__file__).resolve().parent
-BOOK=HERE.parent.parent/'springs'/'v6-spring-solutions.xlsx'
+BOOK=HERE.parent.parent/'springs'/'v7-spring-solutions.xlsx'
 LOCK=threading.RLock();CATALOGUE=None;CATALOGUE_VERSION=None
 
 def catalogue():
@@ -45,7 +45,7 @@ def write(doc):
     BOOK.parent.mkdir(parents=True,exist_ok=True);tmp=BOOK.with_name('.v7-spring-solutions.pending.xlsx')
     try:
         writer(doc,tmp)
-        if BOOK.exists():shutil.copy2(BOOK,BOOK.with_name('v6-spring-solutions.backup.xlsx'))
+        if BOOK.exists():shutil.copy2(BOOK,BOOK.with_name('v7-spring-solutions.backup.xlsx'))
         os.replace(tmp,BOOK)
     except PermissionError:raise ValueError('Excel has locked the solutions workbook. Close it in Excel and retry; no solutions were overwritten.')
     finally:

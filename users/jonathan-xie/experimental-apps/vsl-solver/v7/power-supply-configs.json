@@ -1,0 +1,200 @@
+[
+  {
+    "id": "42-15",
+    "comment": "42V @ 15kHz",
+    "busV": 42,
+    "khz": 15,
+    "vmax": 19.11,
+    "power": 625,
+    "overheat": 2.213,
+    "peak": 120,
+    "continuous": 27.9
+  },
+  {
+    "id": "42-20",
+    "comment": "42V @ 20kHz",
+    "busV": 42,
+    "khz": 20,
+    "vmax": 18.48,
+    "power": 833,
+    "overheat": 1.4551,
+    "peak": 120,
+    "continuous": 24.5
+  },
+  {
+    "id": "42-30",
+    "comment": "42V @ 30kHz",
+    "busV": 42,
+    "khz": 30,
+    "vmax": 17.22,
+    "power": 1250,
+    "overheat": 0.5851,
+    "peak": 120,
+    "continuous": 19.6
+  },
+  {
+    "id": "42-40",
+    "comment": "42V @ 40kHz",
+    "busV": 42,
+    "khz": 40,
+    "vmax": 15.96,
+    "power": 1667,
+    "overheat": 0.283,
+    "peak": 120,
+    "continuous": 15.7
+  },
+  {
+    "id": "42-48",
+    "comment": "42V @ 48kHz",
+    "busV": 42,
+    "khz": 48,
+    "vmax": 14.95,
+    "power": 2000,
+    "overheat": 0.1954,
+    "peak": 120,
+    "continuous": 12.4
+  },
+  {
+    "id": "42-60",
+    "comment": "42V @ 60kHz",
+    "busV": 42,
+    "khz": 60,
+    "vmax": 13.44,
+    "power": 2500,
+    "overheat": 0.1357,
+    "peak": 120,
+    "continuous": 9.7
+  },
+  {
+    "id": "supply-1794872327426",
+    "comment": "42V @ 32kHz",
+    "busV": 42,
+    "khz": 32,
+    "vmax": 16.97,
+    "power": 1333,
+    "overheat": 0.4855,
+    "peak": 120,
+    "continuous": 18.6
+  },
+  {
+    "id": "supply-1794872331441",
+    "comment": "42V @ 34kHz",
+    "busV": 42,
+    "khz": 34,
+    "vmax": 16.72,
+    "power": 1417,
+    "overheat": 0.4118,
+    "peak": 120,
+    "continuous": 17.8
+  },
+  {
+    "id": "supply-1794872332089",
+    "comment": "42V @ 36kHz",
+    "busV": 42,
+    "khz": 36,
+    "vmax": 16.46,
+    "power": 1500,
+    "overheat": 0.357,
+    "peak": 120,
+    "continuous": 17
+  },
+  {
+    "id": "supply-1794872332697",
+    "comment": "42V @ 38kHz",
+    "busV": 42,
+    "khz": 38,
+    "vmax": 16.21,
+    "power": 1583,
+    "overheat": 0.3155,
+    "peak": 120,
+    "continuous": 16.3
+  },
+  {
+    "id": "supply-1794875329583",
+    "comment": "42V @ 42kHz",
+    "busV": 42,
+    "khz": 42,
+    "vmax": 15.71,
+    "power": 1750,
+    "overheat": 0.2535,
+    "peak": 120,
+    "continuous": 14.6
+  },
+  {
+    "id": "supply-1794875330248",
+    "comment": "42V @ 44kHz",
+    "busV": 42,
+    "khz": 44,
+    "vmax": 15.46,
+    "power": 1833,
+    "overheat": 0.2302,
+    "peak": 120,
+    "continuous": 13.8
+  },
+  {
+    "id": "supply-1794875330729",
+    "comment": "42V @ 46kHz",
+    "busV": 42,
+    "khz": 46,
+    "vmax": 15.2,
+    "power": 1917,
+    "overheat": 0.2112,
+    "peak": 120,
+    "continuous": 13
+  },
+  {
+    "id": "supply-1794875399880",
+    "comment": "42V @ 48kHz",
+    "busV": 42,
+    "khz": 48,
+    "vmax": 14.95,
+    "power": 2000,
+    "overheat": 0.1954,
+    "peak": 120,
+    "continuous": 12.4
+  },
+  {
+    "id": "supply-1794876091506",
+    "comment": "42V @ 22kHz",
+    "busV": 42,
+    "khz": 22,
+    "vmax": 18.23,
+    "power": 917,
+    "overheat": 1.2278,
+    "peak": 120,
+    "continuous": 23.3
+  },
+  {
+    "id": "supply-1794876092057",
+    "comment": "42V @ 24kHz",
+    "busV": 42,
+    "khz": 24,
+    "vmax": 17.98,
+    "power": 1000,
+    "overheat": 1.0291,
+    "peak": 120,
+    "continuous": 22.2
+  },
+  {
+    "id": "supply-1794876092545",
+    "comment": "42V @ 26kHz",
+    "busV": 42,
+    "khz": 26,
+    "vmax": 17.72,
+    "power": 1083,
+    "overheat": 0.8551,
+    "peak": 120,
+    "continuous": 21.2
+  },
+  {
+    "id": "supply-1794876092993",
+    "comment": "42V @ 28kHz",
+    "busV": 42,
+    "khz": 28,
+    "vmax": 17.47,
+    "power": 1167,
+    "overheat": 0.7069,
+    "peak": 120,
+    "continuous": 20.4
+  }
+]

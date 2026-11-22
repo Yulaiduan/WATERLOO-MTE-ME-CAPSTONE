@@ -46,13 +46,15 @@ def read_catalogue(path=CATALOGUE):
                 records.append(d)
     # Supplier expansion is a dated local data source; never reinterpret installation
     # hole/pin dimensions as actual coil OD/ID.
-    additional=pathlib.Path(path).parents[2]/'data/additional-springs.json'
-    if additional.is_file():
-        for x in json.loads(additional.read_text(encoding='utf8'))['rows']:
-            d=dict(id=x['catalogue_id'],part=x['part_number'],url=x['part_url'],type='C',source=x['source'],supplier=x['supplier'],energy=x['energy_J'],k=x['k_N_per_mm'],travel=x['travel_mm'],fmax=x['f_max_N'],lmin=x['l_min_mm'],lmax=x['l_max_mm'],free=x['free_length_mm'],initial=0,od=x['od_mm'],coilId=x['id_mm'],windDirection=x.get('wind_direction',''),diameterBasis=x['diameter_basis'],ratingBasis=x['rating_basis'],eligible=True)
-            d['xmax']=min(d['travel'],d['free']-d['lmin'],d['fmax']/d['k'],math.sqrt(2000*d['energy']/d['k']))
-            d['eligible']=d['xmax']>0
-            records.append(d)
+    for filename in ['additional-springs.json','md-rf-springs.json','dm-springs.json']:
+        additional=pathlib.Path(path).parents[2]/'data'/filename
+        if additional.is_file():
+            for x in json.loads(additional.read_text(encoding='utf8'))['rows']:
+                d=dict(id=x['catalogue_id'],part=x['part_number'],url=x['part_url'],type='C',source=x['source'],supplier=x['supplier'],energy=x['energy_J'],k=x['k_N_per_mm'],travel=x['travel_mm'],fmax=x['f_max_N'],lmin=x['l_min_mm'],lmax=x['l_max_mm'],free=x['free_length_mm'],initial=0,od=x['od_mm'],coilId=x['id_mm'],windDirection=x.get('wind_direction',''),diameterBasis=x['diameter_basis'],ratingBasis=x['rating_basis'],eligible=True)
+                d['xmax']=min(d['travel'],d['free']-d['lmin'],d['fmax']/d['k'],math.sqrt(2000*d['energy']/d['k']))
+                if d.get('source')=='RF':d['xmax']-=.5
+                d['eligible']=d['xmax']>0
+                records.append(d)
     return records
 
 def roots(p,A,B,c):

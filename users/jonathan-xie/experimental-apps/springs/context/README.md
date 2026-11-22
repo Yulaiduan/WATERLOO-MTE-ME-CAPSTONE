@@ -39,3 +39,20 @@ See [the dated research](../research/2026-11-11-pulleys/README.md) and its scree
 [Additional supplier research](../research/2026-11-11-suppliers/README.md) supersedes the earlier pulley note's saved-geometry context for spring selection: DP9 chassis54 kg, links296.3 mm, working120-180 deg, unloaded inversion target-50 deg, r_s12.7 mm and r_h50-95 mm. Added382 rated nominal >=60 J compression candidates in four new catalogue tabs. Original tabs and links preserved. New V6 fits were not run; current importer remains MC/ME only and needs explicit supplier support. Long-life energy can be lower than maximum operating energy; short high-rate die springs are not assumed to meet inversion stroke. Reproduction/validation are in the dated note. All changes remain local to springs; no solver or solution-workbook edits, commit or push.
 
 Delivery uses outputs/2026-11-11-suppliers/spring-catalogue-expanded.xlsx because the original was locked. It contains all original tabs plus ST/BT/MI/SW. The original V6 input path remains unchanged.
+
+## DieMax catalogue — 2026-11-21
+
+Latest local catalogue is `../outputs/2026-11-21-dm/spring-catalogue-expanded.xlsx`:
+139 DM parts added from the supplied PDF, with all prior MC/ME/MT/ST/BT/MI/SW/MD/RF
+records preserved. E_T uses maximum operating force/travel, never travel to solid.
+[Source and validation](../research/2026-11-21-dm/README.md) document the inch-rate
+conversion and visible-table corrections. No VSL or solution-workbook changes.
+
+## DP18 campaign — 2026-11-22
+
+V7's new independent springs/v7-spring-solutions.xlsx contains S0075 plus
+S0081–90 mixed and S0091–100 single-supplier DP18 fits. V6 workbook preserved.
+Best S0091 uses original S0075 Swift pair at rh40, rs25.4, Su24.2792, Sv90.8 mm;
+peak0.15913 Nm, loaded rope5.396 kN. Clearance remains Sv-rh>=2rs. See the
+[dated result](../research/2026-11-22-dp18-search/README.md) for assumptions,
+FOX provisional ratings, bounded-search limits and tested/untested status.

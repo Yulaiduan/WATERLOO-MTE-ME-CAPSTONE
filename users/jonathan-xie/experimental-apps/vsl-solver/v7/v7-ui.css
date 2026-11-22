@@ -105,3 +105,51 @@ body.library-pinned>.layout{grid-template-columns:240px minmax(0,1fr);}
  body.library-pinned>.layout{grid-template-columns:minmax(0,1fr);}
  body.library-pinned>.layout>aside{position:relative;top:auto;max-height:280px;overflow:auto;}
 }
+
+/* V7 motor/supply libraries and capacity study. */
+#motorWorkspace{border-top:1px solid #d5e2e9;margin-top:14px;padding-top:10px;}
+#motorWorkspace label{display:block;font-size:11px;min-width:0;}
+#motorWorkspace input[type=number],#motorWorkspace select{width:100%;min-width:0;box-sizing:border-box;}
+#motorWorkspace input[type=checkbox]{width:auto;}
+.motor-selection,.motor-small-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:8px 0;}
+.motor-three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+#motorWorkspace details{margin-top:10px;}
+.motor-table-scroll{overflow:auto;max-width:100%;}
+#motorWorkspace .lab-table input{min-width:100px;}
+#motorWorkspace .lab-table input[type=text]{min-width:170px;}
+#motorCapacity{border:1px solid #d5e2e9;border-radius:9px;padding:12px;margin:12px 0;}
+#motorCapacity summary{font-weight:650;cursor:pointer;}
+#motorCapacity th small{display:block;white-space:nowrap;font-weight:400;}
+#motorCapacity .lab-table{width:100%;min-width:730px;}
+#motor-limit-table.stale tbody{opacity:.45;}
+.motor-payload{border-top:1px solid #d5e2e9;padding-top:10px;margin-top:10px;}
+#continuous-payload{font-size:15px;margin:7px 0;color:#145e68;}
+
+/* Keep the live motor inputs visible above Fall Recovery, independently of graph folding. */
+#motorWorkspace.motor-panel{padding:14px;margin:14px 0;border:1px solid #d5e2e9;border-radius:10px;}
+#motorWorkspace .card-head{margin-bottom:10px;}
+#motorWorkspace .motor-live-inputs{display:grid;grid-template-columns:minmax(220px,1.2fr) minmax(300px,1.6fr) minmax(280px,1.4fr);gap:18px;align-items:end;}
+#motorWorkspace .motor-selection{grid-template-columns:1fr;margin:0;}
+#motorWorkspace .motor-small-grid{margin:0;}
+#motorWorkspace .motor-three{align-items:end;}
+#motorWorkspace input[type=number],#motorWorkspace select{padding:7px 8px;border:1px solid #c7d8e0;border-radius:5px;background:#fff;font:inherit;}
+#motorWorkspace input:disabled{background:#f0f4f7;color:#748592;}
+#motorWorkspace .motor-editors{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start;}
+#motorWorkspace details{border-top:1px solid #dce6ec;padding-top:9px;}
+#motorWorkspace summary{cursor:pointer;font-size:12px;font-weight:650;}
+#motorWorkspace .motor-table-scroll{margin:9px 0;}
+#motorWorkspace .motor-rating-note{margin:8px 0;}
+@media(max-width:1250px){#motorWorkspace .motor-live-inputs{grid-template-columns:repeat(2,minmax(0,1fr));}#motorWorkspace .motor-three{grid-column:1/-1;}#motorWorkspace .motor-editors{grid-template-columns:1fr;}}
+@media(max-width:650px){#motorWorkspace .motor-live-inputs{grid-template-columns:1fr;}#motorWorkspace .motor-selection{grid-template-columns:1fr;}#motorWorkspace .motor-small-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+
+#frequency{border:1px solid #d5e2e9;border-radius:9px;padding:10px;margin:10px 0;}
+#frequency summary{cursor:pointer;font-weight:650;}
+.frequency-scroll{overflow:auto;}
+.frequency-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-width:850px;gap:8px;}
+.frequency-plot{border:1px solid #d5e2e9;border-radius:6px;padding:6px;}
+.frequency-plot strong{font-size:12px;}
+.frequency-plot svg{width:100%;height:auto;display:block;}
+.frequency-plot svg text{font-size:10px;fill:#526876;}
+.frequency-legend{font-size:11px;padding:8px;}
+.frequency-legend span{display:block;font-weight:650;}
+#frequency.stale .frequency-grid{opacity:.5;}

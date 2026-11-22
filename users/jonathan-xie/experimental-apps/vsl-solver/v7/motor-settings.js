@@ -1,0 +1,82 @@
+/** Editable V7 motor/supply libraries and capacity controls. Browser entry create(hooks).
+ * Libraries persist only on explicit Save via local helper JSON APIs; live fields
+ * persist in normal design snapshots. Units rpm/V, Nm/A peak, V, kHz, A, W, s.
+ * Height search runs on demand in a cancellable worker using the existing model.
+ */
+const VSLMotorUI=(()=>{
+ const supplies=()=>[[15,19.11,625,2.213,27.9],[20,18.48,833,1.4551,24.5],[30,17.22,1250,.5851,19.6],[40,15.96,1667,.283,15.7],[48,14.95,2000,.1954,12.4],[60,13.44,2500,.1357,9.7]].map(([khz,vmax,power,overheat,continuous])=>({id:'42-'+khz,comment:'42V @ '+khz+'kHz',busV:42,khz,vmax,power,overheat,peak:120,continuous}));
+ const esc=x=>String(x??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const num=x=>Number.isFinite(x)?Number(x.toPrecision(5)).toString():'—';
+ function create(hooks){
+  const $=id=>document.getElementById(id),math=VSLMotorLimits;
+  let motors=[110,140,170].map(kv=>({id:String(kv),kv,comment:'7070 '+kv+'KV'})),conditions=supplies(),queued=false,worker=null,request=0,lastStudyKey='',lastPayloadKey='';
+  const fields=[['torque','Torque ceiling (Nm)','fallTorqueCeiling',200],['gr','GR','motorGR',20],['sf','Speed SF','speedSF',1]];
+  const input=(id,label,extra='')=>`<label>${label}<input id="${id}" type="number" min="0.000001" step="any" ${extra}></label>`;
+  $('fallRecovery').insertAdjacentHTML('beforebegin',`<section id="motorWorkspace" class="card motor-panel" aria-label="Motor and power supply inputs"><div class="card-head"><h2>Motor &amp; power supply</h2></div><div class="motor-live-inputs"><div class="motor-selection"><label>Motor KV<select id="power-kv"></select></label><label>Power Supply Config<select id="power-supply"></select></label></div><div class="motor-small-grid">${input('power-phasekv','<span><input id="power-phase-override" type="checkbox"> Override KV_LN</span>')}${input('power-kt','<span><input id="power-kt-override" type="checkbox"> Override Kt (Nm/A)</span>')}${input('power-speed','<span><input id="power-speed-override" type="checkbox"> Override free speed (rpm)</span>')}${input('power-current','I_peak (A phase peak)','readonly')}</div><div id="powerControls" class="motor-three">${fields.map(([kind,label])=>input('power-'+kind,`<span><input type="checkbox" data-motor-driven="${kind}"> Driving</span><br>${label}`)).join('')}</div></div><div id="motor-rating-note" class="hint"></div><div class="motor-editors"><details id="motorConfigs"><summary>Motor KV configs</summary><div class="motor-table-scroll" id="motor-config-rows"></div><button id="motor-add">Add motor</button> <button id="motor-save">Save motor configs</button><div class="hint" id="motor-config-status"></div></details><details id="supplyConfigs"><summary>Power supply configs</summary><div class="motor-table-scroll" id="supply-config-rows"></div><button id="supply-add">Add supply</button> <button id="supply-save">Save supply configs</button><div class="hint" id="supply-config-status"></div></details></div></section>`);
+  $('fallRecovery').querySelector('.fall-plot-options').insertAdjacentHTML('beforebegin',`<div id="fallSolveControls" class="lab-row"><label>Fall solve mode<select id="fall-solve-mode"><option value="minimize">Minimize power</option><option value="maximize">Maximize power</option></select></label>${input('fall-power-ceiling','Power ceiling (W)')}<span class="lab-note">Ceiling applies to maximum-resistance mode and the capacity study.</span></div><details id="motorCapacity" open><summary>Maximum fall height &amp; continuous payload</summary><div class="lab-row"><button id="calculate-motor-limits">Calculate max fall height</button><button id="cancel-motor-limits" hidden>Cancel</button><span id="motor-limit-status" role="status">Calculate for the current selections · SF = 1</span></div><div class="motor-table-scroll"><table class="lab-table" id="motor-limit-table"><thead><tr><th>Restriction</th><th>Fall height (m)</th><th>GR</th><th>τ_max (Nm)</th><th>ω₂ max (rpm)</th><th>P_max (W)</th><th>Recovery time (s)</th></tr></thead><tbody>${['Unrestricted','Power limit','Power + thermal limit'].map((name,i)=>`<tr data-limit-row="${i}"><th>${name}${i===1?'<small id="limit-power-caption"></small>':i===2?'<small id="limit-thermal-caption"></small>':''}</th>${Array.from({length:6},()=>'<td>—</td>').join('')}</tr>`).join('')}</tbody></table></div><p class="hint">Maximum-resistance law; first rest at or before θ₂c. Each height has its own SF=1 gearing. Contact, full-stroke motor speed and travel constraints remain active. A sampled search refines the highest feasible boundary; this is not a search over every possible controller.</p><div class="motor-payload"><strong>Continuous 1G payload capacity</strong><div id="continuous-payload" role="status">Resolving current GR…</div><small>Current GR · I_cont · worst pose over θ₂e–θ₂c · spring and leg gravity included. Reported payload is additional to the chassis, not additional to the current payload.</small></div></details>`);
+  const frequency=VSLFrequencyUI.create({getParameters:hooks.getParameters,getLibraries:()=>({motors,conditions}),getModelSources:hooks.getModelSources,onChange:hooks.onChange});
+  const selectedMotor=()=>motors.find(x=>x.id===hooks.getParameters().motorConfigId)||motors.find(x=>x.kv===hooks.getParameters().motorKV)||motors[0];
+  const selectedSupply=()=>conditions.find(x=>x.id===hooks.getParameters().supplyConfigId)||conditions[0];
+  const motorPatch=x=>({motorConfigId:x.id,motorKV:x.kv,motorKvLNOverride:x.kvLNOverride??null,motorKtOverride:x.ktOverride??null,motorOverridesProfileId:x.id});
+  const supplyPatch=x=>({supplyConfigId:x.id,supplyOverridesProfileId:x.id,supplyBusV:x.busV,supplyKhz:x.khz,supplyVmaxLN:x.vmax,supplyPowerW:x.power,supplyOverheatS:x.overheat,supplyIpeak:x.peak,supplyIcont:x.continuous,motorImax:x.peak,fallPowerCeiling:x.power,motorFreeSpeedOverride:null});
+  function options(){for(const [id,items,selected] of [['power-kv',motors,selectedMotor()],['power-supply',conditions,selectedSupply()]]){$(id).innerHTML=items.map(x=>`<option value="${esc(x.id)}">${esc(x.comment)}</option>`).join('');$(id).value=selected.id;}}
+  async function api(name,body){const r=await fetch('/api/'+name,{method:'POST',headers:{'Content-Type':'application/json','X-VSL-Client':'config-library'},body:JSON.stringify(body)}),data=await r.json();if(!r.ok)throw Error(data.error??'Config operation failed');return data.rows;}
+  function editor(kind){
+   const motor=kind==='motor',items=motor?motors:conditions,cols=motor?[['comment','Comment'],['kv','KV_LL'],['kvLNOverride','KV_LN override'],['ktOverride','Kt override']]:[['comment','Comment / dropdown name'],['busV','Bus V'],['khz','Switching kHz'],['vmax','Vmax_LN V'],['power','Max power W'],['overheat','Overheat s'],['peak','I_peak A'],['continuous','I_cont A']];
+   $(kind+'-config-rows').innerHTML='<table class="lab-table"><thead><tr>'+cols.map(([,title])=>'<th>'+title+'</th>').join('')+'<th></th></tr></thead><tbody>'+items.map((x,i)=>'<tr>'+cols.map(([key])=>`<td><input aria-label="${kind} ${i+1} ${key}" data-row="${i}" data-key="${key}" type="${key==='comment'?'text':'number'}" ${key==='comment'?'maxlength="200"':'min="0.000001" step="any"'} value="${esc(x[key])}" ${key.endsWith('Override')?`placeholder="${num(key==='kvLNOverride'?Math.sqrt(3)*x.kv:1.5*60/(2*Math.PI)/(x.kvLNOverride??Math.sqrt(3)*x.kv))}"`:''}></td>`).join('')+`<td><button data-delete="${i}">Delete</button></td></tr>`).join('')+'</tbody></table>';
+   for(const el of $(kind+'-config-rows').querySelectorAll('[data-row]'))el.onchange=()=>{const key=el.dataset.key,value=key==='comment'?el.value:key.endsWith('Override')&&el.value===''?null:el.valueAsNumber;if(typeof value==='number'&&!(Number.isFinite(value)&&value>0)){$(kind+'-config-status').textContent='Enter a positive finite value.';return;}const x=items[+el.dataset.row];x[key]=value;if((motor?selectedMotor():selectedSupply()).id===x.id)hooks.onChange(motor?motorPatch(x):supplyPatch(x));options();if(motor)for(const field of $(kind+'-config-rows').querySelectorAll('[data-row="'+el.dataset.row+'"]')){if(field.dataset.key==='kvLNOverride')field.placeholder=num(Math.sqrt(3)*x.kv);if(field.dataset.key==='ktOverride')field.placeholder=num(1.5*60/(2*Math.PI)/(x.kvLNOverride??Math.sqrt(3)*x.kv));}$(kind+'-config-status').textContent='Unsaved library edits';};
+   for(const el of $(kind+'-config-rows').querySelectorAll('[data-delete]'))el.onclick=()=>{if(items.length===1)return;items.splice(+el.dataset.delete,1);options();editor(kind);sync();$(kind+'-config-status').textContent='Unsaved library edits';};
+  }
+  for(const kind of ['motor','supply']){
+   $(kind+'-add').onclick=()=>{const row=kind==='motor'?{id:'motor-'+Date.now(),kv:110,comment:'New motor'}:{...conditions[0],id:'supply-'+Date.now(),comment:'New supply'};(kind==='motor'?motors:conditions).push(row);editor(kind);options();};
+   $(kind+'-save').onclick=async()=>{try{const rows=await api(kind==='motor'?'motors':'supplies',{action:'save',rows:kind==='motor'?motors:conditions});if(kind==='motor')motors=rows;else conditions=rows;editor(kind);options();$(kind+'-config-status').textContent='Saved to '+(kind==='motor'?'motor-configs.json':'power-supply-configs.json');}catch(e){$(kind+'-config-status').textContent=e.message;}};
+  }
+  $('power-kv').onchange=()=>hooks.onChange(motorPatch(motors.find(x=>x.id===$('power-kv').value)));
+  $('power-supply').onchange=()=>hooks.onChange(supplyPatch(conditions.find(x=>x.id===$('power-supply').value)));
+  for(const [id,key,fn] of [['phase','motorKvLNOverride',math.phase],['kt','motorKtOverride',math.kt],['speed','motorFreeSpeedOverride',math.free]]){
+   const inputId=id==='phase'?'power-phasekv':'power-'+id,flag='power-'+id+'-override';
+   $(flag).onchange=()=>hooks.onChange({[key]:$(flag).checked?fn(hooks.getParameters()):null});
+   $(inputId).onchange=()=>{const v=$(inputId).valueAsNumber;if(Number.isFinite(v)&&v>0)hooks.onChange({[key]:v});};
+  }
+  for(const [kind,,key] of fields)$('power-'+kind).onchange=()=>{const v=$('power-'+kind).valueAsNumber;if(Number.isFinite(v)&&v>0&&(kind!=='sf'||v>=1))hooks.onChange({[key]:v});};
+  for(const box of document.querySelectorAll('[data-motor-driven]'))box.onchange=()=>{const c=hooks.getCurrent(),patch={motorIndependent:box.dataset.motorDriven};if(c?.gearRatio>0)Object.assign(patch,{motorGR:c.gearRatio,speedSF:c.speedSafetyFactor,fallTorqueCeiling:c.torqueCeilingNm});hooks.onChange(patch);};
+  $('fall-solve-mode').onchange=()=>hooks.onChange({fallSolveMode:$('fall-solve-mode').value});
+  $('fall-power-ceiling').onchange=()=>{const v=$('fall-power-ceiling').valueAsNumber;if(Number.isFinite(v)&&v>0)hooks.onChange({fallPowerCeiling:v});};
+  const studyKey=p=>VSLFallAnalysis.key(p,1)+JSON.stringify([p.supplyOverheatS,p.supplyIcont]);
+  function sync(){
+   frequency.sync();
+   const p=hooks.getParameters(),m=selectedMotor(),s=selectedSupply(),patch={};
+   if(p.motorConfigId!==m.id||p.motorKV!==m.kv||p.motorOverridesProfileId!==m.id)Object.assign(patch,motorPatch(m));
+   if(p.supplyConfigId!==s.id||p.supplyOverridesProfileId!==s.id)Object.assign(patch,supplyPatch(s));
+   if(Object.keys(patch).length&&!queued){queued=true;queueMicrotask(()=>{queued=false;hooks.onChange(patch);});}
+   $('power-kv').value=m.id;$('power-supply').value=s.id;
+   for(const [id,key,value] of [['power-phasekv','motorKvLNOverride',math.phase(p)],['power-kt','motorKtOverride',math.kt(p)],['power-speed','motorFreeSpeedOverride',math.free(p)]]){
+    const flag=id==='power-phasekv'?'power-phase-override':id+'-override';$(flag).checked=p[key]!=null;$(id).disabled=p[key]==null;if(document.activeElement!==$(id))$(id).value=num(value);
+   }
+   $('power-current').value=p.supplyIpeak??120;
+   const independent=p.motorIndependent??'sf';
+   for(const [kind,,key,d] of fields){const el=$('power-'+kind);el.disabled=kind!==independent;if(kind===independent&&document.activeElement!==el)el.value=p[key]??d;}
+   for(const box of document.querySelectorAll('[data-motor-driven]'))box.checked=box.dataset.motorDriven===independent;
+   $('fall-solve-mode').value=p.fallSolveMode??'minimize';if(document.activeElement!==$('fall-power-ceiling'))$('fall-power-ceiling').value=p.fallPowerCeiling??s.power;
+   $('motor-rating-note').textContent='Free speed = Vmax_LN × KV_LN · Kt = 1.5 × 60 / (2π × KV_LN)';
+   $('limit-power-caption').textContent=num(p.fallPowerCeiling??s.power)+' W';$('limit-thermal-caption').textContent=num(p.fallPowerCeiling??s.power)+' W · '+num(p.supplyOverheatS??s.overheat)+' s';
+   if(lastStudyKey&&lastStudyKey!==studyKey(p)){$('motor-limit-status').textContent='Inputs changed — calculate again';$('motor-limit-table').classList.add('stale');if(worker){worker.terminate();worker=null;request++;$('calculate-motor-limits').disabled=false;$('cancel-motor-limits').hidden=true;}}
+   updatePayload(hooks.getCurrent());
+  }
+  function updatePayload(c){const p=hooks.getParameters(),gr=c?.gearRatio>0?c.gearRatio:p.motorIndependent==='gr'?p.motorGR:p.motorIndependent==='torque'?p.fallTorqueCeiling/(math.kt(p)*(p.supplyIpeak??p.motorImax)):null;
+   if(!(gr>0)){$('continuous-payload').textContent='Current fall must resolve GR, or choose GR / torque as Driving.';return;}
+   const key=JSON.stringify([p,gr]);if(key===lastPayloadKey)return;lastPayloadKey=key;const r=math.payload(p,gr);$('continuous-payload').textContent=r.valid?'Per leg: '+num(r.perLegKg)+' kg · Total robot: '+num(r.totalKg)+' kg · limiting θ₂ '+num(r.limitingTheta)+'° · continuous hip torque '+num(r.capNm)+' Nm'+(r.minimumTotalKg>1e-6?' · minimum held payload '+num(r.minimumTotalKg)+' kg':''):r.reason;
+  }
+  function showRows(data){const keys=['heightM','gearRatio','torqueCeilingNm','omega2Rpm','powerW','timeS'];for(let i=0;i<3;i++){const tr=$('motor-limit-table').querySelector('[data-limit-row="'+i+'"]'),r=data.rows[i];tr.title=r?.reason??(r?.valid?'First rest θ₂ '+num(r.stopTheta)+'°':'');tr.querySelectorAll('td').forEach((td,j)=>td.textContent=r?.valid?num(r[keys[j]]):'—');} $('motor-limit-status').textContent=data.reason??'Complete · numerical boundary search; hover unavailable rows for reasons';$('motor-limit-table').classList.remove('stale');}
+  $('cancel-motor-limits').onclick=()=>{worker?.terminate();worker=null;request++;$('calculate-motor-limits').disabled=false;$('cancel-motor-limits').hidden=true;$('motor-limit-status').textContent='Cancelled';};
+  $('calculate-motor-limits').onclick=()=>{
+   worker?.terminate();const id=++request,p=hooks.getParameters();lastStudyKey=studyKey(p);$('calculate-motor-limits').disabled=true;$('cancel-motor-limits').hidden=false;$('motor-limit-status').textContent='Searching feasible heights…';
+   const source=hooks.getModelSources()+'\n'+VSLFallModel.toString()+'\nconst VSLFall=VSLFallModel();\n'+VSLMotorLimitsModel.toString()+'\nonmessage=e=>{try{postMessage({result:VSLMotorLimitsModel().heights(e.data,progress=>postMessage({progress}))});}catch(error){postMessage({error:error.message});}};';
+   try{const url=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));worker=new Worker(url);URL.revokeObjectURL(url);worker.onmessage=e=>{if(id!==request)return;if(e.data.progress!=null){$('motor-limit-status').textContent='Searching… '+Math.round(100*e.data.progress)+'%';return;}worker.terminate();worker=null;$('calculate-motor-limits').disabled=false;$('cancel-motor-limits').hidden=true;if(e.data.error)$('motor-limit-status').textContent=e.data.error;else showRows(e.data.result);};worker.onerror=e=>{$('motor-limit-status').textContent='Search failed: '+e.message;worker?.terminate();worker=null;$('calculate-motor-limits').disabled=false;$('cancel-motor-limits').hidden=true;};worker.postMessage(p);}catch(e){$('motor-limit-status').textContent=e.message;$('calculate-motor-limits').disabled=false;$('cancel-motor-limits').hidden=true;}
+  };
+  options();editor('motor');editor('supply');
+  Promise.allSettled([api('motors',{action:'load'}).then(rows=>{motors=rows;editor('motor');}),api('supplies',{action:'load'}).then(rows=>{conditions=rows;editor('supply');})]).then(results=>{for(let i=0;i<results.length;i++)if(results[i].status==='rejected')$(i===0?'motor-config-status':'supply-config-status').textContent='Using presets · '+results[i].reason.message;options();sync();});
+  return {sync,updatePayload};
+ }
+ return {create,supplies};
+})();
