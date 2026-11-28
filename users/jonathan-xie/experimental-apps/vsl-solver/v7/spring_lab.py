@@ -73,8 +73,9 @@ def geometry(p,theta):
     if math.hypot(u,v)<r:polar=phi+np.arctan2(u*np.sin(phi)-v*np.cos(phi),r-u*np.cos(phi)-v*np.sin(phi))
     else:
         center=math.atan2(-v,-u);raw=np.arctan2(vy,vx);polar=center+np.arctan2(np.sin(raw-center),np.cos(raw-center))
-    psi=polar-np.arccos(rs/d);a=np.sqrt(d*d-rs*rs);qx=u+rs*np.cos(psi);qy=v+rs*np.sin(psi)
-    return a+rs*psi,hy*(qx-hx)/a-hx*(qy-hy)/a,psi,d
+    winding=-1 if p.get('pulleyWrap')=='ccw' else 1
+    psi=polar-winding*np.arccos(rs/d);a=np.sqrt(d*d-rs*rs);qx=u+rs*np.cos(psi);qy=v+rs*np.sin(psi)
+    return a+winding*rs*psi,hy*(qx-hx)/a-hx*(qy-hy)/a,psi,d
 
 def profile(p,count=161):
     rad=math.hypot(p['Su'],p['Sv']);ts=[p['te'],p['tc']]
@@ -86,23 +87,37 @@ def profile(p,count=161):
     J=(-math.sin(p['alpha']*R)*du+math.cos(p['alpha']*R)*dv)/1000
     JB=(-math.sin(p['alpha']*R)*p['L2']*np.sin(theta*R)-math.cos(p['alpha']*R)*p['L2']*np.cos(theta*R))/1000
     offset=p['g']*((.5*p['m2']+.5*p['m3']+p['m5'])*JB+(.5*p['m3']+p['m6'])*J)
-    return dict(theta=theta,delta=delta,A=a/1000,J=J,gravityOffset=offset,low=min(0,float(min(cs)-c0[0])),high=max(0,float(max(cs)-c0[0])),workingLow=float(min(cs)-c0[0]),workingHigh=float(max(cs)-c0[0]),stroke=float(np.ptp(cs)),l0=float(d0[0]),le=float(geometry(p,[p['te']])[3][0]),deltae=float(geometry(p,[p['te']])[0][0]-c0[0]))
+    n=p.get('springReduction',1.)
+    return dict(theta=theta,delta=delta/n,A=a/(1000*n),J=J,gravityOffset=offset,low=min(0,float(min(cs)-c0[0]))/n,high=max(0,float(max(cs)-c0[0]))/n,workingLow=float(min(cs)-c0[0])/n,workingHigh=float(max(cs)-c0[0])/n,stroke=float(np.ptp(cs))/n,cableStroke=float(np.ptp(cs)),l0=float(d0[0]),le=float(geometry(p,[p['te']])[3][0]),deltae=float(geometry(p,[p['te']])[0][0]-c0[0])/n)
+
+def clearance_state(p):
+    """Per-record circle edge gap, or the legacy vertical inversion rule."""
+    circle=p.get('circleClearanceMm')
+    value=math.hypot(p['Su'],p['Sv'])-p['hornR']-p['rs'] if circle is not None else p['Sv']-p['hornR']
+    required=float(circle) if circle is not None else 2*p['rs']
+    return value,required,value>=required-1e-8
+
 
 def normalized(raw):
     out=json.loads(json.dumps(raw));p=out['parameters'];s=out['settings'];s.setdefault('rhMin',s['hornR']);s.setdefault('rhMax',s['hornR'])
     s.setdefault('theta2fTarget',-50.)
     s.setdefault('requireInversion',False)
     if not isinstance(s['theta2fTarget'],(int,float)) or not math.isfinite(s['theta2fTarget']) or not -180<=s['theta2fTarget']<90:raise ValueError('Inversion target must be between -180 and 90 degrees.')
-    if s['requireInversion'] and s['Sv']<s['hornR']+2*s['rs']-1e-8:raise ValueError('Require S_v - r_h >= 2 r_s for inversion clearance.')
+    s.setdefault('pulleyWrap','cw')
+    if s['pulleyWrap'] not in ['cw','ccw']:raise ValueError('Pulley wrap must be cw or ccw.')
+    s.setdefault('springReduction',1.)
+    if s['springReduction'] not in (1,2):raise ValueError('Spring reduction must be 1 or 2.')
+    if s.get('circleClearanceMm') is not None and (not isinstance(s['circleClearanceMm'],(int,float)) or not math.isfinite(s['circleClearanceMm']) or s['circleClearanceMm']<0):raise ValueError('Circle clearance must be finite and nonnegative.')
+    if s['requireInversion'] and not clearance_state(s)[2]:raise ValueError('Pulley/horn clearance requirement fails.')
     for k in ['L2','L3','ra','rb','phi0','alpha','te','tc','g','m1','m2','m3','m5','m6']:
         if not isinstance(p.get(k),(int,float)) or not math.isfinite(p[k]):raise ValueError('Invalid system value '+k)
     if not (90<=p['te']<p['tc']<=270 and p['g']>0 and p['L2']>0 and p['L3']>0 and p['ra']>0 and p['rb']>0 and all(p[k]>=0 for k in ['m1','m2','m3','m5','m6'])):raise ValueError('Invalid mass / leg geometry / working angle.')
     for k in ['hornR','rhMin','rhMax','rs','nu','Sv','Su','bulk','svMin','svMax','suMin','suMax']:
         if not isinstance(s.get(k),(int,float)) or not math.isfinite(s[k]):raise ValueError('Invalid lab value '+k)
     if not 0<s['rhMin']<=s['rhMax'] or s['hornR']<=0 or s['rs']<0 or s['bulk']<0 or not 0<=s['svMin']<=s['svMax'] or s['suMin']>s['suMax']:raise ValueError('Invalid spring geometry / bounds.')
-    if s['type'] not in ['C','E','ANY'] or not isinstance(s['m'],int) or not 1<=s['m']<=12:raise ValueError('Use 1–12 physical spring slots.')
-    if not 1<=len(s['payloads'])<=8 or any(not isinstance(x,(int,float)) or not math.isfinite(x) or x<0 for x in s['payloads']):raise ValueError('Use 1–8 nonnegative payload cases.')
-    if not isinstance(s.get('solutions'),int) or not 1<=s['solutions']<=50:raise ValueError('Request 1–50 solutions.')
+    if s['type'] not in ['C','E','ANY'] or not isinstance(s['m'],int) or not 1<=s['m']<=12:raise ValueError('Use 1â€“12 physical spring slots.')
+    if not 1<=len(s['payloads'])<=8 or any(not isinstance(x,(int,float)) or not math.isfinite(x) or x<0 for x in s['payloads']):raise ValueError('Use 1â€“8 nonnegative payload cases.')
+    if not isinstance(s.get('solutions'),int) or not 1<=s['solutions']<=50:raise ValueError('Request 1â€“50 solutions.')
     s['trials']=max(50,min(2000,int(s.get('trials',300))))
     return out
 
@@ -139,8 +154,8 @@ def inversion_metrics(p,parts,target):
             achieved=upper;limit=full_reason
     return dict(target=target,valid=valid,reason=reason,theta2fAchievable=achieved,fullTurn=full,
                 limitingReason=limit,stroke=z['stroke'] if z else None,
-                radialClearance=p['Sv']-p['hornR'],clearanceRequired=2*p['rs'],
-                clearanceValid=p['Sv']-p['hornR']>=2*p['rs']-1e-8)
+                radialClearance=clearance_state(p)[0],clearanceRequired=clearance_state(p)[1],
+                clearanceValid=clearance_state(p)[2])
 
 def preload_fit(p,parts,masks,bulk,count=161):
     z=profile(p,count);ks=np.array([x['k'] for x in parts]);initial=np.array([x['initial'] for x in parts]);E=np.array(masks,dtype=float);masses=np.array(p['_caseMasses'])
@@ -167,7 +182,7 @@ def nesting_metrics(parts,minimum=0.):
                 manufacturingVerified=False,reason='Nominal diameter screen only; winding direction, diameter tolerances, spring growth and guides require confirmation.')
 
 def evaluate(record,count=1201):
-    p={**record['parameters'],**record['geometry']};mT=4*sum(p[k] for k in ['m1','m2','m3','m5','m6'])-p.get('mp',0);p['_caseMasses']=[(mT+x)/4 for x in record['payloads']];z=profile(p,count)
+    p={**record['parameters'],**{k:record['settings'][k] for k in ['springReduction','circleClearanceMm','pulleyWrap'] if k in record['settings']},**record['geometry']};mT=4*sum(p[k] for k in ['m1','m2','m3','m5','m6'])-p.get('mp',0);p['_caseMasses']=[(mT+x)/4 for x in record['payloads']];z=profile(p,count)
     slots=record['springs'];ks=np.array([x['k'] for x in slots]);p0=np.array([x['p0'] for x in slots]);x0=(p0-np.array([x['initial'] for x in slots]))/ks
     valid=True;violations=[]
     inversion_required=record['settings'].get('requireInversion',False)
@@ -208,7 +223,7 @@ def solve(raw,catalogue=None):
     for trial in range(s['trials']):
         sv=float(np.clip(s['Sv'],s['svMin'],s['svMax'])) if trial==0 else float(rng.uniform(s['svMin'],s['svMax']));su=float(np.clip(s['Su'],s['suMin'],s['suMax'])) if trial==0 else float(rng.uniform(s['suMin'],s['suMax']))
         rh=float(np.clip(s['hornR'],s['rhMin'],s['rhMax'])) if trial==0 or s['rhMin']==s['rhMax'] else float(rng.uniform(s['rhMin'],s['rhMax']))
-        p={**base,**{k:s[k] for k in ['rs','nu']},'hornR':rh,'Sv':sv,'Su':su,'_caseMasses':masses}
+        p={**base,**{k:s[k] for k in ['rs','nu','springReduction','pulleyWrap']},'circleClearanceMm':s.get('circleClearanceMm'),'hornR':rh,'Sv':sv,'Su':su,'_caseMasses':masses}
         try:z=profile(p,81)
         except ValueError:continue
         matrix=np.c_[z['A']*z['delta'],z['A']];targets=np.array([np.linalg.lstsq(matrix,mass*p['g']*z['J']-z['gravityOffset'],rcond=None)[0] for mass in masses]);K=np.maximum(.001,targets[:,0]);P=np.maximum(0,targets[:,1])
@@ -237,7 +252,7 @@ def solve(raw,catalogue=None):
         result=preload_fit(p,parts,E.tolist(),s['bulk'],81);candidates+=1
         if result is None:continue
         score,preloads,_=result;signature=json.dumps(sorted((x['id'],tuple(E[:,i])) for i,x in enumerate(parts)))
-        record=dict(parameters=base,geometry={k:p[k] for k in ['hornR','rs','nu','Sv','Su']},bulk=s['bulk'],payloads=s['payloads'],masks=E.astype(int).tolist(),springs=[{**x,'p0':float(preloads[i])} for i,x in enumerate(parts)],settings=s,favorite=False,method='Bounded catalogue/geometry search + minimax linear preload fit',score=score)
+        record=dict(parameters=base,geometry={k:p[k] for k in ['hornR','rs','nu','Sv','Su','springReduction','circleClearanceMm','pulleyWrap']},bulk=s['bulk'],payloads=s['payloads'],masks=E.astype(int).tolist(),springs=[{**x,'p0':float(preloads[i])} for i,x in enumerate(parts)],settings=s,favorite=False,method='Bounded catalogue/geometry search + minimax linear preload fit',score=score)
         if signature not in best or score<best[signature]['score']:best[signature]=record
     shortlist=sorted(best.values(),key=lambda x:x['score'])[:max(s['solutions']*2,8)]
     for record in shortlist:

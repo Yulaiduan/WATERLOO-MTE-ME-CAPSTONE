@@ -42,7 +42,7 @@
 .fall-headlines td{font-size:17px;font-weight:600;font-variant-numeric:tabular-nums;}
 .fall-headlines select,.fall-headlines th small{display:block;}
 </style>
-<link rel="stylesheet" href="v7-ui.css?v=frequency">
+<link rel="stylesheet" href="v7-ui.css?v=fixed-gr">
 <link rel="icon" href="data:,"></head>
 <body>
 <header class="topbar"><div class="identity"><div class="logo">VSL</div><div><div class="title">General VSL Solver</div><div class="subtitle">Virtual scissor lift · spring assistance + fall recovery</div></div></div><div class="header-actions"><span class="badge">V5 / FALL RECOVERY</span><button id="exportCsv">Export CSV</button><button id="reset">Reset</button></div></header>
@@ -198,7 +198,7 @@ return {defaults,validate,solve,belt,add,mul,sub,cross,dot,norm,local,resolveLoa
 
 /** V4 constant-radius idler and remote linear tension spring.
  * Local u/v geometry mm, angles deg; p0 N at theta2=90; k N/mm. Derivatives
- * per radian. Clockwise wrap; automatic fixed exit direction over working travel.
+ * per radian. Clockwise wrap by default; pulleyWrap=ccw mirrors the cable route.
  * Exact tangency and changing wrap are included; no cable elasticity/friction.
  */
 const VSLSpring=(()=>{
@@ -212,7 +212,7 @@ const VSLSpring=(()=>{
  // Continuous polar angle of the horn point relative to S on the 90–270° branch.
  function polar(p,z){const radius=Math.hypot(p.Su,p.Sv);if(radius<p.hornR)return z.phi+Math.atan2(p.Su*Math.sin(z.phi)-p.Sv*Math.cos(z.phi),p.hornR-p.Su*Math.cos(z.phi)-p.Sv*Math.sin(z.phi));const center=Math.atan2(-p.Sv,-p.Su),raw=Math.atan2(z.v[1],z.v[0]);return center+Math.atan2(Math.sin(raw-center),Math.cos(raw-center));}
  // Raw incoming tangent and continuous clockwise wrap relative to the old +u exit.
- function rawGeometry(p,t){
+ function rawGeometryCW(p,t){
   const z=position(p,t),S=[p.Su,p.Sv];
   if(p.rs===0){const unit=z.d>EPS?[-z.v[0]/z.d,-z.v[1]/z.d]:[0,0];return {...z,valid:true,S,Q:S,unit,tangentLength:z.d,baseWrap:0,psi:0,derivative:z.D[1]*unit[0]-z.D[0]*unit[1]};}
   const ref=position(p,90);if(ref.d<=p.rs+EPS)return {...z,valid:false,reason:'The 90° preload reference is inside/on pulley S. Require |D(90°)−S| > r_s, or use r_s=0.'};
@@ -221,20 +221,27 @@ const VSLSpring=(()=>{
   return {...z,valid:true,S,Q,unit,tangentLength,baseWrap,psi,derivative:z.D[1]*unit[0]-z.D[0]*unit[1]};
  }
  const exitCache=new Map();
- function exit(p){
+ function exitCW(p){
   if(p.rs===0)return {valid:true,required:0,applied:0,direction:[1,0],out:[p.Su,p.Sv],minWrap:0,maxWrap:0};
   const key=JSON.stringify([p.hornR,p.Su,p.Sv,p.rs,p.nu,p.te,p.tc]);if(exitCache.has(key))return exitCache.get(key);
   // Wrap-angle extrema occur at endpoints or common-tangent configurations:
   // S dot [cos(phi),sin(phi)] = rh ± rs. candidates includes both roots exactly.
-  const zs=candidates(p,p.te,p.tc).map(t=>rawGeometry(p,t)),bad=zs.find(z=>!z.valid);
-  let result;if(bad)result={valid:false,reason:bad.reason};else{const rawMin=Math.min(...zs.map(z=>z.baseWrap)),rawMax=Math.max(...zs.map(z=>z.baseWrap)),turnShift=TAU*Math.floor((TAU-rawMax+1e-12)/TAU),min=rawMin+turnShift,max=rawMax+turnShift,required=-min,applied=Math.max(0,required),angle=Math.PI/2-applied,referenceWrap=rawGeometry(p,90).baseWrap+turnShift+applied;result=max+applied>TAU+1e-8?{valid:false,reason:'This range requires more than one full pulley wrap even after redirecting the exit. Reduce travel or change S / horn geometry.'}:{valid:true,required,applied,turnShift,direction:[Math.cos(applied),-Math.sin(applied)],out:[p.Su+p.rs*Math.cos(angle),p.Sv+p.rs*Math.sin(angle)],minWrap:min+applied,maxWrap:max+applied,referenceExtrapolated:referenceWrap < -1e-8||referenceWrap>TAU+1e-8};}
+  const zs=candidates(p,p.te,p.tc).map(t=>rawGeometryCW(p,t)),bad=zs.find(z=>!z.valid);
+  let result;if(bad)result={valid:false,reason:bad.reason};else{const rawMin=Math.min(...zs.map(z=>z.baseWrap)),rawMax=Math.max(...zs.map(z=>z.baseWrap)),turnShift=TAU*Math.floor((TAU-rawMax+1e-12)/TAU),min=rawMin+turnShift,max=rawMax+turnShift,required=-min,applied=Math.max(0,required),angle=Math.PI/2-applied,referenceWrap=rawGeometryCW(p,90).baseWrap+turnShift+applied;result=max+applied>TAU+1e-8?{valid:false,reason:'This range requires more than one full pulley wrap even after redirecting the exit. Reduce travel or change S / horn geometry.'}:{valid:true,required,applied,turnShift,direction:[Math.cos(applied),-Math.sin(applied)],out:[p.Su+p.rs*Math.cos(angle),p.Sv+p.rs*Math.sin(angle)],minWrap:min+applied,maxWrap:max+applied,referenceExtrapolated:referenceWrap < -1e-8||referenceWrap>TAU+1e-8};}
   if(exitCache.size>128)exitCache.clear();exitCache.set(key,result);return result;
  }
- function geometry(p,t){
-  const z=rawGeometry(p,t);if(!z.valid)return z;const route=exit(p);if(!route.valid)return {...z,...route};
+ function geometryCW(p,t){
+  const z=rawGeometryCW(p,t);if(!z.valid)return z;const route=exitCW(p);if(!route.valid)return {...z,...route};
   const wrap=z.baseWrap+(route.turnShift??0)+route.applied;if(p.rs>0&&Math.abs(t-90)>1e-9&&(wrap < -1e-8||wrap>TAU+1e-8))return {...z,valid:false,reason:'Pose lies outside the wrap retained by the exit direction chosen for the working range.'};
   return {...z,...route,valid:true,wrap,zeta:route.required/R,zetaApplied:route.applied/R,payout:z.tangentLength+p.rs*wrap};
  }
+
+ // Reflect the proven clockwise route to obtain a left-going CCW route.
+ function mirrorRoute(p){return {...p,pulleyWrap:'cw',Su:-p.Su,nu:-p.nu,te:180-p.tc,tc:180-p.te};}
+ function reflectedRoute(z){const out={...z,wrapSense:-1};for(const key of ['D','v','S','Q','unit','direction','out'])if(Array.isArray(z[key]))out[key]=[-z[key][0],z[key][1]];if(Number.isFinite(z.phi))out.phi=Math.PI-z.phi;if(Number.isFinite(z.psi))out.psi=Math.PI-z.psi;if(Number.isFinite(z.derivative))out.derivative=-z.derivative;return out;}
+ function rawGeometry(p,t){return p.pulleyWrap==='ccw'?reflectedRoute(rawGeometryCW(mirrorRoute(p),180-t)):rawGeometryCW(p,t);}
+ function exit(p){return p.pulleyWrap==='ccw'?reflectedRoute(exitCW(mirrorRoute(p))):exitCW(p);}
+ function geometry(p,t){return p.pulleyWrap==='ccw'?reflectedRoute(geometryCW(mirrorRoute(p),180-t)):geometryCW(p,t);}
 
  function roots(p,A,B,c,lo,hi){const mag=Math.hypot(A,B),out=[];if(mag<EPS||Math.abs(c)>mag+EPS)return out;const phase=Math.atan2(B,A),a=Math.acos(Math.max(-1,Math.min(1,c/mag)));for(const x of [phase+a,phase-a])for(let n=Math.ceil(((lo+p.nu)*R-x)/TAU);n<=Math.floor(((hi+p.nu)*R-x)/TAU);n++)out.push((x+n*TAU)/R-p.nu);return out;}
  function candidates(p,lo,hi){const rad=Math.hypot(p.Su,p.Sv);return [...new Set([lo,hi,...roots(p,-p.Sv,p.Su,p.rs,lo,hi),...roots(p,-p.Sv,p.Su,-p.rs,lo,hi),...roots(p,p.Su,p.Sv,rad,lo,hi),...roots(p,p.Su,p.Sv,-rad,lo,hi),...roots(p,p.Su,p.Sv,p.hornR-p.rs,lo,hi),...roots(p,p.Su,p.Sv,p.hornR+p.rs,lo,hi)])].sort((a,b)=>a-b);}
@@ -466,12 +473,13 @@ const VSLPeaks=(()=>{
 
 </script>
 <script src="plot-utils.js?v=20261030-springlab"></script>
-<script src="config-library-model.js?v=20261030-springlab"></script>
+<script src="config-library-model.js?v=por1128-20261030-springlab"></script>
 <script src="fall-model.js?v=supply-capacity"></script>
-<script src="fall-analysis.js?v=supply-capacity"></script>
-<script src="motor-limits.js?v=frequency"></script>
-<script src="frequency.js?v=frequency"></script>
-<script src="motor-settings.js?v=frequency"></script>
+<script src="fall-analysis.js?v=por1128-supply-capacity"></script>
+<script src="motor-limits.js?v=fixed-gr"></script>
+<script src="frequency.js?v=fixed-gr"></script>
+<script src="fixed-frequency.js?v=fixed-gr"></script>
+<script src="motor-settings.js?v=fixed-gr"></script>
 <script src="fall-ui.js?v=supply-capacity"></script>
 <script>
 /** Browser UI for General VSL Solver. Open this self-contained HTML directly.
@@ -596,7 +604,7 @@ function drawSpringOnStage(){
  const sh=VSLSpring.state(p,t);if(!sh.valid)return '';
  const A=frame.map([0,0]),D=frame.map(sh.Dg),S=frame.map(sh.Sg),Q=frame.map(sh.Qg),O=frame.map(sh.outg),remote=frame.map(VSL.global(p,VSLSpring.state(p,t).valid?VSLSpring.state(p,t).remote(180):[p.Su,p.Sv])),start=frame.map(VSL.global(p,sh.remote(95)));
  let str=line(A,D,'#bd408d',7,'stroke-linecap="round"')+circle(S,Math.max(p.rs*frame.s,2),'white','#bd408d',1.5)+line(D,Q,'#bd408d',2.3);
- if(p.rs>0){const points=Array.from({length:41},(_,i)=>{const a=sh.psi-sh.wrap*i/40;return frame.map(VSL.global(p,[p.Su+p.rs*Math.cos(a),p.Sv+p.rs*Math.sin(a)]));});str+=`<polyline points="${points.map(q=>q.join(',')).join(' ')}" fill="none" stroke="#bd408d" stroke-width="2.3"/>`;}
+ if(p.rs>0){const points=Array.from({length:41},(_,i)=>{const a=sh.psi-(p.pulleyWrap==='ccw'?-1:1)*sh.wrap*i/40;return frame.map(VSL.global(p,[p.Su+p.rs*Math.cos(a),p.Sv+p.rs*Math.sin(a)]));});str+=`<polyline points="${points.map(q=>q.join(',')).join(' ')}" fill="none" stroke="#bd408d" stroke-width="2.3"/>`;}
  str+=line(O,start,'#bd408d',2)+springZig(start,remote,sh.force)+circle(remote,3,'#657a87')+circle(D,3,'white','#bd408d',1.5)+text([D[0]-15,D[1]-9],'H','#bd408d',11)+text([S[0]+6,S[1]-8],'S · rₛ','#bd408d',11);return str;
 }
 
@@ -610,7 +618,7 @@ function renderSpringPanel(s){
  str+=text([(A[0]+B[0])/2+8,(A[1]+B[1])/2],'Link 2','#307cef',11)+text([(B[0]+C[0])/2+8,(B[1]+C[1])/2],'Link 3','#bb6827',11)+text([20,425],`θ₂ ${fmt(t,1)}° · α ${fmt(p.alpha,1)}°`,'#657a87',12)+line([288,55],[288,437],'#dce5e9');
  const remote=sh.remote(100),points=[[0,0],sh.D,sh.S,remote],xx=points.map(q=>q[0]),zz=points.map(q=>q[1]),sc=Math.min(220/Math.max(Math.max(...xx)-Math.min(...xx),p.hornR,1),225/Math.max(Math.max(...zz)-Math.min(...zz),p.hornR,1)),mx=(Math.min(...xx)+Math.max(...xx))/2,mz=(Math.min(...zz)+Math.max(...zz))/2,M=v=>[455+(v[0]-mx)*sc,233-(v[1]-mz)*sc],O=M([0,0]),D=M(sh.D),S=M(sh.S),Q=M(sh.Q),exit=M(sh.out),K=M([p.Su,0]);
  str+=text([309,27],'Hip pulley detail · local u / v','#182f3d',15,'font-weight="700"')+text([309,47],'Remote spring length is independent · exit direction follows ζ','#657a87',10)+line(O,D,'#bd408d',7,'stroke-linecap="round"')+circle(S,Math.max(p.rs*sc,2),'white','#bd408d',1.5)+line(D,Q,'#bd408d',2.1)+line(exit,M(sh.remote(45)),'#bd408d',2)+springZig(M(sh.remote(45)),M(remote),sh.force)+circle(M(remote),3,'#657a87');
- if(p.rs>0){const arc=Array.from({length:41},(_,i)=>{const a=sh.psi-sh.wrap*i/40;return M([p.Su+p.rs*Math.cos(a),p.Sv+p.rs*Math.sin(a)]);});str+=`<polyline points="${arc.map(q=>q.join(',')).join(' ')}" fill="none" stroke="#bd408d" stroke-width="2.1"/>`;}
+ if(p.rs>0){const arc=Array.from({length:41},(_,i)=>{const a=sh.psi-(p.pulleyWrap==='ccw'?-1:1)*sh.wrap*i/40;return M([p.Su+p.rs*Math.cos(a),p.Sv+p.rs*Math.sin(a)]);});str+=`<polyline points="${arc.map(q=>q.join(',')).join(' ')}" fill="none" stroke="#bd408d" stroke-width="2.1"/>`;}
  str+=line(O,K,'#889ca9',1,'stroke-dasharray="4 3"')+line(K,S,'#889ca9',1,'stroke-dasharray="4 3"');
  for(const [q,n,off] of [[O,'A',[-17,15]],[D,'H',[-17,-8]],[S,'S',[7,17]]])str+=circle(q,3,'white','#182f3d',1.5)+text([q[0]+off[0],q[1]+off[1]],n,'#182f3d',12,'font-weight="700"');
  str+=text([S[0]-7,S[1]-14],`rₛ ${fmt(p.rs)} mm`,'#bd408d',11,'text-anchor="end"')+text([K[0]+8,(K[1]+S[1])/2],`Sᵥ ${fmt(p.Sv)} mm`,'#657a87',11)+text([O[0]+8,O[1]+28],`Sᵤ ${fmt(p.Su)} mm`,'#657a87',11)+text([(O[0]+D[0])/2-8,(O[1]+D[1])/2+5],`rₕ ${fmt(p.hornR)} mm`,'#bd408d',11,'text-anchor="end"')+text([310,379],`ν = ${fmt(p.nu,2)}°; horn angle = θ₂ + ν from +u`,'#bd408d',11)+text([310,399],`Wrap ${fmt(sh.wrap/VSL.rad,2)}°; applied exit CW ${fmt(sh.zetaApplied,2)}°`,'#657a87',10)+text([310,419],`Tangent span ${fmt(sh.tangentLength)} mm`,'#657a87',11);
@@ -652,15 +660,15 @@ let ranges=JSON.parse(JSON.stringify(rangeDefaults));
 const springKeys=['springK','hornR','Sv','rs','p0','nu','Su'];
 const kinKeys=[...springKeys,'mc','mp','m2','m3','m5','m6','Tab0','Tcd0','Tef0'];
 // The saved model keys still follow the original link indices.
-const massInputKeys={m2:'m3',m3:'m2'};
-const kinLabels={springK:'k',hornR:'r_h',Sv:'S_v',rs:'r_s',p0:'p₀',nu:'ν',Su:'S_u',alpha:'α',mc:'m<sub>c</sub> chassis',mp:'m<sub>p</sub> payload',m2:'m₂ tibia',m3:'m₃ femur',m5:'m₅ knee',m6:'m₆ wheel',Tab0:'T_ab,0',Tcd0:'T_cd,0',Tef0:'T_ef,0',beta:'β',Fn:'Fₙ',Ft:'Fₜ',Fy:'Fᵧ',Fz:'F_z'};
+const massInputKeys={}; // m2 is the femur; m3 is the tibia, in both UI and physics.
+const kinLabels={springK:'k',hornR:'r_h',Sv:'S_v',rs:'r_s',p0:'p₀',nu:'ν',Su:'S_u',alpha:'α',mc:'m<sub>c</sub> chassis',mp:'m<sub>p</sub> payload',m2:'m₂ femur',m3:'m₃ tibia',m5:'m₅ knee',m6:'m₆ wheel',Tab0:'T_ab,0',Tcd0:'T_cd,0',Tef0:'T_ef,0',beta:'β',Fn:'Fₙ',Ft:'Fₜ',Fy:'Fᵧ',Fz:'F_z'};
 const forceColors={F_12:'#307cef',F_14:'#8a5cd6',F_25:'#a65e15',F_32:'#087f82',F_w:'#cd4c82'};
 const torqueColor=v=>Math.abs(v)<1e-8?'#7d8f9b':v>0?'#cd354c':'#307cef';
 const strength=v=>.25+.75*(1-Math.exp(-Math.abs(v)/100));
 const isForce=k=>['Fn','Ft','Fy','Fz'].includes(k);
 const isDriving=k=>fallUI?.mode?(!isForce(k)&&k!=='beta'):!isForce(k)||(p.loadMode==='yz'?['Fy','Fz'].includes(k):['Fn','Ft'].includes(k));
 function createKineticInputs(){
- const field=(k,unit,min=0)=>`<label for="${k}" title="${({mc:'Whole-robot chassis',mp:'Whole-robot payload',m2:'Tibia midpoint',m3:'Femur midpoint',m5:'Compound pulley at B',m6:'Wheel at C'})[k]??''}">${kinLabels[k]} <small>${unit}</small><input id="${k}" type="number" step="any" ${min!==null?`min="${min}"`:''} aria-label="${k} ${unit}"></label>`;
+ const field=(k,unit,min=0)=>`<label for="${k}" title="${({mc:'Whole-robot chassis',mp:'Whole-robot payload',m2:'Femur midpoint',m3:'Tibia midpoint',m5:'Compound pulley at B',m6:'Wheel at C'})[k]??''}">${kinLabels[k]} <small>${unit}</small><input id="${k}" type="number" step="any" ${min!==null?`min="${min}"`:''} aria-label="${k} ${unit}"></label>`;
  const springField=(k,unit,min=0)=>`<div class="spring-critical-field"><label class="drive-label" title="Checked: hold this value. Unchecked: fit this value."><input id="drive-spring-${k}" type="checkbox" aria-label="Hold ${k} driving" ${springDriving[k]?'checked':''}>Driving</label><label for="${k}">${({hornR:'r<sub>h</sub>',Sv:'S<sub>v</sub>',Su:'S<sub>u</sub>',rs:'r<sub>s</sub>'})[k]??kinLabels[k]} <small>${unit}</small></label><input id="${k}" type="number" step="any" ${min!==null?`min="${min}"`:''} aria-label="${k} ${unit}" title="${springDriving[k]?'Held during fit':'Starting estimate; fitted when you press Fit'}"></div>`;
  $('kineticInputs').innerHTML=`<div class="input-section"><div class="section-title">Ideal spring calculator</div><label class="hint"><input id="springEnabled" type="checkbox" checked>Enable spring assistance</label><div class="spring-critical-row">${springField('springK','N/mm')}${springField('hornR','mm')}${springField('Sv','mm')}</div><div class="spring-secondary-row">${springField('rs','mm')}${springField('p0','N')}</div><div class="spring-secondary-row">${springField('nu','deg',null)}${springField('Su','mm',null)}</div><button id="fitPulley" class="finite-fit" type="button" title="Checked = held; unchecked = fitted. Fit static gravity compensation for the chassis and leg components at zero payload.">Fit driven variables to 1mg</button><div id="fitStatus" class="fit-result" role="status">Checked = held · unchecked = fitted.</div><div class="spring-output-grid" aria-label="Spring geometry outputs"><label>l<sub>0</sub> <small>mm · θ₂ = 90°</small><output id="spring-l0"></output></label><label>Δl <small>mm · l<sub>c</sub> − l<sub>e</sub></small><output id="spring-dl"></output></label><label>l<sub>e</sub> <small>mm · θ₂ᵉ</small><output id="spring-le"></output></label><label>p<sub>e</sub> <small>N · θ₂ᵉ</small><output id="spring-pe"></output></label></div><label class="zeta-output" title="Maximum required CW exit rotation over working travel; negative values stay visually horizontal.">ζ · driven CW exit rotation (deg)<input id="zeta" type="number" readonly aria-label="Driven zeta degrees"></label></div><div class="input-section"><div class="section-title">Masses</div><div class="load-grid">${field('mc','kg')}${field('mp','kg')}</div><details open><summary class="hint">Per-leg mass distribution</summary><label class="hint"><input type="checkbox" id="enableLegMass" checked>Enable leg mass</label><label class="hint"><input type="checkbox" id="transferLegMass">Transfer leg mass to chassis</label><div class="load-grid">${['m2','m3','m5','m6'].map(k=>field(k,'kg / leg')).join('')}</div></details><div class="mass-total"><span>m<sub>T</sub> total robot</span><strong id="massTotal"></strong></div><div class="mass-total"><span>m<sub>s</sub> sprung per leg</span><strong id="massSprung"></strong></div><div class="mass-total"><span>m<sub>u</sub> unsprung per leg</span><strong id="massUnsprung"></strong></div></div><div class="input-section"><div class="section-title">Belt preloads</div><div class="load-grid">${['Tab0','Tcd0','Tef0'].map(k=>field(k,'N')).join('')}</div></div>`;
  $('springEnabled').onchange=()=>commit({...p,springEnabled:$('springEnabled').checked},'springEnabled');
@@ -830,7 +838,7 @@ function overlayLoads(s){if(!s.valid)return;const A=frame.map([0,0]),C=frame.map
 
 let globalPeakKey='',globalPeakCache=null;
 function globalHeadlineCards(){
- const held=p.loadMode==='yz'?[p.Fy,p.Fz]:[p.Fn,p.Ft],key=JSON.stringify([['L2','L3','ra','rb','rc','rd','re','rf','rw','phi0','te','tc','m1','m2','m3','m5','m6','g','Tab0','alpha','springEnabled',...springKeys].map(k=>p[k]),p.loadMode,held,ranges.beta.min,ranges.beta.max,fallUI?.mode,fallUI?.height]);
+ const held=p.loadMode==='yz'?[p.Fy,p.Fz]:[p.Fn,p.Ft],key=JSON.stringify([['L2','L3','ra','rb','rc','rd','re','rf','rw','phi0','te','tc','m1','m2','m3','m5','m6','g','Tab0','alpha','springEnabled',...springKeys].map(k=>p[k]),p.pulleyWrap,p.loadMode,held,ranges.beta.min,ranges.beta.max,fallUI?.mode,fallUI?.height]);
  if(key!==globalPeakKey){globalPeakCache=peakAnalysis(p,ranges);globalPeakKey=key;}
  const peaks=globalPeakCache;if(!peaks?.valid)return '<div class="headline-search-note">'+(peaks?.reason??'Global maxima unavailable: invalid geometry.')+'</div>';
  let html='';for(const [k,name,unit] of [['tau2','Global max |τ₂|','Nm'],['tau4','Global max |τ₄|','Nm'],['Fs','Global max F<sub>s</sub>','N'],['ab','Global max T_ab','N'],['dz','Global max |d_z|','mm']]){
@@ -989,9 +997,10 @@ function captureSolverConfig(){
   pe:VSLSpring.state(p,p.te).force,zeta:s.spring?.zeta,zetaApplied:s.spring?.zetaApplied
  };
  const layout={details:solverDetails().map(el=>el.open),cards:Object.fromEntries([...document.querySelectorAll('.collapse-toggle')].map(el=>[el.getAttribute('aria-controls'),el.getAttribute('aria-expanded')==='true']))};
- return {schema:'general-vsl/v7-springlab',massConvention:'per-leg-internal/robot-ui-v2',springLab:window.VSLSpringLab?.capture(),torqueConvention:'physical-link2-ccw/v2',ratioConvention:'output-over-input',parameters:libraryModel.clone(p),fallStudy:fallUI.capture(),driven:{...driven},springDriven:null,springDriving:{...springDriving},ranges:libraryModel.clone(ranges),theta2:t,period:Number($('period').value),absoluteTorques:$('absoluteTorques').checked,fullTravel:$('fullTravel').checked,clampRanges:$('clampRanges').checked,view:Object.fromEntries(['showTau2','showTau4','showWheelForces','showWheel','showAB','showDrive'].map(id=>[id,$(id).checked])),visible:{...visible},series:Object.fromEntries([...document.querySelectorAll('[data-kseries]')].map(el=>[el.dataset.kseries,el.checked])),layout,outputs,outputIssue:!s.valid?s.reason:!peaks.valid?peaks.reason:null};
+ return {schema:'general-vsl/v7-springlab',massConvention:'per-leg-internal/robot-ui-v2',linkMassConvention:'m2-femur-m3-tibia/v1',springLab:window.VSLSpringLab?.capture(),torqueConvention:'physical-link2-ccw/v2',ratioConvention:'output-over-input',parameters:libraryModel.clone(p),fallStudy:fallUI.capture(),driven:{...driven},springDriven:null,springDriving:{...springDriving},ranges:libraryModel.clone(ranges),theta2:t,period:Number($('period').value),absoluteTorques:$('absoluteTorques').checked,fullTravel:$('fullTravel').checked,clampRanges:$('clampRanges').checked,view:Object.fromEntries(['showTau2','showTau4','showWheelForces','showWheel','showAB','showDrive'].map(id=>[id,$(id).checked])),visible:{...visible},series:Object.fromEntries([...document.querySelectorAll('[data-kseries]')].map(el=>[el.dataset.kseries,el.checked])),layout,outputs,outputIssue:!s.valid?s.reason:!peaks.valid?peaks.reason:null};
 }
 function applySolverConfig(data){
+ data=libraryModel.migrateSnapshot(libraryModel.clone(data));
  const nextDriven=null,nextDriving=VSLFit.normalize(data.springDriving);
  const next=VSLSpring.resolveDriven(VSLStatic.resolveLoads(normalizeRobotMass({...VSLStatic.defaults,...data.parameters})),nextDriven),errors=VSLStatic.validate(next);if(errors.length)throw Error(errors.join(' '));
  const nextRanges=libraryModel.clone(rangeDefaults);for(const key in nextRanges){const v=data.ranges?.[key]??nextRanges[key],low=isForce(key)?-Infinity:0,high=key==='alpha'?45:key==='beta'?90:Infinity;if(!Number.isFinite(v.min)||!Number.isFinite(v.max)||v.min>v.max||v.min<low||v.max>high)throw Error('Invalid '+key+' master bounds.');nextRanges[key]={...v};}
@@ -1047,4 +1056,4 @@ if(!window.VSL_EMBEDDED)initConfigLibrary();
 window.VSLApp={setRobotMass:setMasterMass,applyLabContext:context=>{let next={...p};for(const k of ['L2','L3','ra','rb','rc','rd','re','rf','rw','phi0','alpha','te','tc','m1','mc','mp','m2','m3','m5','m6','massMode','inactiveLegMasses'])next[k]=context[k];next=VSLStatic.followMass(p,normalizeRobotMass(next));const errors=VSLStatic.validate(next);if(errors.length)throw Error(errors.join(' '));p=next;t=clamp(t,p.te,p.tc);setPlaying(false);syncFields();syncKineticFields();recompute();},get graphMaximum(){return graphMax();},get graphMinimum(){return graphMin();},get springDriven(){return springDriven;},get springDriving(){return {...springDriving};},captureConfig:captureSolverConfig,applyConfig:applySolverConfig,get library(){return libraryModel.clone(library);},get parameters(){return {...p};},get theta2(){return t;},get playing(){return playing;},get driven(){return {...driven};}};
 })();
 </script>
-<link rel="stylesheet" href="spring-lab.css?v=20261030"><script src="spring-lab.js?v=supplier-campaign"></script></body></html>
+<link rel="stylesheet" href="spring-lab.css?v=20261030"><script src="spring-lab.js?v=por1128-supplier-campaign"></script></body></html>

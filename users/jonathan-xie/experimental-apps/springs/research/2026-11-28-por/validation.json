@@ -1,0 +1,10 @@
+{
+  "date": "2026-11-28",
+  "reference": "S0110",
+  "sourceDp": 20,
+  "geometryCrossChecks": 13917,
+  "denseAnglesPerFit": 20001,
+  "priorSolutionsPreserved": 31,
+  "dpCount": 12,
+  "status": "passed"
+}

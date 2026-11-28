@@ -56,3 +56,12 @@ Best S0091 uses original S0075 Swift pair at rh40, rs25.4, Su24.2792, Sv90.8 mm;
 peak0.15913 Nm, loaded rope5.396 kN. Clearance remains Sv-rh>=2rs. See the
 [dated result](../research/2026-11-22-dp18-search/README.md) for assumptions,
 FOX provisional ratings, bounded-search limits and tested/untested status.
+
+## DP18 2:1 tackle — 2026-11-22
+
+V7 has31 saved solutions; new S0101–05 mixed and S0106–10 single use physical
+spring travel=cable payout/2, Fs=2T, cable k=physical k/4. Backend and viewer now
+persist that ratio plus per-record Euclidean circle-gap requirement15 mm.
+Legacy direct-drive records preserve their previous model/rule. Best non-FOX
+fit S0102 ~0.0108 Nm, loaded rope3.807 kN /spring7.614 kN, but loaded spring has
+almost zero rated travel margin. [Evidence](../research/2026-11-22-dp18-tackle/README.md).

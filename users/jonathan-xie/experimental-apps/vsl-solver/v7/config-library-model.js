@@ -8,6 +8,10 @@ const VSLConfigLibrary=(()=>{
  const drivingDefaults={springK:true,hornR:false,Sv:true,rs:true,p0:false,nu:true,Su:false};
  function migrateSnapshot(snapshot){
   if(!snapshot)return snapshot;
+  if(snapshot.linkMassConvention!=='m2-femur-m3-tibia/v1'){
+   const swap=node=>{if(!node||typeof node!=='object')return;if(Number.isFinite(node.m2)&&Number.isFinite(node.m3))[node.m2,node.m3]=[node.m3,node.m2];for(const value of Object.values(node))swap(value);};
+   swap(snapshot);snapshot.linkMassConvention='m2-femur-m3-tibia/v1';snapshot.outputs=Object.fromEntries(Object.entries(snapshot.outputs??{}).filter(([key])=>['Fs','pe','globalMaxFs','globalMaxDz','zeta','zetaApplied'].includes(key)));snapshot.outputIssue='Mass assignment corrected; load and save to refresh outputs.';
+  }
   if(snapshot.torqueConvention!=='physical-link2-ccw/v2'){if(Number.isFinite(snapshot.outputs?.tauG))snapshot.outputs.tauG=-snapshot.outputs.tauG;snapshot.torqueConvention='physical-link2-ccw/v2';}
   const choices={...drivingDefaults};for(const key in choices){if(snapshot.springDriving?.[key]!==undefined){if(typeof snapshot.springDriving[key]!=='boolean')throw Error('Invalid saved spring driving selection.');choices[key]=snapshot.springDriving[key];}}
   snapshot.springDriving=choices;snapshot.springDriven=null;return snapshot;

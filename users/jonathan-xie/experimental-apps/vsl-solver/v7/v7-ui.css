@@ -153,3 +153,7 @@ body.library-pinned>.layout{grid-template-columns:240px minmax(0,1fr);}
 .frequency-legend{font-size:11px;padding:8px;}
 .frequency-legend span{display:block;font-weight:650;}
 #frequency.stale .frequency-grid{opacity:.5;}
+
+#fixed-frequency{border:1px solid #d5e2e9;border-radius:9px;padding:10px;margin:10px 0;}
+#fixed-frequency summary{cursor:pointer;font-weight:650;}
+#fixed-frequency.stale .frequency-grid{opacity:.5;}

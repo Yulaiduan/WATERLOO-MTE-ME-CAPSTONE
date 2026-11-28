@@ -24,14 +24,27 @@ function VSLMotorLimitsModel(){
   if(upper<lower||upper<0)return {valid:false,reason:'No nonnegative payload can be held throughout this working range.',capNm:cap};
   return {valid:true,perLegKg:upper,totalKg:4*upper,minimumTotalKg:4*lower,limitingTheta:theta,capNm:cap,gearRatio:gr};
  }
- function heights(p,progress=()=>{}){
-  const common={...p,fallSolveMode:'maximize',motorIndependent:'sf',speedSF:1},P=p.fallPowerCeiling??p.supplyPowerW??2000,thermal=p.supplyOverheatS;
+ function heights(p,progress=()=>{},options={}){
+  const fixed=options.gearRatio!=null;
+  if(fixed&&!(Number.isFinite(options.gearRatio)&&options.gearRatio>0))return {rows:[],reason:'A positive resolved GR is required.'};
+  const common={...p,fallSolveMode:'maximize',...(fixed?{motorIndependent:'gr',motorGR:options.gearRatio}:{motorIndependent:'sf',speedSF:1})},P=p.fallPowerCeiling??p.supplyPowerW??2000,thermal=p.supplyOverheatS;
   const probe=VSLFall.solve({...common,fallSolveMode:'minimize',fallPowerCeiling:1e12},1,{samples:80});
-  const B=probe.impactEnergyJ,C=probe.gravityWorkJ-probe.deltaSpringEnergyJ,A=probe.torqueCeilingNm,Q=(p.tc-p.te)*Math.PI/180;
+  const motorProbe=fixed&&!(probe.torqueCeilingNm>0)?VSLFall.solve({...common,fallPowerCeiling:1e12},1,{samples:80}):probe;
+  const B=probe.impactEnergyJ,C=probe.gravityWorkJ-probe.deltaSpringEnergyJ,A=motorProbe.torqueCeilingNm,Q=(p.tc-p.te)*Math.PI/180;
   if(![B,C,A,Q].every(Number.isFinite)||!(B>0&&A>0&&Q>0))return {rows:[],reason:probe.reason??'Invalid geometry or touchdown state.'};
   // Necessary work bound: B*h+C <= (A/sqrt(h))*Q. Strictly increasing gap.
-  let hi=1;while(B*hi+C-A*Q/Math.sqrt(hi)<0&&hi<1e8)hi*=2;
-  let lo=0;for(let i=0;i<70;i++){const mid=(lo+hi)/2;if(B*mid+C-A*Q/Math.sqrt(mid)>0)hi=mid;else lo=mid;}
+  let hi=1;
+  if(fixed){
+   // At fixed GR the cap is constant; touchdown rpm scales with sqrt(h).
+   const speedProbe=motorProbe.speedSafetyFactor>0?motorProbe:VSLFall.solve({...common,fallPowerCeiling:1e12},1,{samples:80});
+   hi=speedProbe.speedSafetyFactor**2;
+   // The speed bound is valid even when an earlier stop beats the full-stroke
+   // work budget. Torque, power and contact are enforced by each trajectory.
+   if(!(Number.isFinite(hi)&&hi>0))return {rows:[],reason:'No positive motor-speed height bound could be resolved.'};
+  }else{
+   while(B*hi+C-A*Q/Math.sqrt(hi)<0&&hi<1e8)hi*=2;
+   let lo=0;for(let i=0;i<70;i++){const mid=(lo+hi)/2;if(B*mid+C-A*Q/Math.sqrt(mid)>0)hi=mid;else lo=mid;}
+  }
   const upper=hi,points=new Set([upper]);
   for(let i=0;i<=56;i++){points.add(upper*(i+1)/57);points.add(upper*Math.pow(1e-7,1-i/56));}
   const hs=[...points].sort((x,y)=>x-y),all=[[],[],[]];let count=0;
@@ -53,10 +66,10 @@ function VSLMotorLimitsModel(){
    let final=check(best.h,mode===0?1e12:P,1000);
    for(let i=0;i<20&&!accepts(final,mode);i++)final=check(final.h*.999,mode===0?1e12:P,1000);
    if(!accepts(final,mode)){rows.push({valid:false,reason:'Boundary did not pass the denser verification.'});continue;}
-   rows.push({valid:true,heightM:final.h,gearRatio:final.r.gearRatio,torqueCeilingNm:final.r.torqueCeilingNm,omega2Rpm:final.r.peaks.omega2,powerW:final.r.peaks.hipPower,timeS:final.r.catchTimeS,stopTheta:final.r.stopTheta,energyResidualJ:final.r.energyResidualJ,boundWidthM:right-best.h});
+   rows.push({valid:true,heightM:final.h,gearRatio:final.r.gearRatio,speedSafetyFactor:final.r.speedSafetyFactor,initialOmega2Rpm:final.r.rows[0].qdot*60/(2*Math.PI),torqueCeilingNm:final.r.torqueCeilingNm,omega2Rpm:final.r.peaks.omega2,powerW:final.r.peaks.hipPower,timeS:final.r.catchTimeS,stopTheta:final.r.stopTheta,energyResidualJ:final.r.energyResidualJ,boundWidthM:right-best.h});
    progress(.8+(mode+1)/3*.2);
   }
-  return {rows,workUpperBoundM:upper,powerLimitW:P,thermalLimitS:thermal,samples:hs.length,method:'Maximum allowed resistance, first rest at/before theta2c; SF=1; speed/contact/travel checked. Sampled feasible islands, refined upper boundaries.'};
+  return {rows,workUpperBoundM:upper,powerLimitW:P,thermalLimitS:thermal,samples:hs.length,method:'Maximum allowed resistance, first rest at/before theta2c; '+(fixed?'fixed GR':'SF=1')+'; speed/contact/travel checked. Sampled feasible islands, refined upper boundaries.'};
  }
  function sweep(p,motors,supplies,progress=()=>{}){
   const results=[],cache=new Map();let reused=0;
@@ -77,7 +90,17 @@ function VSLMotorLimitsModel(){
   }
   progress(1);return {results,solves:cache.size,reused};
  }
- return {phase,kt,free,payload,heights,sweep};
+ function fixedSweep(p,gearRatio,supplies,progress=()=>{}){
+  if(!(Number.isFinite(gearRatio)&&gearRatio>0))throw Error('A positive resolved GR is required.');
+  const results=[];
+  for(let i=0;i<supplies.length;i++){
+   const s=supplies[i],q={...p,motorFreeSpeedOverride:null,supplyVmaxLN:s.vmax,supplyIpeak:s.peak,supplyIcont:s.continuous,supplyOverheatS:s.overheat,fallPowerCeiling:s.power};
+   const h=heights(q,f=>progress((i+f)/supplies.length),{gearRatio}),capacity=payload(q,gearRatio);
+   results.push({motor:{id:p.motorConfigId??String(p.motorKV),kv:p.motorKV,comment:'Selected motor'},supply:s,rows:h.rows.map(r=>r.valid?{...r,payload:capacity}:r),payload:capacity,reason:h.reason});
+  }
+  progress(1);return {results,gearRatio,motorKV:p.motorKV};
+ }
+ return {phase,kt,free,payload,heights,sweep,fixedSweep};
 }
 const VSLMotorLimits=VSLMotorLimitsModel();
 if(typeof module!=='undefined')module.exports={VSLMotorLimitsModel,VSLMotorLimits};

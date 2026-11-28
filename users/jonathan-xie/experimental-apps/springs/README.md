@@ -143,3 +143,9 @@ V7 now uses `v7-spring-solutions.xlsx` separately from V6. Keeps S0075 and adds
 10 mixed-supplier and10 single-supplier one-only compression pairs for DP18,
 rh40–42 mm, rs25.4 mm, inversion-50 deg. All20 free lengths are<210 mm.
 [Ranked results, rope forces and validation](research/2026-11-22-dp18-search/README.md).
+
+## DP18 2:1 moving pulley — 2026-11-22
+
+Appended S0101–S0105 mixed and S0106–S0110 single supplier. Ideal2:1 spring
+travel reduction, rh60–70 mm, rs20 mm, true circle edge gap>=15 mm.
+[Force/travel model, ranked results and verification](research/2026-11-22-dp18-tackle/README.md).
